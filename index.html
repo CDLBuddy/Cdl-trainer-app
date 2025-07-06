@@ -2,13 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CDL Trainer</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Welcome to CDL Trainer</h1>
-  <div id="app"></div>
+  <header>
+    <h1>🚛 Welcome to CDL Trainer</h1>
+    <nav>
+      <button data-nav="home">🏠 Home</button>
+      <button data-nav="walkthrough">📋 Walkthrough</button>
+      <button data-nav="tests">📝 Practice Tests</button>
+      <button data-nav="coach">🎧 AI Coach</button>
+    </nav>
+  </header>
+
+  <main id="app">
+    <!-- Dynamic content from app.js will be injected here -->
+  </main>
+
+  <footer>
+    <p>© 2025 CDL Trainer. Built by CDL Buddy.</p>
+  </footer>
+
   <script src="app.js"></script>
 </body>
 </html>
