@@ -1,45 +1,126 @@
-/* style.css — Starter styling for CDL Trainer */
-
-body {
-  font-family: Arial, sans-serif;
+/* Base Reset */
+* {
   margin: 0;
   padding: 0;
-  background: #f4f4f4;
+  box-sizing: border-box;
+}
+
+/* Body Styling */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f7f9;
   color: #333;
-}
-
-h1, h2, h3 {
-  color: #2c3e50;
-  text-align: center;
-}
-
-.container {
-  max-width: 900px;
-  margin: 40px auto;
+  line-height: 1.6;
+  min-height: 100vh;
   padding: 20px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  border-radius: 8px;
 }
 
+/* Centered Container */
+#app {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Headings */
+h1, h2, h3 {
+  color: #0066cc;
+  margin-bottom: 20px;
+}
+
+/* Buttons */
 button {
-  background-color: #007bff;
+  background-color: #0078d4;
   color: white;
-  border: none;
   padding: 12px 20px;
-  font-size: 16px;
-  border-radius: 4px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s ease-in-out;
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #005fa3;
 }
 
-input, select {
-  padding: 10px;
-  font-size: 16px;
-  margin-bottom: 10px;
+/* Navigation / Menu */
+nav {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+nav a {
+  text-decoration: none;
+  color: #0078d4;
+  font-weight: bold;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+/* Flashcards / Quiz / Walkthrough Display Box */
+.card, .quiz-box, .walkthrough-step {
+  background: #eef4fa;
+  border: 1px solid #cddff3;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+/* Form Inputs */
+input, select, textarea {
   width: 100%;
-  box-sizing: border-box;
+  padding: 10px;
+  margin: 10px 0 20px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+/* Progress Bar */
+.progress-container {
+  background-color: #e0e0e0;
+  border-radius: 10px;
+  margin-top: 20px;
+  height: 20px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0;
+  background-color: #4caf50;
+  transition: width 0.3s ease;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-size: 14px;
+  margin-top: 40px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  #app {
+    padding: 15px;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  nav {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
