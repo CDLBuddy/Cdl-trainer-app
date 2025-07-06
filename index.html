@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CDL Trainer</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.ico" />
 </head>
 <body>
   <header>
@@ -14,38 +15,21 @@
       <button data-nav="walkthrough">📋 Walkthrough</button>
       <button data-nav="tests">📝 Practice Tests</button>
       <button data-nav="coach">🎧 AI Coach</button>
+      <button data-nav="checklists">✅ My Checklist</button>
+      <button data-nav="results">📊 Test Results</button>
+      <button data-nav="login">🔐 Login</button>
     </nav>
   </header>
 
   <main id="app">
-    <!-- Dynamic content from app.js will be injected here -->
+    <!-- Dynamic content will be rendered here -->
   </main>
 
   <footer>
     <p>© 2025 CDL Trainer. Built by CDL Buddy.</p>
   </footer>
 
-  <script src="app.js"></script>
+  <!-- Core App Script -->
+  <script type="module" src="app.js"></script>
 </body>
 </html>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, setDoc, doc, getDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
-    authDomain: "cdltrainerapp.firebaseapp.com",
-    projectId: "cdltrainerapp",
-    storageBucket: "cdltrainerapp.appspot.com",
-    messagingSenderId: "977549527480",
-    appId: "1:977549527480:web:e959926bb02a4cef65674d",
-    measurementId: "G-MJ22BD2J1J"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-
-  // Example functions below 👇
-</script>
