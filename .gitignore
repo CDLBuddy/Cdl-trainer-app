@@ -1,5 +1,71 @@
+# Logs
 *.log
-__pycache__/
-.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
 node_modules/
+bower_components/
+
+# Firebase config
+.firebase/
+.firebaserc
+firebase-debug.log
+firebase-debug.*
+
+# Build outputs
 dist/
+build/
+out/
+
+# Environment variable files
+.env
+.env.local
+.env.*.local
+
+# Mac system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Backup & cache files
+*.bak
+*.tmp
+*.swp
+*~
+
+# Zip & archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Coverage reports
+coverage/
+
+# Python cache (safe even if not using Python)
+__pycache__/
+
+# Optional Firebase Hosting deploy previews
+firebase.json
+
+# Ignore GitHub Pages CNAME override if used
+CNAME
+
+# Ignore log, cache, and temporary files from tools like Parcel/Vite/React
+.cache/
+*.pid
+
+# Local test results
+*.spec.js
+*.test.js
+*.test.html
