@@ -1,1 +1,0 @@
-// Placeholder content for trainer/coach_ai.js

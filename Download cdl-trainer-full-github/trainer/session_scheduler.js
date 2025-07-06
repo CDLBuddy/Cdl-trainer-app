@@ -1,1 +1,0 @@
-// Placeholder content for trainer/session_scheduler.js

@@ -1,1 +1,0 @@
-// Placeholder content for trainer/progress_tracking.js
