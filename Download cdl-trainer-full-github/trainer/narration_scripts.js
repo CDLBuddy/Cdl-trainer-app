@@ -1,0 +1,1 @@
+// Placeholder content for trainer/narration_scripts.js
