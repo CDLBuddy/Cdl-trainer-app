@@ -1,0 +1,1 @@
+export function getStateInfo(state) { return stateData[state]; }

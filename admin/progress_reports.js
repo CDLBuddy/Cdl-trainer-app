@@ -1,0 +1,1 @@
+export function generateReport(student) { return `Report for ${student}`; }

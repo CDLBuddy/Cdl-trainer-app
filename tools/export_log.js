@@ -1,0 +1,1 @@
+function exportLog(student) { console.log(`Exporting log for ${student}`); }

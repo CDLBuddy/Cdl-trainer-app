@@ -1,0 +1,1 @@
+export const progress = { user: 'student1', completed: ['Pre-trip', 'Air Brakes'] };

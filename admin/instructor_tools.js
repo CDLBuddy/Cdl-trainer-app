@@ -1,0 +1,1 @@
+export function assignLesson(student, lesson) { console.log(`Assigned ${lesson} to ${student}`); }
