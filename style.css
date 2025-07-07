@@ -1,8 +1,5 @@
-<<<<<<< Updated upstream
-=======
-/* style.css — Starter styling for CDL Trainer */
+/* style.css -- Starter styling for CDL Trainer */
 
->>>>>>> Stashed changes
 body {
   margin: 0;
   font-family: sans-serif;
@@ -184,7 +181,6 @@ button:hover {
   background: #0077ff;
 }
 
-<<<<<<< Updated upstream
 button:disabled {
   background: #ccc;
   cursor: not-allowed;
@@ -227,7 +223,7 @@ label:hover {
   width: 0%;
   transition: width 0.4s ease-in-out;
 }
-=======
+
 input, select {
   padding: 10px;
   font-size: 16px;
@@ -235,4 +231,56 @@ input, select {
   width: 100%;
   box-sizing: border-box;
 }
->>>>>>> Stashed changes
+
+/* ✅ Grid Layout for Welcome Page */
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-items: center;
+}
+
+.button-grid button {
+  background: #007bff;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 140px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s ease;
+}
+
+.button-grid button:hover {
+  background: #005bb5;
+}
+
+.button-grid button img {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 0.5rem;
+}
+
+/* ✅ Header and Subtitle */
+.welcome-container {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.header-icon {
+  width: 64px;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 2rem;
+}
