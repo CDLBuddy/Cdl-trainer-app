@@ -1,7 +1,7 @@
 // ==== Firebase Setup ====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
@@ -19,15 +19,60 @@ const auth = getAuth(app);
 let currentUserEmail = null;
 
 onAuthStateChanged(auth, (user) => {
+  const logoutBtn = document.getElementById("logout-btn");
   if (user) {
     currentUserEmail = user.email;
+    if (logoutBtn) logoutBtn.style.display = "inline-block";
     setupNavigation();
     renderPage('home');
   } else {
     currentUserEmail = null;
+    if (logoutBtn) logoutBtn.style.display = "none";
     renderLogin(document.getElementById('app'));
   }
+  
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      alert("Logged out.");
+      window.location.reload();
+    });
+  }
 });
+
+// ==== ELDT Checklist Structure ====
+const eldtChecklist = {
+  "Pre-trip Inspection": [
+    "Check lights",
+    "Check tires",
+    "Fluid levels",
+    "Leaks under vehicle",
+    "Cab safety equipment"
+  ],
+  "Basic Vehicle Control": [
+    "Straight line backing",
+    "Offset backing (left/right)",
+    "Parallel parking",
+    "Alley dock"
+  ],
+  "On-Road Driving": [
+    "Lane changes",
+    "Turns (left/right)",
+    "Intersections",
+    "Expressway entry/exit",
+    "Railroad crossing"
+  ],
+  "Hazard Perception": [
+    "Scan for pedestrians",
+    "React to road hazards",
+    "Mirror checks"
+  ],
+  "Emergency Maneuvers": [
+    "Skid recovery",
+    "Controlled braking",
+    "Steering control"
+  ]
+};
 
 // ==== SPA Routing ====
 function setupNavigation() {
@@ -134,50 +179,105 @@ function renderAICoach(container) {
 async function renderChecklists(container) {
   container.innerHTML = `
     <div class="card">
-      <h2>✅ Your Checklist</h2>
-      <div id="checklist-display">Loading...</div>
-      <button onclick="saveChecklistSample()">💾 Save Sample Checklist</button>
+      <h2>✅ ELDT Checklist</h2>
+      <form id="eldt-form"></form>
+      <button id="save-eldt-btn">💾 Save Progress</button>
       <button data-nav="home">⬅️ Home</button>
     </div>
   `;
   setupNavigation();
 
-  const display = document.getElementById('checklist-display');
-  const q = query(collection(db, "checklists"), where("studentId", "==", currentUserEmail));
-  const snapshot = await getDocs(q);
+  const form = document.getElementById('eldt-form');
 
-  display.innerHTML = "";
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    display.innerHTML += `
-      <div class="checklist-card">
-        <h4>${data.title || "Checklist"}</h4>
-        <ul>
-          ${Object.entries(data.items).map(([k, v]) => `<li>${k}: ${v ? "✅" : "❌"}</li>`).join('')}
-        </ul>
-      </div>
-    `;
-  });
+  // === STEP 1: Define checklist structure ===
+  const eldtChecklist = {
+    "Vehicle Inspection": ["Lights", "Brakes", "Tires", "Mirrors"],
+    "Cab Check": ["Seatbelt", "Horn", "Windshield", "Wipers"],
+    "Engine Compartment": ["Oil Level", "Coolant Level", "Leaks"]
+  };
 
-  if (snapshot.empty) {
-    display.innerHTML = `<p>No checklists found.</p>`;
+  // === STEP 2: Load saved progress from Firestore ===
+  let savedData = {};
+  if (currentUserEmail) {
+    const snapshot = await getDocs(query(
+      collection(db, "eldtProgress"),
+      where("studentId", "==", currentUserEmail)
+    ));
+    snapshot.forEach(doc => {
+      savedData = doc.data().progress || {};
+    });
   }
-}
 
-async function saveChecklistSample() {
-  if (!currentUserEmail) return alert("Not logged in.");
-  await addDoc(collection(db, "checklists"), {
-    studentId: currentUserEmail,
-    title: "Sample Pre-Trip",
-    items: {
-      Lights: true,
-      Brakes: false,
-      Tires: true,
-      Mirrors: true
-    }
+  // === STEP 3: Build checklist UI with saved values ===
+  Object.entries(eldtChecklist).forEach(([section, items]) => {
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = section;
+    legend.style.marginTop = "1rem";
+    fieldset.appendChild(legend);
+
+    items.forEach(item => {
+      const checkbox = document.createElement('input');
+      checkbox.type = "checkbox";
+      checkbox.name = `${section}::${item}`;
+      checkbox.checked = savedData?.[section]?.[item] || false;
+
+      const label = document.createElement('label');
+      label.style.display = 'block';
+      label.appendChild(checkbox);
+      label.append(` ${item}`);
+
+      fieldset.appendChild(label);
+    });
+
+    form.appendChild(fieldset);
   });
-  alert("Checklist saved!");
-  renderPage('checklists');
+
+  // === STEP 4: Hook up save button to Firestore ===
+  document.getElementById("save-eldt-btn").addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const inputs = form.querySelectorAll("input[type='checkbox']");
+    const progress = {};
+
+    inputs.forEach(input => {
+      const [section, item] = input.name.split("::");
+      if (!progress[section]) progress[section] = {};
+      progress[section][item] = input.checked;
+    });
+
+    await addDoc(collection(db, "eldtProgress"), {
+      studentId: currentUserEmail,
+      timestamp: new Date(),
+      progress
+    });
+
+    alert("✅ Checklist progress saved!");
+    renderPage("checklists");
+  });
+
+  // === STEP 5: Show saved progress summary below form ===
+  if (Object.keys(savedData).length > 0) {
+    const summary = document.createElement('div');
+    summary.style.marginTop = "2rem";
+    summary.innerHTML = `<h3>📋 Saved Progress Summary</h3>`;
+
+    for (const [section, items] of Object.entries(savedData)) {
+      const sectionSummary = document.createElement('div');
+      sectionSummary.innerHTML = `<strong>${section}</strong><ul style="padding-left: 1.2rem;">`;
+
+      for (const [item, completed] of Object.entries(items)) {
+        sectionSummary.innerHTML += `
+          <li>${completed ? "✅" : "❌"} ${item}</li>
+        `;
+      }
+
+      sectionSummary.innerHTML += `</ul>`;
+      summary.appendChild(sectionSummary);
+    }
+
+    container.querySelector(".card").appendChild(summary);
+  }
 }
 
 // ==== Test Results ====
@@ -229,7 +329,7 @@ async function saveSampleTest() {
   renderPage('results');
 }
 
-// ==== Login Page (only fallback) ====
+// ==== Login Page ====
 
 function renderLogin(container) {
   container.innerHTML = `
@@ -238,14 +338,4 @@ function renderLogin(container) {
       <p>Please log in to access CDL Trainer.</p>
     </div>
   `;
-}
-    import { signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-
-const logoutBtn = document.getElementById("logout-btn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    await signOut(auth);
-    alert("Logged out.");
-    window.location.reload();
-  });
 }

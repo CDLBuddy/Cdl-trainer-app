@@ -1,126 +1,137 @@
-/* Base Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* Body Styling */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f4f7f9;
+  margin: 0;
+  font-family: sans-serif;
+  background: #f0f4f8;
   color: #333;
-  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  padding: 20px;
 }
 
-/* Centered Container */
-#app {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 30px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
-/* Headings */
-h1, h2, h3 {
-  color: #0066cc;
-  margin-bottom: 20px;
-}
-
-/* Buttons */
-button {
-  background-color: #0078d4;
+header, footer {
+  background: #003366;
   color: white;
-  padding: 12px 20px;
-  margin: 10px 0;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.2s ease-in-out;
+  padding: 1rem;
+  text-align: center;
 }
 
-button:hover {
-  background-color: #005fa3;
-}
-
-/* Navigation / Menu */
 nav {
   display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
-nav a {
-  text-decoration: none;
-  color: #0078d4;
-  font-weight: bold;
+nav button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #005bb5;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-nav a:hover {
-  text-decoration: underline;
+nav button:hover {
+  background: #0077ff;
 }
 
-/* Flashcards / Quiz / Walkthrough Display Box */
-.card, .quiz-box, .walkthrough-step {
-  background: #eef4fa;
-  border: 1px solid #cddff3;
+main {
+  flex: 1;
+  padding: 1rem;
+}
+
+.card {
+  background: white;
   border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 20px;
+  padding: 1rem;
+  max-width: 600px;
+  margin: auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* Form Inputs */
-input, select, textarea {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0 20px 0;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 15px;
-}
-
-/* Progress Bar */
-.progress-container {
-  background-color: #e0e0e0;
+/* ✅ NEW: Checklist Card Style */
+.checklist-card, .result-card {
+  background: #ffffff;
   border-radius: 10px;
-  margin-top: 20px;
-  height: 20px;
-  overflow: hidden;
+  padding: 1rem;
+  margin: 1rem auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  max-width: 600px;
 }
 
-.progress-bar {
-  height: 100%;
-  width: 0;
-  background-color: #4caf50;
-  transition: width 0.3s ease;
+/* ✅ NEW: List Item Styling */
+ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
 }
 
-/* Footer */
-footer {
-  text-align: center;
-  padding: 20px;
-  color: #888;
-  font-size: 14px;
-  margin-top: 40px;
+li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
 }
 
-/* Responsive */
+/* ✅ Responsive tweaks */
 @media (max-width: 600px) {
-  #app {
-    padding: 15px;
-  }
-
-  button {
-    width: 100%;
-  }
-
   nav {
     flex-direction: column;
-    gap: 10px;
+  }
+
+  .card, .checklist-card, .result-card {
+    margin: 1rem;
+    padding: 1rem;
   }
 }
+  /* Checklist Item Styles */
+.passed {
+  background: #e6ffe6;
+  color: #2b7a2b;
+  padding: 0.3rem;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.failed {
+  background: #ffe6e6;
+  color: #a03333;
+  padding: 0.3rem;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+/* Badge Style */
+.badge {
+  background: #28a745;
+  color: white;
+  padding: 0.3rem 1rem;
+  display: inline-block;
+  border-radius: 20px;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  animation: pop 0.5s ease-in-out;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Optional: Tweak checklist card */
+.checklist-card {
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 1rem;
+  background-color: #fafafa;
+}            
