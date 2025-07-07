@@ -61,55 +61,113 @@ function renderPage(page) {
     case "quiz-general": loadQuizAndStart("general_knowledge", "General Knowledge"); break;
     case "quiz-air": loadQuizAndStart("air_brakes", "Air Brakes"); break;
     case "quiz-combo": loadQuizAndStart("combination_vehicle", "Combination Vehicle"); break;
+    case "flashcards": renderFlashcards(app); break;
+    case "experience": renderExperience(app); break;
+    case "license": renderLicenseSelector(app); break;
     default:
       currentUserEmail?.includes("admin@") || currentUserEmail?.includes("instructor@")
         ? renderInstructorDashboard(app)
         : renderHome(app);
+      break;
   }
 }
 
-// ==== Updated Home Screen ====
+// ==== Home Screen ====
 function renderHome(container) {
   container.innerHTML = `
     <div class="welcome-container">
       <img src="logo-icon.png" alt="CDL Icon" class="header-icon" />
       <h1>Welcome to CDL Trainer</h1>
       <p class="subtitle">Choose your training mode to begin</p>
-
       <div class="button-grid">
-        <button data-nav="walkthrough">
-          <img src="icons/walkthrough.png" alt="Walkthrough" />
-          Walkthrough
-        </button>
-        <button data-nav="tests">
-          <img src="icons/tests.png" alt="Tests" />
-          Practice Tests
-        </button>
-        <button data-nav="coach">
-          <img src="icons/coach.png" alt="AI Coach" />
-          AI Coach
-        </button>
-        <button data-nav="checklists">
-          <img src="icons/checklist.png" alt="Checklist" />
-          My Checklist
-        </button>
-        <button data-nav="results">
-          <img src="icons/results.png" alt="Results" />
-          Test Results
-        </button>
-        <button data-nav="login">
-          <img src="icons/login.png" alt="Login" />
-          Profile / Login
-        </button>
+        <button data-nav="walkthrough"><img src="icons/walkthrough.png" /> Walkthrough</button>
+        <button data-nav="tests"><img src="icons/tests.png" /> Practice Tests</button>
+        <button data-nav="coach"><img src="icons/coach.png" /> AI Coach</button>
+        <button data-nav="checklists"><img src="icons/checklist.png" /> My Checklist</button>
+        <button data-nav="results"><img src="icons/results.png" /> Test Results</button>
+        <button data-nav="flashcards"><img src="icons/flashcards.png" /> Flashcards</button>
+        <button data-nav="experience"><img src="icons/experience.png" /> Experience</button>
+        <button data-nav="license"><img src="icons/license.png" /> License Path</button>
+        <button data-nav="login"><img src="icons/login.png" /> Profile / Login</button>
       </div>
-
       <button class="login-button" data-nav="coach">🎧 Talk to Your AI Coach</button>
     </div>
   `;
   setupNavigation();
 }
 
-// ==== Other Render Functions ====
+// ==== Flashcards ====
+function renderFlashcards(container) {
+  container.innerHTML = `
+    <div class="card">
+      <h2>📑 Flashcards</h2>
+      <p>Coming soon: Swipe through CDL topics for memorization.</p>
+      <button data-nav="home">⬅️ Home</button>
+    </div>
+  `;
+  setupNavigation();
+}
+
+// ==== Driving Experience ====
+function renderExperience(container) {
+  container.innerHTML = `
+    <div class="card">
+      <h2>🚚 Driving Experience</h2>
+      <p>Tell us about your driving background:</p>
+      <form id="experience-form">
+        <label><input type="radio" name="exp" value="beginner"> Beginner</label><br/>
+        <label><input type="radio" name="exp" value="some"> Some Experience</label><br/>
+        <label><input type="radio" name="exp" value="experienced"> Experienced CDL Driver</label><br/><br/>
+        <button id="save-exp-btn">Save Experience</button>
+      </form>
+      <button data-nav="home">⬅️ Home</button>
+    </div>
+  `;
+  setupNavigation();
+  document.getElementById("save-exp-btn").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const selected = document.querySelector("input[name=exp]:checked")?.value;
+    if (!selected) return alert("Please select your experience level.");
+    await addDoc(collection(db, "experienceResponses"), {
+      studentId: currentUserEmail,
+      experience: selected,
+      timestamp: new Date()
+    });
+    alert("✅ Experience saved!");
+    renderPage("home");
+  });
+}
+
+// ==== License Selector ====
+function renderLicenseSelector(container) {
+  container.innerHTML = `
+    <div class="card">
+      <h2>🎯 License Path</h2>
+      <form id="license-form">
+        <label><input type="radio" name="license" value="Class A"> Class A</label><br/>
+        <label><input type="radio" name="license" value="Class A (O)"> Class A (O)</label><br/>
+        <label><input type="radio" name="license" value="Class B"> Class B</label><br/><br/>
+        <button id="save-license-btn">Save License</button>
+      </form>
+      <button data-nav="home">⬅️ Home</button>
+    </div>
+  `;
+  setupNavigation();
+  document.getElementById("save-license-btn").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const selected = document.querySelector("input[name=license]:checked")?.value;
+    if (!selected) return alert("Please select a license type.");
+    await addDoc(collection(db, "licenseSelection"), {
+      studentId: currentUserEmail,
+      licenseType: selected,
+      timestamp: new Date()
+    });
+    alert("✅ License saved!");
+    renderPage("home");
+  });
+}
+
+// ==== Other Pages ====
 function renderInstructorDashboard(container) {
   container.innerHTML = `
     <div class="card">
@@ -164,6 +222,16 @@ function renderAICoach(container) {
   setupNavigation();
 }
 
+function renderLogin(container) {
+  container.innerHTML = `
+    <div class="card">
+      <h2>🔐 Login Required</h2>
+      <p>Please log in to access CDL Trainer features.</p>
+    </div>
+  `;
+}
+
+// ==== Checklists ====
 async function renderChecklists(container) {
   if (currentUserEmail?.includes("instructor@") || currentUserEmail?.includes("admin@")) {
     return await renderInstructorChecklists(container);
@@ -180,11 +248,21 @@ async function renderChecklists(container) {
   setupNavigation();
 
   const checklist = {
-    "Pre-trip Inspection": ["Check lights", "Check tires", "Fluid levels", "Leaks under vehicle", "Cab safety equipment"],
-    "Basic Vehicle Control": ["Straight line backing", "Offset backing (left/right)", "Parallel parking", "Alley dock"],
-    "On-Road Driving": ["Lane changes", "Turns (left/right)", "Intersections", "Expressway entry/exit", "Railroad crossing"],
-    "Hazard Perception": ["Scan for pedestrians", "React to road hazards", "Mirror checks"],
-    "Emergency Maneuvers": ["Skid recovery", "Controlled braking", "Steering control"]
+    "Pre-trip Inspection": [
+      "Check lights", "Check tires", "Fluid levels", "Leaks under vehicle", "Cab safety equipment"
+    ],
+    "Basic Vehicle Control": [
+      "Straight line backing", "Offset backing (left/right)", "Parallel parking", "Alley dock"
+    ],
+    "On-Road Driving": [
+      "Lane changes", "Turns (left/right)", "Intersections", "Expressway entry/exit", "Railroad crossing"
+    ],
+    "Hazard Perception": [
+      "Scan for pedestrians", "React to road hazards", "Mirror checks"
+    ],
+    "Emergency Maneuvers": [
+      "Skid recovery", "Controlled braking", "Steering control"
+    ]
   };
 
   const form = document.getElementById("eldt-form");
@@ -237,6 +315,7 @@ async function renderChecklists(container) {
   }
 }
 
+// ==== Instructor Checklist View ====
 async function renderInstructorChecklists(container) {
   container.innerHTML = `
     <div class="card">
@@ -277,6 +356,7 @@ async function renderInstructorChecklists(container) {
   });
 }
 
+// ==== Save Quiz Test Result ====
 async function saveTestResult(testName, score, correct, total) {
   if (!currentUserEmail) return alert("Please log in to save results.");
   await addDoc(collection(db, "testResults"), {
@@ -289,6 +369,7 @@ async function saveTestResult(testName, score, correct, total) {
   });
 }
 
+// ==== Test Results View ====
 async function renderTestResults(container) {
   container.innerHTML = `
     <div class="card">
@@ -313,13 +394,4 @@ async function renderTestResults(container) {
       </div>
     `;
   });
-}
-
-function renderLogin(container) {
-  container.innerHTML = `
-    <div class="card">
-      <h2>🔐 Login Required</h2>
-      <p>Please log in to access CDL Trainer features.</p>
-    </div>
-  `;
 }
