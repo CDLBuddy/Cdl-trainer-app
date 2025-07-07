@@ -239,3 +239,13 @@ function renderLogin(container) {
     </div>
   `;
 }
+    import { signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+const logoutBtn = document.getElementById("logout-btn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    alert("Logged out.");
+    window.location.reload();
+  });
+}
