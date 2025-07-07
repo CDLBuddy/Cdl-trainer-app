@@ -201,6 +201,59 @@ body.dark .login-card input {
   margin-bottom: 2rem;
 }
 
+.home-container {
+  padding: 2rem;
+  text-align: center;
+  background: linear-gradient(145deg, #0b1f3a, #082142);
+  min-height: 100vh;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.home-container h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.4rem;
+}
+
+.home-container .subtitle {
+  font-size: 1rem;
+  opacity: 0.85;
+  margin-bottom: 2rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  justify-content: center;
+  padding: 0 1rem;
+}
+
+.home-tile {
+  background: #1f62e0;
+  border: none;
+  color: white;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.home-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+}
+
+.tile-icon {
+  display: block;
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
 /* === Grid Buttons === */
 .button-grid {
   display: grid;
