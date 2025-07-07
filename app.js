@@ -224,11 +224,32 @@ function renderAICoach(container) {
 
 function renderLogin(container) {
   container.innerHTML = `
-    <div class="card">
-      <h2>🔐 Login Required</h2>
-      <p>Please log in to access CDL Trainer features.</p>
+    <div class="card login-card">
+      <h2>🔐 Login</h2>
+      <form id="login-form">
+        <label>Email:</label><br/>
+        <input type="email" id="email" required /><br/>
+        <label>Password:</label><br/>
+        <input type="password" id="password" required /><br/><br/>
+        <button type="submit">Login</button>
+      </form>
+      <p id="login-error" style="color: red; display: none;"></p>
     </div>
+   </section>
   `;
+
+  document.getElementById("login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+    } catch (err) {
+      const errorMsg = document.getElementById("login-error");
+      errorMsg.textContent = "❌ " + err.message;
+      errorMsg.style.display = "block";
+    }
+  });
 }
 
 // ==== Checklists ====
