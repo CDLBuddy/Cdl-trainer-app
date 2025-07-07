@@ -25,27 +25,32 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Optional loading placeholder -->
+  <!-- Loading Screen -->
   <div id="loading-screen" aria-hidden="true" style="text-align:center; padding:2rem; display:none;">
     <h2>Loading CDL Trainer...</h2>
     <p>Please wait</p>
   </div>
 
   <!-- App Root -->
-  <main id="app" role="main"></main>
+  <main id="app" role="main" tabindex="-1"></main>
 
-  <!-- Voice Login Microphone Placeholder -->
-  <button id="mic-button" title="Voice Login" style="display: none;" aria-label="Voice login microphone">
-    🎙️
-  </button>
+  <!-- Voice Login Button -->
+  <div id="mic-container" style="text-align: center; margin-top: 1rem;">
+    <button id="mic-button" aria-label="Voice Login" title="Voice Login" style="display: none;">
+      🎙️
+    </button>
+  </div>
 
-  <!-- Theme Toggle Placeholder -->
+  <!-- Theme Toggle -->
   <div id="theme-toggle-container" style="text-align: center; margin-top: 1rem;">
-    <button id="theme-toggle" aria-label="Toggle Dark Mode">🌓 Theme</button>
+    <button id="theme-toggle" aria-label="Toggle Dark Mode">
+      🌓 Theme
+    </button>
   </div>
 
   <!-- Language Selector -->
-  <div id="language-selector-container" style="text-align:center; margin-top: 1rem;">
+  <div id="language-selector-container" style="text-align:center; margin: 1rem 0;">
+    <label for="language-selector" style="display:block; font-size: 0.9rem;">🌐 Select Language:</label>
     <select id="language-selector" aria-label="Select language">
       <option value="en" selected>🇺🇸 English</option>
       <option value="es">🇪🇸 Español</option>
@@ -55,10 +60,10 @@
     </select>
   </div>
 
-  <!-- App Logic -->
+  <!-- Scripts -->
   <script type="module" src="app.js"></script>
 
-  <!-- Service Worker -->
+  <!-- Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

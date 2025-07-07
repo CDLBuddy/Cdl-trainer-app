@@ -50,6 +50,7 @@ nav button {
   color: white;
   border-radius: 5px;
   cursor: pointer;
+  transition: background 0.3s ease;
 }
 
 nav button:hover {
@@ -99,7 +100,7 @@ button {
   max-width: 300px;
   margin: 0.5rem auto;
   display: block;
-  transition: background 0.2s;
+  transition: background 0.3s ease;
 }
 
 button:hover {
@@ -139,6 +140,7 @@ button:disabled {
   margin-bottom: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  box-sizing: border-box;
 }
 
 .form-group {
@@ -154,14 +156,6 @@ button:disabled {
   color: var(--error);
   font-size: 0.9rem;
   margin-top: 0.3rem;
-}
-
-.toggle-password {
-  position: absolute;
-  right: 1rem;
-  top: 42px;
-  cursor: pointer;
-  color: var(--primary);
 }
 
 /* === Dark Mode Support === */
@@ -183,6 +177,11 @@ body.dark select {
   background: #333;
   color: var(--dark-text);
   border: 1px solid #666;
+}
+
+body.dark .login-card input {
+  background: #2c2c2c;
+  color: #f0f0f0;
 }
 
 /* === Welcome Page Layout === */
@@ -221,6 +220,7 @@ body.dark select {
   align-items: center;
   text-align: center;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s ease;
 }
 
 .button-grid button:hover {
@@ -251,14 +251,16 @@ body.dark select {
 }
 
 /* === Alt Login Buttons === */
-.alt-login {
+.alt-login,
+.alt-login-buttons {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   margin-top: 1rem;
 }
 
-.alt-login button {
+.alt-login button,
+.alt-login-buttons button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -266,11 +268,6 @@ body.dark select {
   gap: 0.5rem;
   background: #e0e0e0;
   color: #333;
-}
-
-.alt-login button img {
-  width: 20px;
-  height: 20px;
 }
 
 /* === Language Selector === */
@@ -308,7 +305,7 @@ body.dark select {
   }
 }
 
-/* === 🔒 Modern Login Theme === */
+/* === Modern Login Theme === */
 .login-card {
   max-width: 420px;
   margin: 3rem auto;
@@ -324,6 +321,13 @@ body.dark select {
   margin-bottom: 1.5rem;
   color: #fff;
   text-align: center;
+}
+
+.login-greeting {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #ccc;
 }
 
 .login-card input, .login-card select {
@@ -358,19 +362,20 @@ body.dark select {
   background: #005bb5;
 }
 
-.alt-login-btn {
-  background: #1a73e8;
-  margin: 0.5rem 0;
+/* === Toggle Section / Extra Controls === */
+.login-extras {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  margin-top: 1rem;
+  gap: 1rem;
+  font-size: 0.95rem;
+  color: #ccc;
 }
 
 .dark-mode-toggle, .theme-preview-toggle, .lang-selector {
   display: flex;
   align-items: center;
-  margin-top: 1rem;
   justify-content: space-between;
   font-size: 0.95rem;
   color: #ddd;
@@ -383,18 +388,19 @@ body.dark select {
   font-size: 0.9rem;
 }
 
+/* === Icons === */
 .flag-icon {
   width: 20px;
   margin-right: 6px;
 }
 
-/* Emoji-styled buttons */
 .alt-login-btn img,
 .lang-selector img {
   width: 24px;
   height: 24px;
 }
 
+/* === Password Toggle Fix === */
 .password-toggle {
   position: relative;
   display: flex;
@@ -415,20 +421,7 @@ body.dark select {
   cursor: pointer;
 }
 
-/* Role badges */
-.role-badge {
-  background: #0f5132;
-  color: #d1e7dd;
-  font-weight: bold;
-  font-size: 0.85rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  display: inline-block;
-  margin-top: 0.5rem;
-  animation: pop 0.4s ease-in;
-}
-
-/* Loading spinner */
+/* === Loading Spinner === */
 .spinner {
   border: 4px solid rgba(255, 255, 255, 0.1);
   border-top: 4px solid #007bff;
