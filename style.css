@@ -50,7 +50,7 @@ main {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* ✅ NEW: Checklist Card Style */
+/* ✅ Checklist Card Style */
 .checklist-card, .result-card {
   background: #ffffff;
   border-radius: 10px;
@@ -60,7 +60,7 @@ main {
   max-width: 600px;
 }
 
-/* ✅ NEW: List Item Styling */
+/* ✅ List Item Styling */
 ul {
   list-style: none;
   padding-left: 0;
@@ -86,8 +86,23 @@ li {
     margin: 1rem;
     padding: 1rem;
   }
+
+  label {
+    font-size: 1rem;
+    padding: 0.5rem;
+  }
+
+  button {
+    font-size: 0.95rem;
+    padding: 0.6rem 1rem;
+  }
+
+  #timer {
+    font-size: 1rem;
+  }
 }
-  /* Checklist Item Styles */
+
+/* ✅ Checklist Item Styles */
 .passed {
   background: #e6ffe6;
   color: #2b7a2b;
@@ -104,7 +119,7 @@ li {
   margin-bottom: 4px;
 }
 
-/* Badge Style */
+/* ✅ Badge Style */
 .badge {
   background: #28a745;
   color: white;
@@ -127,11 +142,82 @@ li {
   }
 }
 
-/* Optional: Tweak checklist card */
+/* ✅ Checklist card tweaks */
 .checklist-card {
   margin-bottom: 1rem;
   border: 1px solid #ddd;
   border-radius: 6px;
   padding: 1rem;
   background-color: #fafafa;
-}            
+}
+
+/* ✅ Timer styling */
+#timer {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: red;
+  font-weight: bold;
+}
+
+/* ✅ Buttons for mobile */
+button {
+  font-size: 1rem;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  background: #005bb5;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+  margin: 0.5rem auto;
+  display: block;
+}
+
+button:hover {
+  background: #0077ff;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* ✅ Quiz option inputs */
+input[type="radio"] {
+  margin-right: 0.5rem;
+  transform: scale(1.2);
+}
+
+label {
+  font-size: 1.1rem;
+  padding: 0.6rem;
+  display: flex;
+  align-items: center;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+}
+
+label:hover {
+  background-color: #eef4ff;
+}
+
+/* ✅ Progress bar styles */
+.progress-bar {
+  height: 10px;
+  background: #e0e0e0;
+  border-radius: 5px;
+  margin-top: 1rem;
+  overflow: hidden;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  background: #0077ff;
+  width: 0%;
+  transition: width 0.4s ease-in-out;
+}
