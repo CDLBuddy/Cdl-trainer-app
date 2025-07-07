@@ -177,6 +177,23 @@ function renderAICoach(container) {
 // ==== Checklists ====
 
 async function renderChecklists(container) {
+  // 🔐 Check if user is instructor or admin
+  if (currentUserEmail?.includes("instructor@") || currentUserEmail?.includes("admin@")) {
+    await renderInstructorChecklists(container);
+    return;
+  }
+
+  // 👤 Regular student view continues below
+  container.innerHTML = `
+    <div class="card">
+      <h2>✅ ELDT Checklist</h2>
+      <form id="eldt-form"></form>
+      <button id="save-eldt-btn">💾 Save Progress</button>
+      <button data-nav="home">⬅️ Home</button>
+    </div>
+  `;
+  
+async function renderChecklists(container) {
   container.innerHTML = `
     <div class="card">
       <h2>✅ ELDT Checklist</h2>
@@ -278,6 +295,66 @@ async function renderChecklists(container) {
 
     container.querySelector(".card").appendChild(summary);
   }
+}
+// ==== Instructor Checklist Overview ====
+async function renderInstructorChecklists(container) {
+  container.innerHTML = `
+    <div class="card">
+      <h2>📊 Instructor Checklist Overview</h2>
+      <p>Viewing all student ELDT checklist progress:</p>
+      <div id="instructor-checklist-results"></div>
+      <button data-nav="home">⬅️ Home</button>
+    </div>
+  `;
+  setupNavigation();
+
+  const resultsContainer = document.getElementById('instructor-checklist-results');
+  const snapshot = await getDocs(collection(db, "eldtProgress"));
+
+  const grouped = {};
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    const email = data.studentId;
+    const progress = data.progress;
+
+    if (!grouped[email]) grouped[email] = {};
+    Object.entries(progress).forEach(([section, items]) => {
+      if (!grouped[email][section]) grouped[email][section] = {};
+      Object.entries(items).forEach(([item, checked]) => {
+        grouped[email][section][item] = checked;
+      });
+    });
+  });
+
+  for (const [email, sections] of Object.entries(grouped)) {
+    const card = document.createElement('div');
+    card.className = "card";
+    card.innerHTML = `<h3>👤 ${email}</h3>`;
+
+    for (const [section, items] of Object.entries(sections)) {
+      card.innerHTML += `<strong>${section}</strong><ul>`;
+      for (const [item, checked] of Object.entries(items)) {
+        card.innerHTML += `<li>${checked ? "✅" : "❌"} ${item}</li>`;
+      }
+      card.innerHTML += `</ul>`;
+    }
+
+    resultsContainer.appendChild(card);
+  }
+}
+
+async function saveTestResult(testName, score, correct, total) {
+  if (!currentUserEmail) return alert("You must be logged in to save test results.");
+
+  await addDoc(collection(db, "testResults"), {
+    studentId: currentUserEmail,
+    testName,
+    score,
+    correct,
+    total,
+    timestamp: new Date()
+  });
 }
 
 // ==== Test Results ====
