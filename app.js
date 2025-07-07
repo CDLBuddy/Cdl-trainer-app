@@ -227,29 +227,151 @@ function renderLogin(container) {
     <div class="card login-card">
       <h2>🔐 Login</h2>
       <form id="login-form">
-        <label>Email:</label><br/>
-        <input type="email" id="email" required /><br/>
-        <label>Password:</label><br/>
-        <input type="password" id="password" required /><br/><br/>
-        <button type="submit">Login</button>
+        <label for="email">Email:</label><br/>
+        <input type="email" id="email" placeholder="Enter email" required autofocus/><br/>
+
+        <label for="password">Password:</label><br/>
+        <div class="password-wrapper">
+          <input type="password" id="password" placeholder="Enter password" required />
+          <button type="button" id="toggle-password" aria-label="Show/Hide Password">👁️</button>
+        </div>
+
+        <div class="login-options">
+          <label><input type="checkbox" id="remember-me" /> Remember Me</label>
+          <a href="#" id="reset-password">Forgot Password?</a>
+        </div>
+
+        <button type="submit" id="login-submit">🔓 Sign In</button>
+
+        <p class="or-divider">OR</p>
+        <div class="alt-login-buttons">
+          <button type="button" id="google-login">🔵 Sign in with Google</button>
+          <button type="button" id="apple-login"> Sign in with Apple (Coming Soon)</button>
+          <button type="button" id="sms-login">📱 Sign in via SMS (Coming Soon)</button>
+        </div>
+
+        <p id="login-error" class="error-text" style="display:none;"></p>
       </form>
-      <p id="login-error" style="color: red; display: none;"></p>
+
+      <div class="test-account-hint">
+        <strong>Test Account:</strong><br/>
+        Email: <code>student1@sample.com</code><br/>
+        Password: <code>cdltrainer</code>
+      </div>
+
+      <div class="login-extras">
+        <select id="language-select">
+          <option value="en" selected>🇺🇸 English</option>
+          <option value="es">🇪🇸 Español</option>
+          <option value="fr">🇫🇷 Français</option>
+          <option value="de">🇩🇪 Deutsch</option>
+        </select>
+
+        <label><input type="checkbox" id="dark-mode-toggle" /> 🌙 Dark Mode</label>
+      </div>
+
+      <footer class="login-footer">
+        <small>Version 1.0 • Built by CDL Buddy</small>
+      </footer>
     </div>
-   </section>
   `;
 
-  document.getElementById("login-form").addEventListener("submit", async (e) => {
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const loginForm = document.getElementById("login-form");
+  const errorMsg = document.getElementById("login-error");
+  const togglePassword = document.getElementById("toggle-password");
+
+  // Show/hide password
+  togglePassword.addEventListener("click", () => {
+    const type = passwordInput.type === "password" ? "text" : "password";
+    passwordInput.type = type;
+    togglePassword.textContent = type === "password" ? "👁️" : "🙈";
+  });
+
+  // Dark mode toggle
+  document.getElementById("dark-mode-toggle").addEventListener("change", (e) => {
+    document.body.classList.toggle("dark-mode", e.target.checked);
+  });
+
+  // Enter key support
+  loginForm.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") e.preventDefault();
+  });
+
+  // Login submit
+  loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
-    try {
-      await auth.signInWithEmailAndPassword(email, password);
-    } catch (err) {
-      const errorMsg = document.getElementById("login-error");
-      errorMsg.textContent = "❌ " + err.message;
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+      errorMsg.textContent = "Email and password required.";
       errorMsg.style.display = "block";
+      return;
+    }
+
+    try {
+      document.getElementById("login-submit").disabled = true;
+      errorMsg.style.display = "none";
+
+      const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js");
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      if (err.code === "auth/user-not-found") {
+        try {
+          const { createUserWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js");
+          await createUserWithEmailAndPassword(auth, email, password);
+          alert("🎉 Account created and logged in!");
+        } catch (signupErr) {
+          errorMsg.textContent = signupErr.message;
+          errorMsg.style.display = "block";
+        }
+      } else {
+        errorMsg.textContent = err.message;
+        errorMsg.style.display = "block";
+      }
+    } finally {
+      document.getElementById("login-submit").disabled = false;
     }
   });
+
+  // Reset password (basic)
+  document.getElementById("reset-password").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    if (!email) return alert("Enter your email to receive a reset link.");
+    const { sendPasswordResetEmail } = await import("https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js");
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("📬 Reset link sent!");
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  });
+
+  // Language switch (UI only)
+  document.getElementById("language-select").addEventListener("change", (e) => {
+    alert(`Language switched to ${e.target.options[e.target.selectedIndex].text} (UI translation coming soon)`);
+  });
+
+  // Scaffold for Google Login
+  document.getElementById("google-login").addEventListener("click", () => {
+    alert("🔵 Google Sign-In coming soon!");
+  });
+
+  document.getElementById("apple-login").addEventListener("click", () => {
+    alert(" Apple Sign-In coming soon!");
+  });
+
+  document.getElementById("sms-login").addEventListener("click", () => {
+    alert("📱 SMS Sign-In coming soon!");
+  });
+
+  // Greet test users
+  if (emailInput.value === "student1@sample.com") {
+    console.log("👋 Hello test user!");
+  }
 }
 
 // ==== Checklists ====

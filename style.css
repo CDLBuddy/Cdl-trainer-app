@@ -1,13 +1,26 @@
-/* style.css -- Starter styling for CDL Trainer */
+:root {
+  --primary: #007bff;
+  --primary-dark: #005bb5;
+  --text: #333;
+  --bg: #f0f4f8;
+  --card-bg: #fff;
+  --error: #d9534f;
+  --success: #28a745;
+  --dark-bg: #121212;
+  --dark-card: #1e1e1e;
+  --dark-text: #f0f0f0;
+}
 
+/* === Base Layout === */
 body {
   margin: 0;
   font-family: sans-serif;
-  background: #f0f4f8;
-  color: #333;
+  background: var(--bg);
+  color: var(--text);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
 }
 
 header, footer {
@@ -15,6 +28,11 @@ header, footer {
   color: white;
   padding: 1rem;
   text-align: center;
+}
+
+main {
+  flex: 1;
+  padding: 1rem;
 }
 
 nav {
@@ -28,45 +46,36 @@ nav {
 nav button {
   padding: 0.5rem 1rem;
   border: none;
-  background: #005bb5;
+  background: var(--primary-dark);
   color: white;
   border-radius: 5px;
   cursor: pointer;
 }
 
 nav button:hover {
-  background: #0077ff;
+  background: var(--primary);
 }
 
-main {
-  flex: 1;
-  padding: 1rem;
-}
-
-.card {
-  background: white;
+/* === Card Layout === */
+.card, .checklist-card, .result-card, .login-card {
+  background: var(--card-bg);
   border-radius: 8px;
-  padding: 1rem;
+  padding: 1.5rem;
   max-width: 600px;
-  margin: auto;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* ✅ Checklist Card Style */
-.checklist-card, .result-card {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 1rem;
   margin: 1rem auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  max-width: 600px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: background 0.3s, color 0.3s;
 }
 
-/* ✅ List Item Styling */
+.checklist-card {
+  border: 1px solid #ddd;
+  background-color: #fafafa;
+}
+
+/* === Typography & Lists === */
 ul {
   list-style: none;
-  padding-left: 0;
-  margin: 0;
+  padding: 0;
 }
 
 li {
@@ -75,99 +84,14 @@ li {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1rem;
 }
 
-/* ✅ Responsive tweaks */
-@media (max-width: 600px) {
-  nav {
-    flex-direction: column;
-  }
-
-  .card, .checklist-card, .result-card {
-    margin: 1rem;
-    padding: 1rem;
-  }
-
-  label {
-    font-size: 1rem;
-    padding: 0.5rem;
-  }
-
-  button {
-    font-size: 0.95rem;
-    padding: 0.6rem 1rem;
-  }
-
-  #timer {
-    font-size: 1rem;
-  }
-}
-
-/* ✅ Checklist Item Styles */
-.passed {
-  background: #e6ffe6;
-  color: #2b7a2b;
-  padding: 0.3rem;
-  border-radius: 4px;
-  margin-bottom: 4px;
-}
-
-.failed {
-  background: #ffe6e6;
-  color: #a03333;
-  padding: 0.3rem;
-  border-radius: 4px;
-  margin-bottom: 4px;
-}
-
-/* ✅ Badge Style */
-.badge {
-  background: #28a745;
-  color: white;
-  padding: 0.3rem 1rem;
-  display: inline-block;
-  border-radius: 20px;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  animation: pop 0.5s ease-in-out;
-}
-
-@keyframes pop {
-  from {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* ✅ Checklist card tweaks */
-.checklist-card {
-  margin-bottom: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 1rem;
-  background-color: #fafafa;
-}
-
-/* ✅ Timer styling */
-#timer {
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
-  text-align: center;
-  color: red;
-  font-weight: bold;
-}
-
-/* ✅ Buttons for mobile */
+/* === Button Styling === */
 button {
   font-size: 1rem;
   padding: 0.75rem 1.25rem;
   border: none;
-  background: #005bb5;
+  background: var(--primary-dark);
   color: white;
   border-radius: 6px;
   cursor: pointer;
@@ -175,10 +99,11 @@ button {
   max-width: 300px;
   margin: 0.5rem auto;
   display: block;
+  transition: background 0.2s;
 }
 
 button:hover {
-  background: #0077ff;
+  background: var(--primary);
 }
 
 button:disabled {
@@ -186,89 +111,81 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* ✅ Quiz option inputs */
-input[type="radio"] {
-  margin-right: 0.5rem;
-  transform: scale(1.2);
+/* === Responsive Layout === */
+@media (max-width: 600px) {
+  nav {
+    flex-direction: column;
+  }
+
+  .card, .checklist-card, .result-card {
+    margin: 1rem;
+  }
+
+  button {
+    font-size: 0.95rem;
+  }
+
+  #timer {
+    font-size: 1rem;
+  }
 }
 
-label {
-  font-size: 1.1rem;
+/* === Login UI === */
+.login-card input,
+.login-card select {
+  width: 100%;
   padding: 0.6rem;
-  display: flex;
-  align-items: center;
-  background: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.error-message {
+  color: var(--error);
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1rem;
+  top: 42px;
   cursor: pointer;
+  color: var(--primary);
 }
 
-label:hover {
-  background-color: #eef4ff;
+/* === Dark Mode Support === */
+body.dark {
+  background: var(--dark-bg);
+  color: var(--dark-text);
 }
 
-/* ✅ Progress bar styles */
-.progress-bar {
-  height: 10px;
-  background: #e0e0e0;
-  border-radius: 5px;
-  margin-top: 1rem;
-  overflow: hidden;
+body.dark .card,
+body.dark .checklist-card,
+body.dark .result-card,
+body.dark .login-card {
+  background: var(--dark-card);
+  color: var(--dark-text);
 }
 
-.progress-bar-inner {
-  height: 100%;
-  background: #0077ff;
-  width: 0%;
-  transition: width 0.4s ease-in-out;
+body.dark input,
+body.dark select {
+  background: #333;
+  color: var(--dark-text);
+  border: 1px solid #666;
 }
 
-input, select {
-  padding: 10px;
-  font-size: 16px;
-  margin-bottom: 10px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* ✅ Grid Layout for Welcome Page */
-.button-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1rem;
-  margin-top: 2rem;
-  justify-items: center;
-}
-
-.button-grid button {
-  background: #007bff;
-  border: none;
-  color: white;
-  font-size: 1rem;
-  padding: 1rem;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 140px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: background 0.3s ease;
-}
-
-.button-grid button:hover {
-  background: #005bb5;
-}
-
-.button-grid button img {
-  width: 32px;
-  height: 32px;
-  margin-bottom: 0.5rem;
-}
-
-/* ✅ Header and Subtitle */
+/* === Welcome Page Layout === */
 .welcome-container {
   text-align: center;
   padding: 2rem 1rem;
@@ -284,55 +201,109 @@ input, select {
   color: #555;
   margin-bottom: 2rem;
 }
-  .login-card {
-  max-width: 400px;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-  .login-card input {
-  width: 100%;
-  padding: 0.5rem;
-  margin-top: 0.25rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+
+/* === Grid Buttons === */
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-items: center;
 }
 
-  .login-card button {
-  width: 100%;
-  padding: 0.75rem;
-  background: #0066ff;
-  color: white;
+.button-grid button {
+  background: var(--primary);
+  font-size: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.button-grid button:hover {
+  background: var(--primary-dark);
+}
+
+.button-grid button img {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 0.5rem;
+}
+
+/* === Mic Button (Voice Login) === */
+#mic-button {
+  background: transparent;
+  color: var(--primary-dark);
+  font-size: 1.5rem;
   border: none;
-  border-radius: 4px;
-  font-weight: bold;
-}
-
-.form-group label {
-  display: block;
-  margin: 0.5rem 0 0.2rem;
-}
-  
- .form-group input {
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-}
-
- .error-message {
-  color: red;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-}
-
- .btn-primary {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 0.7rem 1rem;
-  border-radius: 5px;
   cursor: pointer;
+  margin-left: -2rem;
+  transform: translateY(-2.2rem);
+  position: relative;
+  z-index: 2;
+}
+
+#mic-button:hover {
+  color: var(--primary);
+}
+
+/* === Alt Login Buttons === */
+.alt-login {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.alt-login button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  gap: 0.5rem;
+  background: #e0e0e0;
+  color: #333;
+}
+
+.alt-login button img {
+  width: 20px;
+  height: 20px;
+}
+
+/* === Language Selector === */
+#lang-select {
+  width: auto;
+  margin-top: 1rem;
+  padding: 0.4rem;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  background: #fff;
+  border: 1px solid #ccc;
+}
+
+/* === Role Badge === */
+.role-badge {
+  display: inline-block;
+  background: var(--success);
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  animation: pop 0.3s ease-in-out;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }

@@ -2,13 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO & App Info -->
   <title>CDL Trainer</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="description" content="CDL Trainer – Your all-in-one AI-powered Commercial Driver License training app with quizzes, walkthroughs, checklists, and more." />
+  <meta name="theme-color" content="#003366" />
+
+  <!-- App Manifest & Icons -->
+  <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
+
+  <!-- iOS/Android PWA Support -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="CDL Trainer" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main id="app"></main>
+  <!-- Optional loading placeholder -->
+  <div id="loading-screen" aria-hidden="true" style="text-align:center; padding:2rem; display:none;">
+    <h2>Loading CDL Trainer...</h2>
+    <p>Please wait</p>
+  </div>
+
+  <!-- App Root -->
+  <main id="app" role="main"></main>
+
+  <!-- Voice Login Microphone Placeholder -->
+  <button id="mic-button" title="Voice Login" style="display: none;" aria-label="Voice login microphone">
+    🎙️
+  </button>
+
+  <!-- Theme Toggle Placeholder -->
+  <div id="theme-toggle-container" style="text-align: center; margin-top: 1rem;">
+    <button id="theme-toggle" aria-label="Toggle Dark Mode">🌓 Theme</button>
+  </div>
+
+  <!-- Language Selector -->
+  <div id="language-selector-container" style="text-align:center; margin-top: 1rem;">
+    <select id="language-selector" aria-label="Select language">
+      <option value="en" selected>🇺🇸 English</option>
+      <option value="es">🇪🇸 Español</option>
+      <option value="fr">🇫🇷 Français</option>
+      <option value="de">🇩🇪 Deutsch</option>
+      <option value="zh">🇨🇳 中文</option>
+    </select>
+  </div>
+
+  <!-- App Logic -->
   <script type="module" src="app.js"></script>
+
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+          .catch(err => console.warn('❌ Service Worker registration failed:', err));
+      });
+    }
+  </script>
 </body>
 </html>

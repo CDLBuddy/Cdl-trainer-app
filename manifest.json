@@ -1,0 +1,22 @@
+{
+  "name": "CDL Trainer",
+  "short_name": "CDLTrainer",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#003366",
+  "theme_color": "#005bb5",
+  "orientation": "portrait",
+  "description": "Interactive CDL training with AI coach, practice tests, walkthroughs and more.",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
