@@ -68,22 +68,48 @@ function renderPage(page) {
   }
 }
 
-// ==== Pages ====
+// ==== Updated Home Screen ====
 function renderHome(container) {
   container.innerHTML = `
-    <div class="card">
-      <h2>Welcome, ${currentUserEmail}</h2>
-      <p>CDL Training Portal</p>
-      <button data-nav="walkthrough">📋 Walkthrough</button>
-      <button data-nav="tests">📝 Practice Tests</button>
-      <button data-nav="coach">🎧 AI Coach</button>
-      <button data-nav="checklists">✅ My Checklist</button>
-      <button data-nav="results">📊 Test Results</button>
+    <div class="welcome-container">
+      <img src="logo-icon.png" alt="CDL Icon" class="header-icon" />
+      <h1>Welcome to CDL Trainer</h1>
+      <p class="subtitle">Choose your training mode to begin</p>
+
+      <div class="button-grid">
+        <button data-nav="walkthrough">
+          <img src="icons/walkthrough.png" alt="Walkthrough" />
+          Walkthrough
+        </button>
+        <button data-nav="tests">
+          <img src="icons/tests.png" alt="Tests" />
+          Practice Tests
+        </button>
+        <button data-nav="coach">
+          <img src="icons/coach.png" alt="AI Coach" />
+          AI Coach
+        </button>
+        <button data-nav="checklists">
+          <img src="icons/checklist.png" alt="Checklist" />
+          My Checklist
+        </button>
+        <button data-nav="results">
+          <img src="icons/results.png" alt="Results" />
+          Test Results
+        </button>
+        <button data-nav="login">
+          <img src="icons/login.png" alt="Login" />
+          Profile / Login
+        </button>
+      </div>
+
+      <button class="login-button" data-nav="coach">🎧 Talk to Your AI Coach</button>
     </div>
   `;
   setupNavigation();
 }
 
+// ==== Other Render Functions ====
 function renderInstructorDashboard(container) {
   container.innerHTML = `
     <div class="card">
@@ -138,7 +164,6 @@ function renderAICoach(container) {
   setupNavigation();
 }
 
-// ==== ELDT Checklist (Student View) ====
 async function renderChecklists(container) {
   if (currentUserEmail?.includes("instructor@") || currentUserEmail?.includes("admin@")) {
     return await renderInstructorChecklists(container);
@@ -152,10 +177,8 @@ async function renderChecklists(container) {
       <button data-nav="home">⬅️ Home</button>
     </div>
   `;
-
   setupNavigation();
 
-  // STEP 1: Define checklist structure
   const checklist = {
     "Pre-trip Inspection": ["Check lights", "Check tires", "Fluid levels", "Leaks under vehicle", "Cab safety equipment"],
     "Basic Vehicle Control": ["Straight line backing", "Offset backing (left/right)", "Parallel parking", "Alley dock"],
@@ -164,13 +187,11 @@ async function renderChecklists(container) {
     "Emergency Maneuvers": ["Skid recovery", "Controlled braking", "Steering control"]
   };
 
-  // STEP 2: Load saved progress
   const form = document.getElementById("eldt-form");
   let savedData = {};
   const snapshot = await getDocs(query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail)));
   snapshot.forEach(doc => savedData = doc.data().progress || {});
 
-  // STEP 3: Build UI
   Object.entries(checklist).forEach(([section, items]) => {
     const fieldset = document.createElement("fieldset");
     fieldset.innerHTML = `<legend>${section}</legend>`;
@@ -184,7 +205,6 @@ async function renderChecklists(container) {
     form.appendChild(fieldset);
   });
 
-  // STEP 4: Save to Firestore
   document.getElementById("save-eldt-btn").addEventListener("click", async e => {
     e.preventDefault();
     const inputs = form.querySelectorAll("input[type=checkbox]");
@@ -203,7 +223,6 @@ async function renderChecklists(container) {
     renderPage("checklists");
   });
 
-  // STEP 5: Summary display
   if (Object.keys(savedData).length) {
     const summary = document.createElement("div");
     summary.innerHTML = `<h3>📋 Saved Progress Summary</h3>`;
@@ -218,7 +237,6 @@ async function renderChecklists(container) {
   }
 }
 
-// ==== Instructor View of Checklists ====
 async function renderInstructorChecklists(container) {
   container.innerHTML = `
     <div class="card">
@@ -259,7 +277,6 @@ async function renderInstructorChecklists(container) {
   });
 }
 
-// ==== Save Test Results ====
 async function saveTestResult(testName, score, correct, total) {
   if (!currentUserEmail) return alert("Please log in to save results.");
   await addDoc(collection(db, "testResults"), {
@@ -272,7 +289,6 @@ async function saveTestResult(testName, score, correct, total) {
   });
 }
 
-// ==== View Test Results ====
 async function renderTestResults(container) {
   container.innerHTML = `
     <div class="card">
@@ -299,7 +315,6 @@ async function renderTestResults(container) {
   });
 }
 
-// ==== Login Fallback ====
 function renderLogin(container) {
   container.innerHTML = `
     <div class="card">

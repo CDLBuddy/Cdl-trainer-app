@@ -1,3 +1,8 @@
+<<<<<<< Updated upstream
+=======
+/* style.css — Starter styling for CDL Trainer */
+
+>>>>>>> Stashed changes
 body {
   margin: 0;
   font-family: sans-serif;
@@ -179,6 +184,7 @@ button:hover {
   background: #0077ff;
 }
 
+<<<<<<< Updated upstream
 button:disabled {
   background: #ccc;
   cursor: not-allowed;
@@ -221,3 +227,12 @@ label:hover {
   width: 0%;
   transition: width 0.4s ease-in-out;
 }
+=======
+input, select {
+  padding: 10px;
+  font-size: 16px;
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+>>>>>>> Stashed changes
