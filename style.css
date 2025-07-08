@@ -317,3 +317,417 @@ body.dark .screen-wrapper h3 {
   from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+/* === Instructor Dashboard Enhancements === */
+
+.role-badge {
+  background: var(--primary);
+  color: #fff;
+  padding: 4px 10px;
+  margin-left: 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.ai-tip-box {
+  background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+  color: #eee;
+  border-left: 4px solid var(--primary);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+  font-size: 1rem;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+.dashboard-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.dashboard-summary .card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 20px;
+  flex: 1 1 300px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease;
+}
+
+.dashboard-summary .card:hover {
+  transform: translateY(-4px);
+}
+
+.activity-feed {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+
+.activity-feed li {
+  padding: 6px 0;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.95rem;
+}
+
+.activity-feed li:last-child {
+  border-bottom: none;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  width: 0%;
+  transition: width 0.5s ease-in-out;
+}
+
+.card.actions button {
+  margin-right: 10px;
+  margin-top: 10px;
+}
+
+.card.actions {
+  text-align: center;
+}
+
+/* === Dark Mode Support === */
+
+body.dark-mode .ai-tip-box {
+  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+  color: #ddd;
+  border-color: var(--primary-dark);
+}
+
+body.dark-mode .dashboard-summary .card {
+  background: #1e1e1e;
+  color: #ccc;
+}
+
+body.dark-mode .activity-feed li {
+  border-bottom: 1px solid #444;
+}
+
+body.dark-mode .progress-bar {
+  background: #444;
+}
+
+body.dark-mode .progress-fill {
+  background: var(--primary-dark);
+}
+
+/* === Fade In Animation === */
+
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 0.7s ease forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+/* === Responsive Layout Enhancements === */
+
+@media (max-width: 768px) {
+  .dashboard-summary {
+    flex-direction: column;
+  }
+
+  .card.actions button {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+  }
+}
+
+.role-badge.admin {
+  background: #c0392b;
+}
+
+.notification-bubble {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #ff4444;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 50px;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  animation: fadeIn 0.6s ease-out;
+}
+
+body.dark-mode .notification-bubble {
+  background: #ff6666;
+}
+
+/* === Additional Enhancements for Dashboard Cards === */
+.dashboard-card {
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin: 1rem auto;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, background 0.3s ease;
+  max-width: 600px;
+}
+
+body.dark-mode .dashboard-card {
+  background: var(--dark-card);
+  color: var(--dark-text);
+}
+
+/* === Dashboard Actions Wrapper === */
+.dashboard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+/* === Notify Bubble for Checklist/Test/Profile Gaps === */
+.notify-bubble {
+  background: #ff5555;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 50%;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  line-height: 20px;
+  font-size: 0.75rem;
+  margin-left: 8px;
+}
+
+body.dark-mode .notify-bubble {
+  background: #ff7777;
+}
+
+/* === Modal Overlay === */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* === Modal Content === */
+.modal-content {
+  background: var(--card-bg);
+  color: var(--text);
+  padding: 2rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+body.dark-mode .modal-content {
+  background: var(--dark-card);
+  color: var(--dark-text);
+}
+
+/* === Smooth Modal Animations === */
+.modal-content {
+  animation: scaleIn 0.25s ease-out forwards;
+}
+
+.success-message {
+  color: var(--success);
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+  font-weight: bold;
+}
+
+.button-secondary {
+  background: #6c757d;
+}
+.button-secondary:hover {
+  background: #5a6268;
+}
+
+.button-danger {
+  background: #dc3545;
+}
+.button-danger:hover {
+  background: #c82333;
+}
+
+/* === Enhanced Login UI Styles === */
+
+.login-card {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  max-width: 420px;
+  margin: 2rem auto;
+  animation: fadeIn 0.5s ease-out;
+  color: var(--text);
+}
+
+body.dark-mode .login-card {
+  background: var(--dark-card);
+  color: var(--dark-text);
+}
+
+.login-card input,
+.login-card select {
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 100%;
+  margin: 0.5rem 0 1rem;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+body.dark-mode .login-card input,
+body.dark-mode .login-card select {
+  background: #2a2a2a;
+  border-color: #555;
+  color: var(--dark-text);
+}
+
+.password-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.password-wrapper input {
+  flex: 1;
+  padding-right: 2.5rem;
+}
+
+#toggle-password {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #888;
+}
+
+body.dark-mode #toggle-password {
+  color: #ccc;
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.login-options a {
+  color: var(--primary-dark);
+  text-decoration: none;
+}
+
+.login-options a:hover {
+  text-decoration: underline;
+}
+
+.alt-login-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.alt-login-buttons button {
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ccc;
+  padding: 0.7rem;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.alt-login-buttons button:hover {
+  background: #e0e0e0;
+}
+
+body.dark-mode .alt-login-buttons button {
+  background: #333;
+  color: #eee;
+  border-color: #555;
+}
+
+.test-account-hint {
+  font-size: 0.85rem;
+  background: #f9f9f9;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+body.dark-mode .test-account-hint {
+  background: #2e2e2e;
+  border-color: #444;
+  color: #ccc;
+}
+
+.login-extras {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.login-extras select,
+.login-extras input[type="checkbox"] {
+  font-size: 0.9rem;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.or-divider {
+  text-align: center;
+  margin: 1rem 0;
+  font-weight: bold;
+  color: #888;
+}
+
+.error-text {
+  color: var(--error);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}

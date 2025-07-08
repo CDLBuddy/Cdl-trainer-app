@@ -1,12 +1,33 @@
 // ==== Firebase Setup ====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+
+// ==== Firestore (Database) ====
 import {
-  getFirestore, collection, query, where, getDocs, addDoc
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+// ==== Authentication ====
 import {
-  getAuth, onAuthStateChanged, signOut
+  getAuth,
+  onAuthStateChanged,
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
+// ==== Firebase Config ====
 const firebaseConfig = {
   apiKey: "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
   authDomain: "cdltrainerapp.firebaseapp.com",
@@ -16,44 +37,139 @@ const firebaseConfig = {
   appId: "1:977549527480:web:e959926bb02a4cef65674d"
 };
 
+// ==== Initialize Core Services ====
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+// ==== Global User Reference ====
 let currentUserEmail = null;
 
-// ==== Auth State ==== 
-onAuthStateChanged(auth, (user) => {
+// ==== Auth State Listener ====
+onAuthStateChanged(auth, async (user) => {
   const app = document.getElementById("app");
   const logoutBtn = document.getElementById("logout-btn");
 
-  // Show loading while checking auth
-  app.innerHTML = `<div class="card fade-in"><p>🔄 Loading...</p></div>`;
+  // Show loading while checking auth state
+  app.innerHTML = `
+    <div class="card fade-in">
+      <p>🔄 Loading...</p>
+    </div>
+  `;
 
   if (user) {
     currentUserEmail = user.email;
 
-    // Show logout button if it exists
+    // Handle logout button
     if (logoutBtn) {
       logoutBtn.style.display = "inline-block";
-      // Prevent multiple event listeners
-      logoutBtn.replaceWith(logoutBtn.cloneNode(true));
-      const newLogoutBtn = document.getElementById("logout-btn");
+
+      // Remove old listeners by cloning
+      const newLogoutBtn = logoutBtn.cloneNode(true);
+      logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+
       newLogoutBtn.addEventListener("click", async () => {
-        await signOut(auth);
-        alert("Logged out.");
-        location.reload();
+        try {
+          await signOut(auth);
+          alert("You’ve been logged out.");
+          location.reload(); // reload to re-trigger auth state check
+        } catch (err) {
+          console.error("Logout failed:", err);
+          alert("Error logging out. Try again.");
+        }
       });
     }
 
-    // Render home/dashboard after auth settles
-    setTimeout(() => renderPage("home"), 300); // slight delay for smooth fade-in
+    // Allow Firebase to fully sync before rendering home
+    setTimeout(() => renderPage("home"), 250);
   } else {
     currentUserEmail = null;
 
     // Hide logout button if it exists
     if (logoutBtn) logoutBtn.style.display = "none";
 
-    // Render the welcome screen only if not logged in
+    // Show welcome screen for unauthenticated users
+    setTimeout(() => renderWelcome(), 200);
+  }
+});
+
+// ==== Auth State Listener ====
+onAuthStateChanged(auth, async (user) => {
+  const app = document.getElementById("app");
+  const logoutBtn = document.getElementById("logout-btn");
+
+  // === Animated loading screen ===
+  app.innerHTML = `
+    <div class="screen-wrapper fade-in" style="text-align:center">
+      <div class="loading-spinner" style="margin: 40px auto;"></div>
+      <p>Checking your credentials...</p>
+    </div>
+  `;
+
+  if (user) {
+    currentUserEmail = user.email;
+
+    try {
+      // === 1. Check Firestore for user profile ===
+      const userRef = collection(db, "users");
+      const userQuery = query(userRef, where("email", "==", user.email));
+      const snapshot = await getDocs(userQuery);
+
+      let userData;
+      if (!snapshot.empty) {
+        userData = snapshot.docs[0].data();
+      } else {
+        // === 2. Create Firestore profile if not found ===
+        const newUser = {
+          email: user.email,
+          name: user.displayName || "CDL User",
+          role: "student",
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString()
+        };
+        await addDoc(userRef, newUser);
+        userData = newUser;
+      }
+
+      // === 3. Save role & name locally ===
+      localStorage.setItem("userRole", userData.role || "student");
+      localStorage.setItem("fullName", userData.name || "CDL User");
+
+    } catch (err) {
+      console.error("User profile error:", err);
+      app.innerHTML = `<div class="card"><p>Error loading profile.</p></div>`;
+      return;
+    }
+
+    // === 4. Setup logout button ===
+    if (logoutBtn) {
+      logoutBtn.style.display = "inline-block";
+      const freshLogout = logoutBtn.cloneNode(true);
+      logoutBtn.parentNode.replaceChild(freshLogout, logoutBtn);
+
+      freshLogout.addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+          alert("You’ve been logged out.");
+          location.reload();
+        } catch (err) {
+          console.error("Logout failed:", err);
+          alert("Logout error.");
+        }
+      });
+    }
+
+    // === 5. Role-based dashboard load ===
+    setTimeout(() => {
+      const role = localStorage.getItem("userRole");
+      if (role === "admin") renderAdminDashboard();
+      else if (role === "instructor") renderInstructorDashboard();
+      else renderStudentDashboard();
+    }, 300);
+
+  } else {
+    currentUserEmail = null;
+    if (logoutBtn) logoutBtn.style.display = "none";
     setTimeout(() => renderWelcome(), 200);
   }
 });
@@ -306,71 +422,50 @@ function renderLicenseSelector(container) {
   });
 }
 
-// ==== Other Pages ====
-function renderInstructorDashboard(container) {
-  container.innerHTML = `
-    <div class="card">
-      <h2>👨‍🏫 Instructor Dashboard</h2>
-      <p>Monitor student checklists and scores.</p>
-      <button data-nav="checklists">📋 View All Checklists</button>
-      <button data-nav="results">📊 View All Results</button>
-    </div>
-  `;
-  setupNavigation();
-}
-
+// === Dashboards === //
 async function renderDashboard() {
   const app = document.getElementById("app");
   app.innerHTML = `<div class="dashboard-card slide-in-up fade-in">Loading your dashboard...</div>`;
   const container = document.querySelector(".dashboard-card");
-  ...
 
-  const container = document.querySelector(".dashboard-card");
+  const currentUser = auth.currentUser;
+  const currentUserEmail = currentUser?.email || "unknown";
+  const name = currentUserEmail.split("@")[0];
+  const roleBadge = getRoleBadge(currentUserEmail);
+  const aiTip = await getAITipOfTheDay();
+
+  // Dark mode after 6pm
+  const now = new Date();
+  document.body.classList.toggle("dark-mode", now.getHours() >= 18);
+
+  // Fetch Profile Data
   let license = "Not selected", experience = "Unknown", streak = 0;
   let testData = null, checklistPct = 0, checklistStatus = "✅";
 
-  // 👤 Greeting & Role
-  const name = currentUserEmail?.split("@")[0];
-  const roleBadge = getRoleBadge(currentUserEmail);
-
-  // 🧠 AI Tip
-  const tips = [
-    "Review your ELDT checklist daily.",
-    "Use flashcards to stay sharp!",
-    "Ask the AI Coach about Class A vs B.",
-    "Take timed quizzes to simulate the real test.",
-    "Complete your checklist for certification."
-  ];
-  const aiTip = tips[Math.floor(Math.random() * tips.length)];
-
-  // 📊 Checklist Progress
+  // 🔍 Checklist Progress
   const eldtSnap = await getDocs(query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail)));
   let total = 0, done = 0;
   eldtSnap.forEach(doc => {
     const prog = doc.data().progress;
-    Object.values(prog).forEach(sec => {
-      Object.values(sec).forEach(val => {
-        total++; if (val) done++;
-      });
-    });
+    Object.values(prog).forEach(sec => Object.values(sec).forEach(val => { total++; if (val) done++; }));
   });
-  checklistPct = total ? Math.round((done/total)*100) : 0;
+  checklistPct = total ? Math.round((done / total) * 100) : 0;
   if (checklistPct < 100) checklistStatus = "❌";
 
-  // 📘 Last Test Score
+  // 🧪 Last Test Score
   const testSnap = await getDocs(query(collection(db, "testResults"), where("studentId", "==", currentUserEmail)));
   testSnap.forEach(doc => {
     const d = doc.data();
     if (!testData || d.timestamp.toDate() > testData.timestamp.toDate()) testData = d;
   });
 
-  // 🧾 Profile Summary
+  // 👤 Profile Summary
   const licenseSnap = await getDocs(query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail)));
   licenseSnap.forEach(doc => license = doc.data().licenseType || license);
   const expSnap = await getDocs(query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail)));
   expSnap.forEach(doc => experience = doc.data().experience || experience);
 
-  // 🔥 Study Streak (via localStorage)
+  // 🔥 Study Streak via localStorage
   const today = new Date().toDateString();
   let studyLog = JSON.parse(localStorage.getItem("studyLog") || "[]");
   if (!studyLog.includes(today)) {
@@ -380,11 +475,11 @@ async function renderDashboard() {
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 6);
   streak = studyLog.filter(date => new Date(date) >= cutoff).length;
 
-  // 🧭 Quick Actions
+  // Actions
   const showChecklistBtn = checklistPct < 100;
   const showTestBtn = !testData;
 
-  // 🧱 Build UI
+  // Render UI
   container.innerHTML = `
     <h1>Welcome back, ${name}!</h1>
     ${roleBadge}
@@ -424,7 +519,7 @@ async function renderDashboard() {
       <div class="dashboard-card">
         <h3>🔥 Study Streak</h3>
         <p>${streak} days active this week</p>
-        <button data-nav="home">Go to Home</button>
+        <button onclick="openStudentHelpForm()">Ask the AI Coach</button>
       </div>
     </div>
 
@@ -436,6 +531,431 @@ async function renderDashboard() {
   `;
 
   setupNavigation();
+}
+
+async function renderInstructorDashboard() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const name = user.displayName || "Instructor";
+  const aiTip = await getAITipOfTheDay();
+  const now = new Date();
+  const isDarkMode = now.getHours() >= 18;
+
+  document.body.classList.toggle("dark-mode", isDarkMode);
+
+  const studentsRef = collection(db, "users");
+  const q = query(studentsRef, where("role", "==", "student"), where("assignedInstructor", "==", user.uid));
+  const querySnapshot = await getDocs(q);
+
+  let studentCards = "";
+  let totalProgress = 0;
+  let totalStudents = 0;
+  let activityFeed = [];
+
+  for (const doc of querySnapshot.docs) {
+    const student = doc.data();
+    const progress = student.checklistProgress || 0;
+    const lastActive = student.lastActive || "--";
+    const score = student.lastTestScore || "--";
+    totalProgress += progress;
+    totalStudents++;
+
+    studentCards += `
+      <div class="card fade-in">
+        <h3>${student.displayName || "Unnamed Student"}</h3>
+        <p>Email: ${student.email}</p>
+        <p>Progress: ${progress}%</p>
+        <p>Last Active: ${lastActive}</p>
+        <p>Last Score: ${score}</p>
+        <button class="btn btn-primary" onclick="viewStudentProfile('${doc.id}')">View Profile</button>
+        <button class="btn btn-secondary" onclick="assignChecklist('${doc.id}')">Assign Checklist</button>
+        <button class="btn btn-secondary" onclick="messageStudent('${doc.id}', '${student.displayName || "Student"}')">Message</button>
+      </div>
+    `;
+
+    if (student.activityLog) {
+      activityFeed.push(...student.activityLog.map(a => ({
+        name: student.displayName || "Student",
+        message: a,
+        timestamp: student.lastActive
+      })));
+    }
+  }
+
+  const avgProgress = totalStudents ? Math.round(totalProgress / totalStudents) : 0;
+  activityFeed.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const recentActivity = activityFeed.slice(0, 5).map(entry => `
+    <li><strong>${entry.name}</strong>: ${entry.message} (${entry.timestamp || "recently"})</li>
+  `).join("");
+
+  app.innerHTML = `
+    <div class="dashboard fade-in">
+      <h2 class="fade-in">👋 Welcome, <span class="name">${name}</span> <span class="role-badge">Instructor</span></h2>
+      <div class="ai-tip-box fade-in">💡 ${aiTip}</div>
+
+      <div class="dashboard-summary fade-in">
+        <div class="card">
+          <h3>📋 Checklist Overview</h3>
+          <p>Average Student Progress: <strong>${avgProgress}%</strong></p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${avgProgress}%;"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🧑‍🎓 Your Students (${totalStudents})</h3>
+          ${studentCards || "<p>No students assigned yet.</p>"}
+        </div>
+
+        <div class="card">
+          <h3>📊 Recent Activity</h3>
+          <ul class="activity-feed">${recentActivity || "<li>No recent activity</li>"}</ul>
+        </div>
+
+        <div class="card actions">
+          <h3>🛠️ Quick Actions</h3>
+          <button class="btn btn-secondary" onclick="renderAddStudent()">Add New Student</button>
+          <button class="btn btn-secondary" onclick="sendMessageToStudents()">Send Message</button>
+          <button class="btn btn-secondary" onclick="viewELDTProgress()">View ELDT Progress</button>
+          <button class="btn btn-secondary" onclick="viewStudentQuestions()">View Questions</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function renderAdminDashboard() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const name = user.displayName || "Admin";
+  const aiTip = await getAITipOfTheDay();
+  const now = new Date();
+  document.body.classList.toggle("dark-mode", now.getHours() >= 18);
+
+  const usersRef = collection(db, "users");
+  const querySnapshot = await getDocs(usersRef);
+
+  let userCards = "", unverifiedCount = 0;
+
+  querySnapshot.forEach(doc => {
+    const u = doc.data();
+    const role = u.role || "unknown";
+    const verified = u.verified || false;
+    if (!verified) unverifiedCount++;
+
+    userCards += `
+      <div class="card fade-in">
+        <h3>${u.displayName || "Unnamed"} <span class="role-badge">${role}</span></h3>
+        <p>Email: ${u.email}</p>
+        <p>Status: ${verified ? "✅ Verified" : "⚠️ Unverified"}</p>
+        <button class="btn btn-secondary" onclick="editUser('${doc.id}')">Manage</button>
+      </div>
+    `;
+  });
+
+  app.innerHTML = `
+    <div class="dashboard fade-in">
+      <h2 class="fade-in">👋 Welcome, <span class="name">${name}</span> <span class="role-badge admin">Admin</span></h2>
+      <div class="ai-tip-box fade-in">💡 ${aiTip}</div>
+
+      <div class="dashboard-summary fade-in">
+        <div class="card">
+          <h3>👥 All Users (${querySnapshot.size})</h3>
+          ${userCards}
+        </div>
+
+        <div class="card">
+          <h3>📋 Global Checklist Management</h3>
+          <p>Manage the structure of checklist sections and ELDT modules.</p>
+          <button class="btn btn-primary" onclick="editChecklist()">Edit Checklist</button>
+        </div>
+
+        <div class="card">
+          <h3>🧪 Test Bank</h3>
+          <p>Edit or add test questions available to all students.</p>
+          <button class="btn btn-primary" onclick="manageTestBank()">Manage Tests</button>
+        </div>
+
+        <div class="card">
+          <h3>🕵️ System Activity Log</h3>
+          <p>View recent activity by users and system events.</p>
+          <button class="btn btn-primary" onclick="viewSystemLogs()">View Logs</button>
+        </div>
+
+        <div class="card actions">
+          <h3>🛠️ Quick Actions</h3>
+          <button class="btn btn-secondary" onclick="addNewUser()">Add User</button>
+          <button class="btn btn-secondary" onclick="addTest()">Add New Test</button>
+          <button class="btn btn-secondary" onclick="sendAdminBroadcast()">Send Message</button>
+        </div>
+      </div>
+
+      ${unverifiedCount > 0 ? `<div class="notification-bubble">🔔 ${unverifiedCount} unverified user(s)</div>` : ""}
+    </div>
+  `;
+}
+
+function renderAddStudent() {
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Add Student</h3>
+        <input type="text" id="studentName" placeholder="Student Name" />
+        <input type="email" id="studentEmail" placeholder="Email" />
+        <button onclick="submitNewStudent()">Add</button>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function submitNewStudent() {
+  const name = document.getElementById("studentName").value;
+  const email = document.getElementById("studentEmail").value;
+  const instructorId = auth.currentUser.uid;
+
+  if (!email) return alert("Email is required.");
+
+  await addDoc(collection(db, "users"), {
+    displayName: name,
+    email,
+    role: "student",
+    assignedInstructor: instructorId,
+    checklistProgress: 0,
+    createdAt: new Date().toISOString()
+  });
+
+  closeModal();
+  renderInstructorDashboard();
+}
+
+async function sendMessageToStudents() {
+  const msg = prompt("Enter message for all your students:");
+  if (!msg) return;
+
+  const instructorId = auth.currentUser.uid;
+  const q = query(collection(db, "users"), where("role", "==", "student"), where("assignedInstructor", "==", instructorId));
+  const snap = await getDocs(q);
+
+  for (const doc of snap.docs) {
+    const studentId = doc.id;
+    await addDoc(collection(db, "users", studentId, "messages"), {
+      sender: auth.currentUser.displayName || "Instructor",
+      message: msg,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  alert("Message sent to all students.");
+}
+
+async function viewELDTProgress() {
+  const instructorId = auth.currentUser.uid;
+  const q = query(collection(db, "users"), where("role", "==", "student"), where("assignedInstructor", "==", instructorId));
+  const snap = await getDocs(q);
+
+  let html = "<h3>ELDT Progress</h3><ul>";
+  for (const doc of snap.docs) {
+    const student = doc.data();
+    const progress = student.checklistProgress || 0;
+    html += `<li>${student.displayName || "Student"}: ${progress}%</li>`;
+  }
+  html += "</ul><button onclick='closeModal()'>Close</button>";
+
+  showModal(`<div class="modal-content">${html}</div>`);
+}
+
+async function editUser(userId) {
+  const docRef = doc(db, "users", userId);
+  const docSnap = await getDoc(docRef);
+  if (!docSnap.exists()) return alert("User not found.");
+
+  const user = docSnap.data();
+  const currentRole = user.role || "student";
+  const verified = user.verified ? "checked" : "";
+
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Edit User</h3>
+        <label>Role:
+          <select id="roleSelect">
+            <option value="student" ${currentRole === "student" ? "selected" : ""}>Student</option>
+            <option value="instructor" ${currentRole === "instructor" ? "selected" : ""}>Instructor</option>
+            <option value="admin" ${currentRole === "admin" ? "selected" : ""}>Admin</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="verifyCheck" ${verified}> Verified</label>
+        <button onclick="saveUserEdits('${userId}')">Save</button>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function saveUserEdits(userId) {
+  const role = document.getElementById("roleSelect").value;
+  const verified = document.getElementById("verifyCheck").checked;
+
+  await updateDoc(doc(db, "users", userId), { role, verified });
+  closeModal();
+  renderAdminDashboard();
+}
+
+function editChecklist() {
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Edit Global Checklist</h3>
+        <p>This will open a dedicated editor page for checklists.</p>
+        <button onclick="window.location.href='checklist-editor.html'">Go to Editor</button>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function manageTestBank() {
+  const testsRef = collection(db, "tests");
+  const snapshot = await getDocs(testsRef);
+  let testList = "";
+
+  snapshot.forEach(doc => {
+    const test = doc.data();
+    testList += `<li>${test.title || "Untitled"} <button onclick="editTest('${doc.id}')">Edit</button></li>`;
+  });
+
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Test Bank</h3>
+        <ul>${testList}</ul>
+        <button onclick="addTest()">+ Add New Test</button>
+        <button onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+function editTest(testId) {
+  alert("Test Editor for test ID: " + testId); // You can replace this with a form-based editor
+}
+
+async function viewSystemLogs() {
+  const logsRef = collection(db, "logs");
+  const q = query(logsRef, orderBy("timestamp", "desc"), limit(10));
+  const snapshot = await getDocs(q);
+
+  let logList = "";
+  snapshot.forEach(doc => {
+    const log = doc.data();
+    logList += `<li>${log.message} <small>${log.timestamp}</small></li>`;
+  });
+
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>System Activity Logs</h3>
+        <ul>${logList}</ul>
+        <button onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+function addNewUser() {
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Add New User</h3>
+        <input type="text" id="newUserName" placeholder="Full Name" />
+        <input type="email" id="newUserEmail" placeholder="Email" />
+        <select id="newUserRole">
+          <option value="student">Student</option>
+          <option value="instructor">Instructor</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button onclick="createUser()">Create</button>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function createUser() {
+  const name = document.getElementById("newUserName").value;
+  const email = document.getElementById("newUserEmail").value;
+  const role = document.getElementById("newUserRole").value;
+
+  if (!email) return alert("Email required.");
+  await addDoc(collection(db, "users"), {
+    displayName: name,
+    email,
+    role,
+    verified: false,
+    createdAt: new Date().toISOString()
+  });
+
+  closeModal();
+  renderAdminDashboard();
+}
+
+function addTest() {
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Add New Test</h3>
+        <input type="text" id="newTestTitle" placeholder="Test Title" />
+        <button onclick="createTest()">Create</button>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function createTest() {
+  const title = document.getElementById("newTestTitle").value;
+  if (!title) return alert("Title required.");
+  await addDoc(collection(db, "tests"), { title, questions: [], createdAt: new Date().toISOString() });
+  closeModal();
+  renderAdminDashboard();
+}
+
+function sendAdminBroadcast() {
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Broadcast Message</h3>
+        <textarea id="broadcastMessage" placeholder="Message to all users"></textarea>
+        <button onclick="sendBroadcast()">Send</button>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function sendBroadcast() {
+  const msg = document.getElementById("broadcastMessage").value;
+  if (!msg) return alert("Message required.");
+
+  await addDoc(collection(db, "notifications"), {
+    message: msg,
+    timestamp: new Date().toISOString(),
+    target: "all"
+  });
+
+  closeModal();
+  alert("Message sent to all users.");
 }
 
 function renderWalkthrough(container) {
@@ -502,7 +1022,7 @@ function renderLogin(container) {
       <h2>🔐 Login</h2>
       <form id="login-form">
         <label for="email">Email:</label><br/>
-        <input type="email" id="email" placeholder="Enter email" required autofocus/><br/>
+        <input type="email" id="email" placeholder="Enter email" required autofocus /><br/>
 
         <label for="password">Password:</label><br/>
         <div class="password-wrapper">
@@ -520,8 +1040,8 @@ function renderLogin(container) {
         <p class="or-divider">OR</p>
         <div class="alt-login-buttons">
           <button type="button" id="google-login">🔵 Sign in with Google</button>
-          <button type="button" id="apple-login"> Sign in with Apple (Coming Soon)</button>
-          <button type="button" id="sms-login">📱 Sign in via SMS (Coming Soon)</button>
+          <button type="button" id="apple-login"> Apple Login (Coming Soon)</button>
+          <button type="button" id="sms-login">📱 SMS Login (Coming Soon)</button>
         </div>
 
         <p id="login-error" class="error-text" style="display:none;"></p>
@@ -556,7 +1076,7 @@ function renderLogin(container) {
   const errorMsg = document.getElementById("login-error");
   const togglePassword = document.getElementById("toggle-password");
 
-  // Show/hide password
+  // Password toggle
   togglePassword.addEventListener("click", () => {
     const type = passwordInput.type === "password" ? "text" : "password";
     passwordInput.type = type;
@@ -568,35 +1088,45 @@ function renderLogin(container) {
     document.body.classList.toggle("dark-mode", e.target.checked);
   });
 
-  // Enter key support
-  loginForm.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") e.preventDefault();
+  // Language UI switch (placeholder)
+  document.getElementById("language-select").addEventListener("change", (e) => {
+    alert(`Language switched to ${e.target.options[e.target.selectedIndex].text} (UI translation coming soon)`);
   });
 
-  // Login submit
+  // Submit handler
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = emailInput.value.trim();
     const password = passwordInput.value;
-
     if (!email || !password) {
-      errorMsg.textContent = "Email and password required.";
+      errorMsg.textContent = "Please enter both email and password.";
       errorMsg.style.display = "block";
       return;
     }
 
-    try {
-      document.getElementById("login-submit").disabled = true;
-      errorMsg.style.display = "none";
+    errorMsg.style.display = "none";
+    document.getElementById("login-submit").disabled = true;
 
-      const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js");
+    try {
+      const { signInWithEmailAndPassword, createUserWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js");
+
+      // Try login
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
       if (err.code === "auth/user-not-found") {
         try {
+          const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js");
           const { createUserWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js");
-          await createUserWithEmailAndPassword(auth, email, password);
-          alert("🎉 Account created and logged in!");
+
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          await addDoc(collection(db, "users"), {
+            email,
+            name: "CDL User",
+            role: "student",
+            createdAt: new Date().toISOString(),
+            lastLogin: new Date().toISOString()
+          });
+          alert("🎉 Account created and signed in!");
         } catch (signupErr) {
           errorMsg.textContent = signupErr.message;
           errorMsg.style.display = "block";
@@ -610,7 +1140,7 @@ function renderLogin(container) {
     }
   });
 
-  // Reset password (basic)
+  // Reset password
   document.getElementById("reset-password").addEventListener("click", async (e) => {
     e.preventDefault();
     const email = emailInput.value.trim();
@@ -624,28 +1154,24 @@ function renderLogin(container) {
     }
   });
 
-  // Language switch (UI only)
-  document.getElementById("language-select").addEventListener("change", (e) => {
-    alert(`Language switched to ${e.target.options[e.target.selectedIndex].text} (UI translation coming soon)`);
+  // Google Login
+  document.getElementById("google-login").addEventListener("click", async () => {
+    try {
+      const { GoogleAuthProvider, signInWithPopup } = await import("https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js");
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      alert("Google Sign-In failed: " + err.message);
+    }
   });
 
-  // Scaffold for Google Login
-  document.getElementById("google-login").addEventListener("click", () => {
-    alert("🔵 Google Sign-In coming soon!");
-  });
-
+  // Coming soon placeholders
   document.getElementById("apple-login").addEventListener("click", () => {
-    alert(" Apple Sign-In coming soon!");
+    alert(" Apple Login coming soon.");
   });
-
   document.getElementById("sms-login").addEventListener("click", () => {
-    alert("📱 SMS Sign-In coming soon!");
+    alert("📱 SMS Login coming soon.");
   });
-
-  // Greet test users
-  if (emailInput.value === "student1@sample.com") {
-    console.log("👋 Hello test user!");
-  }
 }
 
 // ==== Checklists ====
