@@ -560,7 +560,7 @@ function renderLogin(container) {
   togglePassword.addEventListener("click", () => {
     const type = passwordInput.type === "password" ? "text" : "password";
     passwordInput.type = type;
-    togglePassword.textContent = type === "password" ? "👁️" : "🙈";
+    togglePassword.textContent = type === "password" ? "🙈" : "👁️";
   });
 
   // Dark mode toggle
