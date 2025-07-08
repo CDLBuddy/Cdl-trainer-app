@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
 
-  <!-- iOS/Android PWA Support -->
+  <!-- PWA Meta -->
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -24,29 +24,27 @@
   <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+
+<body role="application">
   <!-- Loading Screen -->
-  <div id="loading-screen" aria-hidden="true" style="text-align:center; padding:2rem; display:none;">
+  <div id="loading-screen" aria-hidden="false" aria-live="polite" style="text-align:center; padding:2rem; display:none;">
+    <div class="loading-spinner" style="margin: 20px auto;"></div>
     <h2>Loading CDL Trainer...</h2>
-    <p>Please wait</p>
+    <p>Please wait while we prepare your dashboard.</p>
   </div>
 
   <!-- App Root -->
   <main id="app" role="main" tabindex="-1"></main>
 
-  <!-- Voice Login Button -->
-  <div id="mic-container" style="text-align: center; margin-top: 1rem;">
+  <!-- Voice & Theme Toggles -->
+  <aside style="text-align: center; margin-top: 1rem;">
     <button id="mic-button" aria-label="Voice Login" title="Voice Login" style="display: none;">
       🎙️
     </button>
-  </div>
-
-  <!-- Theme Toggle -->
-  <div id="theme-toggle-container" style="text-align: center; margin-top: 1rem;">
-    <button id="theme-toggle" aria-label="Toggle Dark Mode">
+    <button id="theme-toggle" aria-label="Toggle Dark Mode" title="Toggle Theme">
       🌓 Theme
     </button>
-  </div>
+  </aside>
 
   <!-- Language Selector -->
   <div id="language-selector-container" style="text-align:center; margin: 1rem 0;">
@@ -63,7 +61,14 @@
   <!-- Scripts -->
   <script type="module" src="app.js"></script>
 
-  <!-- Service Worker Registration -->
+  <!-- Noscript fallback -->
+  <noscript>
+    <div style="padding:2rem; text-align:center;">
+      <strong>⚠️ This app requires JavaScript to function. Please enable JavaScript in your browser settings.</strong>
+    </div>
+  </noscript>
+
+  <!-- Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

@@ -267,7 +267,7 @@ async function handleNavigation(targetPage, pushToHistory = false) {
   }, 10);
 }
 // ==== Home Screen ====
-async function renderHome(container slide-in-up fade-in) {
+async function renderHome(container) {
   container.innerHTML = `
     <div class="welcome-container fade-in">
       <img src="logo-icon.png" alt="CDL Icon" class="header-icon" />
