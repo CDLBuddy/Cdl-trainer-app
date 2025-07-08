@@ -45,11 +45,6 @@ const auth = getAuth(app);
 // ==== Global User Reference ====
 let currentUserEmail = null;
 
-// ==== Auth State Listener ====
-onAuthStateChanged(auth, async (user) => {
-  const app = document.getElementById("app");
-  const logoutBtn = document.getElementById("logout-btn");
-
   // Show loading while checking auth state
   app.innerHTML = `
     <div class="card fade-in">
