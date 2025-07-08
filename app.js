@@ -37,7 +37,7 @@ onAuthStateChanged(auth, (user) => {
   } else {
     currentUserEmail = null;
     if (logoutBtn) logoutBtn.style.display = "none";
-    renderLogin(document.getElementById("app"));
+    renderWelcome();
   }
 });
 
