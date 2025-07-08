@@ -45,49 +45,6 @@ const auth = getAuth(app);
 // ==== Global User Reference ====
 let currentUserEmail = null;
 
-  // Show loading while checking auth state
-  app.innerHTML = `
-    <div class="card fade-in">
-      <p>🔄 Loading...</p>
-    </div>
-  `;
-
-  if (user) {
-    currentUserEmail = user.email;
-
-    // Handle logout button
-    if (logoutBtn) {
-      logoutBtn.style.display = "inline-block";
-
-      // Remove old listeners by cloning
-      const newLogoutBtn = logoutBtn.cloneNode(true);
-      logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
-
-      newLogoutBtn.addEventListener("click", async () => {
-        try {
-          await signOut(auth);
-          alert("You’ve been logged out.");
-          location.reload(); // reload to re-trigger auth state check
-        } catch (err) {
-          console.error("Logout failed:", err);
-          alert("Error logging out. Try again.");
-        }
-      });
-    }
-
-    // Allow Firebase to fully sync before rendering home
-    setTimeout(() => renderPage("home"), 250);
-  } else {
-    currentUserEmail = null;
-
-    // Hide logout button if it exists
-    if (logoutBtn) logoutBtn.style.display = "none";
-
-    // Show welcome screen for unauthenticated users
-    setTimeout(() => renderWelcome(), 200);
-  }
-});
-
 // ==== Auth State Listener ====
 onAuthStateChanged(auth, async (user) => {
   const app = document.getElementById("app");
