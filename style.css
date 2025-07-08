@@ -621,3 +621,79 @@ body.dark .preview-card {
   color: #cce6ff;
   border-left-color: #3399ff;
 }
+
+.dashboard-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* === Dashboard Styles (Appended) === */
+.dashboard-card {
+  background: #111a2e;
+  border-radius: 12px;
+  padding: 1rem;
+  color: #cce6ff;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.dashboard-card h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  color: #66b2ff;
+}
+
+.dashboard-card button {
+  margin-top: 0.5rem;
+  background: #0055cc;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.dashboard-card button:hover {
+  background: #004299;
+}
+
+.dashboard-actions {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.ai-tip {
+  font-style: italic;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: #99ddff;
+}
+
+.progress-track {
+  background: #333;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 10px;
+}
+
+.progress-fill {
+  height: 10px;
+  background: #66ccff;
+  transition: width 0.5s ease;
+}
+
+.notify-bubble {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.8rem;
+}

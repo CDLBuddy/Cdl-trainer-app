@@ -63,11 +63,13 @@ function renderPage(page) {
     case "quiz-combo": loadQuizAndStart("combination_vehicle", "Combination Vehicle"); break;
     case "flashcards": renderFlashcards(app); break;
     case "experience": renderExperience(app); break;
-    case "license": renderLicenseSelector(app); break;
-    default:
+    case "dashboard": renderDashboard(app); break;    
+    case "license":
+  renderLicenseSelector(app); break;
+       default:
       currentUserEmail?.includes("admin@") || currentUserEmail?.includes("instructor@")
         ? renderInstructorDashboard(app)
-        : renderHome(app);
+        : renderDashboard();
       break;
   }
 }
@@ -241,6 +243,123 @@ function renderInstructorDashboard(container) {
   setupNavigation();
 }
 
+async function renderDashboard() {
+  const app = document.getElementById("app");
+  app.innerHTML = `<div class="dashboard-card fade-in">Loading your dashboard...</div>`;
+
+  const container = document.querySelector(".dashboard-card");
+  let license = "Not selected", experience = "Unknown", streak = 0;
+  let testData = null, checklistPct = 0, checklistStatus = "✅";
+
+  // 👤 Greeting & Role
+  const name = currentUserEmail?.split("@")[0];
+  const roleBadge = getRoleBadge(currentUserEmail);
+
+  // 🧠 AI Tip
+  const tips = [
+    "Review your ELDT checklist daily.",
+    "Use flashcards to stay sharp!",
+    "Ask the AI Coach about Class A vs B.",
+    "Take timed quizzes to simulate the real test.",
+    "Complete your checklist for certification."
+  ];
+  const aiTip = tips[Math.floor(Math.random() * tips.length)];
+
+  // 📊 Checklist Progress
+  const eldtSnap = await getDocs(query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail)));
+  let total = 0, done = 0;
+  eldtSnap.forEach(doc => {
+    const prog = doc.data().progress;
+    Object.values(prog).forEach(sec => {
+      Object.values(sec).forEach(val => {
+        total++; if (val) done++;
+      });
+    });
+  });
+  checklistPct = total ? Math.round((done/total)*100) : 0;
+  if (checklistPct < 100) checklistStatus = "❌";
+
+  // 📘 Last Test Score
+  const testSnap = await getDocs(query(collection(db, "testResults"), where("studentId", "==", currentUserEmail)));
+  testSnap.forEach(doc => {
+    const d = doc.data();
+    if (!testData || d.timestamp.toDate() > testData.timestamp.toDate()) testData = d;
+  });
+
+  // 🧾 Profile Summary
+  const licenseSnap = await getDocs(query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail)));
+  licenseSnap.forEach(doc => license = doc.data().licenseType || license);
+  const expSnap = await getDocs(query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail)));
+  expSnap.forEach(doc => experience = doc.data().experience || experience);
+
+  // 🔥 Study Streak (via localStorage)
+  const today = new Date().toDateString();
+  let studyLog = JSON.parse(localStorage.getItem("studyLog") || "[]");
+  if (!studyLog.includes(today)) {
+    studyLog.push(today);
+    localStorage.setItem("studyLog", JSON.stringify(studyLog));
+  }
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 6);
+  streak = studyLog.filter(date => new Date(date) >= cutoff).length;
+
+  // 🧭 Quick Actions
+  const showChecklistBtn = checklistPct < 100;
+  const showTestBtn = !testData;
+
+  // 🧱 Build UI
+  container.innerHTML = `
+    <h1>Welcome back, ${name}!</h1>
+    ${roleBadge}
+    <p class="ai-tip">💡 ${aiTip}</p>
+
+    <div class="dashboard-summary">
+      <div class="dashboard-card">
+        <h3>📋 Checklist Progress</h3>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${checklistPct}%;"></div>
+        </div>
+        <p>${checklistPct}% complete</p>
+        ${checklistPct < 100 ? `<span class="notify-bubble">!</span>` : ""}
+        <button data-nav="checklists">View Checklist</button>
+      </div>
+
+      <div class="dashboard-card">
+        <h3>🧪 Latest Test</h3>
+        ${testData ? `
+          <p><strong>${testData.testName}</strong></p>
+          <p>${testData.correct}/${testData.total} correct</p>
+          <p><small>${new Date(testData.timestamp.toDate()).toLocaleDateString()}</small></p>
+        ` : `<p>No tests taken yet.</p>`}
+        ${!testData ? `<span class="notify-bubble">!</span>` : ""}
+        <button data-nav="results">View All Results</button>
+      </div>
+
+      <div class="dashboard-card">
+        <h3>🧾 Your Profile</h3>
+        <p>Email: ${currentUserEmail}</p>
+        <p>License: ${license}</p>
+        <p>Experience: ${experience}</p>
+        ${license === "Not selected" ? `<span class="notify-bubble">!</span>` : ""}
+        <button data-nav="license">Update Info</button>
+      </div>
+
+      <div class="dashboard-card">
+        <h3>🔥 Study Streak</h3>
+        <p>${streak} days active this week</p>
+        <button data-nav="home">Go to Home</button>
+      </div>
+    </div>
+
+    <div class="dashboard-actions">
+      ${showChecklistBtn ? `<button data-nav="checklists">Resume Checklist</button>` : ""}
+      ${showTestBtn ? `<button data-nav="tests">Start First Test</button>` : ""}
+      <button data-nav="coach">🎧 Talk to AI Coach</button>
+    </div>
+  `;
+
+  setupNavigation();
+}
+
 function renderWalkthrough(container) {
   container.innerHTML = `
     <div class="card">
@@ -278,6 +397,22 @@ function renderAICoach(container) {
       <p>Ask questions and get CDL prep help.</p>
       <em>Coming soon</em>
       <button data-nav="home">⬅️ Home</button>
+    </div>
+  `;
+  setupNavigation();
+}
+
+function renderWelcome() {
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <div class="welcome-screen fade-in">
+      <img src="logo-icon.png" alt="CDL Icon" class="header-icon" />
+      <h1>Welcome to CDL Trainer</h1>
+      <p class="subtitle">Your personalized training coach for CDL success</p>
+      <div class="button-group">
+        <button data-nav="login" class="primary-btn">🚀 Get Started</button>
+        <button data-nav="license" class="secondary-btn">🔍 Explore License Paths</button>
+      </div>
     </div>
   `;
   setupNavigation();
