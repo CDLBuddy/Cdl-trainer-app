@@ -1,3 +1,7 @@
+// === Upgraded Version (20250708-2304) ===
+// Security enhancements, abuse protection, dark mode sync, language persistence, and error handling improvements
+// Do not modify unless updating global protections or navigation core
+
 // ==== Firebase Setup ====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 
@@ -41,6 +45,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+
+// ==== Toast Notification ====
+function showToast(message, duration = 3000) {
+  const toast = document.createElement("div");
+  toast.className = "toast-message";
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    setTimeout(() => toast.remove(), 600);
+  }, duration);
+}
 
 // ==== Global User Reference ====
 let currentUserEmail = null;
