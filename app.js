@@ -73,27 +73,88 @@ function renderPage(page) {
 }
 
 // ==== Home Screen ====
-function renderHome(container) {
+async function renderHome(container) {
   container.innerHTML = `
-    <div class="welcome-container">
+    <div class="welcome-container fade-in">
       <img src="logo-icon.png" alt="CDL Icon" class="header-icon" />
-      <h1>Welcome to CDL Trainer</h1>
+      <h1>Welcome back${currentUserEmail ? `, ${currentUserEmail.split("@")[0]}` : ""}!</h1>
+      ${getRoleBadge(currentUserEmail)}
       <p class="subtitle">Choose your training mode to begin</p>
+
+      <div id="checklist-progress" class="progress-bar"></div>
+      <div id="latest-score" class="result-card preview-card"></div>
+      <div id="ai-tip" class="ai-tip-box"></div>
+
       <div class="button-grid">
         <button data-nav="walkthrough"><img src="icons/walkthrough.png" /> Walkthrough</button>
         <button data-nav="tests"><img src="icons/tests.png" /> Practice Tests</button>
         <button data-nav="coach"><img src="icons/coach.png" /> AI Coach</button>
-        <button data-nav="checklists"><img src="icons/checklist.png" /> My Checklist</button>
+        <button data-nav="checklists"><img src="icons/checklist.png" /> My Checklist <span id="checklist-alert" class="notify-bubble" style="display:none;">!</span></button>
         <button data-nav="results"><img src="icons/results.png" /> Test Results</button>
         <button data-nav="flashcards"><img src="icons/flashcards.png" /> Flashcards</button>
         <button data-nav="experience"><img src="icons/experience.png" /> Experience</button>
         <button data-nav="license"><img src="icons/license.png" /> License Path</button>
         <button data-nav="login"><img src="icons/login.png" /> Profile / Login</button>
       </div>
+
       <button class="login-button" data-nav="coach">🎧 Talk to Your AI Coach</button>
     </div>
   `;
   setupNavigation();
+
+  // 🎉 AI Tip of the Day
+  const tips = [
+    "Review your ELDT checklist daily.",
+    "Use flashcards to stay sharp!",
+    "Ask the AI Coach about Class A vs B.",
+    "Take timed quizzes to simulate the real test.",
+    "Complete your checklist for certification."
+  ];
+  document.getElementById("ai-tip").textContent = `💡 Tip: ${tips[Math.floor(Math.random() * tips.length)]}`;
+
+  // 🔄 Checklist Progress
+  if (currentUserEmail) {
+    const snap = await getDocs(query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail)));
+    let total = 0, done = 0;
+    snap.forEach(doc => {
+      const prog = doc.data().progress;
+      Object.values(prog).forEach(sec => {
+        Object.values(sec).forEach(val => {
+          total++;
+          if (val) done++;
+        });
+      });
+    });
+    const pct = total ? Math.round((done/total)*100) : 0;
+    document.getElementById("checklist-progress").innerHTML = `
+      <div class="progress-label">Checklist Progress: ${pct}%</div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    `;
+    if (pct < 100) {
+      document.getElementById("checklist-alert").style.display = "inline-block";
+    }
+  }
+
+  // 📊 Last Test Score
+  if (currentUserEmail) {
+    const snap2 = await getDocs(query(collection(db, "testResults"), where("studentId", "==", currentUserEmail)));
+    let last = null;
+    snap2.forEach(doc => {
+      const d = doc.data();
+      if (!last || d.timestamp.toDate() > last.timestamp.toDate()) last = d;
+    });
+    if (last) {
+      document.getElementById("latest-score").innerHTML = `
+        <h4>📘 Last Test: ${last.testName}</h4>
+        <p>Score: ${last.correct}/${last.total} (${Math.round((last.correct/last.total)*100)}%)</p>
+        <p><small>${new Date(last.timestamp.toDate()).toLocaleDateString()}</small></p>
+      `;
+    }
+  }
+
+  // 🌙 Auto Dark Mode after 6pm
+  const hr = new Date().getHours();
+  document.body.classList.toggle("dark", hr >= 18 || hr < 6);
 }
 
 // ==== Flashcards ====
