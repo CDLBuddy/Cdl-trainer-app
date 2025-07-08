@@ -21,61 +21,137 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 let currentUserEmail = null;
 
-// ==== Auth State ====
+// ==== Auth State ==== 
 onAuthStateChanged(auth, (user) => {
+  const app = document.getElementById("app");
   const logoutBtn = document.getElementById("logout-btn");
+
+  // Show loading while checking auth
+  app.innerHTML = `<div class="card fade-in"><p>🔄 Loading...</p></div>`;
+
   if (user) {
     currentUserEmail = user.email;
-    if (logoutBtn) logoutBtn.style.display = "inline-block";
-    setupNavigation();
-    renderPage("home");
-    logoutBtn?.addEventListener("click", async () => {
-      await signOut(auth);
-      alert("Logged out.");
-      location.reload();
-    });
+
+    // Show logout button if it exists
+    if (logoutBtn) {
+      logoutBtn.style.display = "inline-block";
+      // Prevent multiple event listeners
+      logoutBtn.replaceWith(logoutBtn.cloneNode(true));
+      const newLogoutBtn = document.getElementById("logout-btn");
+      newLogoutBtn.addEventListener("click", async () => {
+        await signOut(auth);
+        alert("Logged out.");
+        location.reload();
+      });
+    }
+
+    // Render home/dashboard after auth settles
+    setTimeout(() => renderPage("home"), 300); // slight delay for smooth fade-in
   } else {
     currentUserEmail = null;
+
+    // Hide logout button if it exists
     if (logoutBtn) logoutBtn.style.display = "none";
-    renderWelcome();
+
+    // Render the welcome screen only if not logged in
+    setTimeout(() => renderWelcome(), 200);
   }
 });
 
 // ==== Navigation ====
 function setupNavigation() {
   const navItems = document.querySelectorAll("[data-nav]");
+
+  // ⬇️ Enhance navigation buttons
   navItems.forEach(btn =>
-    btn.addEventListener("click", e => renderPage(e.target.getAttribute("data-nav")))
+    btn.addEventListener("click", async (e) => {
+      const target = e.target.closest("[data-nav]")?.getAttribute("data-nav");
+      if (!target) return;
+      await handleNavigation(target, true); // true = push to browser history
+    })
   );
-}
 
-function renderPage(page) {
-  const app = document.getElementById("app");
-  app.innerHTML = "";
-  switch (page) {
-    case "walkthrough": renderWalkthrough(app); break;
-    case "tests": renderPracticeTests(app); break;
-    case "coach": renderAICoach(app); break;
-    case "checklists": renderChecklists(app); break;
-    case "results": renderTestResults(app); break;
-    case "quiz-general": loadQuizAndStart("general_knowledge", "General Knowledge"); break;
-    case "quiz-air": loadQuizAndStart("air_brakes", "Air Brakes"); break;
-    case "quiz-combo": loadQuizAndStart("combination_vehicle", "Combination Vehicle"); break;
-    case "flashcards": renderFlashcards(app); break;
-    case "experience": renderExperience(app); break;
-    case "dashboard": renderDashboard(app); break;    
-    case "license":
-  renderLicenseSelector(app); break;
-       default:
-      currentUserEmail?.includes("admin@") || currentUserEmail?.includes("instructor@")
-        ? renderInstructorDashboard(app)
-        : renderDashboard();
-      break;
+  // 🔤 Multilingual label support
+  const lang = localStorage.getItem("language") || "en";
+  const labels = {
+    en: { coach: "AI Coach", license: "License Path", tests: "Practice Tests" },
+    es: { coach: "Entrenador AI", license: "Tipo de Licencia", tests: "Exámenes Prácticos" },
+    fr: { coach: "Coach IA", license: "Permis", tests: "Tests Pratiques" },
+    de: { coach: "KI-Coach", license: "Führerschein", tests: "Übungstests" }
+  };
+  for (const [key, label] of Object.entries(labels[lang])) {
+    const btn = document.querySelector(`[data-nav="${key}"]`);
+    if (btn?.querySelector("span")) btn.querySelector("span").textContent = label;
   }
-}
 
+  // 🔒 Smart role-aware UI filtering
+  if (currentUserEmail?.includes("instructor@") || currentUserEmail?.includes("admin@")) {
+    document.querySelector('[data-nav="license"]')?.remove();
+  }
+
+  // ⌨️ Keyboard navigation
+  document.addEventListener("keydown", async (e) => {
+    if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+    const key = e.key.toLowerCase();
+    if (key === "h") await handleNavigation("home", true);
+    if (key === "t") await handleNavigation("tests", true);
+    if (key === "c") await handleNavigation("coach", true);
+  });
+
+  // 📱 Touch swipe gestures
+  let touchStartX = 0;
+  document.addEventListener("touchstart", e => touchStartX = e.touches[0].clientX);
+  document.addEventListener("touchend", async e => {
+    const deltaX = e.changedTouches[0].clientX - touchStartX;
+    if (deltaX > 100) await handleNavigation("home", true);    // swipe right → home
+    if (deltaX < -100) await handleNavigation("tests", true);  // swipe left → tests
+  });
+
+  // 🔙 Browser back/forward support
+  window.addEventListener("popstate", (e) => {
+    const page = e.state?.page || "home";
+    handleNavigation(page, false); // don't push again
+  });
+
+  // 🧭 Load from hash on first visit
+  const hash = location.hash.replace("#", "");
+  if (hash) handleNavigation(hash, false);
+}
+async function handleNavigation(targetPage, pushToHistory = false) {
+  const app = document.getElementById("app");
+
+  // Animate fade-out before transition
+  app.classList.remove("fade-in");
+  app.classList.add("fade-out");
+  await new Promise(r => setTimeout(r, 150));
+
+  // Track page history
+  if (pushToHistory) {
+    history.pushState({ page: targetPage }, "", `#${targetPage}`);
+  }
+
+  // Smart routing for "home"
+  if (targetPage === "home") {
+    if (!currentUserEmail) {
+      renderWelcome();
+    } else if (currentUserEmail.includes("admin@") || currentUserEmail.includes("instructor@")) {
+      renderInstructorDashboard(app);
+    } else {
+      renderDashboard(app);
+    }
+  } else {
+    renderPage(targetPage);
+  }
+
+  // Animate fade-in + scroll to top
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  setTimeout(() => {
+    app.classList.remove("fade-out");
+    app.classList.add("fade-in");
+  }, 10);
+}
 // ==== Home Screen ====
-async function renderHome(container) {
+async function renderHome(container slide-in-up fade-in) {
   container.innerHTML = `
     <div class="welcome-container fade-in">
       <img src="logo-icon.png" alt="CDL Icon" class="header-icon" />
@@ -245,7 +321,9 @@ function renderInstructorDashboard(container) {
 
 async function renderDashboard() {
   const app = document.getElementById("app");
-  app.innerHTML = `<div class="dashboard-card fade-in">Loading your dashboard...</div>`;
+  app.innerHTML = `<div class="dashboard-card slide-in-up fade-in">Loading your dashboard...</div>`;
+  const container = document.querySelector(".dashboard-card");
+  ...
 
   const container = document.querySelector(".dashboard-card");
   let license = "Not selected", experience = "Unknown", streak = 0;
@@ -310,7 +388,7 @@ async function renderDashboard() {
   container.innerHTML = `
     <h1>Welcome back, ${name}!</h1>
     ${roleBadge}
-    <p class="ai-tip">💡 ${aiTip}</p>
+    <div class="ai-tip-box">💡 ${aiTip}</div>
 
     <div class="dashboard-summary">
       <div class="dashboard-card">
@@ -405,8 +483,8 @@ function renderAICoach(container) {
 function renderWelcome() {
   const app = document.getElementById("app");
   app.innerHTML = `
-    <div class="welcome-screen fade-in">
-      <img src="logo-icon.png" alt="CDL Icon" class="header-icon" />
+    <div class="welcome-screen slide-in-up fade-in">
+      <img src="logo-icon.png" alt="CDL Icon" class="header-icon scale-in" />
       <h1>Welcome to CDL Trainer</h1>
       <p class="subtitle">Your personalized training coach for CDL success</p>
       <div class="button-group">
@@ -420,7 +498,7 @@ function renderWelcome() {
 
 function renderLogin(container) {
   container.innerHTML = `
-    <div class="card login-card">
+    <div class="card login-card slide-in-up fade-in">
       <h2>🔐 Login</h2>
       <form id="login-form">
         <label for="email">Email:</label><br/>
