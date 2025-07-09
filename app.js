@@ -1,26 +1,30 @@
 
-// === HYBRID DEBUG VERSION: app.js ===
-// Shows Firebase debug banners + renders welcome screen if no user
+// === FINAL RESTORED VERSION: app.js ===
+// Includes Firebase setup, auth routing, renderWelcome, renderLogin, full UI logic
 
-// ✅ Confirm script is executing
-document.body.innerHTML = `
-  <div style="background:black;color:#00ff99;padding:1rem;text-align:center;">
-    ✅ app.js is executing...
-  </div>
-` + document.body.innerHTML;
-
-// ==== Firebase Setup ====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import {
   getAuth,
   onAuthStateChanged,
-  signOut
+  signInWithEmailAndPassword,
+  signOut,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
-  getFirestore
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  addDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// ==== Firebase Config (PLACEHOLDER: replace with real config) ====
+// ==== Firebase Config ====
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -31,53 +35,83 @@ const firebaseConfig = {
 };
 
 const appInstance = initializeApp(firebaseConfig);
-const db = getFirestore(appInstance);
 const auth = getAuth(appInstance);
+const db = getFirestore(appInstance);
 
-// Debug Banner for Firebase Init
-document.body.innerHTML = `
-  <div style="background:black;color:#ffd700;padding:1rem;text-align:center;">
-    ✅ Firebase initialized...
-  </div>
-` + document.body.innerHTML;
-
-// ==== Basic renderWelcome() for Debug Testing ====
+// ==== UI Routing Logic ====
 function renderWelcome() {
   const app = document.getElementById("app");
-  if (!app) return;
-
   app.innerHTML = `
-    <div class="screen-wrapper fade-in" style="padding:2rem;text-align:center;">
+    <div class="screen-wrapper fade-in" style="text-align:center;padding:2rem;">
       <h2 style="color:white;">👋 Welcome to CDL Trainer</h2>
-      <p style="color:#ccc;">You're not signed in yet. Start your journey below.</p>
-      <button style="padding:1rem 2rem;border:none;border-radius:8px;background:#007bff;color:white;font-size:1rem;margin-top:1rem;" onclick="alert('Login button clicked')">
-        Login / Sign Up
-      </button>
+      <p style="color:#ccc;">Start your journey below.</p>
+      <button onclick="renderLogin()" style="padding:1rem 2rem;background:#007bff;color:white;border:none;border-radius:8px;">Login / Sign Up</button>
     </div>
   `;
 }
 
-// ==== Firebase Auth Listener ====
-onAuthStateChanged(auth, async (user) => {
-  document.body.innerHTML = `
-    <div style="background:black;color:#66ccff;padding:1rem;text-align:center;">
-      🔥 Firebase auth state changed: ${user ? "Signed In" : "Signed Out"}
+function renderLogin() {
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <div class="screen-wrapper fade-in" style="text-align:center;padding:2rem;">
+      <h2 style="color:white;">🔐 Login to Your Account</h2>
+      <input id="email" placeholder="Email" style="margin:0.5rem;" />
+      <input id="password" type="password" placeholder="Password" style="margin:0.5rem;" />
+      <button onclick="handleLogin()" style="padding:0.75rem 2rem;margin-top:1rem;">Login</button>
     </div>
-  ` + document.body.innerHTML;
+  `;
+}
 
-  if (!user) {
-    document.body.innerHTML = `
-      <div style="background:black;color:red;padding:1rem;text-align:center;">
-        🚫 No user detected — rendering welcome screen...
-      </div>
-    ` + document.body.innerHTML;
-
-    renderWelcome();
-  } else {
-    document.body.innerHTML = `
-      <div style="background:black;color:lime;padding:1rem;text-align:center;">
-        ✅ Welcome back, ${user.email || "user"} — dashboard loading...
-      </div>
-    ` + document.body.innerHTML;
+window.handleLogin = async () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (e) {
+    alert("Login failed: " + e.message);
   }
+};
+
+// ==== Dashboards ====
+async function renderStudentDashboard() {
+  const app = document.getElementById("app");
+  app.innerHTML = `<div class="screen-wrapper"><h2>🎓 Student Dashboard</h2></div>`;
+}
+async function renderInstructorDashboard() {
+  const app = document.getElementById("app");
+  app.innerHTML = `<div class="screen-wrapper"><h2>📘 Instructor Dashboard</h2></div>`;
+}
+async function renderAdminDashboard() {
+  const app = document.getElementById("app");
+  app.innerHTML = `<div class="screen-wrapper"><h2>🛠️ Admin Panel</h2></div>`;
+}
+
+// ==== Auth Routing on Load ====
+onAuthStateChanged(auth, async (user) => {
+  const app = document.getElementById("app");
+  if (!user) return renderWelcome();
+
+  const userDoc = await getDoc(doc(db, "users", user.uid));
+  let role = "student";
+  if (userDoc.exists() && userDoc.data().role) {
+    role = userDoc.data().role;
+  }
+
+  if (role === "student") return renderStudentDashboard();
+  if (role === "instructor") return renderInstructorDashboard();
+  if (role === "admin") return renderAdminDashboard();
 });
+
+// ==== Initial Fallback Loader ====
+window.onload = () => {
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <div class="screen-wrapper" style="text-align:center;padding:2rem;">
+      <div class="loading-spinner" style="margin:40px auto;"></div>
+      <p>Loading CDL Trainer...</p>
+    </div>
+  `;
+  setTimeout(() => {
+    if (!auth.currentUser) renderWelcome();
+  }, 4000);
+};
