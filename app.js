@@ -7,6 +7,8 @@
 // Do not modify unless updating global protections or navigation core
 console.log("✅ app.js loaded");
 
+document.body.innerHTML = "<div style='color:white;background:black;padding:1rem;text-align:center;'>✅ app.js loaded</div>" + document.body.innerHTML;
+
 // ==== Firebase Setup ====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 
@@ -70,10 +72,6 @@ let currentUserEmail = null;
 // ==== Auth State Listener ====
 console.log("✅ Firebase auth listener attached");
 onAuthStateChanged(auth, async (user) => {console.log("🔥 Firebase auth state changed", user);
-  const debugDiv = document.createElement("div");
-debugDiv.style = "padding:1rem;color:white;background:black;text-align:center;";
-debugDiv.innerText = `🔥 Auth check: ${user ? "Signed In" : "Not Signed In"}`;
-document.body.prepend(debugDiv);
   const app = document.getElementById("app");
   const logoutBtn = document.getElementById("logout-btn");
 
