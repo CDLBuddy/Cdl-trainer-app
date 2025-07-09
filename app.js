@@ -1,4 +1,3 @@
-
 // === Upgraded Version (20250708-2304) ===
 // Security enhancements, abuse protection, dark mode sync, language persistence, and error handling improvements
 // Do not modify unless updating global protections or navigation core
@@ -6,6 +5,7 @@
 // === Upgraded Version (20250708-2304) ===
 // Security enhancements, abuse protection, dark mode sync, language persistence, and error handling improvements
 // Do not modify unless updating global protections or navigation core
+console.log("✅ app.js loaded");
 
 // ==== Firebase Setup ====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
@@ -68,7 +68,8 @@ function showToast(message, duration = 3000) {
 let currentUserEmail = null;
 
 // ==== Auth State Listener ====
-onAuthStateChanged(auth, async (user) => {
+console.log("✅ Firebase auth listener attached");
+onAuthStateChanged(auth, async (user) => {console.log("🔥 Firebase auth state changed", user);
   const app = document.getElementById("app");
   const logoutBtn = document.getElementById("logout-btn");
 
