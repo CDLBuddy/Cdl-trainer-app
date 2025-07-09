@@ -33,7 +33,7 @@ import {
   onAuthStateChanged,
   signOut,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   updateProfile
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
