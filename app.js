@@ -201,7 +201,22 @@ function setupNavigation() {
   });
 
   // 🔙 Browser back/forward support
-  window.addEventListener("popstate", (e) => {
+window.addEventListener('load', () => {
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      console.log('[CDL Trainer] Logged in as:', user.email);
+      renderHome(); // Or use role-aware routing
+    } else {
+      console.log('[CDL Trainer] No user session. Showing welcome screen.');
+      renderWelcome();
+    }
+  }, error => {
+    console.error('[CDL Trainer] Auth error:', error);
+    document.getElementById('app').innerHTML = '<p style="color:white;text-align:center;">Login error. Please try again.</p>';
+  });
+});
+  
+window.addEventListener("popstate", (e) => {
     const page = e.state?.page || "home";
     handleNavigation(page, false); // don't push again
   });
