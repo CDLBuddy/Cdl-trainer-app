@@ -1189,7 +1189,6 @@ async function renderChecklists(container) {
   let savedData = {};
   const snapshot = await getDocs(query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail)));
   snapshot.forEach(doc => savedData = doc.data().progress || {});
-
   Object.entries(checklist).forEach(([section, items]) => {
     const fieldset = document.createElement("fieldset");
     fieldset.innerHTML = `<legend>${section}</legend>`;
@@ -1315,13 +1314,8 @@ async function renderTestResults(container) {
       
 // === End of all render functions ===
 
-// ==== Initial Page Load Fallback ====
-
-
-// ==== Initial Page Load Fallback ====
-, 4000); // fallback in case Firebase never responds
+// fallback in case Firebase never responds
 };
-
 
 // ==== Initial Page Load Fallback ====
 window.onload = () => {
@@ -1332,7 +1326,14 @@ window.onload = () => {
       <p>Initializing app...</p>
     </div>
   `;
-  setTimeout(() => {
-    if (!auth.currentUser) renderWelcome();
-  }, 2000);
+
+  // Give Firebase a chance to initialize
+  let waited = 0;
+  const check = setInterval(() => {
+    if (auth.currentUser !== null || waited > 4000) {
+      clearInterval(check);
+      if (!auth.currentUser) renderWelcome();
+    }
+    waited += 200;
+  }, 200);
 };
