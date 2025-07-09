@@ -1304,6 +1304,11 @@ async function renderTestResults(container) {
         <p>Score: ${data.score}/${data.total}</p>
         <p>Date: ${new Date(data.timestamp.toDate()).toLocaleDateString()}</p>
       </div>
-    `;
-  });
-}
+      
+// === End of all render functions ===
+
+// ==== Initial Page Load Fallback ====
+window.onload = () => {
+  const user = auth.currentUser;
+  if (!user) renderWelcome();
+};
