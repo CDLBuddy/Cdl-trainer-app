@@ -70,6 +70,10 @@ let currentUserEmail = null;
 // ==== Auth State Listener ====
 console.log("✅ Firebase auth listener attached");
 onAuthStateChanged(auth, async (user) => {console.log("🔥 Firebase auth state changed", user);
+  const debugDiv = document.createElement("div");
+debugDiv.style = "padding:1rem;color:white;background:black;text-align:center;";
+debugDiv.innerText = `🔥 Auth check: ${user ? "Signed In" : "Not Signed In"}`;
+document.body.prepend(debugDiv);
   const app = document.getElementById("app");
   const logoutBtn = document.getElementById("logout-btn");
 
