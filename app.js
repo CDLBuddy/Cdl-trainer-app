@@ -1,6 +1,6 @@
 
-// === DEBUG VERSION OF app.js ===
-// Shows visible debug banners on-screen for mobile troubleshooting
+// === HYBRID DEBUG VERSION: app.js ===
+// Shows Firebase debug banners + renders welcome screen if no user
 
 // ✅ Confirm script is executing
 document.body.innerHTML = `
@@ -17,15 +17,10 @@ import {
   signOut
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
-  getFirestore,
-  collection,
-  getDocs,
-  addDoc,
-  doc,
-  setDoc
+  getFirestore
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// ==== Firebase Config ====
+// ==== Firebase Config (PLACEHOLDER: replace with real config) ====
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -39,13 +34,30 @@ const appInstance = initializeApp(firebaseConfig);
 const db = getFirestore(appInstance);
 const auth = getAuth(appInstance);
 
-// ✅ Firebase Auth Listener
+// Debug Banner for Firebase Init
 document.body.innerHTML = `
   <div style="background:black;color:#ffd700;padding:1rem;text-align:center;">
     ✅ Firebase initialized...
   </div>
 ` + document.body.innerHTML;
 
+// ==== Basic renderWelcome() for Debug Testing ====
+function renderWelcome() {
+  const app = document.getElementById("app");
+  if (!app) return;
+
+  app.innerHTML = `
+    <div class="screen-wrapper fade-in" style="padding:2rem;text-align:center;">
+      <h2 style="color:white;">👋 Welcome to CDL Trainer</h2>
+      <p style="color:#ccc;">You're not signed in yet. Start your journey below.</p>
+      <button style="padding:1rem 2rem;border:none;border-radius:8px;background:#007bff;color:white;font-size:1rem;margin-top:1rem;" onclick="alert('Login button clicked')">
+        Login / Sign Up
+      </button>
+    </div>
+  `;
+}
+
+// ==== Firebase Auth Listener ====
 onAuthStateChanged(auth, async (user) => {
   document.body.innerHTML = `
     <div style="background:black;color:#66ccff;padding:1rem;text-align:center;">
@@ -59,6 +71,8 @@ onAuthStateChanged(auth, async (user) => {
         🚫 No user detected — rendering welcome screen...
       </div>
     ` + document.body.innerHTML;
+
+    renderWelcome();
   } else {
     document.body.innerHTML = `
       <div style="background:black;color:lime;padding:1rem;text-align:center;">
