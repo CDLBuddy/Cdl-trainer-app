@@ -1,75 +1,63 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>CDL Trainer</title>
-  <meta name="description" content="CDL Trainer – Your AI-powered CDL training app with quizzes, checklists, walkthroughs, and more." />
-  <meta name="theme-color" content="#003366" />
-  
-  <!-- Manifest & Icons -->
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="favicon.ico" />
-  <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
-  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
-  
-  <!-- Mobile PWA Meta -->
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="CDL Trainer" />
-  
-  <!-- Security & Performance -->
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src *;">
-  
-  <!-- Styles -->
-  <link rel="stylesheet" href="style.css" />
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CDL Trainer</title>
+<meta content="CDL Trainer – Your AI-powered CDL training app with quizzes, checklists, walkthroughs, and more." name="description"/>
+<meta content="#003366" name="theme-color"/>
+<!-- Manifest & Icons -->
+<link href="manifest.json" rel="manifest"/>
+<link href="favicon.ico" rel="icon"/>
+<link href="icons/icon-192.png" rel="apple-touch-icon" sizes="192x192"/>
+<link href="icons/icon-512.png" rel="apple-touch-icon" sizes="512x512"/>
+<!-- Mobile PWA Meta -->
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="CDL Trainer" name="apple-mobile-web-app-title"/>
+<!-- Security & Performance -->
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="default-src 'self'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src *;" http-equiv="Content-Security-Policy"/>
+<!-- Styles -->
+<link href="style.css" rel="stylesheet"/>
 </head>
-
-<body role="application">
-  <!-- Loading Fallback -->
-  <div id="loading-screen" aria-hidden="false" aria-live="polite" style="text-align:center; padding:2rem; display:none;">
-    <div class="loading-spinner" style="margin: 20px auto;"></div>
-    <h2>Loading CDL Trainer...</h2>
-    <p>Preparing your dashboard...</p>
-  </div>
-
-  <!-- Main App Container -->
-  <main id="app" role="main" tabindex="-1"></main>
-
-  <!-- Theme / Mic Controls -->
-  <aside style="text-align: center; margin-top: 1rem;">
-    <button id="mic-button" aria-label="Voice Login" title="Voice Login" style="display: none;">🎙️</button>
-    <button id="theme-toggle" aria-label="Toggle Dark Mode" title="Toggle Theme">🌓 Theme</button>
-  </aside>
-
-  <!-- Language Selector -->
-  <div id="language-selector-container" style="text-align:center; margin: 1rem 0;">
-    <label for="language-selector" style="display:block; font-size: 0.9rem;">🌐 Select Language:</label>
-    <select id="language-selector" aria-label="Select language">
-      <option value="en" selected>🇺🇸 English</option>
-      <option value="es">🇪🇸 Español</option>
-      <option value="fr">🇫🇷 Français</option>
-      <option value="de">🇩🇪 Deutsch</option>
-      <option value="zh">🇨🇳 中文</option>
-    </select>
-  </div>
-
-  <!-- Main JS App -->
-  <script type="module" src="app.js"></script>
-
-  <!-- No JavaScript Warning -->
-  <noscript>
-    <div style="padding:2rem; text-align:center;">
-      <strong>⚠️ JavaScript is required to run CDL Trainer. Please enable it in your browser settings.</strong>
-    </div>
-  </noscript>
-
-  <!-- Service Worker -->
-  <script>
+<body role="application"><div style="color:red;text-align:center;margin-top:2rem;">⚠️ JavaScript failed to load. Please check your internet connection or try refreshing.</div>
+<!-- Loading Fallback -->
+<div aria-hidden="false" aria-live="polite" id="loading-screen" style="text-align:center; padding:2rem; display:none;">
+<div class="loading-spinner" style="margin: 20px auto;"></div>
+<h2>Loading CDL Trainer...</h2>
+<p>Preparing your dashboard...</p>
+</div>
+<!-- Main App Container -->
+<main id="app" role="main" tabindex="-1"></main>
+<!-- Theme / Mic Controls -->
+<aside style="text-align: center; margin-top: 1rem;">
+<button aria-label="Voice Login" id="mic-button" style="display: none;" title="Voice Login">🎙️</button>
+<button aria-label="Toggle Dark Mode" id="theme-toggle" title="Toggle Theme">🌓 Theme</button>
+</aside>
+<!-- Language Selector -->
+<div id="language-selector-container" style="text-align:center; margin: 1rem 0;">
+<label for="language-selector" style="display:block; font-size: 0.9rem;">🌐 Select Language:</label>
+<select aria-label="Select language" id="language-selector">
+<option selected="" value="en">🇺🇸 English</option>
+<option value="es">🇪🇸 Español</option>
+<option value="fr">🇫🇷 Français</option>
+<option value="de">🇩🇪 Deutsch</option>
+<option value="zh">🇨🇳 中文</option>
+</select>
+</div>
+<!-- Main JS App -->
+<script src="app.js" type="module"></script>
+<!-- No JavaScript Warning -->
+<noscript>
+<div style="padding:2rem; text-align:center;">
+<strong>⚠️ JavaScript is required to run CDL Trainer. Please enable it in your browser settings.</strong>
+</div>
+</noscript>
+<!-- Service Worker -->
+<script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('service-worker.js')
