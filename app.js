@@ -1,3 +1,8 @@
+
+// === Upgraded Version (20250708-2304) ===
+// Security enhancements, abuse protection, dark mode sync, language persistence, and error handling improvements
+// Do not modify unless updating global protections or navigation core
+
 // === Upgraded Version (20250708-2304) ===
 // Security enhancements, abuse protection, dark mode sync, language persistence, and error handling improvements
 // Do not modify unless updating global protections or navigation core
@@ -1311,4 +1316,19 @@ async function renderTestResults(container) {
 window.onload = () => {
   const user = auth.currentUser;
   if (!user) renderWelcome();
+};
+
+// ==== Initial Page Load Fallback ====
+window.onload = () => {
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <div class="screen-wrapper fade-in" style="text-align:center">
+      <div class="loading-spinner" style="margin: 40px auto;"></div>
+      <p>Initializing app...</p>
+    </div>
+  `;
+  // Let Firebase handle the actual routing
+  setTimeout(() => {
+    if (!auth.currentUser) renderWelcome();
+  }, 4000); // fallback in case Firebase never responds
 };
