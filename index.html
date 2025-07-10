@@ -20,7 +20,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="CDL Trainer" />
 
-  <!-- Security & Performance -->
+  <!-- Content Security Policy -->
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src *;" />
 
@@ -62,15 +62,15 @@
     </select>
   </div>
 
-  <!-- App Logic -->
-  <script type="module" src="./app.js"></script>
-
   <!-- No JavaScript Fallback -->
   <noscript>
     <div style="padding:2rem; text-align:center;">
       <strong>⚠️ JavaScript is required to run CDL Trainer. Please enable it in your browser settings.</strong>
     </div>
   </noscript>
+
+  <!-- App Logic (must be last to ensure DOM is loaded first) -->
+  <script type="module" src="./app.js"></script>
 
   <!-- Service Worker -->
   <script>
@@ -82,7 +82,7 @@
       });
     }
 
-    // Hide JS error if script loaded successfully
+    // Hide JS error once script has loaded
     window.addEventListener('DOMContentLoaded', () => {
       const jsError = document.getElementById('js-error');
       if (jsError) jsError.style.display = 'none';
