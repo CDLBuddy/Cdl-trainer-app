@@ -705,7 +705,7 @@ async function renderAdminDashboard() {
   const type = passwordInput.type === "password" ? "text" : "password";
   passwordInput.type = type;
   togglePassword.textContent = type === "password" ? "🙈" : "👁️";
-});
+}
 
 // Dark mode toggle (manual switch)
 document.getElementById("dark-mode-toggle")?.addEventListener("change", (e) => {
@@ -1327,10 +1327,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+
 function renderLogin() {
   const app = document.getElementById("app");
   if (!app) return;
-  app.innerHTML = \`
+  app.innerHTML = `
     <div class="login-card fade-in">
       <h2>🚀 Login or Signup</h2>
       <form id="login-form">
@@ -1349,49 +1350,57 @@ function renderLogin() {
         <p><a href="#" id="reset-password">Forgot password?</a></p>
       </div>
     </div>
-  \`;
-  setupNavigation(); // enable nav links inside login
+  `;
+  setupNavigation();
 
-  // Bind events
-  const togglePassword = document.getElementById("togglePassword");
+  const loginForm     = document.getElementById("login-form");
+  const emailInput    = document.getElementById("email");
   const passwordInput = document.getElementById("password");
-  const emailInput = document.getElementById("email");
-  const errorMsg = document.getElementById("error-msg");
-  const loginForm = document.getElementById("login-form");
-      const type = passwordInput.type === "password" ? "text" : "password";
-    passwordInput.type = type;
-    togglePassword.textContent = type === "password" ? "🙈" : "👁️";
+  const togglePass    = document.getElementById("togglePassword");
+  const errorMsg      = document.getElementById("error-msg");
+  const googleBtn     = document.getElementById("google-login");
+  const resetLink     = document.getElementById("reset-password");
+  const appleBtn      = document.getElementById("apple-login");
+  const smsBtn        = document.getElementById("sms-login");
+
+  // 👁️ Toggle password visibility
+  togglePass.addEventListener("click", () => {
+    const isPwd = passwordInput.type === "password";
+    passwordInput.type = isPwd ? "text" : "password";
+    togglePass.textContent = isPwd ? "🙈" : "👁️";
   });
-     e.preventDefault();
+
+  // 🔑 Login / Signup
+  loginForm.addEventListener("submit", async e => {
+    e.preventDefault();
     const email = emailInput.value.trim();
-    const password = passwordInput.value;
+    const pwd   = passwordInput.value;
     errorMsg.style.display = "none";
 
-    if (!email || !password) {
+    if (!email || !pwd) {
       errorMsg.textContent = "Please enter both email and password.";
-      errorMsg.style.display = "block";
-      return;
+      return errorMsg.style.display = "block";
     }
     document.getElementById("login-submit").disabled = true;
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, email, pwd);
     } catch (err) {
       if (err.code === "auth/user-not-found") {
         try {
-          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          const cred = await createUserWithEmailAndPassword(auth, email, pwd);
           await addDoc(collection(db, "users"), {
-            uid: cred.user.uid,
+            uid:       cred.user.uid,
             email,
-            name: "CDL User",
-            role: "student",
-            verified: false,
+            name:      "CDL User",
+            role:      "student",
+            verified:  false,
             createdAt: new Date().toISOString(),
             lastLogin: new Date().toISOString(),
           });
-          alert("🎉 Account created and signed in!");
-        } catch (signupErr) {
-          errorMsg.textContent = signupErr.message;
+          showToast("🎉 Account created and signed in!");
+        } catch (suErr) {
+          errorMsg.textContent = suErr.message;
           errorMsg.style.display = "block";
         }
       } else {
@@ -1402,29 +1411,35 @@ function renderLogin() {
       document.getElementById("login-submit").disabled = false;
     }
   });
-      e.preventDefault();
+
+  // 📬 Reset Password
+  resetLink.addEventListener("click", async e => {
+    e.preventDefault();
     const email = emailInput.value.trim();
-    if (!email) return alert("Enter your email to receive a reset link.");
+    if (!email) return showToast("Enter your email to receive a reset link.");
     try {
       await sendPasswordResetEmail(auth, email);
-      alert("📬 Reset link sent!");
+      showToast("📬 Reset link sent!");
     } catch (err) {
-      alert("Error: " + err.message);
+      showToast("Error: " + err.message);
     }
   });
-      try {
+
+  // 🌐 Google Sign-In
+  googleBtn.addEventListener("click", async () => {
+    try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (err) {
-      alert("Google Sign-In failed: " + err.message);
+      showToast("Google Sign-In failed: " + err.message);
     }
   });
-      alert("🚧 Apple Login is coming soon. Stay tuned!");
-  });
 
-      alert("🚧 SMS Login is coming soon. Stay tuned!");
-  });
+  // 🚧 Coming soon (Apple/SMS)
+  appleBtn.addEventListener("click", () => showToast("🚧 Apple Login coming soon."));
+  smsBtn.addEventListener("click", () => showToast("🚧 SMS Login coming soon."));
 }
+
 
 function renderWalkthrough(container) {
   container.innerHTML = \`
