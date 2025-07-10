@@ -6,15 +6,21 @@
   --card-bg: #fff;
   --error: #d9534f;
   --success: #28a745;
+
+  /* Dark mode variables */
   --dark-bg: #121212;
   --dark-card: #1e1e1e;
   --dark-text: #f0f0f0;
+
+  /* Toast */
+  --toast-bg: rgba(0, 0, 0, 0.8);
+  --toast-text: #fff;
 }
 
 /* === Base Layout === */
 body {
   margin: 0;
-  font-family: sans-serif;
+  font-family: system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   display: flex;
@@ -23,9 +29,15 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
+/* Dark mode class (toggle this on <body>) */
+body.dark-mode {
+  background: var(--dark-bg);
+  color: var(--dark-text);
+}
+
 header, footer {
   background: #003366;
-  color: white;
+  color: #fff;
   padding: 1rem;
   text-align: center;
 }
@@ -35,6 +47,7 @@ main {
   padding: 1rem;
 }
 
+/* === Navigation Buttons === */
 nav {
   display: flex;
   flex-wrap: wrap;
@@ -47,8 +60,8 @@ nav button {
   padding: 0.5rem 1rem;
   border: none;
   background: var(--primary-dark);
-  color: white;
-  border-radius: 5px;
+  color: #fff;
+  border-radius: 4px;
   cursor: pointer;
   transition: background 0.3s ease;
 }
@@ -57,30 +70,69 @@ nav button:hover {
   background: var(--primary);
 }
 
+/* === Toast Notifications === */
+.toast-message {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--toast-bg);
+  color: var(--toast-text);
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: fadeInEnhanced 0.4s ease-out forwards;
+}
+
 /* === Card Layout === */
-.card, .checklist-card, .result-card, .login-card {
+.card,
+.checklist-card,
+.result-card,
+.login-card {
   background: var(--card-bg);
   border-radius: 8px;
   padding: 1.5rem;
   max-width: 600px;
   margin: 1rem auto;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: background 0.3s, color 0.3s;
 }
 
+/* Checklist-card variant */
 .checklist-card {
   border: 1px solid #ddd;
-  background-color: #fafafa;
+  background: #fafafa;
+}
+
+/* Dark-mode card override */
+body.dark-mode .card,
+body.dark-mode .checklist-card,
+body.dark-mode .result-card,
+body.dark-mode .login-card {
+  background: var(--dark-card);
+  color: var(--dark-text);
 }
 
 /* === Typography & Lists === */
-ul { list-style: none; padding: 0; }
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
 li {
   padding: 0.5rem 0;
   border-bottom: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  transition: border-color 0.3s;
+}
+
+body.dark-mode li {
+  border-color: #444;
 }
 
 /* === Buttons === */
@@ -89,522 +141,64 @@ button {
   padding: 0.75rem 1.25rem;
   border: none;
   background: var(--primary-dark);
-  color: white;
+  color: #fff;
   border-radius: 6px;
   cursor: pointer;
   width: 100%;
   max-width: 300px;
   margin: 0.5rem auto;
   display: block;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, opacity 0.3s ease;
 }
 
-button:hover { background: var(--primary); }
+button:hover:not(:disabled) {
+  background: var(--primary);
+}
+
 button:disabled {
   background: #ccc;
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* === Responsive === */
 @media (max-width: 600px) {
-  nav { flex-direction: column; }
-  .card, .checklist-card, .result-card { margin: 1rem; }
-  button { font-size: 0.95rem; }
-  #timer { font-size: 1rem; }
+  nav {
+    flex-direction: column;
+  }
+  .card,
+  .checklist-card,
+  .result-card {
+    margin: 1rem;
+  }
+  button {
+    font-size: 0.95rem;
+  }
 }
 
 /* === Login UI === */
-.login-card input,
-.login-card select {
-  width: 100%;
-  padding: 0.6rem;
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-.form-group { margin-bottom: 1rem; }
-.form-group label { display: block; margin-bottom: 0.3rem; }
-.error-message {
-  color: var(--error);
-  font-size: 0.9rem;
-  margin-top: 0.3rem;
-}
-.login-button {
-  background: linear-gradient(to right, #007bff, #005bb5);
-  border: none;
-  border-radius: 8px;
-  padding: 1rem 2rem;
-  font-size: 1rem;
-  color: white;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-.login-button:hover { transform: scale(1.05); }
-
-/* === Dark Mode === */
-body.dark {
-  background: var(--dark-bg);
-  color: var(--dark-text);
-}
-body.dark .card,
-body.dark .checklist-card,
-body.dark .result-card,
-body.dark .login-card {
-  background: var(--dark-card);
-  color: var(--dark-text);
-}
-body.dark input,
-body.dark select {
-  background: #333;
-  color: var(--dark-text);
-  border: 1px solid #666;
-}
-body.dark .login-card input {
-  background: #2c2c2c;
-  color: #f0f0f0;
-}
-
-/* === Welcome === */
-.welcome-container {
-  text-align: center;
-  padding: 2rem 1rem;
-}
-.header-icon { width: 64px; margin-bottom: 1rem; }
-.subtitle {
-  font-size: 1.1rem;
-  color: #555;
-  margin-bottom: 2rem;
-}
-
-/* === Home === */
-.home-container {
-  padding: 2rem;
-  text-align: center;
-  background: linear-gradient(145deg, #0b1f3a, #082142);
-  min-height: 100vh;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-.home-container h1 {
-  font-size: 1.8rem;
-  margin-bottom: 0.4rem;
-}
-.home-container .subtitle {
-  font-size: 1rem;
-  opacity: 0.85;
-  margin-bottom: 2rem;
-}
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1rem;
-  justify-content: center;
-  padding: 0 1rem;
-}
-.home-tile {
-  background: #1f62e0;
-  border: none;
-  color: white;
-  padding: 1rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.home-tile:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-}
-.tile-icon {
-  display: block;
-  font-size: 1.5rem;
-  margin-bottom: 0.25rem;
-}
-
-/* === Unified Screen Wrapper === */
-.screen-wrapper {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 2rem;
-  margin: 2rem auto;
-  max-width: 640px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  transition: background 0.3s, color 0.3s;
-}
-body.dark .screen-wrapper {
-  background: var(--dark-card);
-  color: var(--dark-text);
-}
-.screen-wrapper input,
-.screen-wrapper select {
-  width: 100%;
-  padding: 0.75rem;
-  margin: 0.5rem 0 1rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  background: #f9f9f9;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-body.dark .screen-wrapper input,
-body.dark .screen-wrapper select {
-  background: #2c2c2c;
-  border: 1px solid #555;
-  color: var(--dark-text);
-}
-input[type="radio"],
-input[type="checkbox"] {
-  accent-color: var(--primary);
-}
-.screen-wrapper h2,
-.screen-wrapper h3 {
-  text-align: center;
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-  color: var(--primary-dark);
-}
-body.dark .screen-wrapper h2,
-body.dark .screen-wrapper h3 {
-  color: #66b2ff;
-}
-
-/* === Loading Spinner === */
-.loading-spinner {
-  border: 4px solid rgba(255,255,255,0.2);
-  border-top: 4px solid var(--primary);
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  animation: spin 1s linear infinite;
-  margin: 3rem auto;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* === Transitions === */
-.fade-in { animation: fadeIn 0.3s ease-in forwards; }
-.fade-out { animation: fadeOut 0.2s ease-out forwards; }
-@keyframes fadeIn {
-  from { opacity: 0.2; }
-  to { opacity: 1; }
-}
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0.1; }
-}
-.slide-in-up {
-  animation: slideInUp 0.4s ease-out forwards;
-}
-.slide-out-down {
-  animation: slideOutDown 0.3s ease-in forwards;
-}
-@keyframes slideInUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-@keyframes slideOutDown {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(40px); opacity: 0; }
-}
-.scale-in {
-  animation: scaleIn 0.3s ease-out forwards;
-}
-@keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-/* === Instructor Dashboard Enhancements === */
-
-.role-badge {
-  background: var(--primary);
-  color: #fff;
-  padding: 4px 10px;
-  margin-left: 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.ai-tip-box {
-  background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
-  color: #eee;
-  border-left: 4px solid var(--primary);
-  padding: 15px;
-  border-radius: 8px;
-  margin: 20px 0;
-  font-size: 1rem;
-  box-shadow: 0 0 5px rgba(0,0,0,0.2);
-}
-
-.dashboard-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.dashboard-summary .card {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 20px;
-  flex: 1 1 300px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  transition: transform 0.3s ease;
-}
-
-.dashboard-summary .card:hover {
-  transform: translateY(-4px);
-}
-
-.activity-feed {
-  list-style: none;
-  padding-left: 0;
-  margin-top: 10px;
-}
-
-.activity-feed li {
-  padding: 6px 0;
-  border-bottom: 1px solid #ddd;
-  font-size: 0.95rem;
-}
-
-.activity-feed li:last-child {
-  border-bottom: none;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 12px;
-  background: #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-top: 10px;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--primary);
-  width: 0%;
-  transition: width 0.5s ease-in-out;
-}
-
-.card.actions button {
-  margin-right: 10px;
-  margin-top: 10px;
-}
-
-.card.actions {
-  text-align: center;
-}
-
-/* === Dark Mode Support === */
-
-body.dark-mode .ai-tip-box {
-  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-  color: #ddd;
-  border-color: var(--primary-dark);
-}
-
-body.dark-mode .dashboard-summary .card {
-  background: #1e1e1e;
-  color: #ccc;
-}
-
-body.dark-mode .activity-feed li {
-  border-bottom: 1px solid #444;
-}
-
-body.dark-mode .progress-bar {
-  background: #444;
-}
-
-body.dark-mode .progress-fill {
-  background: var(--primary-dark);
-}
-
-/* === Fade In Animation === */
-
-.fade-in {
-  opacity: 0;
-  animation: fadeIn 0.7s ease forwards;
-}
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-}
-
-/* === Responsive Layout Enhancements === */
-
-@media (max-width: 768px) {
-  .dashboard-summary {
-    flex-direction: column;
-  }
-
-  .card.actions button {
-    display: block;
-    width: 100%;
-    margin: 10px 0;
-  }
-}
-
-.role-badge.admin {
-  background: #c0392b;
-}
-
-.notification-bubble {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #ff4444;
-  color: white;
-  padding: 10px 15px;
-  border-radius: 50px;
-  font-weight: bold;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
-  animation: fadeIn 0.6s ease-out;
-}
-
-body.dark-mode .notification-bubble {
-  background: #ff6666;
-}
-
-/* === Additional Enhancements for Dashboard Cards === */
-.dashboard-card {
-  background: var(--card-bg);
-  padding: 1.5rem;
-  border-radius: 12px;
-  margin: 1rem auto;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease, background 0.3s ease;
-  max-width: 600px;
-}
-
-body.dark-mode .dashboard-card {
-  background: var(--dark-card);
-  color: var(--dark-text);
-}
-
-/* === Dashboard Actions Wrapper === */
-.dashboard-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 2rem;
-}
-
-/* === Notify Bubble for Checklist/Test/Profile Gaps === */
-.notify-bubble {
-  background: #ff5555;
-  color: #fff;
-  font-weight: bold;
-  border-radius: 50%;
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  text-align: center;
-  line-height: 20px;
-  font-size: 0.75rem;
-  margin-left: 8px;
-}
-
-body.dark-mode .notify-bubble {
-  background: #ff7777;
-}
-
-/* === Modal Overlay === */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.65);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-
-/* === Modal Content === */
-.modal-content {
-  background: var(--card-bg);
-  color: var(--text);
-  padding: 2rem;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-}
-
-body.dark-mode .modal-content {
-  background: var(--dark-card);
-  color: var(--dark-text);
-}
-
-/* === Smooth Modal Animations === */
-.modal-content {
-  animation: scaleIn 0.25s ease-out forwards;
-}
-
-.success-message {
-  color: var(--success);
-  font-size: 0.95rem;
-  margin-top: 0.5rem;
-  font-weight: bold;
-}
-
-.button-secondary {
-  background: #6c757d;
-}
-.button-secondary:hover {
-  background: #5a6268;
-}
-
-.button-danger {
-  background: #dc3545;
-}
-.button-danger:hover {
-  background: #c82333;
-}
-
-/* === Enhanced Login UI Styles === */
-
 .login-card {
   background: var(--card-bg);
+  color: var(--text);
   padding: 2rem;
   border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
   max-width: 420px;
   margin: 2rem auto;
-  animation: fadeIn 0.5s ease-out;
-  color: var(--text);
-}
-
-body.dark-mode .login-card {
-  background: var(--dark-card);
-  color: var(--dark-text);
+  animation: fadeInEnhanced 0.5s ease-out forwards;
+  transition: background 0.3s, color 0.3s;
 }
 
 .login-card input,
 .login-card select {
+  width: 100%;
   padding: 0.75rem;
+  margin: 0.5rem 0 1rem;
   border-radius: 6px;
   border: 1px solid #ccc;
-  width: 100%;
-  margin: 0.5rem 0 1rem;
   box-sizing: border-box;
   font-size: 1rem;
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
 }
 
 body.dark-mode .login-card input,
@@ -614,20 +208,21 @@ body.dark-mode .login-card select {
   color: var(--dark-text);
 }
 
+/* Password toggle wrapper */
 .password-wrapper {
-  display: flex;
-  align-items: center;
   position: relative;
 }
 
 .password-wrapper input {
-  flex: 1;
+  width: 100%;
   padding-right: 2.5rem;
 }
 
 #toggle-password {
   position: absolute;
-  right: 8px;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
   background: none;
   border: none;
   font-size: 1.1rem;
@@ -639,23 +234,7 @@ body.dark-mode #toggle-password {
   color: #ccc;
 }
 
-.login-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-
-.login-options a {
-  color: var(--primary-dark);
-  text-decoration: none;
-}
-
-.login-options a:hover {
-  text-decoration: underline;
-}
-
+/* Alternative login buttons */
 .alt-login-buttons {
   display: flex;
   flex-direction: column;
@@ -683,177 +262,420 @@ body.dark-mode .alt-login-buttons button {
   border-color: #555;
 }
 
-.test-account-hint {
-  font-size: 0.85rem;
-  background: #f9f9f9;
-  padding: 0.75rem;
-  border-radius: 8px;
-  margin-top: 1rem;
-  border: 1px solid #ddd;
-  color: #333;
+/* === Welcome Screen === */
+.welcome-container {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+.header-icon {
+  width: 64px;
+  margin-bottom: 1rem;
+}
+.subtitle {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 2rem;
 }
 
-body.dark-mode .test-account-hint {
-  background: #2e2e2e;
-  border-color: #444;
-  color: #ccc;
-}
-
-.login-extras {
+/* === Home Screen === */
+.home-container {
+  padding: 2rem;
+  text-align: center;
+  background: linear-gradient(145deg, #0b1f3a, #082142);
+  min-height: 100vh;
+  color: #fff;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1.5rem;
+  flex-direction: column;
+  justify-content: flex-start;
+  transition: background 0.3s, color 0.3s;
 }
-
-.login-extras select,
-.login-extras input[type="checkbox"] {
-  font-size: 0.9rem;
+.home-container h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.4rem;
 }
-
-.login-footer {
-  text-align: center;
-  margin-top: 2rem;
-  font-size: 0.75rem;
-  color: #999;
+.home-container .subtitle {
+  font-size: 1rem;
+  opacity: 0.85;
+  margin-bottom: 2rem;
 }
-
-.or-divider {
-  text-align: center;
-  margin: 1rem 0;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  justify-content: center;
+  padding: 0 1rem;
+}
+.home-tile {
+  background: #1f62e0;
+  border: none;
+  color: #fff;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 1rem;
   font-weight: bold;
-  color: #888;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+.home-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+.tile-icon {
+  display: block;
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+body.dark-mode .home-tile {
+  background: #3a4f78;
 }
 
-.error-text {
-  color: var(--error);
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
+/* === Unified Screen Wrapper === */
+.screen-wrapper {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 640px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transition: background 0.3s, color 0.3s;
+}
+body.dark-mode .screen-wrapper {
+  background: var(--dark-card);
+  color: var(--dark-text);
+}
+.screen-wrapper input,
+.screen-wrapper select {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #f9f9f9;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
+}
+body.dark-mode .screen-wrapper input,
+body.dark-mode .screen-wrapper select {
+  background: #2c2c2c;
+  border: 1px solid #555;
+  color: var(--dark-text);
+}
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: var(--primary);
+}
+.screen-wrapper h2,
+.screen-wrapper h3 {
   text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: var(--primary-dark);
+  transition: color 0.3s;
+}
+body.dark-mode .screen-wrapper h2,
+body.dark-mode .screen-wrapper h3 {
+  color: #66b2ff;
 }
 
-/* === Security Feedback Enhancements === */
-.error-text, .success-message {
+/* === Loading Spinner === */
+.loading-spinner { 
+  width: 36px;
+  height: 36px;
+  margin: 3rem auto;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* === Transitions & Animations === */
+.fade-in { animation: fadeInEnhanced 0.7s ease-in forwards; }
+.fade-out { animation: fadeOut 0.2s ease-out forwards; }
+@keyframes fadeInEnhanced { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0.1; } }
+.slide-in-up { animation: slideInUp 0.4s ease-out forwards; }
+.slide-out-down { animation: slideOutDown 0.3s ease-in forwards; }
+@keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideOutDown { from { transform: translateY(0); opacity: 1; } to { transform: translateY(40px); opacity: 0; } }
+.scale-in { animation: scaleIn 0.3s ease-out forwards; }
+@keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+.shake { animation: shake 0.3s ease-in-out; }
+
+/* === Instructor Dashboard Enhancements === */
+.role-badge { 
+  background: var(--primary);
+  color: #fff;
+  padding: 0.25rem 0.6rem;
+  margin-left: 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-weight: 600;
-  text-align: center;
-  margin-top: 1rem;
+  display: inline-block;
+  vertical-align: middle;
+}
+.ai-tip-box {
+  background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+  color: #eee;
+  border-left: 4px solid var(--primary);
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  font-size: 1rem;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+/* === Dashboard Layout === */
+.dashboard-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  justify-content: space-between;
+  margin-top: 1.25rem;
+}
+.dashboard-summary .card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 1.25rem;
+  flex: 1 1 300px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease;
+}
+.dashboard-summary .card:hover {
+  transform: translateY(-4px);
+}
+body.dark-mode .dashboard-summary .card {
+  background: var(--dark-card);
+  color: var(--dark-text);
+}
+
+/* Activity Feed, Progress Bars, Actions */
+.activity-feed { list-style: none; padding: 0; margin-top: 0.75rem; }
+.activity-feed li { padding: 0.5rem 0; border-bottom: 1px solid #ddd; font-size: 0.95rem; transition: border-color 0.3s; }
+body.dark-mode .activity-feed li { border-color: #444; }
+.activity-feed li:last-child { border-bottom: none; }
+.progress-bar {
+  width: 100%; height: 12px; background: #ddd; border-radius: 8px;
+  overflow: hidden; margin-top: 0.75rem;
+}
+.progress-fill {
+  height: 100%; background: var(--primary); width: 0%;
+  transition: width 0.5s ease-in-out;
+}
+.card.actions {
+  text-align: center; margin-top: 1rem;
+}
+.card.actions button { margin: 0.5rem 0.5rem 0 0; }
+
+/* === Admin Badge Variant & Notifications === */
+.role-badge.admin { background: #c0392b; }
+.notification-bubble {
+  position: fixed; bottom: 20px; right: 20px;
+  background: #ff4444; color: #fff;
+  padding: 0.5rem 0.75rem; border-radius: 50px;
+  font-weight: bold; box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  animation: fadeInEnhanced 0.6s ease-out forwards;
+}
+body.dark-mode .notification-bubble { background: #ff6666; }
+
+/* === Dashboard Card Wrapper & Actions === */
+.dashboard-card {
+  background: var(--card-bg); padding: 1.5rem; border-radius: 12px;
+  margin: 1rem auto; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  max-width: 600px; transition: transform 0.3s ease, background 0.3s, color 0.3s;
+}
+body.dark-mode .dashboard-card {
+  background: var(--dark-card); color: var(--dark-text);
+}
+.dashboard-actions {
+  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 2rem;
+}
+
+/* === Modals === */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999;
+}
+.modal-content {
+  background: var(--card-bg); color: var(--text);
+  padding: 2rem; border-radius: 10px; width: 90%; max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  animation: scaleIn 0.25s ease-out forwards;
+  transition: background 0.3s, color 0.3s;
+}
+body.dark-mode .modal-content {
+  background: var(--dark-card); color: var(--dark-text);
+}
+.button-secondary {
+  background: #6c757d; color: #fff;
+}
+.button-secondary:hover { background: #5a6268; }
+.button-danger {
+  background: #dc3545; color: #fff;
+}
+.button-danger:hover { background: #c82333; }
+
+/* === Success & Error Messages === */
+.success-message {
+  color: var(--success); font-size: 0.95rem; margin-top: 0.5rem; font-weight: bold;
 }
 .error-text {
-  color: var(--error);
-}
-.success-message {
-  color: var(--success);
+  color: var(--error); font-size: 0.9rem; margin-top: 1rem; text-align: center; font-weight: 600;
 }
 
-/* === Rate Limit Warning (optional future use) === */
+/* === Rate Limit Warning === */
 .rate-limit-warning {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  margin-top: 1rem;
+  background: #fff3cd; color: #856404;
+  border: 1px solid #ffeeba; padding: 0.75rem 1rem;
+  border-radius: 6px; font-size: 0.9rem; margin-top: 1rem;
 }
 
-/* === Security Animation (for sensitive UI changes) === */
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  50% { transform: translateX(5px); }
-  75% { transform: translateX(-5px); }
-  100% { transform: translateX(0); }
-}
-.shake {
-  animation: shake 0.3s ease-in-out;
-}
+/* === Shake Animation for Errors === */
+@keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-/* === Input Field Focus Highlight === */
+/* === Input Focus Highlight === */
 input:focus, select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 3px var(--primary);
   outline: none;
 }
 
-/* === In-App Toast Messages (future optional use) === */
-.toast-message {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--primary-dark);
-  color: white;
-  padding: 12px 20px;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  z-index: 999;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  animation: fadeIn 0.4s ease-out;
-}
-
 /* === Checklist Form Styling === */
 .checklist-form fieldset {
-  border: 1px solid #444;
-  padding: 1em;
-  margin-bottom: 1em;
-  border-radius: 8px;
-  background-color: var(--card-bg, #1a1a1a);
+  border: 1px solid #444; padding: 1rem; margin-bottom: 1rem;
+  border-radius: 8px; background-color: var(--card-bg);
 }
-
 .checklist-form legend {
-  font-weight: bold;
-  margin-bottom: 0.5em;
-  color: var(--text-light, #fff);
+  font-weight: bold; margin-bottom: 0.5rem; color: var(--text);
 }
-
-/* === Checklist Buttons Container === */
 .checklist-buttons {
-  display: flex;
-  gap: 1em;
-  margin-top: 1em;
-  justify-content: center;
-  flex-wrap: wrap;
+  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 1rem;
 }
 
-/* === Instructor Results Styling === */
-.instructor-results .card.mini {
-  margin-top: 1em;
-  background-color: var(--card-bg-alt, #222);
-  border-left: 4px solid var(--primary, #2e8b57);
-}
-
-/* === Test Results Display Grid === */
+/* === Test Results Grid & Cards === */
 .results-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1em;
-  justify-content: center;
-  margin-top: 1em;
+  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 1rem;
 }
-
-/* === Result Card Enhancements === */
 .result-card {
-  background-color: var(--card-bg, #1f1f1f);
-  padding: 1em;
-  border-radius: 10px;
-  width: 280px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  transition: transform 0.2s;
+  background: var(--card-bg); padding: 1rem; border-radius: 10px;
+  width: 280px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
-
 .result-card:hover {
-  transform: scale(1.02);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  transform: scale(1.02); box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
-
 .result-card h3 {
-  margin-top: 0;
-  color: var(--accent, #66ccff);
+  margin-top: 0; color: var(--primary-dark);
+}
+.empty-state {
+  text-align: center; padding: 2rem; color: #999;
+}
+/* === Home Screen Button Grid & Progress Bar Wrappers === */
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  justify-items: center;
+  margin-bottom: 1.5rem;
+}
+.progress-track {
+  width: 100%;
+  background: #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 12px;
+  margin-top: 0.5rem;
+}
+.progress-track .progress-fill {
+  height: 100%;
+  background: var(--primary);
+  width: 0;
+  transition: width 0.5s ease-in-out;
 }
 
-/* === Empty State Styling === */
-.empty-state {
-  text-align: center;
-  padding: 2em;
-  color: #999;
+/* === Modal Wrappers === */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
 }
+.modal .modal-content {
+  max-width: 500px;
+  width: 90%;
+}
+
+/* === Toggle‐Password Icon === */
+.toggle-password,
+#togglePassword {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #888;
+}
+body.dark .toggle-password,
+body.dark #togglePassword {
+  color: #ccc;
+}
+
+/* === Secondary / Danger Button Variants === */
+.btn-secondary,
+.button-secondary {
+  background: #6c757d;
+  color: #fff;
+}
+.btn-secondary:hover,
+.button-secondary:hover {
+  background: #5a6268;
+}
+.btn-danger,
+.button-danger {
+  background: #dc3545;
+  color: #fff;
+}
+.btn-danger:hover,
+.button-danger:hover {
+  background: #c82333;
+}
+
+/* === Preview‐Card on Home === */
+.preview-card {
+  padding: 1rem;
+  border-radius: 8px;
+  background: var(--card-bg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s, color 0.3s;
+}
+body.dark .preview-card {
+  background: var(--dark-card);
+  color: var(--dark-text);
+}
+
+/* === "Continue with X" Buttons === */
+.btn-google {
+  background: #db4437;
+  color: #fff;
+}
+.btn-apple {
+  background: #000;
+  color: #fff;
+}
+.btn-sms {
+  background: #28a745;
+  color: #fff;
+}
+.btn-google:hover { opacity: 0.9; }
+.btn-apple:hover { opacity: 0.9; }
+.btn-sms:hover    { opacity: 0.9; }
