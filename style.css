@@ -329,6 +329,31 @@ body.dark-mode .alt-login-buttons button {
 body.dark-mode .home-tile {
   background: #3a4f78;
 }
+/* === Home-screen tile grid (matching your JS) === */
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  justify-content: center;
+  padding: 0 1rem;
+}
+
+.button-grid button {
+  background: var(--primary-dark);
+  color: white;
+  padding: 1rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.button-grid button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+}
 
 /* === Unified Screen Wrapper === */
 .screen-wrapper {
@@ -573,28 +598,6 @@ input:focus, select:focus {
 }
 .empty-state {
   text-align: center; padding: 2rem; color: #999;
-}
-/* === Home Screen Button Grid & Progress Bar Wrappers === */
-.button-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-  justify-items: center;
-  margin-bottom: 1.5rem;
-}
-.progress-track {
-  width: 100%;
-  background: #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-  height: 12px;
-  margin-top: 0.5rem;
-}
-.progress-track .progress-fill {
-  height: 100%;
-  background: var(--primary);
-  width: 0;
-  transition: width 0.5s ease-in-out;
 }
 
 /* === Modal Wrappers === */
