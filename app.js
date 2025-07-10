@@ -1120,6 +1120,8 @@ function renderPage(page) {
       return renderChecklists(container);
     case "results":
       return renderTestResults(container);
+    case "walkthrough":       // ← add this
+      return renderWalkthrough(container);
     case "home":
       return renderHome(container);
     case "login":
