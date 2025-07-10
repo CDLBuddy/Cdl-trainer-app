@@ -1110,22 +1110,14 @@ function renderPage(page) {
   if (!container) return;
 
   switch (page) {
-    case "flashcards":
-      return renderFlashcards(container);
-    case "experience":
-      return renderExperience(container);
-    case "license":
-      return renderLicenseSelector(container);
-    case "checklists":
-      return renderChecklists(container);
-    case "results":
-      return renderTestResults(container);
-    case "walkthrough":       // ← add this
-      return renderWalkthrough(container);
-    case "home":
-      return renderHome(container);
-    case "login":
-      return renderLogin();
+    case "flashcards":    return renderFlashcards(container);
+    case "experience":    return renderExperience(container);
+    case "license":       return renderLicenseSelector(container);
+    case "checklists":    return renderChecklists(container);
+    case "results":       return renderTestResults(container);
+    case "walkthrough":   return renderWalkthrough(container);
+    case "home":          return renderHome(container);
+    case "login":         return renderLogin();
     default:
       container.innerHTML = `
         <div class="card fade-in">
