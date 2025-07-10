@@ -61,7 +61,9 @@ createUserWithEmailAndPassword,
   signInWithPopup
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
-const auth = getAuth(app); // ✅ Use the same app instance
+const auth = getAuth(app); 
+
+import { showToast, setupNavigation } from "./ui-helpers.js";
 
 // ==== Toast Notification ====
 function showToast(message, duration = 3000) {
@@ -448,6 +450,8 @@ function renderLicenseSelector(container) {
 
 // === Dashboards === //
 async function renderDashboard() {
+document.body.style.border = "4px solid green";
+
   const app = document.getElementById("app");
   app.innerHTML = `<div class="dashboard-card slide-in-up fade-in">Loading your dashboard...</div>`;
   const container = document.querySelector(".dashboard-card");
@@ -1338,7 +1342,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function renderLogin() {
-  alert("🛠️ renderLogin() called");
+  document.body.style.border = "4px solid magenta";
+  
   const app = document.getElementById("app");
   if (!app) return;
   app.innerHTML = `
