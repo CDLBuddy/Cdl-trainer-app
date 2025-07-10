@@ -29,6 +29,8 @@ const firebaseConfig = {
   appId: "1:977549527480:web:e959926bb02a4cef65674d"
 };
 
+alert("🚀 app.js module started");
+
 const app = initializeApp(firebaseConfig); // ✅ Only one initialization
 
 // ==== Firestore (Database) ====
