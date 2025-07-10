@@ -11,10 +11,12 @@ window.addEventListener('error', function(event) {
     'at ' + event.filename + ':' + event.lineno
   );
 });
-// ──────────────────────────────────────────────────────────────────────────────
+//──────────────────────────────────────────────────────────────────────────────
 console.log("✅ app.js loaded");
 
 // document.body.innerHTML insertion removed to prevent layout override
+
+alert("🚀 Beginning app.js load");
 
 // ==== Firebase Setup ====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
