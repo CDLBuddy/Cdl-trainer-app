@@ -699,7 +699,6 @@ async function renderAdminDashboard() {
 }
 
 // ==== Auth UI Logic ==== //
-togglePassword?.addEventListener("click", () => {
   const type = passwordInput.type === "password" ? "text" : "password";
   passwordInput.type = type;
   togglePassword.textContent = type === "password" ? "🙈" : "👁️";
@@ -718,7 +717,6 @@ document.getElementById("language-select")?.addEventListener("change", (e) => {
 });
 
 // Handle Login / Signup
-loginForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const email = emailInput.value.trim();
@@ -770,7 +768,6 @@ loginForm?.addEventListener("submit", async (e) => {
 });
 
 // Reset Password
-document.getElementById("reset-password")?.addEventListener("click", async (e) => {
   e.preventDefault();
   const email = emailInput.value.trim();
   if (!email) return alert("Enter your email to receive a reset link.");
@@ -786,7 +783,6 @@ document.getElementById("reset-password")?.addEventListener("click", async (e) =
 });
 
 // Google Login
-document.getElementById("google-login")?.addEventListener("click", async () => {
   try {
     const { GoogleAuthProvider, signInWithPopup } = await import("https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js");
     const provider = new GoogleAuthProvider();
@@ -797,11 +793,9 @@ document.getElementById("google-login")?.addEventListener("click", async () => {
 });
 
 // ==== Coming Soon Auth Options ==== //
-document.getElementById("apple-login")?.addEventListener("click", () => {
   alert("🚧 Apple Login is coming soon. Stay tuned!");
 });
 
-document.getElementById("sms-login")?.addEventListener("click", () => {
   alert("🚧 SMS Login is coming soon. Stay tuned!");
 });
 
@@ -1037,6 +1031,7 @@ function renderPage(page) {
     case "checklists": return renderChecklists(container);
     case "results": return renderTestResults(container);
     case "home": return renderHome(container);
+    case "login": return renderLogin();
     default:
       container.innerHTML = `<div class="card fade-in"><p>🚧 Page under construction: ${page}</p></div>`;
   }
@@ -1318,19 +1313,7 @@ async function sendBroadcast() {
     target: "all"
   });
   
-  // Removed duplicate renderWalkthrough
-  container.innerHTML = `
-    <div class="card">
-      <h2>🧭 ELDT Walkthrough</h2>
-      <ul>
-        <li>✅ Identify vehicle type</li>
-        <li>🛠️ Inspect lights, tires, fluids</li>
-        <li>📄 Match FMCSA standards</li>
-      </ul>
-      <button data-nav="home">⬅️ Home</button>
-    </div>
-  `;
-  setupNavigation();
+  
 }
 
 // ✅ Safe fallback if Firebase is slow or fails
@@ -1372,13 +1355,11 @@ function renderLogin() {
   const emailInput = document.getElementById("email");
   const errorMsg = document.getElementById("error-msg");
   const loginForm = document.getElementById("login-form");
-  togglePassword?.addEventListener("click", () => {
-    const type = passwordInput.type === "password" ? "text" : "password";
+      const type = passwordInput.type === "password" ? "text" : "password";
     passwordInput.type = type;
     togglePassword.textContent = type === "password" ? "🙈" : "👁️";
   });
- loginForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
+     e.preventDefault();
     const email = emailInput.value.trim();
     const password = passwordInput.value;
     errorMsg.style.display = "none";
@@ -1418,8 +1399,7 @@ function renderLogin() {
       document.getElementById("login-submit").disabled = false;
     }
   });
-  document.getElementById("reset-password")?.addEventListener("click", async (e) => {
-    e.preventDefault();
+      e.preventDefault();
     const email = emailInput.value.trim();
     if (!email) return alert("Enter your email to receive a reset link.");
     try {
@@ -1429,20 +1409,17 @@ function renderLogin() {
       alert("Error: " + err.message);
     }
   });
-  document.getElementById("google-login")?.addEventListener("click", async () => {
-    try {
+      try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (err) {
       alert("Google Sign-In failed: " + err.message);
     }
   });
-  document.getElementById("apple-login")?.addEventListener("click", () => {
-    alert("🚧 Apple Login is coming soon. Stay tuned!");
+      alert("🚧 Apple Login is coming soon. Stay tuned!");
   });
 
-  document.getElementById("sms-login")?.addEventListener("click", () => {
-    alert("🚧 SMS Login is coming soon. Stay tuned!");
+      alert("🚧 SMS Login is coming soon. Stay tuned!");
   });
 }
 
