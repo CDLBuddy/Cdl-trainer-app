@@ -1,12 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
   <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CDL Trainer</title>
   <meta name="description" content="CDL Trainer – Your AI-powered CDL training app with quizzes, checklists, walkthroughs, and more." />
   <meta name="theme-color" content="#003366" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <!-- Tiny "boot" script: apply dark/light before paint -->
+  <script>
+    (function() {
+      const hour = new Date().getHours();
+      const shouldDark = localStorage.getItem('theme') === 'dark' || hour >= 18 || hour < 6;
+      document.documentElement.classList.toggle('dark', shouldDark);
+    })();
+  </script>
 
   <!-- Manifest & Icons -->
   <link rel="manifest" href="manifest.json" />
@@ -22,21 +31,27 @@
 
   <!-- Content Security Policy -->
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src *;" />
+        content="
+          default-src 'self';
+          script-src 'self' https://www.gstatic.com;
+          style-src 'self' 'unsafe-inline';
+          img-src 'self' data: blob:;
+          connect-src *;
+        " />
 
-  <!-- Styles -->
+  <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css" />
 </head>
-<body role="application">
 
+<body role="application">
   <!-- JavaScript Load Warning -->
-  <div id="js-error" style="color:red; text-align:center; margin-top:2rem;">
+  <div id="js-error" class="js-error">
     ⚠️ JavaScript failed to load. Please check your internet connection or try refreshing.
   </div>
 
   <!-- Loading Fallback -->
-  <div id="loading-screen" aria-hidden="false" aria-live="polite" style="text-align:center; padding:2rem; display:none;">
-    <div class="loading-spinner" style="margin: 20px auto;"></div>
+  <div id="loading-screen" class="loading-screen" aria-hidden="false" aria-live="polite">
+    <div class="loading-spinner"></div>
     <h2>Loading CDL Trainer...</h2>
     <p>Preparing your dashboard...</p>
   </div>
@@ -44,15 +59,15 @@
   <!-- Main App Container -->
   <main id="app" role="main" tabindex="-1"></main>
 
-  <!-- Theme / Voice Controls -->
-  <aside style="text-align: center; margin-top: 1rem;">
-    <button id="mic-button" title="Voice Login" aria-label="Voice Login" style="display: none;">🎙️</button>
-    <button id="theme-toggle" title="Toggle Theme" aria-label="Toggle Dark Mode">🌓 Theme</button>
+  <!-- Theme & Voice Controls -->
+  <aside class="controls">
+    <button id="mic-button" class="mic-button" title="Voice Login" aria-label="Voice Login"></button>
+    <button id="theme-toggle" class="theme-toggle" title="Toggle Theme" aria-label="Toggle Dark Mode">🌓 Theme</button>
   </aside>
 
   <!-- Language Selector -->
-  <div id="language-selector-container" style="text-align:center; margin: 1rem 0;">
-    <label for="language-selector" style="display:block; font-size: 0.9rem;">🌐 Select Language:</label>
+  <div id="language-selector-container" class="language-selector-container">
+    <label for="language-selector">🌐 Select Language:</label>
     <select id="language-selector" aria-label="Select language">
       <option value="en" selected>🇺🇸 English</option>
       <option value="es">🇪🇸 Español</option>
@@ -62,17 +77,17 @@
     </select>
   </div>
 
-  <!-- No JavaScript Fallback -->
+  <!-- No-JS Fallback -->
   <noscript>
-    <div style="padding:2rem; text-align:center;">
+    <div class="no-js-warning">
       <strong>⚠️ JavaScript is required to run CDL Trainer. Please enable it in your browser settings.</strong>
     </div>
   </noscript>
 
-  <!-- App Logic (must be last to ensure DOM is loaded first) -->
-  <script type="module" src="./app.js"></script>
+  <!-- Your App Logic (deferred) -->
+  <script type="module" src="./app.js" defer></script>
 
-  <!-- Service Worker -->
+  <!-- Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -82,12 +97,12 @@
       });
     }
 
-    // Hide JS error once script has loaded
-    window.addEventListener('DOMContentLoaded', () => {
-      const jsError = document.getElementById('js-error');
-      if (jsError) jsError.style.display = 'none';
+    // Hide error & loading once page is interactive
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('js-error').style.display = 'none';
+      const loader = document.getElementById('loading-screen');
+      if (loader) loader.style.display = 'none';
     });
   </script>
-
 </body>
 </html>

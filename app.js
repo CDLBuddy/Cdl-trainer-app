@@ -225,15 +225,18 @@ function setupNavigation() {
     if (deltaX < -100) await handleNavigation("tests", true);  // swipe left → tests
   });
 
-  // 🔙 Browser back/forward support
-  window.addEventListener("popstate", (e) => {
-    const page = e.state?.page || "home";
-    handleNavigation(page, false); // don't push again
-  });
+// 🔙 Browser back/forward support
+window.addEventListener("popstate", (e) => {
+  const page = e.state?.page || "home";
+  handleNavigation(page, false);
+});
 
-  // 🧭 Load from hash on first visit
-  const hash = location.hash.replace("#", "");
-  if (hash) handleNavigation(hash, false);
+// 🧭 Initial load: hash‐or‐fallback to home
+const hash = location.hash.replace("#", "");
+if (hash) {
+  handleNavigation(hash, false);
+} else {
+  handleNavigation("home", false);
 }
 
 async function handleNavigation(targetPage, pushToHistory = false) {
