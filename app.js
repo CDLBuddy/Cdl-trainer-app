@@ -4,7 +4,7 @@
 
 console.log("✅ app.js loaded");
 
-document.body.innerHTML = "<div style='color:white;background:black;padding:1rem;text-align:center;'>✅ app.js loaded</div>" + document.body.innerHTML;
+// document.body.innerHTML insertion removed to prevent layout override
 
 // ==== Firebase Setup ====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
@@ -168,7 +168,11 @@ onAuthStateChanged(auth, async (user) => {
     currentUserEmail = null;
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) logoutBtn.style.display = "none";
-    setTimeout(() => renderWelcome(), 200);
+    setTimeout(() => {
+      const app = document.getElementById("app");
+      if (app) renderWelcome();
+      else console.error("❌ Could not find #app to render welcome screen.");
+    }, 200);
   }
 });
 
@@ -1329,3 +1333,11 @@ async function sendBroadcast() {
   `;
   setupNavigation();
 }
+
+// ✅ Safe fallback if Firebase is slow or fails
+document.addEventListener("DOMContentLoaded", () => {
+  if (!auth.currentUser) {
+    const app = document.getElementById("app");
+    if (app) renderWelcome();
+  }
+});
