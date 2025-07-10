@@ -1057,3 +1057,275 @@ function renderWelcome() {
   `;
   setupNavigation();
 }
+
+function renderAddStudent() {
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Add Student</h3>
+        <input type="text" id="studentName" placeholder="Student Name" />
+        <input type="email" id="studentEmail" placeholder="Email" />
+        <button onclick="submitNewStudent()">Add</button>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function submitNewStudent() {
+  const name = document.getElementById("studentName").value;
+  const email = document.getElementById("studentEmail").value;
+  const instructorId = auth.currentUser.uid;
+
+  if (!email) return alert("Email is required.");
+
+  await addDoc(collection(db, "users"), {
+    displayName: name,
+    email,
+    role: "student",
+    assignedInstructor: instructorId,
+    checklistProgress: 0,
+    createdAt: new Date().toISOString()
+  });
+
+  closeModal();
+  renderInstructorDashboard();
+}
+
+async function sendMessageToStudents() {
+  const msg = prompt("Enter message for all your students:");
+  if (!msg) return;
+
+  const instructorId = auth.currentUser.uid;
+  const q = query(collection(db, "users"), where("role", "==", "student"), where("assignedInstructor", "==", instructorId));
+  const snap = await getDocs(q);
+
+  for (const doc of snap.docs) {
+    const studentId = doc.id;
+    await addDoc(collection(db, "users", studentId, "messages"), {
+      sender: auth.currentUser.displayName || "Instructor",
+      message: msg,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  alert("Message sent to all students.");
+}
+
+async function viewELDTProgress() {
+  const instructorId = auth.currentUser.uid;
+  const q = query(collection(db, "users"), where("role", "==", "student"), where("assignedInstructor", "==", instructorId));
+  const snap = await getDocs(q);
+
+  let html = "<h3>ELDT Progress</h3><ul>";
+  for (const doc of snap.docs) {
+    const student = doc.data();
+    const progress = student.checklistProgress || 0;
+    html += `<li>${student.displayName || "Student"}: ${progress}%</li>`;
+  }
+  html += "</ul><button onclick='closeModal()'>Close</button>";
+
+  showModal(`<div class="modal-content">${html}</div>`);
+}
+
+async function editUser(userId) {
+  const docRef = doc(db, "users", userId);
+  const docSnap = await getDoc(docRef);
+  if (!docSnap.exists()) return alert("User not found.");
+
+  const user = docSnap.data();
+  const currentRole = user.role || "student";
+  const verified = user.verified ? "checked" : "";
+
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Edit User</h3>
+        <label>Role:
+          <select id="roleSelect">
+            <option value="student" ${currentRole === "student" ? "selected" : ""}>Student</option>
+            <option value="instructor" ${currentRole === "instructor" ? "selected" : ""}>Instructor</option>
+            <option value="admin" ${currentRole === "admin" ? "selected" : ""}>Admin</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="verifyCheck" ${verified}> Verified</label>
+        <button onclick="saveUserEdits('${userId}')">Save</button>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function saveUserEdits(userId) {
+  const role = document.getElementById("roleSelect").value;
+  const verified = document.getElementById("verifyCheck").checked;
+
+  await updateDoc(doc(db, "users", userId), { role, verified });
+  closeModal();
+  renderAdminDashboard();
+}
+
+function editChecklist() {
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Edit Global Checklist</h3>
+        <p>This will open a dedicated editor page for checklists.</p>
+        <button onclick="window.location.href='checklist-editor.html'">Go to Editor</button>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function manageTestBank() {
+  const testsRef = collection(db, "tests");
+  const snapshot = await getDocs(testsRef);
+  let testList = "";
+
+  snapshot.forEach(doc => {
+    const test = doc.data();
+    testList += `<li>${test.title || "Untitled"} <button onclick="editTest('${doc.id}')">Edit</button></li>`;
+  });
+
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Test Bank</h3>
+        <ul>${testList}</ul>
+        <button onclick="addTest()">+ Add New Test</button>
+        <button onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+function editTest(testId) {
+  alert("Test Editor for test ID: " + testId); // You can replace this with a form-based editor
+}
+
+async function viewSystemLogs() {
+  const logsRef = collection(db, "logs");
+  const q = query(logsRef, orderBy("timestamp", "desc"), limit(10));
+  const snapshot = await getDocs(q);
+
+  let logList = "";
+  snapshot.forEach(doc => {
+    const log = doc.data();
+    logList += `<li>${log.message} <small>${log.timestamp}</small></li>`;
+  });
+
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>System Activity Logs</h3>
+        <ul>${logList}</ul>
+        <button onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+function addNewUser() {
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Add New User</h3>
+        <input type="text" id="newUserName" placeholder="Full Name" />
+        <input type="email" id="newUserEmail" placeholder="Email" />
+        <select id="newUserRole">
+          <option value="student">Student</option>
+          <option value="instructor">Instructor</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button onclick="createUser()">Create</button>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function createUser() {
+  const name = document.getElementById("newUserName").value;
+  const email = document.getElementById("newUserEmail").value;
+  const role = document.getElementById("newUserRole").value;
+
+  if (!email) return alert("Email required.");
+  await addDoc(collection(db, "users"), {
+    displayName: name,
+    email,
+    role,
+    verified: false,
+    createdAt: new Date().toISOString()
+  });
+
+  closeModal();
+  renderAdminDashboard();
+}
+
+function addTest() {
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Add New Test</h3>
+        <input type="text" id="newTestTitle" placeholder="Test Title" />
+        <button onclick="createTest()">Create</button>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function createTest() {
+  const title = document.getElementById("newTestTitle").value;
+  if (!title) return alert("Title required.");
+  await addDoc(collection(db, "tests"), { title, questions: [], createdAt: new Date().toISOString() });
+  closeModal();
+  renderAdminDashboard();
+}
+
+function sendAdminBroadcast() {
+  const html = `
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Broadcast Message</h3>
+        <textarea id="broadcastMessage" placeholder="Message to all users"></textarea>
+        <button onclick="sendBroadcast()">Send</button>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function sendBroadcast() {
+  const msg = document.getElementById("broadcastMessage").value;
+  if (!msg) return alert("Message required.");
+
+  await addDoc(collection(db, "notifications"), {
+    message: msg,
+    timestamp: new Date().toISOString(),
+    target: "all"
+  });
+  
+  function renderWalkthrough(container) {
+  container.innerHTML = `
+    <div class="card">
+      <h2>🧭 ELDT Walkthrough</h2>
+      <ul>
+        <li>✅ Identify vehicle type</li>
+        <li>🛠️ Inspect lights, tires, fluids</li>
+        <li>📄 Match FMCSA standards</li>
+      </ul>
+      <button data-nav="home">⬅️ Home</button>
+    </div>
+  `;
+  setupNavigation();
+}
