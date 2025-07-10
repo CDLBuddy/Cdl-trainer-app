@@ -56,8 +56,8 @@ import {
   signInWithEmailAndPassword,
 createUserWithEmailAndPassword,
   sendPasswordResetEmail,
-  updateProfile
-  GoogleAuthProvider
+  updateProfile,
+  GoogleAuthProvider,
   signInWithPopup
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
