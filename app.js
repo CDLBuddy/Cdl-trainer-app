@@ -44,9 +44,11 @@ import {
   onAuthStateChanged,
   signOut,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   updateProfile
+  GoogleAuthProvider
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 const auth = getAuth(app); // ✅ Use the same app instance
@@ -80,6 +82,9 @@ document.body.appendChild(toast);
 // ==== Global User Reference ====
 // Tracks the currently signed-in user's email (set during auth)
 let currentUserEmail = null;
+
+// Alias for student dashboard…
+const renderStudentDashboard = renderDashboard;
 
 // ==== Auth State Listener ====
 console.log("✅ Firebase auth listener attached");
@@ -699,12 +704,6 @@ async function renderAdminDashboard() {
   `;
 
   setupNavigation();
-}
-
-// ==== Auth UI Logic ==== //
-  const type = passwordInput.type === "password" ? "text" : "password";
-  passwordInput.type = type;
-  togglePassword.textContent = type === "password" ? "🙈" : "👁️";
 }
 
 // Dark mode toggle (manual switch)
