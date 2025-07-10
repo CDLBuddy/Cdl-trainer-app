@@ -61,9 +61,12 @@ createUserWithEmailAndPassword,
   signInWithPopup
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
+import { showToast, setupNavigation } from "./ui-helpers.js";
+
 const auth = getAuth(app); 
 
-import { showToast, setupNavigation } from "./ui-helpers.js";
+// Force a sign-out on every page load (for testing the welcome screen)
+signOut(auth).catch(err => console.warn("Forced sign-out failed:", err));
 
 // ==== Toast Notification ====
 function showToast(message, duration = 3000) {
