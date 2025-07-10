@@ -69,7 +69,7 @@ function showToast(message, duration = 3000) {
   toast.style.opacity = "1";
   toast.style.transition = "opacity 0.5s ease";
 
-  document.body.appendChild(toast);
+document.body.appendChild(toast);
 
   setTimeout(() => {
     toast.style.opacity = "0";
@@ -848,7 +848,6 @@ async function renderChecklists(container) {
   if (!snapshot.empty) {
     snapshot.forEach(doc => savedData = doc.data().progress || {});
   }
-
   Object.entries(checklist).forEach(([section, items]) => {
     const fieldset = document.createElement("fieldset");
     fieldset.innerHTML = `<legend>${section}</legend>`;
@@ -1319,7 +1318,7 @@ async function sendBroadcast() {
     target: "all"
   });
   
-  function renderWalkthrough(container) {
+  // Removed duplicate renderWalkthrough
   container.innerHTML = `
     <div class="card">
       <h2>🧭 ELDT Walkthrough</h2>
@@ -1341,3 +1340,123 @@ document.addEventListener("DOMContentLoaded", () => {
     if (app) renderWelcome();
   }
 });
+
+function renderLogin() {
+  const app = document.getElementById("app");
+  if (!app) return;
+  app.innerHTML = \`
+    <div class="login-card fade-in">
+      <h2>🚀 Login or Signup</h2>
+      <form id="login-form">
+        <input id="email" type="email" placeholder="Email" required />
+        <div class="password-wrapper">
+          <input id="password" type="password" placeholder="Password" required />
+          <span id="togglePassword" class="toggle-password">👁️</span>
+        </div>
+        <div id="error-msg" class="error-message" style="display:none;"></div>
+        <button id="login-submit" type="submit">Login / Signup</button>
+      </form>
+      <div class="alt-login-buttons">
+        <button id="google-login" class="btn-google">Continue with Google</button>
+        <button id="apple-login" class="btn-apple"> Apple Login</button>
+        <button id="sms-login" class="btn-sms">📱 SMS Login</button>
+        <p><a href="#" id="reset-password">Forgot password?</a></p>
+      </div>
+    </div>
+  \`;
+  setupNavigation(); // enable nav links inside login
+
+  // Bind events
+  const togglePassword = document.getElementById("togglePassword");
+  const passwordInput = document.getElementById("password");
+  const emailInput = document.getElementById("email");
+  const errorMsg = document.getElementById("error-msg");
+  const loginForm = document.getElementById("login-form");
+  togglePassword?.addEventListener("click", () => {
+    const type = passwordInput.type === "password" ? "text" : "password";
+    passwordInput.type = type;
+    togglePassword.textContent = type === "password" ? "🙈" : "👁️";
+  });
+ loginForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    errorMsg.style.display = "none";
+
+    if (!email || !password) {
+      errorMsg.textContent = "Please enter both email and password.";
+      errorMsg.style.display = "block";
+      return;
+    }
+    document.getElementById("login-submit").disabled = true;
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      if (err.code === "auth/user-not-found") {
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          await addDoc(collection(db, "users"), {
+            uid: cred.user.uid,
+            email,
+            name: "CDL User",
+            role: "student",
+            verified: false,
+            createdAt: new Date().toISOString(),
+            lastLogin: new Date().toISOString(),
+          });
+          alert("🎉 Account created and signed in!");
+        } catch (signupErr) {
+          errorMsg.textContent = signupErr.message;
+          errorMsg.style.display = "block";
+        }
+      } else {
+        errorMsg.textContent = err.message;
+        errorMsg.style.display = "block";
+      }
+    } finally {
+      document.getElementById("login-submit").disabled = false;
+    }
+  });
+  document.getElementById("reset-password")?.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    if (!email) return alert("Enter your email to receive a reset link.");
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("📬 Reset link sent!");
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  });
+  document.getElementById("google-login")?.addEventListener("click", async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      alert("Google Sign-In failed: " + err.message);
+    }
+  });
+  document.getElementById("apple-login")?.addEventListener("click", () => {
+    alert("🚧 Apple Login is coming soon. Stay tuned!");
+  });
+
+  document.getElementById("sms-login")?.addEventListener("click", () => {
+    alert("🚧 SMS Login is coming soon. Stay tuned!");
+  });
+}
+
+function renderWalkthrough(container) {
+  container.innerHTML = \`
+    <div class="card">
+      <h2>🧭 ELDT Walkthrough</h2>
+      <ul>
+        <li>✅ Identify vehicle type</li>
+        <li>🛠️ Inspect lights, tires, fluids</li>
+        <li>📄 Match FMCSA standards</li>
+      </ul>
+      <button data-nav="home">⬅️ Home</button>
+    </div>
+  \`;
+  setupNavigation();
+}
