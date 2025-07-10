@@ -790,3 +790,70 @@ input:focus, select:focus {
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   animation: fadeIn 0.4s ease-out;
 }
+
+/* === Checklist Form Styling === */
+.checklist-form fieldset {
+  border: 1px solid #444;
+  padding: 1em;
+  margin-bottom: 1em;
+  border-radius: 8px;
+  background-color: var(--card-bg, #1a1a1a);
+}
+
+.checklist-form legend {
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  color: var(--text-light, #fff);
+}
+
+/* === Checklist Buttons Container === */
+.checklist-buttons {
+  display: flex;
+  gap: 1em;
+  margin-top: 1em;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* === Instructor Results Styling === */
+.instructor-results .card.mini {
+  margin-top: 1em;
+  background-color: var(--card-bg-alt, #222);
+  border-left: 4px solid var(--primary, #2e8b57);
+}
+
+/* === Test Results Display Grid === */
+.results-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  justify-content: center;
+  margin-top: 1em;
+}
+
+/* === Result Card Enhancements === */
+.result-card {
+  background-color: var(--card-bg, #1f1f1f);
+  padding: 1em;
+  border-radius: 10px;
+  width: 280px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: transform 0.2s;
+}
+
+.result-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+.result-card h3 {
+  margin-top: 0;
+  color: var(--accent, #66ccff);
+}
+
+/* === Empty State Styling === */
+.empty-state {
+  text-align: center;
+  padding: 2em;
+  color: #999;
+}
