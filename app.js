@@ -2,6 +2,16 @@
 // Security enhancements, abuse protection, dark mode sync, language persistence, and error handling improvements
 // Do not modify unless updating global protections or navigation core
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Global error catcher to show parse/runtime errors via alert
+window.addEventListener('error', function(event) {
+  alert(
+    '⚠️ app.js error:\\n' +
+    event.message + '\\n' +
+    'at ' + event.filename + ':' + event.lineno
+  );
+});
+// ──────────────────────────────────────────────────────────────────────────────
 console.log("✅ app.js loaded");
 
 // document.body.innerHTML insertion removed to prevent layout override
