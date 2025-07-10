@@ -1338,6 +1338,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function renderLogin() {
+  alert("🛠️ renderLogin() called");
   const app = document.getElementById("app");
   if (!app) return;
   app.innerHTML = `
