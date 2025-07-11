@@ -205,10 +205,14 @@ onAuthStateChanged(auth, async (user) => {
     if (logoutBtn) logoutBtn.style.display = "none";
 
     setTimeout(() => {
-      const appEl = document.getElementById("app");
-      if (appEl) renderWelcome();
-      else console.error("❌ Could not find #app to render welcome screen.");
-    }, 200);
+  const appEl = document.getElementById("app");
+  if (appEl) {
+    renderWelcome();
+    setupNavigation();  // ✅ Safe to call here, after welcome is rendered
+  } else {
+    console.error("❌ Could not find #app to render welcome screen.");
+  }
+}, 200);
   }
 });
 
@@ -1183,7 +1187,6 @@ function renderWelcome() {
       </div>
     </div>
   `;
-  setupNavigation();
 }
 
 // === Admin/Instructor Utilities ===
