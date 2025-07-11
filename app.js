@@ -156,6 +156,7 @@ async function renderChecklistSection(sectionId) {
   setupNavigation();
 
   try {
+    // 1️⃣ Load existing progress
     const email = auth.currentUser.email;
     console.log(' • currentUser.email =', email);
 
@@ -168,22 +169,36 @@ async function renderChecklistSection(sectionId) {
     const data = snap.exists() ? snap.data().progress : {};
     console.log(' • loaded data =', data);
 
-    const defaultItems = (sectionId === 1) ? {
-      "Check mirrors and windshield": false,
-      "Test horn and lights": false,
-      "Inspect tires and wheels": false
-    } : (sectionId === 2) ? {
-      "Connect glad hands securely": false,
-      "Check air lines for leaks": false,
-      "Test trailer brakes": false
-    } : (sectionId === 3) ? {
-      "Adjust steering wheel and seat": false,
-      "Practice backing straight": false,
-      "Practice backing around corner": false
-    } : {};
-
+    // 2️⃣ Define defaults per section
+    let defaultItems;
+    switch (sectionId) {
+      case 1:
+        defaultItems = {
+          "Check mirrors and windshield": false,
+          "Test horn and lights":         false,
+          "Inspect tires and wheels":     false
+        };
+        break;
+      case 2:
+        defaultItems = {
+          "Connect glad hands securely": false,
+          "Check air lines for leaks":   false,
+          "Test trailer brakes":         false
+        };
+        break;
+      case 3:
+        defaultItems = {
+          "Adjust steering wheel and seat": false,
+          "Practice backing straight":      false,
+          "Practice backing around corner": false
+        };
+        break;
+      default:
+        defaultItems = {};
+    }
     console.log(' • defaultItems =', defaultItems);
 
+    // 3️⃣ Merge and render
     const progress = { ...defaultItems, ...data };
     console.log(' • merged progress =', progress);
 
@@ -196,9 +211,9 @@ async function renderChecklistSection(sectionId) {
         </label>
       `
     ).join('');
-
     console.log(' • rendered checkboxes');
 
+    // 4️⃣ Wire up persistence
     container.querySelectorAll('input[type=checkbox]').forEach(cb => {
       cb.addEventListener('change', async e => {
         const key = e.target.dataset.item;
@@ -207,11 +222,17 @@ async function renderChecklistSection(sectionId) {
         console.log(` • saved ${key}=${e.target.checked}`);
       });
     });
+
   } catch (err) {
+    // Display the real error message
+    alert('Checklist load error:\n' + err.message);
     console.error('❌ renderChecklistSection error:', err);
-    document.getElementById('items-container').innerText = 'Error loading checklist.';
+    document
+      .getElementById('items-container')
+      .innerText = 'Error loading checklist.';
   }
 }
+
 async function renderTest(topic) {
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
