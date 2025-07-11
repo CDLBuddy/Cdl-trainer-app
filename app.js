@@ -103,11 +103,41 @@ async function renderChecklistSection(sectionId) {
   appEl.innerHTML = `
     <div class="dashboard-card fade-in">
       <h2>📋 Checklist Section ${sectionId}</h2>
-      <p>Loading questions for section ${sectionId}…</p>
+      <div id="items-container">Loading questions for section ${sectionId}…</div>
       <button data-nav="checklists" class="btn-block">← Back to Checklist</button>
     </div>
   `;
   setupNavigation();
+
+  const email  = auth.currentUser.email;
+  const ref    = doc(db, 'eldtProgress', `${email}-section-${sectionId}`);
+  const snap   = await getDoc(ref);
+  const data   = snap.exists() ? snap.data().progress : {};
+
+  // Replace these defaults with your real checklist items for this section
+  const defaultItems = {
+    "Pre-Trip Inspection": false,
+    "Coupling/Uncoupling": false,
+    "Basic Vehicle Control": false
+  };
+  const progress = { ...defaultItems, ...data };
+
+  const container = document.getElementById('items-container');
+  container.innerHTML = Object.entries(progress).map(
+    ([item, done]) => `
+      <label class="checklist-item">
+        <input type="checkbox" data-item="${item}" ${done ? 'checked' : ''}/>
+        ${item}
+      </label>
+    `
+  ).join('');
+  container.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', async e => {
+      const key = e.target.dataset.item;
+      progress[key] = e.target.checked;
+      await setDoc(ref, { progress }, { merge: true });
+    });
+  });
 }
 
 async function renderTest(topic) {
@@ -157,6 +187,8 @@ import {
 const firebaseApp = initializeApp(firebaseConfig);
 const auth        = getAuth(firebaseApp);
 const db          = getFirestore(firebaseApp);
+
+      // Login
 
 function renderLogin() {
   const appEl = document.getElementById('app');
