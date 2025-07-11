@@ -14,24 +14,27 @@ body {
   font-family: sans-serif;
   background: var(--bg);
   color: var(--text);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  display: block;
+  margin: 0;
+  padding: 2rem 1rem 1rem;
 }
 
 #app {
+  margin: 0 auto;
   width: 100%;
   max-width: 400px;
-  padding: 2rem;
+  padding: 1rem 1.5rem 2rem;
 }
 
-.card {
+.card,
+.login-card,
+.dashboard-card {
   background: #fff;
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   text-align: center;
+  margin-bottom: 1.5rem;
 }
 
 button {
@@ -43,4 +46,15 @@ button {
   font-size: 1rem;
   cursor: pointer;
   margin-top: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out both;
 }
