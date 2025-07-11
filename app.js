@@ -1,6 +1,4 @@
-// app.js
-
-// ▶️ UI helpers (all in one place)
+// 1️⃣ UI helpers (all in one place)
 import {
   setupNavigation,
   showToast,
@@ -9,6 +7,8 @@ import {
   openStudentHelpForm
 } from './ui-helpers.js';
 
+// 2️⃣ PAGE-LEVEL RENDER FUNCTIONS
+// 
 export async function renderChecklists() {
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
@@ -43,14 +43,12 @@ export async function renderTestStart() {
       <button data-nav="" class="btn-block btn-secondary">← Back to Dashboard</button>
     </div>
   `;
-  document.getElementById('begin-test').addEventListener('click', () => {
-    const topic = document.getElementById('test-topic').value;
-    // TODO: replace with real test-render call, e.g. renderTest(topic)
-    showToast(`Starting ${topic} test…`);
-  });
-  setupNavigation();
-}
 
+document.getElementById('begin-test').addEventListener('click', () => {
+  const topic = document.getElementById('test-topic').value;
+  renderTest(topic);                  
+});  
+    
 export async function renderTestResults() {
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
@@ -87,57 +85,47 @@ export async function renderLicenseSelector() {
       <button data-nav="" class="btn-block btn-secondary">← Back to Dashboard</button>
     </div>
   `;
-  document.getElementById('license-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const license = document.getElementById('license-type').value;
-    const experience = document.getElementById('experience-level').value;
-    // TODO: save to Firestore, then:
-    showToast('Profile updated!');
-    window.location.hash = '';
+
+document.getElementById('license-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const license   = document.getElementById('license-type').value;
+  const experience= document.getElementById('experience-level').value;
+  await setDoc(doc(db, "licenseSelection", auth.currentUser.uid), {
+    studentId:     auth.currentUser.email,
+    licenseType:   license,
+    experience:    experience,
+    updatedAt:     new Date().toISOString()
   });
+  showToast('🎉 Profile updated!');
+  window.location.hash = '';
+});    
+
+// ▶️ Stub sections for checklist and test flows
+async function renderChecklistSection(sectionId) {
+  const appEl = document.getElementById('app');
+  appEl.innerHTML = `
+    <div class="dashboard-card fade-in">
+      <h2>📋 Checklist Section ${sectionId}</h2>
+      <p>Loading questions for section ${sectionId}…</p>
+      <button data-nav="checklists" class="btn-block">← Back to Checklist</button>
+    </div>
+  `;
   setupNavigation();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 4️⃣ Route map: hash → renderer
-// ─────────────────────────────────────────────────────────────────────────────
-const routes = {
-  ""              : renderDashboard,      // default post-login view
-  "checklists"    : renderChecklists,
-  "tests"         : renderTestStart,
-  "results"       : renderTestResults,
-  "license"       : renderLicenseSelector,
-  "coach"         : openStudentHelpForm,
-  // You can add instructor/admin routes here later
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 5️⃣ Router handler
-// ─────────────────────────────────────────────────────────────────────────────
-function handleRoute() {
-  // strip leading "#" or "#/"
-  const name     = location.hash.replace(/^#\/?/, "");
-  const renderer = routes[name] || routes[""];
-  renderer();
+async function renderTest(topic) {
+  const appEl = document.getElementById('app');
+  appEl.innerHTML = `
+    <div class="dashboard-card fade-in">
+      <h2>📝 ${topic.charAt(0).toUpperCase() + topic.slice(1)} Test</h2>
+      <p>Loading questions for "${topic}"…</p>
+      <button data-nav="tests" class="btn-block">← Back to Test Menu</button>
+    </div>
+  `;
+  setupNavigation();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 6️⃣ Wire up hashchange + initial load
-// ─────────────────────────────────────────────────────────────────────────────
-window.addEventListener("hashchange", handleRoute);
-window.addEventListener("DOMContentLoaded", () => {
-  // If user is already signed in, go to the current hash, otherwise login
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      handleRoute();
-    } else {
-      renderLogin();
-    }
-  });
-});
-
-// ------------------------------------------------------------------------------------------
-// 1️⃣ Your Firebase config
+// 3️⃣ Your Firebase config
 const firebaseConfig = {
   apiKey:            "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
   authDomain:        "cdltrainerapp.firebaseapp.com",
@@ -148,14 +136,13 @@ const firebaseConfig = {
   measurementId:     "G-MJ22BD2J1J"
 };
 
-// ------------------------------------------------------------------------------------------
-// 2️⃣ Import & initialize Firebase App, Auth & Firestore
+// 4️⃣ Import & initialize Firebase App, Auth & Firestore
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
 import {
-  getAuth,                        // ← you need this
+  getAuth,                        
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   GoogleAuthProvider,
   signInWithPopup
@@ -166,23 +153,17 @@ import {
   addDoc,
   getDocs,
   query,
-  where
+  where,
+  doc,
+  set doc,
 } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth        = getAuth(firebaseApp);
 const db          = getFirestore(firebaseApp);
-
-// ------------------------------------------------------------------------------------------
-// 3️⃣ Your full renderLogin() implementation
+    
+// 5️⃣ Your full renderLogin() implementation
 function renderLogin() {
-  // (Optional) Visual debug border -- remove when stable
-  document.body.style.border = "4px solid magenta";
-
-  const appEl = document.getElementById("app");
-  if (!appEl) return;
-
-  // 1) Inject login HTML
   appEl.innerHTML = `
     <div class="login-card fade-in">
       <h2>🚀 Login or Signup</h2>
@@ -204,10 +185,7 @@ function renderLogin() {
     </div>
   `;
 
-  // 2) Wire up navigation links on any [data-nav] buttons
-  setupNavigation();
-
-  // 3) Query DOM only _after_ the HTML is in place
+  // Query DOM only _after_ the HTML is in place
   const loginForm     = document.getElementById("login-form");
   const emailInput    = document.getElementById("email");
   const passwordInput = document.getElementById("password");
@@ -300,7 +278,7 @@ function renderLogin() {
   smsBtn.addEventListener("click",   () => alert("🚧 SMS Login coming soon."));
 }
 
-// === Dashboards === //
+// 6️⃣ === Dashboards === //
 async function renderDashboard() {
   const appEl = document.getElementById("app");
   appEl.innerHTML = `<div class="dashboard-card slide-in-up fade-in">Loading your dashboard...</div>`;
@@ -425,24 +403,39 @@ async function renderDashboard() {
   setupNavigation();
 }
 
-// ------------------------------------------------------------------------------------------
-// 4️⃣ Auth‐state listener: shows login if signed out,
-//    or your post-login dashboard if signed in.
-onAuthStateChanged(auth, (user) => {
-  console.log("🔥 onAuthStateChanged fired, user =", user);
-  setupNavigation();
+// 7️⃣ Route map: hash → renderer
+// 
 
-  if (user) {
-    console.log("✅ User signed in, calling renderDashboard()");
-    renderDashboard();
-  } else {
-    console.log("🔒 No user, calling renderLogin()");
-    renderLogin();
-  }
-});
+const routes = {
+  ""                    : renderDashboard,
+  "checklists"          : renderChecklists,
+  "checklist-section-1" : () => renderChecklistSection(1),
+  "checklist-section-2" : () => renderChecklistSection(2),
+  "checklist-section-3" : () => renderChecklistSection(3),
+  "tests"               : renderTestStart,
+  "test-general"        : () => renderTest('general'),
+  "test-air-brakes"     : () => renderTest('air-brakes'),
+  "test-combination"    : () => renderTest('combination'),
+  "results"             : renderTestResults,
+  "license"             : renderLicenseSelector,
+  "coach"               : openStudentHelpForm,
+};
 
-// ------------------------------------------------------------------------------------------
-// 5️⃣ Fallback for initial page load
-window.addEventListener('DOMContentLoaded', () => {
-  // onAuthStateChanged will immediately fire with the current user (or null)
+function handleRoute() {
+  const key = location.hash.replace(/^#\/?/, "");
+  (routes[key] || routes[""])();
+}
+
+// APP BOOTSTRAP & AUTH LISTENER
+//
+
+window.addEventListener("hashchange", handleRoute);
+window.addEventListener("DOMContentLoaded", () => {
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      handleRoute();
+    } else {
+      renderLogin();
+    }
+  });
 });
