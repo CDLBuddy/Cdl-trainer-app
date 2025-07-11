@@ -1,4 +1,5 @@
-// 1️⃣ UI helpers (all in one place)
+// app.js
+
 import {
   setupNavigation,
   showToast,
@@ -7,8 +8,6 @@ import {
   openStudentHelpForm
 } from './ui-helpers.js';
 
-// 2️⃣ PAGE-LEVEL RENDER FUNCTIONS
-// 
 export async function renderChecklists() {
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
@@ -19,7 +18,6 @@ export async function renderChecklists() {
         <li>Section 1: Pre-Trip Inspection <button class="btn-small" data-nav="checklist-section-1">Go</button></li>
         <li>Section 2: Coupling/Uncoupling <button class="btn-small" data-nav="checklist-section-2">Go</button></li>
         <li>Section 3: Basic Vehicle Control <button class="btn-small" data-nav="checklist-section-3">Go</button></li>
-        <!-- add more sections as needed -->
       </ul>
       <button data-nav="" class="btn-block">← Back to Dashboard</button>
     </div>
@@ -37,25 +35,24 @@ export async function renderTestStart() {
         <option value="general">General Knowledge</option>
         <option value="air-brakes">Air Brakes</option>
         <option value="combination">Combination Vehicles</option>
-        <!-- etc. -->
       </select>
       <button id="begin-test" class="btn-block">Start Test</button>
       <button data-nav="" class="btn-block btn-secondary">← Back to Dashboard</button>
     </div>
   `;
+  document.getElementById('begin-test').addEventListener('click', () => {
+    const topic = document.getElementById('test-topic').value;
+    renderTest(topic);
+  });
+  setupNavigation();
+}
 
-document.getElementById('begin-test').addEventListener('click', () => {
-  const topic = document.getElementById('test-topic').value;
-  renderTest(topic);                  
-});  
-    
 export async function renderTestResults() {
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
     <div class="dashboard-card fade-in">
       <h2>📊 Past Test Results</h2>
       <p>Loading your past results…</p>
-      <!-- TODO: fetch and list results from Firestore -->
       <ul class="results-list">
         <li>No results found.</li>
       </ul>
@@ -85,22 +82,22 @@ export async function renderLicenseSelector() {
       <button data-nav="" class="btn-block btn-secondary">← Back to Dashboard</button>
     </div>
   `;
-
-document.getElementById('license-form').addEventListener('submit', async e => {
-  e.preventDefault();
-  const license   = document.getElementById('license-type').value;
-  const experience= document.getElementById('experience-level').value;
-  await setDoc(doc(db, "licenseSelection", auth.currentUser.uid), {
-    studentId:     auth.currentUser.email,
-    licenseType:   license,
-    experience:    experience,
-    updatedAt:     new Date().toISOString()
+  document.getElementById('license-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const license   = document.getElementById('license-type').value;
+    const experience= document.getElementById('experience-level').value;
+    await setDoc(doc(db, "licenseSelection", auth.currentUser.uid), {
+      studentId:   auth.currentUser.email,
+      licenseType: license,
+      experience:  experience,
+      updatedAt:   new Date().toISOString()
+    });
+    showToast('🎉 Profile updated!');
+    window.location.hash = '';
   });
-  showToast('🎉 Profile updated!');
-  window.location.hash = '';
-});    
+  setupNavigation();
+}
 
-// ▶️ Stub sections for checklist and test flows
 async function renderChecklistSection(sectionId) {
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
@@ -125,24 +122,23 @@ async function renderTest(topic) {
   setupNavigation();
 }
 
-// 3️⃣ Your Firebase config
+// Firebase Config & Initialization
 const firebaseConfig = {
   apiKey:            "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
   authDomain:        "cdltrainerapp.firebaseapp.com",
   projectId:         "cdltrainerapp",
   storageBucket:     "cdltrainerapp.appspot.com",
   messagingSenderId: "977549527480",
-  appId:             "1:977549527480:web=e959926bb02a4cef65674d",
+  appId:             "1:977549527480:web:e959926bb02a4cef65674d",
   measurementId:     "G-MJ22BD2J1J"
 };
 
-// 4️⃣ Import & initialize Firebase App, Auth & Firestore
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
 import {
-  getAuth,                        
+  getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-createUserWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   GoogleAuthProvider,
   signInWithPopup
@@ -155,15 +151,15 @@ import {
   query,
   where,
   doc,
-  set doc
+  setDoc
 } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth        = getAuth(firebaseApp);
 const db          = getFirestore(firebaseApp);
-    
-// 5️⃣ Your full renderLogin() implementation
+
 function renderLogin() {
+  const appEl = document.getElementById('app');
   appEl.innerHTML = `
     <div class="login-card fade-in">
       <h2>🚀 Login or Signup</h2>
@@ -184,8 +180,8 @@ function renderLogin() {
       </div>
     </div>
   `;
+  setupNavigation();
 
-  // Query DOM only _after_ the HTML is in place
   const loginForm     = document.getElementById("login-form");
   const emailInput    = document.getElementById("email");
   const passwordInput = document.getElementById("password");
@@ -197,14 +193,12 @@ function renderLogin() {
   const smsBtn        = document.getElementById("sms-login");
   const resetLink     = document.getElementById("reset-password");
 
-  // 👁️ Toggle password visibility
   toggleBtn.addEventListener("click", () => {
     const isHidden = passwordInput.type === "password";
     passwordInput.type = isHidden ? "text" : "password";
     toggleBtn.textContent = isHidden ? "🙈" : "👁️";
   });
 
-  // 🔑 Login / Signup Handler
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = emailInput.value.trim();
@@ -247,7 +241,6 @@ function renderLogin() {
     }
   });
 
-  // 📬 Reset Password Handler
   resetLink.addEventListener("click", async (e) => {
     e.preventDefault();
     const email = emailInput.value.trim();
@@ -263,7 +256,6 @@ function renderLogin() {
     }
   });
 
-  // 🌐 Google Sign-In
   googleBtn.addEventListener("click", async () => {
     try {
       const provider = new GoogleAuthProvider();
@@ -273,79 +265,53 @@ function renderLogin() {
     }
   });
 
-  // 🚧 Placeholder for unimplemented flows
   appleBtn.addEventListener("click", () => alert("🚧 Apple Login coming soon."));
   smsBtn.addEventListener("click",   () => alert("🚧 SMS Login coming soon."));
 }
 
-// 6️⃣ === Dashboards === //
 async function renderDashboard() {
+  document.body.style.border = ""; 
   const appEl = document.getElementById("app");
   appEl.innerHTML = `<div class="dashboard-card slide-in-up fade-in">Loading your dashboard...</div>`;
   const container = document.querySelector(".dashboard-card");
 
-  const currentUser       = auth.currentUser;
-  const currentUserEmail  = currentUser?.email || "unknown";
-  const name              = currentUserEmail.split("@")[0];
-  const roleBadge         = getRoleBadge(currentUserEmail);
-  const aiTip             = await getAITipOfTheDay();
-
+  const user = auth.currentUser;
+  const email = user?.email || "unknown";
+  const name = email.split("@")[0];
+  const roleBadge = getRoleBadge(email);
+  const aiTip = await getAITipOfTheDay();
   document.body.classList.toggle("dark-mode", new Date().getHours() >= 18);
 
-  let license        = "Not selected",
-      experience     = "Unknown",
-      streak         = 0;
-  let testData       = null,
-      checklistPct   = 0;
+  let total = 0, done = 0, checklistPct = 0, testData = null, license = "Not selected", experience = "Unknown", streak = 0;
 
-  // ELDT Progress
-  const eldtSnap = await getDocs(
-    query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail))
-  );
-  let total = 0, done = 0;
+  const eldtSnap = await getDocs(query(collection(db, "eldtProgress"), where("studentId", "==", email)));
   eldtSnap.forEach(doc => {
-    const prog = doc.data().progress;
-    Object.values(prog).forEach(sec =>
-      Object.values(sec).forEach(val => {
-        total++;
-        if (val) done++;
-      })
+    Object.values(doc.data().progress).forEach(sec =>
+      Object.values(sec).forEach(val => { total++; if (val) done++; })
     );
   });
-  checklistPct = total ? Math.round((done / total) * 100) : 0;
+  checklistPct = total ? Math.round((done/total)*100) : 0;
 
-  // Latest Test
-  const testSnap = await getDocs(
-    query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
-  );
+  const testSnap = await getDocs(query(collection(db, "testResults"), where("studentId", "==", email)));
   testSnap.forEach(doc => {
     const d = doc.data();
-    if (!testData || d.timestamp.toDate() > testData.timestamp.toDate()) {
-      testData = d;
-    }
+    if (!testData || d.timestamp.toDate() > testData.timestamp.toDate()) testData = d;
   });
 
-  // License & Experience
-  const licenseSnap = await getDocs(
-    query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail))
-  );
-  licenseSnap.forEach(doc => license = doc.data().licenseType || license);
+  const licSnap = await getDocs(query(collection(db, "licenseSelection"), where("studentId", "==", email)));
+  licSnap.forEach(doc => license = doc.data().licenseType || license);
 
-  const expSnap = await getDocs(
-    query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail))
-  );
+  const expSnap = await getDocs(query(collection(db, "experienceResponses"), where("studentId", "==", email)));
   expSnap.forEach(doc => experience = doc.data().experience || experience);
 
-  // Study Streak
-  const today    = new Date().toDateString();
-  let studyLog   = JSON.parse(localStorage.getItem("studyLog") || "[]");
+  const today = new Date().toDateString();
+  let studyLog = JSON.parse(localStorage.getItem("studyLog") || "[]");
   if (!studyLog.includes(today)) {
     studyLog.push(today);
     localStorage.setItem("studyLog", JSON.stringify(studyLog));
   }
-  const cutoff   = new Date();
-  cutoff.setDate(cutoff.getDate() - 6);
-  streak         = studyLog.filter(date => new Date(date) >= cutoff).length;
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 6);
+  streak = studyLog.filter(d => new Date(d) >= cutoff).length;
 
   const showChecklistBtn = checklistPct < 100;
   const showTestBtn      = !testData;
@@ -354,18 +320,14 @@ async function renderDashboard() {
     <h1>Welcome back, ${name}!</h1>
     ${roleBadge}
     <div class="ai-tip-box">💡 ${aiTip}</div>
-
     <div class="dashboard-summary">
       <div class="dashboard-card">
         <h3>📋 Checklist Progress</h3>
-        <div class="progress-track">
-          <div class="progress-fill" style="width:${checklistPct}%;"></div>
-        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${checklistPct}%;"></div></div>
         <p>${checklistPct}% complete</p>
-        ${checklistPct < 100 ? `<span class="notify-bubble">!</span>` : ""}
+        ${showChecklistBtn ? `<span class="notify-bubble">!</span>` : ""}
         <button data-nav="checklists">View Checklist</button>
       </div>
-
       <div class="dashboard-card">
         <h3>🧪 Latest Test</h3>
         ${testData ? `
@@ -373,61 +335,49 @@ async function renderDashboard() {
           <p>${testData.correct}/${testData.total} correct</p>
           <p><small>${new Date(testData.timestamp.toDate()).toLocaleDateString()}</small></p>
         ` : `<p>No tests taken yet.</p>`}
-        ${!testData ? `<span class="notify-bubble">!</span>` : ""}
+        ${showTestBtn ? `<span class="notify-bubble">!</span>` : ""}
         <button data-nav="results">View All Results</button>
       </div>
-
       <div class="dashboard-card">
         <h3>🧾 Your Profile</h3>
-        <p>Email: ${currentUserEmail}</p>
-        <p>License: ${license}</p>
-        <p>Experience: ${experience}</p>
-        ${license === "Not selected" ? `<span class="notify-bubble">!</span>` : ""}
+        <p>Email: ${email}</p><p>License: ${license}</p><p>Experience: ${experience}</p>
+        ${license==="Not selected"?`<span class="notify-bubble">!</span>`:""}
         <button data-nav="license">Update Info</button>
       </div>
-
       <div class="dashboard-card">
         <h3>🔥 Study Streak</h3>
-        <p>${streak} day${streak !== 1 ? "s" : ""} active this week</p>
+        <p>${streak} day${streak!==1?"s":""} active this week</p>
         <button onclick="openStudentHelpForm()">Ask the AI Coach</button>
       </div>
     </div>
-
     <div class="dashboard-actions">
-      ${showChecklistBtn ? `<button data-nav="checklists">Resume Checklist</button>` : ""}
-      ${showTestBtn      ? `<button data-nav="tests">Start First Test</button>` : ""}
+      ${showChecklistBtn?`<button data-nav="checklists">Resume Checklist</button>`:""}
+      ${showTestBtn?`<button data-nav="tests">Start First Test</button>`:""}
       <button data-nav="coach">🎧 Talk to AI Coach</button>
     </div>
   `;
-
   setupNavigation();
 }
 
-// 7️⃣ Route map: hash → renderer
-// 
-
 const routes = {
-  ""                    : renderDashboard,
-  "checklists"          : renderChecklists,
-  "checklist-section-1" : () => renderChecklistSection(1),
-  "checklist-section-2" : () => renderChecklistSection(2),
-  "checklist-section-3" : () => renderChecklistSection(3),
-  "tests"               : renderTestStart,
-  "test-general"        : () => renderTest('general'),
-  "test-air-brakes"     : () => renderTest('air-brakes'),
-  "test-combination"    : () => renderTest('combination'),
-  "results"             : renderTestResults,
-  "license"             : renderLicenseSelector,
-  "coach"               : openStudentHelpForm,
+  "":                   renderDashboard,
+  "checklists":         renderChecklists,
+  "checklist-section-1": () => renderChecklistSection(1),
+  "checklist-section-2": () => renderChecklistSection(2),
+  "checklist-section-3": () => renderChecklistSection(3),
+  "tests":              renderTestStart,
+  "test-general":       () => renderTest('general'),
+  "test-air-brakes":    () => renderTest('air-brakes'),
+  "test-combination":   () => renderTest('combination'),
+  "results":            renderTestResults,
+  "license":            renderLicenseSelector,
+  "coach":              openStudentHelpForm
 };
 
 function handleRoute() {
   const key = location.hash.replace(/^#\/?/, "");
   (routes[key] || routes[""])();
 }
-
-// APP BOOTSTRAP & AUTH LISTENER
-//
 
 window.addEventListener("hashchange", handleRoute);
 window.addEventListener("DOMContentLoaded", () => {
