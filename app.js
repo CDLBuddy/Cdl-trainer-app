@@ -1,6 +1,13 @@
 // app.js
 
-import { setupNavigation, showToast } from './ui-helpers.js';
+// ▶️ UI helpers (all in one place)
+import {
+  setupNavigation,
+  showToast,
+  getRoleBadge,
+  getAITipOfTheDay,
+  openStudentHelpForm
+} from './ui-helpers.js';
 
 // ------------------------------------------------------------------------------------------
 // 1️⃣ Your Firebase config
@@ -10,27 +17,18 @@ const firebaseConfig = {
   projectId:         "cdltrainerapp",
   storageBucket:     "cdltrainerapp.appspot.com",
   messagingSenderId: "977549527480",
-  appId:             "1:977549527480:web:e959926bb02a4cef65674d",
+  appId:             "1:977549527480:web=e959926bb02a4cef65674d",
   measurementId:     "G-MJ22BD2J1J"
 };
 
 // ------------------------------------------------------------------------------------------
-// ▶️ UI helpers (add the new helpers here)
-import {
-  setupNavigation,
-  showToast,
-  getRoleBadge,
-  getAITipOfTheDay,
-  openStudentHelpForm
-} from './ui-helpers.js';
-
 // 2️⃣ Import & initialize Firebase App, Auth & Firestore
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
 import {
-  getAuth,
+  getAuth,                        // ← you need this
   onAuthStateChanged,
   signInWithEmailAndPassword,
-createUserWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   GoogleAuthProvider,
   signInWithPopup
