@@ -109,12 +109,11 @@ async function renderChecklistSection(sectionId) {
   `;
   setupNavigation();
 
-  const email  = auth.currentUser.email;
-  const ref    = doc(db, 'eldtProgress', `${email}-section-${sectionId}`);
-  const snap   = await getDoc(ref);
-  const data   = snap.exists() ? snap.data().progress : {};
+  const email = auth.currentUser.email;
+  const ref   = doc(db, 'eldtProgress', `${email}-section-${sectionId}`);
+  const snap  = await getDoc(ref);
+  const data  = snap.exists() ? snap.data().progress : {};
 
-  // Replace these defaults with your real checklist items for this section
   const defaultItems = {
     "Pre-Trip Inspection": false,
     "Coupling/Uncoupling": false,
@@ -131,6 +130,7 @@ async function renderChecklistSection(sectionId) {
       </label>
     `
   ).join('');
+
   container.querySelectorAll('input[type=checkbox]').forEach(cb => {
     cb.addEventListener('change', async e => {
       const key = e.target.dataset.item;
