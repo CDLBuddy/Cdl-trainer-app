@@ -53,11 +53,6 @@ const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
-// (Optional) Force sign-out on every page load for testing
-signOut(auth).catch(err =>
-  console.warn("Forced sign-out failed:", err)
-);
-
 // ==== Toast Notification ====
 function showToast(message, duration = 3000) {
   const toast = document.createElement("div");
