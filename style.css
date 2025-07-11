@@ -3,6 +3,12 @@
   --bg: #f0f4f8;
   --text: #333;
 }
+.fullscreen-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
 
 * {
   box-sizing: border-box;
