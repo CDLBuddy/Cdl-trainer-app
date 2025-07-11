@@ -1,16 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Firebase Config & Initialization
+// 1️⃣ Imports (all `import` statements first)
 // ─────────────────────────────────────────────────────────────────────────────
-const firebaseConfig = {
-  apiKey:            "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
-  authDomain:        "cdltrainerapp.firebaseapp.com",
-  projectId:         "cdltrainerapp",
-  storageBucket:     "cdltrainerapp.appspot.com",
-  messagingSenderId: "977549527480",
-  appId:             "1:977549527480:web:e959926bb02a4cef65674d",
-  measurementId:     "G-MJ22BD2J1J"
-};
 
+// Firebase SDK
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
 import {
   getAuth,
@@ -33,13 +25,7 @@ import {
   setDoc
 } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 
-const firebaseApp = initializeApp(firebaseConfig);
-const auth        = getAuth(firebaseApp);
-const db          = getFirestore(firebaseApp);
-
-// ─────────────────────────────────────────────────────────────────────────────
-// UI HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
+// UI helpers
 import {
   setupNavigation,
   showToast,
@@ -47,6 +33,24 @@ import {
   getAITipOfTheDay,
   openStudentHelpForm
 } from './ui-helpers.js';
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2️⃣ Configuration & Initialization
+// ─────────────────────────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
+  authDomain:        "cdltrainerapp.firebaseapp.com",
+  projectId:         "cdltrainerapp",
+  storageBucket:     "cdltrainerapp.appspot.com",
+  messagingSenderId: "977549527480",
+  appId:             "1:977549527480:web=e959926bb02a4cef65674d",
+  measurementId:     "G-MJ22BD2J1J"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth        = getAuth(firebaseApp);
+const db          = getFirestore(firebaseApp);
 
 // Page Render Functions
 
