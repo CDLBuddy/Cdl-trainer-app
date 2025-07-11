@@ -161,14 +161,40 @@ async function renderChecklistSection(sectionId) {
   const snap  = await getDoc(ref);
   const data  = snap.exists() ? snap.data().progress : {};
 
-  // TODO: swap these defaults with the real items for this section
-  const defaultItems = {
-    "Pre-Trip Inspection": false,
-    "Coupling/Uncoupling": false,
-    "Basic Vehicle Control": false
-  };
+  // …after you’ve loaded `data` from Firestore…
+
+  // 1) Define your default items per section
+  let defaultItems;
+  switch (sectionId) {
+    case 1:
+      defaultItems = {
+        "Check mirrors and windshield": false,
+        "Test horn and lights": false,
+        "Inspect tires and wheels": false
+      };
+      break;
+    case 2:
+      defaultItems = {
+        "Connect glad hands securely": false,
+        "Check air lines for leaks": false,
+        "Test trailer brakes": false
+      };
+      break;
+    case 3:
+      defaultItems = {
+        "Adjust steering wheel and seat": false,
+        "Practice backing straight": false,
+        "Practice backing around corner": false
+      };
+      break;
+    default:
+      defaultItems = {};
+  }
+
+  // 2) Merge saved progress on top of defaults
   const progress = { ...defaultItems, ...data };
 
+  // 3) Render the checklist items
   const container = document.getElementById('items-container');
   container.innerHTML = Object.entries(progress).map(
     ([item, done]) => `
@@ -179,7 +205,14 @@ async function renderChecklistSection(sectionId) {
     `
   ).join('');
 
+  // 4) Wire up each checkbox to persist back to Firestore
   container.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', async e => {
+      const key = e.target.dataset.item;
+      progress[key] = e.target.checked;
+      await setDoc(ref, { progress }, { merge: true });
+    });
+  });
     cb.addEventListener('change', async e => {
       const key = e.target.dataset.item;
       progress[key] = e.target.checked;
