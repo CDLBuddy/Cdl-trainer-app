@@ -274,10 +274,12 @@ function setupNavigation() {
   // 🧭 Initial load: hash‐or‐fallback to home
   const hash = location.hash.replace("#", "");
   if (hash) {
-    handleNavigation(hash, false);
-  } else {
-    handleNavigation("home", false);
-  }
+  handleNavigation(hash, false);
+} else if (auth.currentUser) {
+  handleNavigation("home", false);
+} else {
+  renderWelcome();
+}
 } // ← closes setupNavigation()
 
 // core navigation handler
@@ -1146,6 +1148,26 @@ function renderPage(page) {
 }
 
 // === Welcome Screen Renderer ===
+
+function renderWelcome() {
+  console.log("🟢 renderWelcome() CALLED");
+
+  const appEl = document.getElementById("app");
+  if (!appEl) {
+    console.error("❌ #app not found in renderWelcome()");
+    return;
+  }
+
+  appEl.innerHTML = `
+    <div class="welcome-screen fade-in">
+      <h1>Welcome to CDL Trainer</h1>
+      ...
+    </div>
+  `;
+
+  setupNavigation();
+}
+
 function renderWelcome() {
   const appEl = document.getElementById("app");
   if (!appEl) return;
