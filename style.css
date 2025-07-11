@@ -2,36 +2,32 @@
   --primary: #007bff;
   --bg: #f0f4f8;
   --text: #333;
-}
-.fullscreen-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  --secondary-bg: #e0e0e0;
 }
 
+/* Reset + base */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-
 body {
   font-family: sans-serif;
   background: var(--bg);
   color: var(--text);
   display: block;
   margin: 0;
-  padding: 2rem 1rem 1rem;
+  padding: 2rem 1rem 2rem;
 }
 
+/* App container */
 #app {
   margin: 0 auto;
-  width: 100%;
   max-width: 400px;
-  padding: 1rem 1.5rem 2rem;
+  padding: 0 1rem;
 }
 
+/* Cards */
 .card,
 .login-card,
 .dashboard-card {
@@ -43,24 +39,106 @@ body {
   margin-bottom: 1.5rem;
 }
 
+/* Buttons */
 button {
   background: var(--primary);
   color: #fff;
   border: none;
-  padding: 0.75rem 1.5rem;
   border-radius: 4px;
+  padding: 0.75rem;
   font-size: 1rem;
   cursor: pointer;
-  margin-top: 1rem;
   width: 100%;
-  box-sizing: border-box;
+  margin-top: 1rem;
 }
 
+/* Secondary button style */
+.btn-secondary {
+  background: var(--secondary-bg);
+  color: var(--text);
+}
+
+/* Small inline button */
+.btn-small {
+  display: inline-block;
+  background: var(--primary);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  margin-left: 0.5rem;
+}
+
+/* Lists */
+.checklist-list,
+.results-list {
+  list-style: none;
+  text-align: left;
+  margin: 1rem 0;
+  padding: 0;
+}
+.checklist-list li,
+.results-list li {
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+/* Progress bar */
+.progress-track {
+  background: #e0e0e0;
+  border-radius: 4px;
+  height: 8px;
+  margin: 0.5rem 0;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  width: 0;
+  transition: width 0.3s ease-out;
+}
+
+/* Notification bubble */
+.notify-bubble {
+  display: inline-block;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.75rem;
+  width: 1.2em;
+  height: 1.2em;
+  line-height: 1.2em;
+  border-radius: 50%;
+  text-align: center;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Dashboard layouts */
+.dashboard-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.dashboard-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* AI tip box */
+.ai-tip-box {
+  background: #fffbea;
+  border-left: 4px solid #ffeb3b;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* Fade-in animation */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
 .fade-in {
   animation: fadeIn 0.3s ease-out both;
 }
