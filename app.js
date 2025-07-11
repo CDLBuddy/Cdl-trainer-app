@@ -161,8 +161,6 @@ async function renderChecklistSection(sectionId) {
   const snap  = await getDoc(ref);
   const data  = snap.exists() ? snap.data().progress : {};
 
-  // …after you’ve loaded `data` from Firestore…
-
   // 1) Define your default items per section
   let defaultItems;
   switch (sectionId) {
