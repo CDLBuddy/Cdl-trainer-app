@@ -17,16 +17,13 @@ import {
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-document.getElementById("js-error")?.classList.add("hidden");
-document.getElementById("loading-screen")?.classList.add("hidden");
-
 // Auth
 import {
   getAuth,
   onAuthStateChanged,
   signOut,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   updateProfile,
   GoogleAuthProvider,
@@ -102,7 +99,31 @@ console.log("✅ Firebase auth listener attached");
 onAuthStateChanged(auth, async (user) => {
   console.log("🔥 Firebase auth state changed", user);
 
+  // 1) Hide the static "JS error" & "loading" overlays
+  document.getElementById("js-error")?.classList.add("hidden");
+  document.getElementById("loading-screen")?.classList.add("hidden");
+
+  // 2) Immediately show our Firebase-loading placeholder
   const appEl = document.getElementById("app");
+  if (appEl) {
+    appEl.innerHTML = `
+      <div class="screen-wrapper fade-in" style="text-align:center">
+        <div class="loading-spinner" style="margin:40px auto;"></div>
+        <p>Checking your credentials…</p>
+      </div>
+    `;
+  }
+
+  // 3) Once Firebase auth is resolved, branch accordingly
+  if (user) {
+    // ⚡️ User is signed in -- load their dashboard
+    currentUserEmail = user.email;
+    // … your existing profile‐fetch / role logic …
+  } else {
+    // 🚪 No user signed in -- show welcome immediately
+    renderWelcome();
+  }
+});
 
   // Animated loading screen
   if (appEl) {
@@ -1413,16 +1434,3 @@ async function sendBroadcast() {
     target: "all"
   });
 }
-
-// ✅ Safe fallback & hide no-JS/loading screens
-document.addEventListener("DOMContentLoaded", () => {
-  // 1) Hide the "no JS" and loading fallbacks:
-  document.getElementById("js-error")?.classList.add("hidden");
-  document.getElementById("loading-screen")?.classList.add("hidden");
-
-  // 2) If nobody’s signed in yet, show welcome
-  if (!auth.currentUser) {
-    const appEl = document.getElementById("app");
-    if (appEl) renderWelcome();
-  }
-});
