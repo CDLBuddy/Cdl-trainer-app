@@ -123,6 +123,17 @@ button {
   gap: 0.75rem;
   margin-top: 1rem;
 }
+.dashboard-summary {
+  display: grid;
+  grid-template-columns: 1fr;    /* single column by default */
+  gap: 1rem;
+}
+
+@media (min-width: 600px) {
+  .dashboard-summary {
+    grid-template-columns: 1fr 1fr;  /* two columns on wider viewports */
+  }
+}
 
 /* AI tip box */
 .ai-tip-box {
