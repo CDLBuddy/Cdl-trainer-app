@@ -5,7 +5,6 @@
  * Listens on the body and captures clicks on elements with a data-nav attribute.
  * Updates window.location.hash and calls handleRoute() if defined.
  */
- alert('✨ ui-helpers.js is running');
 export function setupNavigation() {
   console.log('🔧 setupNavigation() initialized');
   document.body.addEventListener('click', (e) => {

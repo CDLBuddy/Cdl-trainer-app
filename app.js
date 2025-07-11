@@ -23,7 +23,8 @@ import {
   doc,
   setDoc
 } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
-
+// 🔥 Smoke test to confirm this file is loaded:
+alert('🔥 app.js is running');
 // UI helpers
 import {
   setupNavigation,
