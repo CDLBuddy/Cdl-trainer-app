@@ -213,6 +213,7 @@ async function renderChecklistSection(sectionId) {
       await setDoc(ref, { progress }, { merge: true });
     });
   });
+}
     cb.addEventListener('change', async e => {
       const key = e.target.dataset.item;
       progress[key] = e.target.checked;
