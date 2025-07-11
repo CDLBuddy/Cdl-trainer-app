@@ -9,6 +9,133 @@ import {
   openStudentHelpForm
 } from './ui-helpers.js';
 
+export async function renderChecklists() {
+  const appEl = document.getElementById('app');
+  appEl.innerHTML = `
+    <div class="dashboard-card fade-in">
+      <h2>📋 Your ELDT Checklist</h2>
+      <p>Select a section below to begin or continue:</p>
+      <ul class="checklist-list">
+        <li>Section 1: Pre-Trip Inspection <button class="btn-small" data-nav="checklist-section-1">Go</button></li>
+        <li>Section 2: Coupling/Uncoupling <button class="btn-small" data-nav="checklist-section-2">Go</button></li>
+        <li>Section 3: Basic Vehicle Control <button class="btn-small" data-nav="checklist-section-3">Go</button></li>
+        <!-- add more sections as needed -->
+      </ul>
+      <button data-nav="" class="btn-block">← Back to Dashboard</button>
+    </div>
+  `;
+  setupNavigation();
+}
+
+export async function renderTestStart() {
+  const appEl = document.getElementById('app');
+  appEl.innerHTML = `
+    <div class="dashboard-card fade-in">
+      <h2>📝 Start a Practice Test</h2>
+      <p>Choose a topic:</p>
+      <select id="test-topic">
+        <option value="general">General Knowledge</option>
+        <option value="air-brakes">Air Brakes</option>
+        <option value="combination">Combination Vehicles</option>
+        <!-- etc. -->
+      </select>
+      <button id="begin-test" class="btn-block">Start Test</button>
+      <button data-nav="" class="btn-block btn-secondary">← Back to Dashboard</button>
+    </div>
+  `;
+  document.getElementById('begin-test').addEventListener('click', () => {
+    const topic = document.getElementById('test-topic').value;
+    // TODO: replace with real test-render call, e.g. renderTest(topic)
+    showToast(`Starting ${topic} test…`);
+  });
+  setupNavigation();
+}
+
+export async function renderTestResults() {
+  const appEl = document.getElementById('app');
+  appEl.innerHTML = `
+    <div class="dashboard-card fade-in">
+      <h2>📊 Past Test Results</h2>
+      <p>Loading your past results…</p>
+      <!-- TODO: fetch and list results from Firestore -->
+      <ul class="results-list">
+        <li>No results found.</li>
+      </ul>
+      <button data-nav="" class="btn-block">← Back to Dashboard</button>
+    </div>
+  `;
+  setupNavigation();
+}
+
+export async function renderLicenseSelector() {
+  const appEl = document.getElementById('app');
+  appEl.innerHTML = `
+    <div class="dashboard-card fade-in">
+      <h2>🧾 Update Your Profile</h2>
+      <form id="license-form">
+        <label for="license-type">Select license type:</label>
+        <select id="license-type" required>
+          <option value="">-- Choose One --</option>
+          <option value="class-a">Class A</option>
+          <option value="class-b">Class B</option>
+          <option value="class-c">Class C</option>
+        </select>
+        <label for="experience-level">Years of driving experience:</label>
+        <input id="experience-level" type="number" min="0" placeholder="e.g. 2" required />
+        <button type="submit" class="btn-block">Save Profile</button>
+      </form>
+      <button data-nav="" class="btn-block btn-secondary">← Back to Dashboard</button>
+    </div>
+  `;
+  document.getElementById('license-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const license = document.getElementById('license-type').value;
+    const experience = document.getElementById('experience-level').value;
+    // TODO: save to Firestore, then:
+    showToast('Profile updated!');
+    window.location.hash = '';
+  });
+  setupNavigation();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4️⃣ Route map: hash → renderer
+// ─────────────────────────────────────────────────────────────────────────────
+const routes = {
+  ""              : renderDashboard,      // default post-login view
+  "checklists"    : renderChecklists,
+  "tests"         : renderTestStart,
+  "results"       : renderTestResults,
+  "license"       : renderLicenseSelector,
+  "coach"         : openStudentHelpForm,
+  // You can add instructor/admin routes here later
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5️⃣ Router handler
+// ─────────────────────────────────────────────────────────────────────────────
+function handleRoute() {
+  // strip leading "#" or "#/"
+  const name     = location.hash.replace(/^#\/?/, "");
+  const renderer = routes[name] || routes[""];
+  renderer();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 6️⃣ Wire up hashchange + initial load
+// ─────────────────────────────────────────────────────────────────────────────
+window.addEventListener("hashchange", handleRoute);
+window.addEventListener("DOMContentLoaded", () => {
+  // If user is already signed in, go to the current hash, otherwise login
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      handleRoute();
+    } else {
+      renderLogin();
+    }
+  });
+});
+
 // ------------------------------------------------------------------------------------------
 // 1️⃣ Your Firebase config
 const firebaseConfig = {
