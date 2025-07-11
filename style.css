@@ -587,3 +587,6 @@ body.dark-mode #togglePassword {
 .btn-google:hover,
 .btn-apple:hover,
 .btn-sms:hover { opacity: 0.9; }
+
+/* in style.css */
+.hidden { display: none !important; }

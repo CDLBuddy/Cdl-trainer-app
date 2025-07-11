@@ -1411,8 +1411,13 @@ async function sendBroadcast() {
   });
 }
 
-// ✅ Safe fallback if Firebase is slow or fails
+// ✅ Safe fallback & hide no-JS/loading screens
 document.addEventListener("DOMContentLoaded", () => {
+  // 1) Hide the "no JS" and loading fallbacks:
+  document.getElementById("js-error")?.classList.add("hidden");
+  document.getElementById("loading-screen")?.classList.add("hidden");
+
+  // 2) If nobody’s signed in yet, show welcome
   if (!auth.currentUser) {
     const appEl = document.getElementById("app");
     if (appEl) renderWelcome();
