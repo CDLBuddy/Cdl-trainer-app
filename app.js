@@ -143,8 +143,8 @@ export async function renderLicenseSelector() {
   setupNavigation();
 }
 
-// ✅ FULL renderChecklistSection()
 async function renderChecklistSection(sectionId) {
+  console.log('👉 renderChecklistSection', sectionId);
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
     <div class="dashboard-card fade-in">
@@ -155,58 +155,63 @@ async function renderChecklistSection(sectionId) {
   `;
   setupNavigation();
 
-  const email = auth.currentUser.email;
-  const ref   = doc(db, 'eldtProgress', `${email}-section-${sectionId}`);
-  const snap  = await getDoc(ref);
-  const data  = snap.exists() ? snap.data().progress : {};
+  try {
+    const email = auth.currentUser.email;
+    console.log(' • currentUser.email =', email);
 
-  let defaultItems;
-  switch (sectionId) {
-    case 1:
-      defaultItems = {
-        "Check mirrors and windshield": false,
-        "Test horn and lights":         false,
-        "Inspect tires and wheels":     false
-      };
-      break;
-    case 2:
-      defaultItems = {
-        "Connect glad hands securely": false,
-        "Check air lines for leaks":   false,
-        "Test trailer brakes":         false
-      };
-      break;
-    case 3:
-      defaultItems = {
-        "Adjust steering wheel and seat": false,
-        "Practice backing straight":      false,
-        "Practice backing around corner": false
-      };
-      break;
-    default:
-      defaultItems = {};
-  }
+    const ref  = doc(db, 'eldtProgress', `${email}-section-${sectionId}`);
+    console.log(' • Firestore ref =', ref.path);
 
-  const progress = { ...defaultItems, ...data };
-  const container = document.getElementById('items-container');
-  container.innerHTML = Object.entries(progress).map(
-    ([item, done]) => `
-      <label class="checklist-item">
-        <input type="checkbox" data-item="${item}" ${done ? 'checked' : ''}/>
-        ${item}
-      </label>
-    `
-  ).join('');
+    const snap = await getDoc(ref);
+    console.log(' • snapshot.exists() =', snap.exists());
 
-  container.querySelectorAll('input[type=checkbox]').forEach(cb => {
-    cb.addEventListener('change', async e => {
-      const key = e.target.dataset.item;
-      progress[key] = e.target.checked;
-      await setDoc(ref, { progress }, { merge: true });
+    const data = snap.exists() ? snap.data().progress : {};
+    console.log(' • loaded data =', data);
+
+    const defaultItems = (sectionId === 1) ? {
+      "Check mirrors and windshield": false,
+      "Test horn and lights": false,
+      "Inspect tires and wheels": false
+    } : (sectionId === 2) ? {
+      "Connect glad hands securely": false,
+      "Check air lines for leaks": false,
+      "Test trailer brakes": false
+    } : (sectionId === 3) ? {
+      "Adjust steering wheel and seat": false,
+      "Practice backing straight": false,
+      "Practice backing around corner": false
+    } : {};
+
+    console.log(' • defaultItems =', defaultItems);
+
+    const progress = { ...defaultItems, ...data };
+    console.log(' • merged progress =', progress);
+
+    const container = document.getElementById('items-container');
+    container.innerHTML = Object.entries(progress).map(
+      ([item, done]) => `
+        <label class="checklist-item">
+          <input type="checkbox" data-item="${item}" ${done ? 'checked' : ''}/>
+          ${item}
+        </label>
+      `
+    ).join('');
+
+    console.log(' • rendered checkboxes');
+
+    container.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      cb.addEventListener('change', async e => {
+        const key = e.target.dataset.item;
+        progress[key] = e.target.checked;
+        await setDoc(ref, { progress }, { merge: true });
+        console.log(` • saved ${key}=${e.target.checked}`);
+      });
     });
-  });
+  } catch (err) {
+    console.error('❌ renderChecklistSection error:', err);
+    document.getElementById('items-container').innerText = 'Error loading checklist.';
+  }
 }
-
 async function renderTest(topic) {
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
