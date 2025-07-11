@@ -20,27 +20,23 @@ const urlsToCache = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache);
-    })
-  );
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+  );
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keyList) => {
-      return Promise.all(
-        keyList.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
-  );
   self.clients.claim();
+  event.waitUntil(
+    caches.keys().then((keyList) =>
+      Promise.all(
+        keyList.map((key) => {
+          if (key !== CACHE_NAME) return caches.delete(key);
+        })
+      )
+    )
+  );
 });
 
 self.addEventListener("fetch", (event) => {
@@ -51,7 +47,6 @@ self.addEventListener("fetch", (event) => {
       return (
         cachedResponse ||
         fetch(event.request).catch(() => {
-          // Only return offline page for navigation (HTML) requests
           if (event.request.headers.get("accept").includes("text/html")) {
             return caches.match("/offline.html");
           }

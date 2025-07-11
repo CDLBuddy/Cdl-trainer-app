@@ -2,14 +2,13 @@
   "name": "CDL Trainer",
   "short_name": "CDLTrainer",
   "description": "Interactive CDL training with AI coach, practice tests, walkthroughs and more.",
-  "start_url": "/index.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#003366",
   "theme_color": "#005bb5",
   "lang": "en",
-  "id": "/index.html",
   "icons": [
     {
       "src": "icons/icon-192.png",
