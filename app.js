@@ -15,13 +15,22 @@ const firebaseConfig = {
 };
 
 // ------------------------------------------------------------------------------------------
+// ▶️ UI helpers (add the new helpers here)
+import {
+  setupNavigation,
+  showToast,
+  getRoleBadge,
+  getAITipOfTheDay,
+  openStudentHelpForm
+} from './ui-helpers.js';
+
 // 2️⃣ Import & initialize Firebase App, Auth & Firestore
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
 import {
   getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   GoogleAuthProvider,
   signInWithPopup
@@ -29,12 +38,15 @@ import {
 import {
   getFirestore,
   collection,
-  addDoc
+  addDoc,
+  getDocs,
+  query,
+  where
 } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 
 const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
-const db   = getFirestore(firebaseApp);
+const auth        = getAuth(firebaseApp);
+const db          = getFirestore(firebaseApp);
 
 // ------------------------------------------------------------------------------------------
 // 3️⃣ Your full renderLogin() implementation
@@ -163,19 +175,141 @@ function renderLogin() {
   smsBtn.addEventListener("click",   () => alert("🚧 SMS Login coming soon."));
 }
 
+// === Dashboards === //
+{
+async function renderDashboard()     
+  const appEl = document.getElementById("app");
+  appEl.innerHTML = `<div class="dashboard-card slide-in-up fade-in">Loading your dashboard...</div>`;
+  const container = document.querySelector(".dashboard-card");
+
+  const currentUser       = auth.currentUser;
+  const currentUserEmail  = currentUser?.email || "unknown";
+  const name              = currentUserEmail.split("@")[0];
+  const roleBadge         = getRoleBadge(currentUserEmail);
+  const aiTip             = await getAITipOfTheDay();
+
+  document.body.classList.toggle("dark-mode", new Date().getHours() >= 18);
+
+  let license        = "Not selected",
+      experience     = "Unknown",
+      streak         = 0;
+  let testData       = null,
+      checklistPct   = 0;
+
+  // ELDT Progress
+  const eldtSnap = await getDocs(
+    query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail))
+  );
+  let total = 0, done = 0;
+  eldtSnap.forEach(doc => {
+    const prog = doc.data().progress;
+    Object.values(prog).forEach(sec =>
+      Object.values(sec).forEach(val => {
+        total++;
+        if (val) done++;
+      })
+    );
+  });
+  checklistPct = total ? Math.round((done / total) * 100) : 0;
+
+  // Latest Test
+  const testSnap = await getDocs(
+    query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
+  );
+  testSnap.forEach(doc => {
+    const d = doc.data();
+    if (!testData || d.timestamp.toDate() > testData.timestamp.toDate()) {
+      testData = d;
+    }
+  });
+
+  // License & Experience
+  const licenseSnap = await getDocs(
+    query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail))
+  );
+  licenseSnap.forEach(doc => license = doc.data().licenseType || license);
+
+  const expSnap = await getDocs(
+    query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail))
+  );
+  expSnap.forEach(doc => experience = doc.data().experience || experience);
+
+  // Study Streak
+  const today    = new Date().toDateString();
+  let studyLog   = JSON.parse(localStorage.getItem("studyLog") || "[]");
+  if (!studyLog.includes(today)) {
+    studyLog.push(today);
+    localStorage.setItem("studyLog", JSON.stringify(studyLog));
+  }
+  const cutoff   = new Date();
+  cutoff.setDate(cutoff.getDate() - 6);
+  streak         = studyLog.filter(date => new Date(date) >= cutoff).length;
+
+  const showChecklistBtn = checklistPct < 100;
+  const showTestBtn      = !testData;
+
+  container.innerHTML = `
+    <h1>Welcome back, ${name}!</h1>
+    ${roleBadge}
+    <div class="ai-tip-box">💡 ${aiTip}</div>
+
+    <div class="dashboard-summary">
+      <div class="dashboard-card">
+        <h3>📋 Checklist Progress</h3>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${checklistPct}%;"></div>
+        </div>
+        <p>${checklistPct}% complete</p>
+        ${checklistPct < 100 ? `<span class="notify-bubble">!</span>` : ""}
+        <button data-nav="checklists">View Checklist</button>
+      </div>
+
+      <div class="dashboard-card">
+        <h3>🧪 Latest Test</h3>
+        ${testData ? `
+          <p><strong>${testData.testName}</strong></p>
+          <p>${testData.correct}/${testData.total} correct</p>
+          <p><small>${new Date(testData.timestamp.toDate()).toLocaleDateString()}</small></p>
+        ` : `<p>No tests taken yet.</p>`}
+        ${!testData ? `<span class="notify-bubble">!</span>` : ""}
+        <button data-nav="results">View All Results</button>
+      </div>
+
+      <div class="dashboard-card">
+        <h3>🧾 Your Profile</h3>
+        <p>Email: ${currentUserEmail}</p>
+        <p>License: ${license}</p>
+        <p>Experience: ${experience}</p>
+        ${license === "Not selected" ? `<span class="notify-bubble">!</span>` : ""}
+        <button data-nav="license">Update Info</button>
+      </div>
+
+      <div class="dashboard-card">
+        <h3>🔥 Study Streak</h3>
+        <p>${streak} day${streak !== 1 ? "s" : ""} active this week</p>
+        <button onclick="openStudentHelpForm()">Ask the AI Coach</button>
+      </div>
+    </div>
+
+    <div class="dashboard-actions">
+      ${showChecklistBtn ? `<button data-nav="checklists">Resume Checklist</button>` : ""}
+      ${showTestBtn      ? `<button data-nav="tests">Start First Test</button>` : ""}
+      <button data-nav="coach">🎧 Talk to AI Coach</button>
+    </div>
+  `;
+
+  setupNavigation();
+}
+
 // ------------------------------------------------------------------------------------------
 // 4️⃣ Auth‐state listener: shows login if signed out,
-//    or your post-login welcome/home screen if signed in.
+//    or your post-login dashboard if signed in.
 onAuthStateChanged(auth, (user) => {
   setupNavigation();
 
   if (user) {
-    document.getElementById('app').innerHTML = `
-      <div class="card">
-        <h2>Hi, ${user.displayName || user.email}!</h2>
-        <p>You’re logged in. (Replace this stub with your real dashboard.)</p>
-      </div>
-    `;
+    // User is signed in → render the full student dashboard
+    renderDashboard();
   } else {
     renderLogin();
   }
