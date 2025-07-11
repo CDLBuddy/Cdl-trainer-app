@@ -144,12 +144,13 @@ export async function renderLicenseSelector() {
   setupNavigation();
 }
 
+// ✅ FULL renderChecklistSection()
 async function renderChecklistSection(sectionId) {
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
     <div class="dashboard-card fade-in">
       <h2>📋 Checklist Section ${sectionId}</h2>
-      <div id="items-container">Loading questions for section ${sectionId}…</div>
+      <div id="items-container">Loading…</div>
       <button data-nav="checklists" class="btn-block">← Back to Checklist</button>
     </div>
   `;
@@ -160,6 +161,7 @@ async function renderChecklistSection(sectionId) {
   const snap  = await getDoc(ref);
   const data  = snap.exists() ? snap.data().progress : {};
 
+  // TODO: swap these defaults with the real items for this section
   const defaultItems = {
     "Pre-Trip Inspection": false,
     "Coupling/Uncoupling": false,
