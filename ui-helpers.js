@@ -1,47 +1,15 @@
 // ui-helpers.js
 
-export function showToast(message, duration = 3000) {
-  const toast = document.createElement("div");
-  toast.className = "toast-message";
-  toast.textContent = message;
-
-  toast.style.position = "fixed";
-  toast.style.bottom = "20px";
-  toast.style.left = "50%";
-  toast.style.transform = "translateX(-50%)";
-  toast.style.background = "#333";
-  toast.style.color = "#fff";
-  toast.style.padding = "10px 20px";
-  toast.style.borderRadius = "5px";
-  toast.style.opacity = "1";
-  toast.style.transition = "opacity 0.5s ease";
-
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = "0";
-    setTimeout(() => toast.remove(), 600);
-  }, duration);
+/**
+ * Placeholder for navigation setup (we’ll hook this in later).
+ */
+export function setupNavigation() {
+  // no-op for now
 }
 
-export function setupNavigation() {
-  console.log("🧭 setupNavigation() called");
-
-  const buttons = document.querySelectorAll("[data-nav]");
-
-  if (buttons.length === 0) {
-    console.warn("⚠️ No navigation buttons found for setupNavigation()");
-  }
-
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const target = btn.getAttribute("data-nav");
-      console.log(`🔗 Nav button clicked: ${target}`);
-
-      if (target) {
-        history.pushState({ page: target }, "", `#${target}`);
-        window.dispatchEvent(new PopStateEvent("popstate", { state: { page: target } }));
-      }
-    });
-  });
+/**
+ * Simple toast utility (replace with fancier UI later).
+ */
+export function showToast(message) {
+  alert(message);
 }
