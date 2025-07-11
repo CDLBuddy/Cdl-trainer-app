@@ -1,5 +1,45 @@
-// app.js
+// ─────────────────────────────────────────────────────────────────────────────
+// Firebase Config & Initialization
+// ─────────────────────────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
+  authDomain:        "cdltrainerapp.firebaseapp.com",
+  projectId:         "cdltrainerapp",
+  storageBucket:     "cdltrainerapp.appspot.com",
+  messagingSenderId: "977549527480",
+  appId:             "1:977549527480:web:e959926bb02a4cef65674d",
+  measurementId:     "G-MJ22BD2J1J"
+};
 
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup
+} from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  getDoc,
+  query,
+  where,
+  doc,
+  setDoc
+} from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth        = getAuth(firebaseApp);
+const db          = getFirestore(firebaseApp);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UI HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
 import {
   setupNavigation,
   showToast,
@@ -7,6 +47,8 @@ import {
   getAITipOfTheDay,
   openStudentHelpForm
 } from './ui-helpers.js';
+
+// Page Render Functions
 
 export async function renderChecklists() {
   const appEl = document.getElementById('app');
@@ -151,43 +193,6 @@ async function renderTest(topic) {
   `;
   setupNavigation();
 }
-
-// Firebase Config & Initialization
-const firebaseConfig = {
-  apiKey:            "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
-  authDomain:        "cdltrainerapp.firebaseapp.com",
-  projectId:         "cdltrainerapp",
-  storageBucket:     "cdltrainerapp.appspot.com",
-  messagingSenderId: "977549527480",
-  appId:             "1:977549527480:web:e959926bb02a4cef65674d",
-  measurementId:     "G-MJ22BD2J1J"
-};
-
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  GoogleAuthProvider,
-  signInWithPopup
-} from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  doc,
-  getdoc,
-  setDoc
-} from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
-
-const firebaseApp = initializeApp(firebaseConfig);
-const auth        = getAuth(firebaseApp);
-const db          = getFirestore(firebaseApp);
 
       // Login
 
