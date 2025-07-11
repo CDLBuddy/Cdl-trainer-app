@@ -176,8 +176,7 @@ function renderLogin() {
 }
 
 // === Dashboards === //
-{
-async function renderDashboard()     
+async function renderDashboard() {
   const appEl = document.getElementById("app");
   appEl.innerHTML = `<div class="dashboard-card slide-in-up fade-in">Loading your dashboard...</div>`;
   const container = document.querySelector(".dashboard-card");
@@ -305,12 +304,14 @@ async function renderDashboard()
 // 4️⃣ Auth‐state listener: shows login if signed out,
 //    or your post-login dashboard if signed in.
 onAuthStateChanged(auth, (user) => {
+  console.log("🔥 onAuthStateChanged fired, user =", user);
   setupNavigation();
 
   if (user) {
-    // User is signed in → render the full student dashboard
+    console.log("✅ User signed in, calling renderDashboard()");
     renderDashboard();
   } else {
+    console.log("🔒 No user, calling renderLogin()");
     renderLogin();
   }
 });
