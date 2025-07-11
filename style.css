@@ -6,13 +6,9 @@
   --card-bg: #fff;
   --error: #d9534f;
   --success: #28a745;
-
-  /* Dark mode variables */
   --dark-bg: #121212;
   --dark-card: #1e1e1e;
   --dark-text: #f0f0f0;
-
-  /* Toast */
   --toast-bg: rgba(0, 0, 0, 0.8);
   --toast-text: #fff;
 }
@@ -28,20 +24,16 @@ body {
   min-height: 100vh;
   transition: background 0.3s, color 0.3s;
 }
-
-/* Dark mode class (toggle this on <body>) */
 body.dark-mode {
   background: var(--dark-bg);
   color: var(--dark-text);
 }
-
 header, footer {
   background: #003366;
   color: #fff;
   padding: 1rem;
   text-align: center;
 }
-
 main {
   flex: 1;
   padding: 1rem;
@@ -55,7 +47,6 @@ nav {
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
-
 nav button {
   padding: 0.5rem 1rem;
   border: none;
@@ -63,9 +54,8 @@ nav button {
   color: #fff;
   border-radius: 4px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.3s;
 }
-
 nav button:hover {
   background: var(--primary);
 }
@@ -82,31 +72,24 @@ nav button:hover {
   border-radius: 6px;
   font-size: 0.95rem;
   z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   animation: fadeInEnhanced 0.4s ease-out forwards;
 }
 
 /* === Card Layout === */
-.card,
-.checklist-card,
-.result-card,
-.login-card {
+.card, .checklist-card, .result-card, .login-card {
   background: var(--card-bg);
   border-radius: 8px;
   padding: 1.5rem;
   max-width: 600px;
   margin: 1rem auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   transition: background 0.3s, color 0.3s;
 }
-
-/* Checklist-card variant */
 .checklist-card {
   border: 1px solid #ddd;
   background: #fafafa;
 }
-
-/* Dark-mode card override */
 body.dark-mode .card,
 body.dark-mode .checklist-card,
 body.dark-mode .result-card,
@@ -116,12 +99,7 @@ body.dark-mode .login-card {
 }
 
 /* === Typography & Lists === */
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
+ul { list-style: none; padding: 0; margin: 0; }
 li {
   padding: 0.5rem 0;
   border-bottom: 1px solid #e0e0e0;
@@ -130,12 +108,9 @@ li {
   gap: 0.5rem;
   transition: border-color 0.3s;
 }
+body.dark-mode li { border-color: #444; }
 
-body.dark-mode li {
-  border-color: #444;
-}
-
-/* === Buttons === */
+/* === Buttons (global) === */
 button {
   font-size: 1rem;
   padding: 0.75rem 1.25rem;
@@ -144,17 +119,9 @@ button {
   color: #fff;
   border-radius: 6px;
   cursor: pointer;
-  width: 100%;
-  max-width: 300px;
-  margin: 0.5rem auto;
-  display: block;
-  transition: background 0.3s ease, opacity 0.3s ease;
+  transition: background 0.3s, opacity 0.3s;
 }
-
-button:hover:not(:disabled) {
-  background: var(--primary);
-}
-
+button:hover:not(:disabled) { background: var(--primary); }
 button:disabled {
   background: #ccc;
   cursor: not-allowed;
@@ -163,85 +130,72 @@ button:disabled {
 
 /* === Responsive === */
 @media (max-width: 600px) {
-  nav {
-    flex-direction: column;
-  }
-  .card,
-  .checklist-card,
-  .result-card {
-    margin: 1rem;
-  }
-  button {
-    font-size: 0.95rem;
-  }
+  nav { flex-direction: column; }
+  .card, .checklist-card, .result-card { margin: 1rem; }
+  button { font-size: 0.95rem; }
+}
+
+/* Only card/grid buttons full-width */
+.card button,
+.button-grid button {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 0.5rem auto;
 }
 
 /* === Login UI === */
 .login-card {
-  background: var(--card-bg);
-  color: var(--text);
   padding: 2rem;
   border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
   max-width: 420px;
   margin: 2rem auto;
   animation: fadeInEnhanced 0.5s ease-out forwards;
   transition: background 0.3s, color 0.3s;
 }
-
 .login-card input,
 .login-card select {
   width: 100%;
   padding: 0.75rem;
   margin: 0.5rem 0 1rem;
-  border-radius: 6px;
   border: 1px solid #ccc;
+  border-radius: 6px;
   box-sizing: border-box;
-  font-size: 1rem;
   transition: background 0.3s, border-color 0.3s, color 0.3s;
 }
-
 body.dark-mode .login-card input,
 body.dark-mode .login-card select {
   background: #2a2a2a;
   border-color: #555;
   color: var(--dark-text);
 }
-
-/* Password toggle wrapper */
 .password-wrapper {
   position: relative;
 }
-
 .password-wrapper input {
   width: 100%;
   padding-right: 2.5rem;
 }
-
-#toggle-password {
+#toggle-password,
+#togglePassword {
   position: absolute;
-  top: 50%;
-  right: 0.5rem;
+  top: 50%; right: 0.75rem;
   transform: translateY(-50%);
-  background: none;
   border: none;
+  background: none;
   font-size: 1.1rem;
   cursor: pointer;
   color: #888;
 }
-
-body.dark-mode #toggle-password {
-  color: #ccc;
-}
-
-/* Alternative login buttons */
+body.dark-mode #toggle-password,
+body.dark-mode #togglePassword { color: #ccc; }
 .alt-login-buttons {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin: 1rem 0;
 }
-
 .alt-login-buttons button {
   background: #f5f5f5;
   color: #333;
@@ -249,13 +203,9 @@ body.dark-mode #toggle-password {
   padding: 0.7rem;
   border-radius: 8px;
   font-weight: bold;
-  transition: background 0.3s ease;
+  transition: background 0.3s;
 }
-
-.alt-login-buttons button:hover {
-  background: #e0e0e0;
-}
-
+.alt-login-buttons button:hover { background: #e0e0e0; }
 body.dark-mode .alt-login-buttons button {
   background: #333;
   color: #eee;
@@ -277,7 +227,7 @@ body.dark-mode .alt-login-buttons button {
   margin-bottom: 2rem;
 }
 
-/* === Home Screen === */
+/* === Home Screen & Button Grid === */
 .home-container {
   padding: 2rem;
   text-align: center;
@@ -298,28 +248,32 @@ body.dark-mode .alt-login-buttons button {
   opacity: 0.85;
   margin-bottom: 2rem;
 }
-.grid {
+.grid,
+.button-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 1rem;
   justify-content: center;
   padding: 0 1rem;
 }
+.home-tile,
+.button-grid button {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
 .home-tile {
   background: #1f62e0;
-  border: none;
   color: #fff;
   padding: 1rem;
   border-radius: 12px;
   font-size: 1rem;
   font-weight: bold;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
-.home-tile:hover {
+.home-tile:hover,
+.button-grid button:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
 }
 .tile-icon {
   display: block;
@@ -329,31 +283,6 @@ body.dark-mode .alt-login-buttons button {
 body.dark-mode .home-tile {
   background: #3a4f78;
 }
-/* === Home-screen tile grid (matching your JS) === */
-.button-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1rem;
-  justify-content: center;
-  padding: 0 1rem;
-}
-
-.button-grid button {
-  background: var(--primary-dark);
-  color: white;
-  padding: 1rem;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.button-grid button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-}
 
 /* === Unified Screen Wrapper === */
 .screen-wrapper {
@@ -362,7 +291,7 @@ body.dark-mode .home-tile {
   padding: 2rem;
   margin: 2rem auto;
   max-width: 640px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
   transition: background 0.3s, color 0.3s;
 }
 body.dark-mode .screen-wrapper {
@@ -377,7 +306,6 @@ body.dark-mode .screen-wrapper {
   border-radius: 8px;
   border: 1px solid #ccc;
   background: #f9f9f9;
-  font-size: 1rem;
   box-sizing: border-box;
   transition: background 0.3s, border-color 0.3s, color 0.3s;
 }
@@ -405,11 +333,11 @@ body.dark-mode .screen-wrapper h3 {
 }
 
 /* === Loading Spinner === */
-.loading-spinner { 
+.loading-spinner {
   width: 36px;
   height: 36px;
   margin: 3rem auto;
-  border: 4px solid rgba(255, 255, 255, 0.2);
+  border: 4px solid rgba(255,255,255,0.2);
   border-top: 4px solid var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -431,7 +359,7 @@ body.dark-mode .screen-wrapper h3 {
 .shake { animation: shake 0.3s ease-in-out; }
 
 /* === Instructor Dashboard Enhancements === */
-.role-badge { 
+.role-badge {
   background: var(--primary);
   color: #fff;
   padding: 0.25rem 0.6rem;
@@ -439,17 +367,13 @@ body.dark-mode .screen-wrapper h3 {
   border-radius: 12px;
   font-size: 0.8rem;
   font-weight: 600;
-  display: inline-block;
   vertical-align: middle;
 }
 .ai-tip-box {
   background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
-  color: #eee;
-  border-left: 4px solid var(--primary);
-  padding: 1rem;
-  border-radius: 8px;
-  margin: 1.5rem 0;
-  font-size: 1rem;
+  color: #eee; border-left: 4px solid var(--primary);
+  padding: 1rem; border-radius: 8px;
+  margin: 1.5rem 0; font-size: 1rem;
   box-shadow: 0 0 5px rgba(0,0,0,0.2);
 }
 
@@ -462,12 +386,9 @@ body.dark-mode .screen-wrapper h3 {
   margin-top: 1.25rem;
 }
 .dashboard-summary .card {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 1.25rem;
-  flex: 1 1 300px;
+  padding: 1.25rem; flex: 1 1 300px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s;
 }
 .dashboard-summary .card:hover {
   transform: translateY(-4px);
@@ -476,27 +397,42 @@ body.dark-mode .dashboard-summary .card {
   background: var(--dark-card);
   color: var(--dark-text);
 }
-
-/* Activity Feed, Progress Bars, Actions */
-.activity-feed { list-style: none; padding: 0; margin-top: 0.75rem; }
-.activity-feed li { padding: 0.5rem 0; border-bottom: 1px solid #ddd; font-size: 0.95rem; transition: border-color 0.3s; }
-body.dark-mode .activity-feed li { border-color: #444; }
-.activity-feed li:last-child { border-bottom: none; }
+.activity-feed {
+  list-style: none; padding: 0; margin-top: 0.75rem;
+}
+.activity-feed li {
+  padding: 0.5rem 0; border-bottom: 1px solid #ddd;
+  font-size: 0.95rem; transition: border-color 0.3s;
+}
+body.dark-mode .activity-feed li {
+  border-color: #444;
+}
+.activity-feed li:last-child {
+  border-bottom: none;
+}
 .progress-bar {
-  width: 100%; height: 12px; background: #ddd; border-radius: 8px;
-  overflow: hidden; margin-top: 0.75rem;
+  width: 100%; height: 12px; background: #ddd;
+  border-radius: 8px; overflow: hidden;
+  margin-top: 0.75rem;
 }
 .progress-fill {
-  height: 100%; background: var(--primary); width: 0%;
+  height: 100%; background: var(--primary);
+  width: 0%;
   transition: width 0.5s ease-in-out;
 }
 .card.actions {
   text-align: center; margin-top: 1rem;
 }
-.card.actions button { margin: 0.5rem 0.5rem 0 0; }
+.card.actions button {
+  margin: 0.5rem 0.5rem 0 0;
+}
 
-/* === Admin Badge Variant & Notifications === */
-.role-badge.admin { background: #c0392b; }
+/* === Admin Badge Variant === */
+.role-badge.admin {
+  background: #c0392b;
+}
+
+/* === Notifications & Bubbles === */
 .notification-bubble {
   position: fixed; bottom: 20px; right: 20px;
   background: #ff4444; color: #fff;
@@ -504,36 +440,43 @@ body.dark-mode .activity-feed li { border-color: #444; }
   font-weight: bold; box-shadow: 0 0 10px rgba(0,0,0,0.3);
   animation: fadeInEnhanced 0.6s ease-out forwards;
 }
-body.dark-mode .notification-bubble { background: #ff6666; }
+body.dark-mode .notification-bubble {
+  background: #ff6666;
+}
 
-/* === Dashboard Card Wrapper & Actions === */
+/* === Dashboard Card Wrapper === */
 .dashboard-card {
-  background: var(--card-bg); padding: 1.5rem; border-radius: 12px;
+  padding: 1.5rem; border-radius: 12px;
   margin: 1rem auto; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-  max-width: 600px; transition: transform 0.3s ease, background 0.3s, color 0.3s;
+  max-width: 600px; transition: transform 0.3s;
 }
 body.dark-mode .dashboard-card {
-  background: var(--dark-card); color: var(--dark-text);
-}
-.dashboard-actions {
-  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 2rem;
+  background: var(--dark-card);
+  color: var(--dark-text);
 }
 
-/* === Modals === */
+/* === Dashboard Actions Container === */
+.dashboard-actions {
+  display: flex; flex-wrap: wrap; gap: 1rem;
+  justify-content: center; margin-top: 2rem;
+}
+
+/* === Modals & Overlays === */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.65);
   display: flex; align-items: center; justify-content: center;
   z-index: 999;
 }
 .modal-content {
-  background: var(--card-bg); color: var(--text);
-  padding: 2rem; border-radius: 10px; width: 90%; max-width: 500px;
+  padding: 2rem; border-radius: 10px;
+  width: 90%; max-width: 500px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   animation: scaleIn 0.25s ease-out forwards;
   transition: background 0.3s, color 0.3s;
 }
 body.dark-mode .modal-content {
-  background: var(--dark-card); color: var(--dark-text);
+  background: var(--dark-card);
+  color: var(--dark-text);
 }
 .button-secondary {
   background: #6c757d; color: #fff;
@@ -544,12 +487,29 @@ body.dark-mode .modal-content {
 }
 .button-danger:hover { background: #c82333; }
 
+/* === Controls Panel Buttons === */
+.controls {
+  position: fixed; bottom: 1rem; right: 1rem;
+  display: flex; gap: 0.5rem; z-index: 100;
+}
+.controls button {
+  padding: 0.5rem; font-size: 1.25rem;
+  border: none; background: var(--card-bg); cursor: pointer;
+  transition: background 0.3s;
+}
+body.dark-mode .controls button {
+  background: var(--dark-card);
+  color: var(--dark-text);
+}
+
 /* === Success & Error Messages === */
 .success-message {
-  color: var(--success); font-size: 0.95rem; margin-top: 0.5rem; font-weight: bold;
+  color: var(--success); font-size: 0.95rem;
+  margin-top: 0.5rem; font-weight: bold;
 }
 .error-text {
-  color: var(--error); font-size: 0.9rem; margin-top: 1rem; text-align: center; font-weight: 600;
+  color: var(--error); font-size: 0.9rem;
+  margin-top: 1rem; text-align: center; font-weight: 600;
 }
 
 /* === Rate Limit Warning === */
@@ -559,35 +519,43 @@ body.dark-mode .modal-content {
   border-radius: 6px; font-size: 0.9rem; margin-top: 1rem;
 }
 
-/* === Shake Animation for Errors === */
-@keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+/* === Shake Animation === */
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
 
 /* === Input Focus Highlight === */
-input:focus, select:focus {
+input:focus,
+select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 3px var(--primary);
   outline: none;
 }
 
-/* === Checklist Form Styling === */
+/* === Checklist Form === */
 .checklist-form fieldset {
-  border: 1px solid #444; padding: 1rem; margin-bottom: 1rem;
-  border-radius: 8px; background-color: var(--card-bg);
+  border: 1px solid #444; padding: 1rem;
+  margin-bottom: 1rem; border-radius: 8px;
+  background-color: var(--card-bg);
 }
 .checklist-form legend {
-  font-weight: bold; margin-bottom: 0.5rem; color: var(--text);
+  font-weight: bold; margin-bottom: 0.5rem;
+  color: var(--text);
 }
 .checklist-buttons {
-  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 1rem;
+  display: flex; flex-wrap: wrap; gap: 1rem;
+  justify-content: center; margin-top: 1rem;
 }
 
 /* === Test Results Grid & Cards === */
 .results-grid {
-  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 1rem;
+  display: flex; flex-wrap: wrap; gap: 1rem;
+  justify-content: center; margin-top: 1rem;
 }
 .result-card {
-  background: var(--card-bg); padding: 1rem; border-radius: 10px;
-  width: 280px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  padding: 1rem; border-radius: 10px; width: 280px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .result-card:hover {
@@ -600,85 +568,22 @@ input:focus, select:focus {
   text-align: center; padding: 2rem; color: #999;
 }
 
-/* === Modal Wrappers === */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-}
-.modal .modal-content {
-  max-width: 500px;
-  width: 90%;
-}
-
-/* === Toggle‐Password Icon === */
+/* === Toggle-Password Icon === */
 .toggle-password,
 #togglePassword {
-  position: absolute;
-  top: 50%;
-  right: 0.75rem;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  cursor: pointer;
-  color: #888;
+  position: absolute; top: 50%; right: 0.75rem;
+  transform: translateY(-50%); background: none; border: none;
+  font-size: 1.1rem; cursor: pointer; color: #888;
 }
-body.dark .toggle-password,
-body.dark #togglePassword {
+body.dark-mode .toggle-password,
+body.dark-mode #togglePassword {
   color: #ccc;
 }
 
-/* === Secondary / Danger Button Variants === */
-.btn-secondary,
-.button-secondary {
-  background: #6c757d;
-  color: #fff;
-}
-.btn-secondary:hover,
-.button-secondary:hover {
-  background: #5a6268;
-}
-.btn-danger,
-.button-danger {
-  background: #dc3545;
-  color: #fff;
-}
-.btn-danger:hover,
-.button-danger:hover {
-  background: #c82333;
-}
-
-/* === Preview‐Card on Home === */
-.preview-card {
-  padding: 1rem;
-  border-radius: 8px;
-  background: var(--card-bg);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  transition: background 0.3s, color 0.3s;
-}
-body.dark .preview-card {
-  background: var(--dark-card);
-  color: var(--dark-text);
-}
-
 /* === "Continue with X" Buttons === */
-.btn-google {
-  background: #db4437;
-  color: #fff;
-}
-.btn-apple {
-  background: #000;
-  color: #fff;
-}
-.btn-sms {
-  background: #28a745;
-  color: #fff;
-}
-.btn-google:hover { opacity: 0.9; }
-.btn-apple:hover { opacity: 0.9; }
-.btn-sms:hover    { opacity: 0.9; }
+.btn-google { background: #db4437; color: #fff; }
+.btn-apple  { background: #000;    color: #fff; }
+.btn-sms    { background: #28a745; color: #fff; }
+.btn-google:hover,
+.btn-apple:hover,
+.btn-sms:hover { opacity: 0.9; }
