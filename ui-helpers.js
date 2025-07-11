@@ -1,31 +1,46 @@
 // ui-helpers.js
 
 /**
- * Wire up any [data-nav] buttons to call setupNavigation()
- * (you already have this stubbed out for route-based rendering).
+ * Wire up any [data-nav] buttons for hash‐based routing.
+ * Listens on the body and captures clicks on elements with a data-nav attribute.
+ * Updates window.location.hash and calls handleRoute() if defined.
  */
 export function setupNavigation() {
+  console.log('🔧 setupNavigation() initialized');
   document.body.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-nav]');
     if (!btn) return;
     e.preventDefault();
+
     const dest = btn.getAttribute('data-nav');
+    console.log(`🔀 Navigating to hash: "${dest}"`);
     window.location.hash = dest;
-    // you’ll hook in your actual router elsewhere
+
+    // If your router exposes a global handleRoute function, invoke it immediately:
+    if (typeof window.handleRoute === 'function') {
+      window.handleRoute();
+    }
   });
 }
 
 /**
- * Simple toast using native alert for now.
+ * Simple non‐blocking toast.
+ * Creates a transient message at the bottom of the screen.
  */
 export function showToast(msg) {
-  alert(msg);
+  const toast = document.createElement('div');
+  toast.className = 'toast-message';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('visible'));
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    toast.addEventListener('transitionend', () => toast.remove());
+  }, 2500);
 }
 
 /**
- * Return a little colored badge based on role.
- * Here we infer role from email prefix, but you can
- * swap in your real role-lookup later.
+ * Return a colored badge based on role (inferred from email).
  */
 export function getRoleBadge(email) {
   let role = 'student';
@@ -37,25 +52,23 @@ export function getRoleBadge(email) {
 }
 
 /**
- * Pick an "AI tip" based on today’s date.
- * Replace the array or logic with a dynamic source if you like.
+ * Pick an "AI tip" based on today’s date index.
  */
 const aiTips = [
-  "Break down your study sessions into 25-minute sprints (Pomodoro Technique).",
+  "Break down study sessions into 25-minute sprints (Pomodoro Technique).",
   "Review one checklist section each day to build steady progress.",
   "Practice test questions in short bursts to improve recall.",
-  "Teach someone else what you’ve just learned--it cements your knowledge.",
+  "Teach someone else what you’ve just learned--it cements knowledge.",
   "Set a recurring reminder to take practice tests weekly."
 ];
 
 export async function getAITipOfTheDay() {
   const day = new Date().getDate();
-  return aiTips[ day % aiTips.length ];
+  return aiTips[day % aiTips.length];
 }
 
 /**
- * Stub for opening your AI-Coach modal/form.
- * Replace with your actual modal-showing logic.
+ * Stub for opening your AI-Coach form / modal.
  */
 export function openStudentHelpForm() {
   showToast("🎧 AI Coach is coming soon--stay tuned!");
