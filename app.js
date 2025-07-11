@@ -659,6 +659,7 @@ async function renderTestResults(container) {
 function renderWalkthrough(container) {
   if (!container) return;
 
+  // 1) Inject the Walkthrough HTML
   container.innerHTML = `
     <div class="card fade-in">
       <h2>🧭 ELDT Walkthrough</h2>
@@ -671,8 +672,10 @@ function renderWalkthrough(container) {
     </div>
   `;
 
-  // Wire up navigation on those data-nav buttons
+  // 2) Immediately wire up all [data-nav] buttons
   setupNavigation();
+
+  // 3) (No additional DOM listeners needed here)
 }
 
 // === Dashboards === //
@@ -985,12 +988,13 @@ document.getElementById("language-selector")?.addEventListener("change", (e) => 
 
 // ==== Login / Signup Screen ====
 function renderLogin() {
-  // Style the page border so you can see this view loaded
+  // (Optional) Visual debug border -- remove when stable
   document.body.style.border = "4px solid magenta";
 
-  // Render the form
   const appEl = document.getElementById("app");
   if (!appEl) return;
+
+  // 1) Inject login HTML
   appEl.innerHTML = `
     <div class="login-card fade-in">
       <h2>🚀 Login or Signup</h2>
@@ -998,7 +1002,7 @@ function renderLogin() {
         <input id="email" type="email" placeholder="Email" required />
         <div class="password-wrapper">
           <input id="password" type="password" placeholder="Password" required />
-          <span id="togglePassword" class="toggle-password">👁️</span>
+          <button type="button" id="toggle-password" class="toggle-password">👁️</button>
         </div>
         <div id="error-msg" class="error-message" style="display:none;"></div>
         <button id="login-submit" type="submit">Login / Signup</button>
@@ -1011,12 +1015,15 @@ function renderLogin() {
       </div>
     </div>
   `;
+
+  // 2) Wire up navigation links on any [data-nav] buttons (none here, but good habit)
   setupNavigation();
 
+  // 3) Query DOM only _after_ the HTML is in place
   const loginForm     = document.getElementById("login-form");
   const emailInput    = document.getElementById("email");
   const passwordInput = document.getElementById("password");
-  const togglePass    = document.getElementById("togglePassword");
+  const toggleBtn     = document.getElementById("toggle-password");
   const errorMsg      = document.getElementById("error-msg");
   const submitBtn     = document.getElementById("login-submit");
   const googleBtn     = document.getElementById("google-login");
@@ -1025,10 +1032,10 @@ function renderLogin() {
   const resetLink     = document.getElementById("reset-password");
 
   // 👁️ Toggle password visibility
-  togglePass.addEventListener("click", () => {
-    const isPwd = passwordInput.type === "password";
-    passwordInput.type = isPwd ? "text" : "password";
-    togglePass.textContent = isPwd ? "🙈" : "👁️";
+  toggleBtn.addEventListener("click", () => {
+    const isHidden = passwordInput.type === "password";
+    passwordInput.type = isHidden ? "text" : "password";
+    toggleBtn.textContent = isHidden ? "🙈" : "👁️";
   });
 
   // 🔑 Login / Signup Handler
@@ -1046,11 +1053,9 @@ function renderLogin() {
 
     submitBtn.disabled = true;
     try {
-      // Try to sign in
       await signInWithEmailAndPassword(auth, email, pwd);
     } catch (err) {
       if (err.code === "auth/user-not-found") {
-        // If not found, create account
         try {
           const cred = await createUserWithEmailAndPassword(auth, email, pwd);
           await addDoc(collection(db, "users"), {
@@ -1080,7 +1085,10 @@ function renderLogin() {
   resetLink.addEventListener("click", async (e) => {
     e.preventDefault();
     const email = emailInput.value.trim();
-    if (!email) return alert("Enter your email to receive a reset link.");
+    if (!email) {
+      alert("Enter your email to receive a reset link.");
+      return;
+    }
     try {
       await sendPasswordResetEmail(auth, email);
       alert("📬 Reset link sent!");
@@ -1099,9 +1107,9 @@ function renderLogin() {
     }
   });
 
-  // 🚧 Placeholder buttons
-  appleBtn.addEventListener("click", () => alert("🚧 Apple Login is coming soon. Stay tuned!"));
-  smsBtn.addEventListener("click",   () => alert("🚧 SMS Login is coming soon. Stay tuned!"));
+  // 🚧 Placeholder for unimplemented flows
+  appleBtn.addEventListener("click", () => alert("🚧 Apple Login coming soon."));
+  smsBtn.addEventListener("click",   () => alert("🚧 SMS Login coming soon."));
 }
 
 // === Global Renderer ===
