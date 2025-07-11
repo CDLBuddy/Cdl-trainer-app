@@ -33,19 +33,6 @@ import {
 // UI Helpers
 import { showToast, setupNavigation } from "./ui-helpers.js";
 
-
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Global error catcher to show parse/runtime errors via alert
-window.addEventListener("error", function(event) {
-  alert(
-    "⚠️ app.js error:\n" +
-    event.message + "\n" +
-    "at " + event.filename + ":" + event.lineno
-  );
-});
-//──────────────────────────────────────────────────────────────────────────────
-
 console.log("✅ app.js loaded");
 
 // ==== Firebase Config & Initialization ====
@@ -56,9 +43,13 @@ const firebaseConfig = {
   storageBucket:     "cdltrainerapp.appspot.com",
   messagingSenderId: "977549527480",
   appId:             "1:977549527480:web:e959926bb02a4cef65674d"
+measurementId:
+"G-MJ22BD2J1J"
 };
 
-const app  = initializeApp(firebaseConfig); // Only one initialization
+const app  = initializeApp(firebaseConfig); 
+
+// Only one initialization
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
