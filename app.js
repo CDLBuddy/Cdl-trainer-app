@@ -130,33 +130,32 @@ function renderWelcome() {
   appEl.innerHTML = `
     <div style="padding:20px; text-align:center;">
       <h1>Welcome!</h1>
-      <button id="login-btn" data-nav="login">🚀 Login</button>
+      <button id="login-btn">🚀 Login</button>
     </div>
   `;
 
-  // Set up our click‐catcher globally
+  // 1) Bind the click _directly_ to the button
+  const loginBtn = document.getElementById("login-btn");
+  if (loginBtn) {
+    loginBtn.addEventListener("click", () => {
+      alert("🛠️ [DEBUG] Direct click on login-btn");
+      handleNavigation("login", true);
+    });
+  }
+
+  // 2) (Optional) still wire up any other nav items generically
   setupNavigation();
 }
 
-// ─── 6. NAVIGATION SETUP & HANDLERS (DELEGATED) ────────────────────────────────
+// ─── 6. NAVIGATION SETUP (OPTIONAL) ────────────────────────────────────────────
 function setupNavigation() {
-  // Count them once
-  const count = document.querySelectorAll("[data-nav]").length;
-  alert(`✅ Navigation setup OK -- found ${count} nav items`);
-
-  // Remove any existing delegate before re-adding
-  document.removeEventListener("click", navClickHandler);
-  document.addEventListener("click", navClickHandler);
-
-  function navClickHandler(e) {
-    const btn = e.target.closest("[data-nav]");
-    if (!btn) return;
-    const target = btn.getAttribute("data-nav");
-    alert(`🛠️ [DEBUG] Clicked nav item for "${target}"`);
-    handleNavigation(target, true);
-  }
+  document.querySelectorAll("[data-nav]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.getAttribute("data-nav");
+      handleNavigation(target, true);
+    });
+  });
 }
-
 // ─── 7. CORE NAVIGATION HANDLER & RENDERER (DEBUG) ─────────────────────────────
 async function handleNavigation(targetPage, pushToHistory = false) {
   alert(`🧭 handleNavigation→ ${targetPage}`);   // debug
