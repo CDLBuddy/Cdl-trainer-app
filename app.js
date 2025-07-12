@@ -323,6 +323,13 @@ function renderWelcome() {
   setupNavigation();
 }
 
+// DEBUG: force login
+  document.getElementById("force-login").addEventListener("click", () => {
+    console.log("🔧 [DEBUG] Force renderLogin() called");
+    renderLogin();
+  });
+}
+
 // 7.2 Login / Signup
 function renderLogin() {
   document.body.style.border = "4px solid magenta";
