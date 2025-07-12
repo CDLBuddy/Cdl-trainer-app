@@ -344,5 +344,48 @@ function renderLogin(container) {
   };
 }
 
+// ─── 9. STUDENT DASHBOARD ─────────────────────────────────────────────────────
+function renderDashboard() {
+  const appEl = document.getElementById("app");
+  if (!appEl) return;
+
+  const name      = localStorage.getItem("fullName") || currentUserEmail?.split("@")[0] || "Student";
+  const roleBadge = getRoleBadge(currentUserEmail);
+
+  appEl.innerHTML = `
+    <div class="dashboard-container" style="padding:20px; max-width:600px; margin:0 auto;">
+      <h1>Welcome back, ${name}!</h1>
+      ${roleBadge}
+      
+      <div class="dashboard-actions" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:20px;">
+        <button data-nav="tests" style="flex:1; padding:10px;">🧪 Practice Tests</button>
+        <button data-nav="coach" style="flex:1; padding:10px;">🎧 AI Coach</button>
+        <button data-nav="checklists" style="flex:1; padding:10px;">✅ My Checklist</button>
+        <button data-nav="results" style="flex:1; padding:10px;">📊 Test Results</button>
+      </div>
+
+      <div style="text-align:center; margin-top:30px;">
+        <button id="logout-btn" style="padding:8px 16px;">🚪 Logout</button>
+      </div>
+    </div>
+  `;
+
+  // Wire up navigation buttons
+  setupNavigation();
+
+  // Hook up logout
+  const logoutBtn = document.getElementById("logout-btn");
+  logoutBtn?.addEventListener("click", async () => {
+    try {
+      await signOut(auth);
+      showToast("You’ve been logged out.");
+      renderWelcome();
+    } catch (err) {
+      console.error("Logout failed:", err);
+      showToast("Logout error");
+    }
+  });
+}
+
 // ─── Kick everything off ───────────────────────────────────────────────────────
 renderWelcome();
