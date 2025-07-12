@@ -62,11 +62,61 @@ onAuthStateChanged(auth, user => {
   alert("✅ Auth listener attached");
 
 // ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
-function showToast(message, duration = 3000) { /* … */ }
-function showModal(html) { /* … */ }
-function closeModal()    { /* … */ }
-function getRoleBadge(email) { /* … */ }
-async function getAITipOfTheDay() { /* … */ }
+function showToast(message, duration = 3000) {
+  const toast = document.createElement("div");
+  toast.className = "toast-message";
+  toast.textContent = message;
+  Object.assign(toast.style, {
+    position:      "fixed",
+    bottom:        "20px",
+    left:          "50%",
+    transform:     "translateX(-50%)",
+    background:    "#333",
+    color:         "#fff",
+    padding:       "10px 20px",
+    borderRadius:  "5px",
+    opacity:       "1",
+    transition:    "opacity 0.5s ease"
+  });
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    setTimeout(() => toast.remove(), 500);
+  }, duration);
+}
+
+function showModal(html) {
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+}
+
+function closeModal() {
+  document.querySelector(".modal-overlay")?.remove();
+}
+
+function getRoleBadge(email) {
+  if (!email) return "";
+  if (email.includes("admin@")) {
+    return `<span class="role-badge admin">Admin</span>`;
+  } else if (email.includes("instructor@")) {
+    return `<span class="role-badge instructor">Instructor</span>`;
+  } else {
+    return `<span class="role-badge student">Student</span>`;
+  }
+}
+
+async function getAITipOfTheDay() {
+  const tips = [
+    "Review your ELDT checklist daily.",
+    "Use flashcards to stay sharp!",
+    "Ask the AI Coach about Class A vs B.",
+    "Take timed quizzes to simulate the real test.",
+    "Complete your checklist for certification."
+  ];
+  return tips[Math.floor(Math.random() * tips.length)];
+}
 
 alert("✅ Utilities OK");
 
