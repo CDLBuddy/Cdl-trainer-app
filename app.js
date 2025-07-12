@@ -378,19 +378,19 @@ async function renderDashboard() {
 
     // Fetch ELDT checklist progress by UID
     let total = 0, done = 0;
-    const eldtSnap = await getDocs(
-      query(collection(db, "eldtProgress"), where("studentId", "==", uid))
-    );
-    eldtSnap.forEach(doc => {
-      const prog = doc.data().progress || {};
-      Object.values(prog).forEach(sec =>
-        Object.values(sec).forEach(val => {
-          total++;
-          if (val) done++;
-        })
-      );
-    });
-    const checklistPct = total ? Math.round((done / total) * 100) : 0;
+    const eldtSnap = await getDocs(collection(db, "eldtProgress"));
+let total = 0, done = 0;
+eldtSnap.forEach(doc => {
+  if (!doc.id.startsWith(`${uid}-section-`)) return;      // skip other users
+  const prog = doc.data().progress || {};
+  Object.values(prog).forEach(sec =>
+    Object.values(sec).forEach(val => {
+      total++;
+      if (val) done++;
+    })
+  );
+});
+const checklistPct = total ? Math.round((done/total)*100) : 0;
 
     // Fetch latest test results by UID
     let testData = null;
