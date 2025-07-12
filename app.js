@@ -467,11 +467,11 @@ function renderPracticeTests(container) {
     testBtns.forEach(btn => {
       btn.addEventListener("click", () => {
         console.log("✅ Clicked:", btn.dataset.test);
-        showToast(`Starting ${btn.dataset.test}`);
-      });
-    });
-  }, 0);
-}
+        showToast(`Loading "${btn.dataset.test}" test…`);
++      // now invoke our engine stub
++      renderTestEngine(document.getElementById("app"), btn.dataset.test);
+     });
+   });
 
 // AI Coach
 function renderAICoach(container) {
@@ -575,6 +575,18 @@ async function renderTestResults(container) {
   html += `</ul><button data-nav="dashboard">⬅️ Back</button></div>`;
 
   container.innerHTML = html;
+  setupNavigation();
+}
+
+// ─── 11. TEST ENGINE PLACEHOLDER ───────────────────────────────────────────────
+function renderTestEngine(container, testName) {
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
+      <h2>🧪 ${testName} Test</h2>
+      <p>This is where your questions will go. 🎉</p>
+      <button data-nav="tests" style="margin-top:20px;">⬅️ Back to Tests</button>
+    </div>
+  `;
   setupNavigation();
 }
 
