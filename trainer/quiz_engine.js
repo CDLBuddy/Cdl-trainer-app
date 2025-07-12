@@ -153,19 +153,3 @@ export function startQuiz(container, quizData, testName, options = {}) {
     }
   }
 }
-
-// === SAVE RESULTS TO FIRESTORE ===
-async function saveTestResult(testName, score, correct, total) {
-  if (!currentUserEmail) return alert("You must be logged in to save test results.");
-
-  await addDoc(collection(db, "testResults"), {
-    studentId: currentUserEmail,
-    testName,
-    score,
-    correct,
-    total,
-    timestamp: new Date()
-  });
-
-  console.log("✅ Test result saved to Firestore.");
-}
