@@ -133,13 +133,18 @@ function renderWelcome() {
       <button id="login-btn" data-nav="login">🚀 Login</button>
     </div>
   `;
-  
-  // ─── 6. NAVIGATION SETUP & HANDLERS ────────────────────────────────────────────
+
+  // Call the navigation setup
+  setupNavigation();
+}  // ← Make sure this closes renderWelcome!
+
+
+
+// ─── 6. NAVIGATION SETUP & HANDLERS ────────────────────────────────────────────
 
 // Stub navigation setup
 function setupNavigation() {
   alert("✅ Navigation setup OK");
-  // Wire up any [data-nav] buttons to the stub handler
   document.querySelectorAll("[data-nav]").forEach(btn => {
     btn.addEventListener("click", e => {
       const target = e.target.closest("[data-nav]").getAttribute("data-nav");
@@ -153,5 +158,6 @@ async function handleNavigation(targetPage, pushToHistory = false) {
   alert(`🔄 handleNavigation called for "${targetPage}", push=${pushToHistory}`);
 }
 
-  // Final step in this test harness
+
+// ─── Final call to kick things off ─────────────────────────────────────────────
 renderWelcome();
