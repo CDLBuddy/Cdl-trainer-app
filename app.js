@@ -1,3 +1,5 @@
+// app.js
+
 alert("🚀 app.js loaded – imports start");
 
 // ─── 1. MODULE IMPORTS ─────────────────────────────────────────────────────────
@@ -43,10 +45,26 @@ const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
-// Just to confirm so far:
 alert("✅ Imports & config OK");
 
-// Simple renderWelcome to prove DOM injection
+// ─── 3. AUTH STATE LISTENER ─────────────────────────────────────────────────────
+alert("🔔 Attaching auth listener");
+onAuthStateChanged(auth, user => {
+  alert("🔔 Auth state changed: user=" + (user?.email || "null"));
+  // … your existing onAuthStateChanged code goes here, but comment it out for now …
+});
+alert("✅ Auth listener attached");
+
+// ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
+function showToast(message, duration = 3000) { /* … */ }
+function showModal(html) { /* … */ }
+function closeModal()    { /* … */ }
+function getRoleBadge(email) { /* … */ }
+async function getAITipOfTheDay() { /* … */ }
+
+alert("✅ Utilities OK");
+
+// ─── 5. SIMPLE RENDER & TEST UI ────────────────────────────────────────────────
 function renderWelcome() {
   const appEl = document.getElementById("app");
   if (!appEl) {
@@ -62,5 +80,5 @@ function renderWelcome() {
   document.getElementById("login-btn").onclick = () => alert("🔑 Login clicked");
 }
 
-// Run it
+// Final step in this test harness
 renderWelcome();
