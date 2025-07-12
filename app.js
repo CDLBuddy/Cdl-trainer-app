@@ -457,7 +457,6 @@ function renderPracticeTests(container) {
     </div>
   `;
 
-  // Confirm nav is working
   setupNavigation();
 
   // Confirm test button click binding
@@ -473,10 +472,6 @@ function renderPracticeTests(container) {
     });
   }, 0);
 }
-  
-  setupNavigation();
-  container.querySelectorAll(".test-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
 
 // AI Coach
 function renderAICoach(container) {
