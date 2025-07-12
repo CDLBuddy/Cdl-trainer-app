@@ -3,13 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <title>CDL Trainer</title>
-  <!-- your CSS links, meta tags, etc. -->
 </head>
 <body>
-  <!-- 1) Your app’s mount point -->
+  <!-- Quick check that HTML itself is loading -->
+  <script>
+    alert("✅ HTML loaded");
+  </script>
+
   <div id="app"></div>
 
-  <!-- 2) Load your module; no "defer" needed since modules are async by default -->
-  <script type="module" src="./app.js"></script>
+  <!-- Load your module. Notice no "./" and no defer. -->
+  <script type="module" src="app.js"></script>
 </body>
 </html>
