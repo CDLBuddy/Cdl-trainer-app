@@ -473,19 +473,11 @@ function renderPracticeTests(container) {
     });
   }, 0);
 }
-
-  // 1) bind the nav button
+  
   setupNavigation();
-
-  // 2) bind our test buttons
   container.querySelectorAll(".test-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      console.log("[renderPracticeTests] clicked:", btn.dataset.test);
-      showToast(`Starting "${btn.dataset.test}" test…`);
-      // TODO → hook in your real test engine here
-    });
-  });
-}
+
 // AI Coach
 function renderAICoach(container) {
   container.innerHTML = `
