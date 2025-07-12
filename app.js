@@ -153,9 +153,55 @@ function setupNavigation() {
   });
 }
 
-// Stub handler
+// ─── 7. CORE NAVIGATION HANDLER & RENDERER ────────────────────────────────────
+
 async function handleNavigation(targetPage, pushToHistory = false) {
-  alert(`🔄 handleNavigation called for "${targetPage}", push=${pushToHistory}`);
+  const appEl = document.getElementById("app");
+  if (!appEl) return;
+
+  // 1) Animate fade-out (stubbed)
+  appEl.classList.remove("fade-in");
+  appEl.classList.add("fade-out");
+  await new Promise(r => setTimeout(r, 150));
+
+  // 2) Push to history
+  if (pushToHistory) {
+    history.pushState({ page: targetPage }, "", `#${targetPage}`);
+  }
+
+  // 3) Route to the right renderer
+  renderPage(targetPage);
+
+  // 4) Fade back in (stubbed)
+  appEl.classList.remove("fade-out");
+  appEl.classList.add("fade-in");
+}
+
+// Top-level `renderPage` dispatcher with only "login" handled for now
+function renderPage(page) {
+  const container = document.getElementById("app");
+  if (!container) return;
+
+  switch (page) {
+    case "login":
+      renderLogin(container);
+      return;
+    default:
+      // Fallback: go home
+      renderWelcome();
+  }
+}
+
+// Stub `renderLogin` – we’ll flesh this out next
+function renderLogin(container) {
+  container.innerHTML = `
+    <div style="padding:20px; text-align:center;">
+      <h2>🚪 Login Screen</h2>
+      <p>(Coming soon…)</p>
+      <button data-nav="home">⬅️ Back</button>
+    </div>
+  `;
+  setupNavigation();
 }
 
 
