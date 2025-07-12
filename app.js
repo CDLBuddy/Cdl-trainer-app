@@ -288,48 +288,56 @@ function renderLogin() {
     toggleBtn.textContent = isHidden ? "🙈" : "👁️";
   });
 
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = emailInput.value.trim();
-    const pwd   = passwordInput.value;
-    errorMsg.style.display = "none";
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = emailInput.value.trim();
+  const pwd   = passwordInput.value;
+  errorMsg.style.display = "none";
 
-    if (!email || !pwd) {
-      errorMsg.textContent = "Please enter both email and password.";
-      errorMsg.style.display = "block";
-      return;
-    }
+  if (!email || !pwd) {
+    errorMsg.textContent = "Please enter both email and password.";
+    errorMsg.style.display = "block";
+    return;
+  }
 
-    submitBtn.disabled = true;
-    try {
-      await signInWithEmailAndPassword(auth, email, pwd);
-    } catch (err) {
-      if (err.code === "auth/user-not-found") {
-        try {
-          const cred = await createUserWithEmailAndPassword(auth, email, pwd);
-          await addDoc(collection(db, "users"), {
-            uid:       cred.user.uid,
-            email,
-            name:      "CDL User",
-            role:      "student",
-            verified:  false,
-            createdAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString(),
-          });
-          alert("🎉 Account created and signed in!");
-        } catch (suErr) {
-          errorMsg.textContent = suErr.message;
-          errorMsg.style.display = "block";
-        }
-      } else {
-        errorMsg.textContent = err.message;
+  console.log("🔑 Attempting signInWithEmailAndPassword for", email);
+  submitBtn.disabled = true;
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pwd);
+    console.log("✅ signIn successful, uid =", cred.user.uid);
+    // Optionally show a toast:
+    showToast("🎉 Signed in as " + email);
+  } catch (err) {
+    console.error("❌ signIn error:", err);
+    if (err.code === "auth/user-not-found") {
+      console.log("🚀 User not found, creating account for", email);
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, pwd);
+        console.log("✅ Account created, uid =", cred.user.uid);
+        await addDoc(collection(db, "users"), {
+          uid:       cred.user.uid,
+          email,
+          name:      "CDL User",
+          role:      "student",
+          verified:  false,
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString(),
+        });
+        console.log("✅ User doc written for", email);
+        showToast("🎉 Account created and signed in!");
+      } catch (suErr) {
+        console.error("❌ Error creating user doc:", suErr);
+        errorMsg.textContent = suErr.message;
         errorMsg.style.display = "block";
       }
-    } finally {
-      submitBtn.disabled = false;
+    } else {
+      errorMsg.textContent = err.message;
+      errorMsg.style.display = "block";
     }
-  });
-
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
   resetLink.addEventListener("click", async (e) => {
     e.preventDefault();
     const email = emailInput.value.trim();
@@ -512,11 +520,15 @@ function handleRoute() {
 
 window.addEventListener("hashchange", handleRoute);
 window.addEventListener("DOMContentLoaded", () => {
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      handleRoute();
-    } else {
-      renderLogin();
-    }
-  });
+  onAuthStateChanged(auth, (user) => {
+  console.log("🔄 onAuthStateChanged → user =", user);
+  setupNavigation();
+
+  if (user) {
+    console.log("→ rendering dashboard for uid", user.uid);
+    renderDashboard();
+  } else {
+    console.log("→ rendering login screen");
+    renderLogin();
+  }
 });
