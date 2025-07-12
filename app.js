@@ -51,9 +51,15 @@ alert("✅ Imports & config OK");
 alert("🔔 Attaching auth listener");
 onAuthStateChanged(auth, user => {
   alert("🔔 Auth state changed: user=" + (user?.email || "null"));
-  // … your existing onAuthStateChanged code goes here, but comment it out for now …
+  if (user) {
+    appEl.innerHTML = `<div style="padding:20px;text-align:center;"><h1>Signed in as ${user.email}</h1></div>`;
+  } else {
+    alert("🏁 No user signed in, showing welcome");
+    renderWelcome();
+  }
 });
-alert("✅ Auth listener attached");
+
+  alert("✅ Auth listener attached");
 
 // ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
 function showToast(message, duration = 3000) { /* … */ }
