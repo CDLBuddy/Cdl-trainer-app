@@ -47,19 +47,78 @@ const auth = getAuth(app);
 
 alert("✅ Imports & config OK");
 
-// ─── 3. AUTH STATE LISTENER ─────────────────────────────────────────────────────
-alert("🔔 Attaching auth listener");
-onAuthStateChanged(auth, user => {
-  alert("🔔 Auth state changed: user=" + (user?.email || "null"));
+// ─── 3. AUTH STATE LISTENER (FULL) ─────────────────────────────────────────────
+alert("🔔 Attaching full auth listener");
+onAuthStateChanged(auth, async user => {
+  console.log("🔥 Firebase auth state changed", user);
+  
+  // Hide any loading overlays (if you have them)
+  document.getElementById("js-error")?.classList.add("hidden");
+  document.getElementById("loading-screen")?.classList.add("hidden");
+
+  const appEl = document.getElementById("app");
+  if (appEl) {
+    // Show a loading placeholder
+    appEl.innerHTML = `
+      <div class="screen-wrapper fade-in" style="text-align:center">
+        <div class="loading-spinner" style="margin:40px auto;"></div>
+        <p>Checking your credentials…</p>
+      </div>
+    `;
+  }
+
   if (user) {
-    appEl.innerHTML = `<div style="padding:20px;text-align:center;"><h1>Signed in as ${user.email}</h1></div>`;
+    // User is signed in
+    const email = user.email;
+    currentUserEmail = email;
+
+    // 1) Fetch or create profile in Firestore
+    let userData;
+    try {
+      const userRef   = collection(db, "users");
+      const userQuery = query(userRef, where("email", "==", email));
+      const snap      = await getDocs(userQuery);
+      if (!snap.empty) {
+        userData = snap.docs[0].data();
+      } else {
+        const newUser = {
+          uid:       user.uid,
+          email,
+          name:      user.displayName || "CDL User",
+          role:      "student",
+          verified:  false,
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString(),
+        };
+        await addDoc(userRef, newUser);
+        userData = newUser;
+      }
+      // 2) Save to localStorage
+      localStorage.setItem("userRole",    userData.role    || "student");
+      localStorage.setItem("fullName",    userData.name    || "CDL User");
+    } catch (err) {
+      console.error("❌ User profile error:", err);
+      showToast("Error loading profile");
+      return;
+    }
+
+    // 3) Route to dashboard based on role
+    const role = localStorage.getItem("userRole");
+    if (role === "admin") {
+      renderAdminDashboard();
+    } else if (role === "instructor") {
+      renderInstructorDashboard();
+    } else {
+      renderDashboard();
+    }
+
   } else {
-    alert("🏁 No user signed in, showing welcome");
+    // No user signed in → show welcome screen
+    currentUserEmail = null;
     renderWelcome();
   }
 });
-
-  alert("✅ Auth listener attached");
+alert("✅ Full auth listener attached");
 
 // ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
 function showToast(message, duration = 3000) {
