@@ -134,72 +134,68 @@ function renderWelcome() {
     </div>
   `;
 
-  // Call the navigation setup
+  // Set up our click‐catcher globally
   setupNavigation();
-}  // ← Make sure this closes renderWelcome!
+}
 
-
-// ─── 6. NAVIGATION SETUP & HANDLERS ────────────────────────────────────────────
+// ─── 6. NAVIGATION SETUP & HANDLERS (DELEGATED) ────────────────────────────────
 function setupNavigation() {
-  // 1) Find all nav buttons
-  const navItems = document.querySelectorAll("[data-nav]");
-  alert(`✅ Navigation setup OK -- found ${navItems.length} nav items`);
+  // Count them once
+  const count = document.querySelectorAll("[data-nav]").length;
+  alert(`✅ Navigation setup OK -- found ${count} nav items`);
 
-  // 2) Attach click listeners and debug each click
-  navItems.forEach(btn => {
-    btn.addEventListener("click", e => {
-      const target = e.target.closest("[data-nav]")?.getAttribute("data-nav");
-      alert(`🛠️ [DEBUG] Clicked nav item for "${target}"`);
-      handleNavigation(target, true);
-    });
-  });
+  // Remove any existing delegate before re-adding
+  document.removeEventListener("click", navClickHandler);
+  document.addEventListener("click", navClickHandler);
+
+  function navClickHandler(e) {
+    const btn = e.target.closest("[data-nav]");
+    if (!btn) return;
+    const target = btn.getAttribute("data-nav");
+    alert(`🛠️ [DEBUG] Clicked nav item for "${target}"`);
+    handleNavigation(target, true);
+  }
 }
 
 // ─── 7. CORE NAVIGATION HANDLER & RENDERER (DEBUG) ─────────────────────────────
-
 async function handleNavigation(targetPage, pushToHistory = false) {
-  alert(`🧭 handleNavigation→ ${targetPage}`);   // ← debug alert
+  alert(`🧭 handleNavigation→ ${targetPage}`);   // debug
 
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  // 1) Animate fade-out (stubbed)
+  // fade-out stub
   appEl.classList.remove("fade-in");
   appEl.classList.add("fade-out");
   await new Promise(r => setTimeout(r, 150));
 
-  // 2) Push to history
+  // history
   if (pushToHistory) {
     history.pushState({ page: targetPage }, "", `#${targetPage}`);
   }
 
-  // 3) Route to the right renderer
+  // route
   renderPage(targetPage);
 
-  // 4) Fade back in (stubbed)
+  // fade-in stub
   appEl.classList.remove("fade-out");
   appEl.classList.add("fade-in");
 }
 
-// Top-level `renderPage` dispatcher with only "login" handled for now
 function renderPage(page) {
   const container = document.getElementById("app");
   if (!container) return;
-
   switch (page) {
     case "login":
       renderLogin(container);
-      return;
+      break;
     default:
-      // Fallback: go home
       renderWelcome();
   }
 }
 
-// Stub `renderLogin` – now with debug alert
 function renderLogin(container) {
-  alert("🚪 renderLogin() called");  // ← debug alert
-
+  alert("🚪 renderLogin() called");  // debug
   container.innerHTML = `
     <div style="padding:20px; text-align:center;">
       <h2>🚪 Login Screen</h2>
@@ -210,6 +206,5 @@ function renderLogin(container) {
   setupNavigation();
 }
 
-
-// ─── Final call to kick things off ─────────────────────────────────────────────
+// kick it off
 renderWelcome();
