@@ -23,7 +23,7 @@ import {
   onAuthStateChanged,
   signOut,
   signInWithEmailAndPassword,
-createUserWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   updateProfile,
   GoogleAuthProvider,
@@ -42,9 +42,8 @@ const firebaseConfig = {
   projectId:         "cdltrainerapp",
   storageBucket:     "cdltrainerapp.appspot.com",
   messagingSenderId: "977549527480",
-  appId:             "1:977549527480:web:e959926bb02a4cef65674d"
-measurementId:
-"G-MJ22BD2J1J"
+  appId:             "1:977549527480:web:e959926bb02a4cef65674d",  // ← Added comma here
+  measurementId:     "G-MJ22BD2J1J"
 };
 
 const app  = initializeApp(firebaseConfig); 
@@ -52,7 +51,6 @@ const app  = initializeApp(firebaseConfig);
 // Only one initialization
 const db   = getFirestore(app);
 const auth = getAuth(app);
-
 // ==== Toast Notification ====
 function showToast(message, duration = 3000) {
   const toast = document.createElement("div");
@@ -1152,25 +1150,6 @@ function renderPage(page) {
 }
 
 // === Welcome Screen Renderer ===
-
-function renderWelcome() {
-  console.log("🟢 renderWelcome() CALLED");
-
-  const appEl = document.getElementById("app");
-  if (!appEl) {
-    console.error("❌ #app not found in renderWelcome()");
-    return;
-  }
-
-  appEl.innerHTML = `
-    <div class="welcome-screen fade-in">
-      <h1>Welcome to CDL Trainer</h1>
-      ...
-    </div>
-  `;
-
-  setupNavigation();
-}
 
 function renderWelcome() {
   const appEl = document.getElementById("app");
