@@ -157,10 +157,10 @@ async function renderChecklistSection(sectionId) {
 
   try {
     // 1️⃣ Load existing progress
-    const email = auth.currentUser.email;
-    console.log(' • currentUser.email =', email);
+    const uid = auth.currentUser.uid;
+    console.log(' • currentUser.email =', uid);
 
-    const ref  = doc(db, 'eldtProgress', `${email}-section-${sectionId}`);
+    const ref  = doc(db, 'eldtProgress', `${uid}-section-${sectionId}`);
     console.log(' • Firestore ref =', ref.path);
 
     const snap = await getDoc(ref);
