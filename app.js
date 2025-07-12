@@ -104,12 +104,12 @@ onAuthStateChanged(auth, async user => {
       localStorage.setItem("userRole", userData.role    || "student");
       localStorage.setItem("fullName", userData.name    || "CDL User");
     } catch (err) {
-  console.error("❌ User profile error:", err);
-  const msg = err.message || err;
-  showToast("Error loading profile: " + msg);
-  alert("🛑 Firestore error: " + msg);
-  return;
-}
+      console.error("❌ User profile error:", err);
+      const msg = err.message || err;
+      showToast("Error loading profile: " + msg);
+      alert("🛑 Firestore error: " + msg);
+      return;
+    }
 
     // 3) Setup logout button (you need an element with id="logout-btn" in your dashboard templates)
     const logoutBtn = document.getElementById("logout-btn");
@@ -486,6 +486,140 @@ async function renderDashboard() {
     localStorage.removeItem("userRole");
     renderWelcome();
   });
+}
+
+// ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
+
+// 10.1 Practice Tests
+function renderPracticeTests(container) {
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
+      <h2>🧪 CDL Practice Tests</h2>
+      <p>Select a practice test to begin:</p>
+      <ul style="list-style:none; padding:0;">
+        <li><button class="test-btn" data-test="General Knowledge" style="width:100%; padding:10px; margin:6px 0;">General Knowledge</button></li>
+        <li><button class="test-btn" data-test="Air Brakes" style="width:100%; padding:10px; margin:6px 0;">Air Brakes</button></li>
+        <li><button class="test-btn" data-test="Combination Vehicles" style="width:100%; padding:10px; margin:6px 0;">Combination Vehicles</button></li>
+      </ul>
+      <button data-nav="home" style="margin-top:20px;">⬅️ Back</button>
+    </div>
+  `;
+  setupNavigation();
+  document.querySelectorAll(".test-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      showToast(`Starting "${btn.dataset.test}" test...`);
+      // TODO: integrate actual test engine here
+    });
+  });
+}
+
+// 10.2 AI Coach
+function renderAICoach(container) {
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
+      <h2>🎧 Talk to Your AI Coach</h2>
+      <div id="ai-chat-log" style="border:1px solid #ccc; height:300px; overflow-y:auto; padding:10px; margin-bottom:10px;"></div>
+      <textarea id="ai-input" placeholder="Ask a question..." style="width:100%; height:60px; padding:8px;"></textarea>
+      <button id="ai-send-btn" style="width:100%; padding:10px; margin-top:6px;">Send</button>
+      <button data-nav="home" style="display:block; margin:20px auto;">⬅️ Back</button>
+    </div>
+  `;
+  setupNavigation();
+  const logEl = document.getElementById("ai-chat-log");
+  document.getElementById("ai-send-btn").addEventListener("click", async () => {
+    const inputEl = document.getElementById("ai-input");
+    const question = inputEl.value.trim();
+    if (!question) return;
+    logEl.innerHTML += `<div style="margin:8px 0;"><strong>You:</strong> ${question}</div>`;
+    inputEl.value = "";
+    // Simulate AI response
+    const aiReply = await getAITipOfTheDay(); 
+    logEl.innerHTML += `<div style="margin:8px 0; color:#0066cc;"><strong>AI Coach:</strong> ${aiReply}</div>`;
+    logEl.scrollTop = logEl.scrollHeight;
+  });
+}
+
+// 10.3 My Checklist
+async function renderChecklists(container) {
+  container.innerHTML = `<div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;"><h2>✅ My ELDT Checklist</h2><p>Loading...</p></div>`;
+
+  // Fetch or create progress doc
+  const refQuery = query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail));
+  const snap = await getDocs(refQuery);
+  let progressDoc, progressData;
+  if (snap.empty) {
+    progressData = {
+      studentId: currentUserEmail,
+      progress: {
+        "Section 1": { "Item A": false, "Item B": false },
+        "Section 2": { "Item C": false, "Item D": false }
+      }
+    };
+    const docRef = await addDoc(collection(db, "eldtProgress"), progressData);
+    progressDoc = { id: docRef.id, data: () => progressData };
+  } else {
+    progressDoc = { id: snap.docs[0].id, data: () => snap.docs[0].data() };
+    progressData = progressDoc.data();
+  }
+
+  // Build UI
+  let html = `<div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;"><h2>✅ My ELDT Checklist</h2><ul style="list-style:none; padding:0;">`;
+  Object.entries(progressData.progress).forEach(([section, items]) => {
+    html += `<li style="margin-bottom:16px;"><strong>${section}</strong><ul style="list-style:none; padding-left:12px;">`;
+    Object.entries(items).forEach(([item, done]) => {
+      html += `
+        <li style="margin:6px 0;">
+          <label>
+            <input type="checkbox" data-item="${item}" ${done ? "checked" : ""}>
+            ${item}
+          </label>
+        </li>
+      `;
+    });
+    html += `</ul></li>`;
+  });
+  html += `</ul><button data-nav="home">⬅️ Back</button></div>`;
+  container.innerHTML = html;
+  setupNavigation();
+
+  // Hook checkbox toggles
+  container.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    cb.addEventListener("change", async () => {
+      const itemName = cb.dataset.item;
+      // find which section it belongs to
+      for (let [section, items] of Object.entries(progressData.progress)) {
+        if (items.hasOwnProperty(itemName)) {
+          progressData.progress[section][itemName] = cb.checked;
+          break;
+        }
+      }
+      await updateDoc(doc(db, "eldtProgress", progressDoc.id), { progress: progressData.progress });
+    });
+  });
+}
+
+// 10.4 Test Results
+async function renderTestResults(container) {
+  container.innerHTML = `<div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;"><h2>📊 Test Results</h2><p>Loading...</p></div>`;
+
+  const snap = await getDocs(query(collection(db, "testResults"), where("studentId", "==", currentUserEmail)));
+  const results = snap.docs.map(d => d.data());
+  results.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+
+  let html = `<div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;"><h2>📊 Test Results</h2><ul style="list-style:none; padding:0;">`;
+  if (results.length === 0) {
+    html += `<li>No test results found.</li>`;
+  } else {
+    results.forEach(r => {
+      const pct = Math.round((r.correct / r.total) * 100);
+      const date = r.timestamp.toDate().toLocaleDateString();
+      html += `<li style="margin:8px 0;"><strong>${r.testName}</strong> -- ${pct}% (${r.correct}/${r.total}) <em>on ${date}</em></li>`;
+    });
+  }
+  html += `</ul><button data-nav="home">⬅️ Back</button></div>`;
+
+  container.innerHTML = html;
+  setupNavigation();
 }
 
 // ─── Kick everything off ───────────────────────────────────────────────────────
