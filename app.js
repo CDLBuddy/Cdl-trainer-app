@@ -345,19 +345,94 @@ function renderLogin(container) {
 }
 
 // ─── 9. STUDENT DASHBOARD ─────────────────────────────────────────────────────
-function renderDashboard() {
+async function renderDashboard() {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  const name      = localStorage.getItem("fullName") || currentUserEmail?.split("@")[0] || "Student";
-  const roleBadge = getRoleBadge(currentUserEmail);
+  // Fetch ELDT progress
+  let checklistPct = 0;
+  {
+    const snap = await getDocs(
+      query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail))
+    );
+    let total = 0, done = 0;
+    snap.forEach(d => {
+      const prog = d.data().progress;
+      Object.values(prog).forEach(sec =>
+        Object.values(sec).forEach(v => { total++; if (v) done++; })
+      );
+    });
+    checklistPct = total ? Math.round((done/total)*100) : 0;
+  }
 
+  // Fetch last test result
+  let lastTest = null;
+  {
+    const snap = await getDocs(
+      query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
+    );
+    snap.forEach(d => {
+      const data = d.data();
+      if (!lastTest || data.timestamp.toDate() > lastTest.timestamp.toDate()) {
+        lastTest = data;
+      }
+    });
+  }
+
+  // Fetch profile details
+  let license = "Not selected", experience = "Unknown";
+  {
+    const ls = await getDocs(query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail)));
+    ls.forEach(d => license = d.data().licenseType || license);
+    const es = await getDocs(query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail)));
+    es.forEach(d => experience = d.data().experience || experience);
+  }
+
+  // Compute study streak (last 7 days)
+  let streak = 0;
+  {
+    const today = new Date().toDateString();
+    let log = JSON.parse(localStorage.getItem("studyLog")||"[]");
+    if (!log.includes(today)) {
+      log.push(today);
+      localStorage.setItem("studyLog", JSON.stringify(log));
+    }
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 6);
+    streak = log.filter(d => new Date(d) >= cutoff).length;
+  }
+
+  // Render
   appEl.innerHTML = `
-    <div class="dashboard-container" style="padding:20px; max-width:600px; margin:0 auto;">
-      <h1>Welcome back, ${name}!</h1>
-      ${roleBadge}
+    <div style="padding:20px; max-width:600px; margin:0 auto;">
+      <h1>Welcome back, ${localStorage.getItem("fullName")||"Student"}!</h1>
+      ${getRoleBadge(currentUserEmail)}
       
-      <div class="dashboard-actions" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:20px;">
+      <div style="margin:20px 0;">
+        <h3>📋 Checklist Progress</h3>
+        <div class="progress-track"><div class="progress-fill" style="width:${checklistPct}%;"></div></div>
+        <p>${checklistPct}% complete</p>
+      </div>
+
+      <div style="margin:20px 0;">
+        <h3>🧪 Last Test</h3>
+        ${lastTest
+          ? `<p><strong>${lastTest.testName}</strong> -- ${lastTest.correct}/${lastTest.total} (${Math.round(lastTest.correct/lastTest.total*100)}%)</p>`
+          : `<p>No tests taken yet.</p>`
+        }
+      </div>
+
+      <div style="margin:20px 0;">
+        <h3>📝 Your Profile</h3>
+        <p><strong>License:</strong> ${license}</p>
+        <p><strong>Experience:</strong> ${experience}</p>
+      </div>
+
+      <div style="margin:20px 0;">
+        <h3>🔥 Study Streak</h3>
+        <p>${streak} day${streak!==1?"s":""} active this week</p>
+      </div>
+
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:30px;">
         <button data-nav="tests" style="flex:1; padding:10px;">🧪 Practice Tests</button>
         <button data-nav="coach" style="flex:1; padding:10px;">🎧 AI Coach</button>
         <button data-nav="checklists" style="flex:1; padding:10px;">✅ My Checklist</button>
@@ -370,20 +445,11 @@ function renderDashboard() {
     </div>
   `;
 
-  // Wire up navigation buttons
   setupNavigation();
-
-  // Hook up logout
-  const logoutBtn = document.getElementById("logout-btn");
-  logoutBtn?.addEventListener("click", async () => {
-    try {
-      await signOut(auth);
-      showToast("You’ve been logged out.");
-      renderWelcome();
-    } catch (err) {
-      console.error("Logout failed:", err);
-      showToast("Logout error");
-    }
+  document.getElementById("logout-btn")?.addEventListener("click", async () => {
+    await signOut(auth);
+    showToast("Logged out.");
+    renderWelcome();
   });
 }
 
