@@ -209,25 +209,27 @@ function setupNavigation() {
   });
 }
 
-// ─── 7. CORE NAVIGATION HANDLER & RENDERER ─────────────────────────────────────
+// ─── 7. CORE NAVIGATION HANDLER & DISPATCHER ───────────────────────────────────
 async function handleNavigation(targetPage, pushToHistory = false) {
   console.log(`🧭 handleNavigation → ${targetPage}`);
 
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  // Fade-out stub (ensure you have .fade-in/.fade-out in CSS)
+  // Fade‐out stub (requires .fade-in/.fade-out in CSS)
   appEl.classList.remove("fade-in");
   appEl.classList.add("fade-out");
   await new Promise(r => setTimeout(r, 150));
 
+  // Push to history
   if (pushToHistory) {
     history.pushState({ page: targetPage }, "", `#${targetPage}`);
   }
 
+  // Dispatch to the right renderer
   renderPage(targetPage);
 
-  // Fade-in stub
+  // Fade‐in stub
   appEl.classList.remove("fade-out");
   appEl.classList.add("fade-in");
 }
@@ -237,11 +239,39 @@ function renderPage(page) {
   if (!container) return;
 
   switch (page) {
+    case "walkthrough":
+      renderWalkthrough(container);
+      break;
+    case "tests":
+      renderPracticeTests(container);
+      break;
+    case "coach":
+      renderAICoach(container);
+      break;
+    case "checklists":
+      renderChecklists(container);
+      break;
+    case "results":
+      renderTestResults(container);
+      break;
+    case "flashcards":
+      renderFlashcards(container);
+      break;
+    case "experience":
+      renderExperience(container);
+      break;
+    case "license":
+      renderLicenseSelector(container);
+      break;
     case "login":
       renderLogin(container);
       break;
-    default:
+    case "home":
       renderWelcome();
+      break;
+    default:
+      renderDashboard();
+      break;
   }
 }
 
@@ -267,7 +297,7 @@ function renderLogin(container) {
     </div>
   `;
 
-  // Back button and any other nav
+  // Wire up nav
   setupNavigation();
 
   // Toggle password visibility
@@ -276,11 +306,11 @@ function renderLogin(container) {
     passwordInput.type = passwordInput.type === "password" ? "text" : "password";
   };
 
-  // Login / Signup handler
+  // Handle login/signup
   document.getElementById("login-form").onsubmit = async e => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
-    const pwd   = passwordInput.value;
+    const pwd = passwordInput.value;
     const errorDiv = document.getElementById("error-msg");
     errorDiv.style.display = "none";
 
@@ -289,7 +319,6 @@ function renderLogin(container) {
       errorDiv.style.display = "block";
       return;
     }
-
     try {
       await signInWithEmailAndPassword(auth, email, pwd);
     } catch (err) {
@@ -297,11 +326,11 @@ function renderLogin(container) {
         try {
           const cred = await createUserWithEmailAndPassword(auth, email, pwd);
           await addDoc(collection(db, "users"), {
-            uid:       cred.user.uid,
+            uid: cred.user.uid,
             email,
-            name:      "CDL User",
-            role:      "student",
-            verified:  false,
+            name: "CDL User",
+            role: "student",
+            verified: false,
             createdAt: new Date().toISOString(),
             lastLogin: new Date().toISOString(),
           });
@@ -327,7 +356,7 @@ function renderLogin(container) {
     }
   };
 
-  // Reset password
+  // Password reset
   document.getElementById("reset-password").onclick = async e => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
@@ -351,7 +380,7 @@ async function renderDashboard() {
 
   // Fetch ELDT progress
   let checklistPct = 0;
-  {
+  try {
     const snap = await getDocs(
       query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail))
     );
@@ -359,86 +388,91 @@ async function renderDashboard() {
     snap.forEach(d => {
       const prog = d.data().progress;
       Object.values(prog).forEach(sec =>
-        Object.values(sec).forEach(v => { total++; if (v) done++; })
+        Object.values(sec).forEach(val => { total++; if (val) done++; })
       );
     });
-    checklistPct = total ? Math.round((done/total)*100) : 0;
+    checklistPct = total ? Math.round((done / total) * 100) : 0;
+  } catch (e) {
+    console.error("ELDT fetch error", e);
   }
 
   // Fetch last test result
-  let lastTest = null;
-  {
-    const snap = await getDocs(
+  let lastTestData = null;
+  try {
+    const snap2 = await getDocs(
       query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
     );
-    snap.forEach(d => {
-      const data = d.data();
-      if (!lastTest || data.timestamp.toDate() > lastTest.timestamp.toDate()) {
-        lastTest = data;
+    snap2.forEach(d => {
+      const t = d.data();
+      if (!lastTestData || t.timestamp.toDate() > lastTestData.timestamp.toDate()) {
+        lastTestData = t;
       }
     });
+  } catch (e) {
+    console.error("TestResults fetch error", e);
   }
 
-  // Fetch profile details
+  // Fetch profile info (license & experience)
   let license = "Not selected", experience = "Unknown";
-  {
-    const ls = await getDocs(query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail)));
-    ls.forEach(d => license = d.data().licenseType || license);
-    const es = await getDocs(query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail)));
-    es.forEach(d => experience = d.data().experience || experience);
+  try {
+    (await getDocs(query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail))))
+      .forEach(d => license = d.data().licenseType || license);
+    (await getDocs(query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail))))
+      .forEach(d => experience = d.data().experience || experience);
+  } catch (e) {
+    console.error("Profile fetch error", e);
   }
 
   // Compute study streak (last 7 days)
   let streak = 0;
-  {
+  try {
     const today = new Date().toDateString();
-    let log = JSON.parse(localStorage.getItem("studyLog")||"[]");
+    let log = JSON.parse(localStorage.getItem("studyLog") || "[]");
     if (!log.includes(today)) {
       log.push(today);
       localStorage.setItem("studyLog", JSON.stringify(log));
     }
-    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 6);
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 6);
     streak = log.filter(d => new Date(d) >= cutoff).length;
+  } catch (e) {
+    console.error("Streak calc error", e);
   }
 
-  // Render
+  const name = localStorage.getItem("fullName") || "CDL User";
+  const roleBadge = getRoleBadge(currentUserEmail);
+
   appEl.innerHTML = `
     <div style="padding:20px; max-width:600px; margin:0 auto;">
-      <h1>Welcome back, ${localStorage.getItem("fullName")||"Student"}!</h1>
-      ${getRoleBadge(currentUserEmail)}
-      
+      <h1>Welcome back, ${name}!</h1>
+      ${roleBadge}
       <div style="margin:20px 0;">
         <h3>📋 Checklist Progress</h3>
-        <div class="progress-track"><div class="progress-fill" style="width:${checklistPct}%;"></div></div>
+        <div class="progress-track"><div class="progress-fill" style="width:${checklistPct}%"></div></div>
         <p>${checklistPct}% complete</p>
       </div>
-
       <div style="margin:20px 0;">
         <h3>🧪 Last Test</h3>
-        ${lastTest
-          ? `<p><strong>${lastTest.testName}</strong> -- ${lastTest.correct}/${lastTest.total} (${Math.round(lastTest.correct/lastTest.total*100)}%)</p>`
+        ${lastTestData
+          ? `<p><strong>${lastTestData.testName}</strong> -- ${lastTestData.correct}/${lastTestData.total} (${Math.round(lastTestData.correct/lastTestData.total*100)}%)</p>`
           : `<p>No tests taken yet.</p>`
         }
       </div>
-
       <div style="margin:20px 0;">
         <h3>📝 Your Profile</h3>
         <p><strong>License:</strong> ${license}</p>
         <p><strong>Experience:</strong> ${experience}</p>
       </div>
-
       <div style="margin:20px 0;">
         <h3>🔥 Study Streak</h3>
-        <p>${streak} day${streak!==1?"s":""} active this week</p>
+        <p>${streak} day${streak !== 1 ? "s" : ""} active this week</p>
       </div>
-
       <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:30px;">
         <button data-nav="tests" style="flex:1; padding:10px;">🧪 Practice Tests</button>
         <button data-nav="coach" style="flex:1; padding:10px;">🎧 AI Coach</button>
         <button data-nav="checklists" style="flex:1; padding:10px;">✅ My Checklist</button>
         <button data-nav="results" style="flex:1; padding:10px;">📊 Test Results</button>
       </div>
-
       <div style="text-align:center; margin-top:30px;">
         <button id="logout-btn" style="padding:8px 16px;">🚪 Logout</button>
       </div>
@@ -448,7 +482,8 @@ async function renderDashboard() {
   setupNavigation();
   document.getElementById("logout-btn")?.addEventListener("click", async () => {
     await signOut(auth);
-    showToast("Logged out.");
+    localStorage.removeItem("fullName");
+    localStorage.removeItem("userRole");
     renderWelcome();
   });
 }
