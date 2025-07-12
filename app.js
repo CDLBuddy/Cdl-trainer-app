@@ -16,10 +16,7 @@ import {
   getDocs,
   addDoc,
   doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  deleteDoc
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 // Auth
@@ -58,13 +55,12 @@ const auth = getAuth(app);
 onAuthStateChanged(auth, async user => {
   console.log("🔔 Firebase auth state changed:", user);
 
-  // Hide any loading overlays if you have them
+  // Hide loading overlays
   document.getElementById("js-error")?.classList.add("hidden");
   document.getElementById("loading-screen")?.classList.add("hidden");
 
   const appEl = document.getElementById("app");
   if (appEl) {
-    // Show loading placeholder
     appEl.innerHTML = `
       <div class="screen-wrapper fade-in" style="text-align:center">
         <div class="loading-spinner" style="margin:40px auto;"></div>
@@ -105,26 +101,22 @@ onAuthStateChanged(auth, async user => {
       localStorage.setItem("fullName", userData.name    || "CDL User");
     } catch (err) {
       console.error("❌ User profile error:", err);
-      const msg = err.message || err;
-      showToast("Error loading profile: " + msg);
-      alert("🛑 Firestore error: " + msg);
+      showToast("Error loading profile: " + (err.message||err));
+      alert("🛑 Firestore error: " + (err.message||err));
       return;
     }
 
-    // 3) Setup logout button (you need an element with id="logout-btn" in your dashboard templates)
-    const logoutBtn = document.getElementById("logout-btn");
-    if (logoutBtn) {
-      logoutBtn.onclick = async () => {
-        try {
-          await signOut(auth);
-          showToast("You’ve been logged out.");
-          renderWelcome();
-        } catch (err) {
-          console.error("Logout failed:", err);
-          showToast("Logout error");
-        }
-      };
-    }
+    // 3) Setup logout button
+    document.getElementById("logout-btn")?.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        showToast("You’ve been logged out.");
+        renderWelcome();
+      } catch (err) {
+        console.error("Logout failed:", err);
+        showToast("Logout error");
+      }
+    });
 
     // 4) Route to dashboard based on role
     const role = localStorage.getItem("userRole");
@@ -135,7 +127,6 @@ onAuthStateChanged(auth, async user => {
     } else {
       renderDashboard();
     }
-
   } else {
     // Signed out → welcome screen
     currentUserEmail = null;
@@ -150,22 +141,15 @@ function showModal(html) {
   overlay.innerHTML = html;
   document.body.appendChild(overlay);
 }
-
 function closeModal() {
   document.querySelector(".modal-overlay")?.remove();
 }
-
 function getRoleBadge(email) {
   if (!email) return "";
-  if (email.includes("admin@")) {
-    return `<span class="role-badge admin">Admin</span>`;
-  } else if (email.includes("instructor@")) {
-    return `<span class="role-badge instructor">Instructor</span>`;
-  } else {
-    return `<span class="role-badge student">Student</span>`;
-  }
+  if (email.includes("admin@"))       return `<span class="role-badge admin">Admin</span>`;
+  else if (email.includes("instructor@")) return `<span class="role-badge instructor">Instructor</span>`;
+  else                                 return `<span class="role-badge student">Student</span>`;
 }
-
 async function getAITipOfTheDay() {
   const tips = [
     "Review your ELDT checklist daily.",
@@ -189,13 +173,9 @@ function renderWelcome() {
     </div>
   `;
 
-  // Direct click binding for Login
-  const loginBtn = document.getElementById("login-btn");
-  loginBtn?.addEventListener("click", () => {
+  document.getElementById("login-btn")?.addEventListener("click", () => {
     handleNavigation("login", true);
   });
-
-  // Wire up any other data-nav elements
   setupNavigation();
 }
 
@@ -203,8 +183,7 @@ function renderWelcome() {
 function setupNavigation() {
   document.querySelectorAll("[data-nav]").forEach(btn => {
     btn.addEventListener("click", () => {
-      const target = btn.getAttribute("data-nav");
-      handleNavigation(target, true);
+      handleNavigation(btn.getAttribute("data-nav"), true);
     });
   });
 }
@@ -216,62 +195,36 @@ async function handleNavigation(targetPage, pushToHistory = false) {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  // Fade‐out stub (requires .fade-in/.fade-out in CSS)
   appEl.classList.remove("fade-in");
   appEl.classList.add("fade-out");
   await new Promise(r => setTimeout(r, 150));
 
-  // Push to history
   if (pushToHistory) {
     history.pushState({ page: targetPage }, "", `#${targetPage}`);
   }
 
-  // Dispatch to the right renderer
   renderPage(targetPage);
 
-  // Fade‐in stub
   appEl.classList.remove("fade-out");
   appEl.classList.add("fade-in");
 }
 
 function renderPage(page) {
-  const container = document.getElementById("app");
-  if (!container) return;
-
+  const c = document.getElementById("app");
+  if (!c) return;
   switch (page) {
-    case "walkthrough":
-      renderWalkthrough(container);
-      break;
-    case "tests":
-      renderPracticeTests(container);
-      break;
-    case "coach":
-      renderAICoach(container);
-      break;
-    case "checklists":
-      renderChecklists(container);
-      break;
-    case "results":
-      renderTestResults(container);
-      break;
-    case "flashcards":
-      renderFlashcards(container);
-      break;
-    case "experience":
-      renderExperience(container);
-      break;
-    case "license":
-      renderLicenseSelector(container);
-      break;
-    case "login":
-      renderLogin(container);
-      break;
-    case "home":
-      renderWelcome();
-      break;
-    default:
-      renderDashboard();
-      break;
+    case "walkthrough": renderWalkthrough(c);    break;
+    case "tests":       renderPracticeTests(c);  break;
+    case "coach":       renderAICoach(c);        break;
+    case "checklists":  renderChecklists(c);     break;
+    case "results":     renderTestResults(c);    break;
+    case "flashcards":  renderFlashcards(c);     break;
+    case "experience":  renderExperience(c);     break;
+    case "license":     renderLicenseSelector(c);break;
+    case "login":       renderLogin(c);          break;
+    case "dashboard":   renderDashboard();       break;
+    case "home":        renderWelcome();         break;
+    default:            renderDashboard();       break;
   }
 }
 
@@ -296,67 +249,64 @@ function renderLogin(container) {
       <p style="text-align:center; margin-top:8px;"><a href="#" id="reset-password">Forgot password?</a></p>
     </div>
   `;
-
-  // Wire up nav
   setupNavigation();
 
-  // Toggle password visibility
-  const passwordInput = document.getElementById("password");
+  const pwdInput = document.getElementById("password");
   document.getElementById("toggle-password").onclick = () => {
-    passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+    pwdInput.type = pwdInput.type === "password" ? "text" : "password";
   };
 
-  // Handle login/signup
   document.getElementById("login-form").onsubmit = async e => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
-    const pwd = passwordInput.value;
-    const errorDiv = document.getElementById("error-msg");
-    errorDiv.style.display = "none";
+    const pwd   = pwdInput.value;
+    const errD  = document.getElementById("error-msg");
+    errD.style.display = "none";
 
     if (!email || !pwd) {
-      errorDiv.textContent = "Please enter both email and password.";
-      errorDiv.style.display = "block";
+      errD.textContent = "Please enter both email and password.";
+      errD.style.display = "block";
       return;
     }
+
     try {
       await signInWithEmailAndPassword(auth, email, pwd);
+      handleNavigation("dashboard", true);
     } catch (err) {
       if (err.code === "auth/user-not-found") {
         try {
           const cred = await createUserWithEmailAndPassword(auth, email, pwd);
           await addDoc(collection(db, "users"), {
-            uid: cred.user.uid,
+            uid:       cred.user.uid,
             email,
-            name: "CDL User",
-            role: "student",
-            verified: false,
+            name:      "CDL User",
+            role:      "student",
+            verified:  false,
             createdAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString(),
+            lastLogin: new Date().toISOString()
           });
-          showToast("🎉 Account created and signed in!");
+          showToast("🎉 Account created!");
+          handleNavigation("dashboard", true);
         } catch (suErr) {
-          errorDiv.textContent = suErr.message;
-          errorDiv.style.display = "block";
+          errD.textContent = suErr.message;
+          errD.style.display = "block";
         }
       } else {
-        errorDiv.textContent = err.message;
-        errorDiv.style.display = "block";
+        errD.textContent = err.message;
+        errD.style.display = "block";
       }
     }
   };
 
-  // Google Sign-In
   document.getElementById("google-login").onclick = async () => {
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      handleNavigation("dashboard", true);
     } catch (err) {
       showToast("Google Sign-In failed: " + err.message);
     }
   };
 
-  // Password reset
   document.getElementById("reset-password").onclick = async e => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
@@ -490,7 +440,7 @@ async function renderDashboard() {
 
 // ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
 
-// 10.1 Practice Tests
+// Practice Tests
 function renderPracticeTests(container) {
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
@@ -501,19 +451,18 @@ function renderPracticeTests(container) {
         <li><button class="test-btn" data-test="Air Brakes" style="width:100%; padding:10px; margin:6px 0;">Air Brakes</button></li>
         <li><button class="test-btn" data-test="Combination Vehicles" style="width:100%; padding:10px; margin:6px 0;">Combination Vehicles</button></li>
       </ul>
-      <button data-nav="home" style="margin-top:20px;">⬅️ Back</button>
+      <button data-nav="dashboard" style="margin-top:20px;">⬅️ Back</button>
     </div>
   `;
   setupNavigation();
   document.querySelectorAll(".test-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       showToast(`Starting "${btn.dataset.test}" test...`);
-      // TODO: integrate actual test engine here
     });
   });
 }
 
-// 10.2 AI Coach
+// AI Coach
 function renderAICoach(container) {
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
@@ -521,32 +470,30 @@ function renderAICoach(container) {
       <div id="ai-chat-log" style="border:1px solid #ccc; height:300px; overflow-y:auto; padding:10px; margin-bottom:10px;"></div>
       <textarea id="ai-input" placeholder="Ask a question..." style="width:100%; height:60px; padding:8px;"></textarea>
       <button id="ai-send-btn" style="width:100%; padding:10px; margin-top:6px;">Send</button>
-      <button data-nav="home" style="display:block; margin:20px auto;">⬅️ Back</button>
+      <button data-nav="dashboard" style="display:block; margin:20px auto;">⬅️ Back</button>
     </div>
   `;
   setupNavigation();
   const logEl = document.getElementById("ai-chat-log");
   document.getElementById("ai-send-btn").addEventListener("click", async () => {
-    const inputEl = document.getElementById("ai-input");
-    const question = inputEl.value.trim();
-    if (!question) return;
-    logEl.innerHTML += `<div style="margin:8px 0;"><strong>You:</strong> ${question}</div>`;
-    inputEl.value = "";
-    // Simulate AI response
-    const aiReply = await getAITipOfTheDay(); 
-    logEl.innerHTML += `<div style="margin:8px 0; color:#0066cc;"><strong>AI Coach:</strong> ${aiReply}</div>`;
+    const q = document.getElementById("ai-input").value.trim();
+    if (!q) return;
+    logEl.innerHTML += `<div style="margin:8px 0;"><strong>You:</strong> ${q}</div>`;
+    document.getElementById("ai-input").value = "";
+    const reply = await getAITipOfTheDay();
+    logEl.innerHTML += `<div style="margin:8px 0; color:#0066cc;"><strong>AI Coach:</strong> ${reply}</div>`;
     logEl.scrollTop = logEl.scrollHeight;
   });
 }
 
-// 10.3 My Checklist
+// My Checklist
 async function renderChecklists(container) {
   container.innerHTML = `<div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;"><h2>✅ My ELDT Checklist</h2><p>Loading...</p></div>`;
 
-  // Fetch or create progress doc
-  const refQuery = query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail));
-  const snap = await getDocs(refQuery);
-  let progressDoc, progressData;
+  const q = query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail));
+  const snap = await getDocs(q);
+
+  let docId, progressData;
   if (snap.empty) {
     progressData = {
       studentId: currentUserEmail,
@@ -555,17 +502,16 @@ async function renderChecklists(container) {
         "Section 2": { "Item C": false, "Item D": false }
       }
     };
-    const docRef = await addDoc(collection(db, "eldtProgress"), progressData);
-    progressDoc = { id: docRef.id, data: () => progressData };
+    const r = await addDoc(collection(db, "eldtProgress"), progressData);
+    docId = r.id;
   } else {
-    progressDoc = { id: snap.docs[0].id, data: () => snap.docs[0].data() };
-    progressData = progressDoc.data();
+    docId = snap.docs[0].id;
+    progressData = snap.docs[0].data();
   }
 
-  // Build UI
   let html = `<div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;"><h2>✅ My ELDT Checklist</h2><ul style="list-style:none; padding:0;">`;
-  Object.entries(progressData.progress).forEach(([section, items]) => {
-    html += `<li style="margin-bottom:16px;"><strong>${section}</strong><ul style="list-style:none; padding-left:12px;">`;
+  Object.entries(progressData.progress).forEach(([sect, items]) => {
+    html += `<li style="margin-bottom:16px;"><strong>${sect}</strong><ul style="list-style:none; padding-left:12px;">`;
     Object.entries(items).forEach(([item, done]) => {
       html += `
         <li style="margin:6px 0;">
@@ -578,45 +524,44 @@ async function renderChecklists(container) {
     });
     html += `</ul></li>`;
   });
-  html += `</ul><button data-nav="home">⬅️ Back</button></div>`;
+  html += `</ul><button data-nav="dashboard">⬅️ Back</button></div>`;
+
   container.innerHTML = html;
   setupNavigation();
 
-  // Hook checkbox toggles
-  container.querySelectorAll("input[type=checkbox]").forEach(cb => {
+  container.querySelectorAll("input[type=checkbox]").forEach(cb =>
     cb.addEventListener("change", async () => {
       const itemName = cb.dataset.item;
-      // find which section it belongs to
-      for (let [section, items] of Object.entries(progressData.progress)) {
+      for (let [sect, items] of Object.entries(progressData.progress)) {
         if (items.hasOwnProperty(itemName)) {
-          progressData.progress[section][itemName] = cb.checked;
+          progressData.progress[sect][itemName] = cb.checked;
           break;
         }
       }
-      await updateDoc(doc(db, "eldtProgress", progressDoc.id), { progress: progressData.progress });
-    });
-  });
+      await updateDoc(doc(db, "eldtProgress", docId), { progress: progressData.progress });
+    })
+  );
 }
 
-// 10.4 Test Results
+// Test Results
 async function renderTestResults(container) {
   container.innerHTML = `<div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;"><h2>📊 Test Results</h2><p>Loading...</p></div>`;
 
   const snap = await getDocs(query(collection(db, "testResults"), where("studentId", "==", currentUserEmail)));
   const results = snap.docs.map(d => d.data());
-  results.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+  results.sort((a,b) => b.timestamp.seconds - a.timestamp.seconds);
 
   let html = `<div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;"><h2>📊 Test Results</h2><ul style="list-style:none; padding:0;">`;
   if (results.length === 0) {
     html += `<li>No test results found.</li>`;
   } else {
     results.forEach(r => {
-      const pct = Math.round((r.correct / r.total) * 100);
+      const pct  = Math.round((r.correct/r.total)*100);
       const date = r.timestamp.toDate().toLocaleDateString();
-      html += `<li style="margin:8px 0;"><strong>${r.testName}</strong> -- ${pct}% (${r.correct}/${r.total}) <em>on ${date}</em></li>`;
+      html += `<li style="margin:8px 0;"><strong>${r.testName}</strong> -- ${pct}% (${r.correct}/${r.total}) on ${date}</li>`;
     });
   }
-  html += `</ul><button data-nav="home">⬅️ Back</button></div>`;
+  html += `</ul><button data-nav="dashboard">⬅️ Back</button></div>`;
 
   container.innerHTML = html;
   setupNavigation();
