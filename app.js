@@ -39,7 +39,7 @@ const firebaseConfig = {
   projectId:         "cdltrainerapp",
   storageBucket:     "cdltrainerapp.appspot.com",
   messagingSenderId: "977549527480",
-  appId:             "1:977549527480:web=e959926bb02a4cef65674d",
+  appId:             "1:977549527480:web:e959926bb02a4cef65674d",
   measurementId:     "G-MJ22BD2J1J"
 };
 
@@ -125,21 +125,22 @@ export async function renderLicenseSelector() {
   `;
   document.getElementById('license-form').addEventListener('submit', async e => {
     e.preventDefault();
-    const license   = document.getElementById('license-type').value;
-    const experience= document.getElementById('experience-level').value;
-    await setDoc(doc(db, "licenseSelection", auth.currentUser.uid), {
-      studentId:   auth.currentUser.email,
+    const uid        = auth.currentUser.uid;
+    const license    = document.getElementById('license-type').value;
+    const experience = document.getElementById('experience-level').value;
+    await setDoc(doc(db, "licenseSelection", uid), {
+      studentId:  uid,
       licenseType: license,
       experience:  experience,
       updatedAt:   new Date().toISOString()
-    });
+    }, { merge: true });
     showToast('🎉 Profile updated!');
     window.location.hash = '';
   });
   setupNavigation();
 }
 
-async function renderChecklistSection(sectionId) {
+export async function renderChecklistSection(sectionId) {
   console.log('👉 renderChecklistSection', sectionId);
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
@@ -152,11 +153,10 @@ async function renderChecklistSection(sectionId) {
   setupNavigation();
 
   try {
-    // 1️⃣ Load existing progress
     const uid = auth.currentUser.uid;
-    console.log(' • currentUser.email =', uid);
+    console.log(' • currentUser.uid =', uid);
 
-    const ref  = doc(db, 'eldtProgress', `${uid}-section-${sectionId}`);
+    const ref = doc(db, 'eldtProgress', `${uid}-section-${sectionId}`);
     console.log(' • Firestore ref =', ref.path);
 
     const snap = await getDoc(ref);
@@ -165,7 +165,6 @@ async function renderChecklistSection(sectionId) {
     const data = snap.exists() ? snap.data().progress : {};
     console.log(' • loaded data =', data);
 
-    // 2️⃣ Define defaults per section
     let defaultItems;
     switch (sectionId) {
       case 1:
@@ -194,7 +193,6 @@ async function renderChecklistSection(sectionId) {
     }
     console.log(' • defaultItems =', defaultItems);
 
-    // 3️⃣ Merge and render
     const progress = { ...defaultItems, ...data };
     console.log(' • merged progress =', progress);
 
@@ -209,27 +207,26 @@ async function renderChecklistSection(sectionId) {
     ).join('');
     console.log(' • rendered checkboxes');
 
-    // 4️⃣ Wire up persistence
     container.querySelectorAll('input[type=checkbox]').forEach(cb => {
       cb.addEventListener('change', async e => {
         const key = e.target.dataset.item;
         progress[key] = e.target.checked;
-        await setDoc(ref, { progress }, { merge: true });
+        await setDoc(ref, {
+          studentId: uid,
+          progress
+        }, { merge: true });
         console.log(` • saved ${key}=${e.target.checked}`);
       });
     });
 
   } catch (err) {
-    // Display the real error message
     alert('Checklist load error:\n' + err.message);
     console.error('❌ renderChecklistSection error:', err);
-    document
-      .getElementById('items-container')
-      .innerText = 'Error loading checklist.';
+    document.getElementById('items-container').innerText = 'Error loading checklist.';
   }
 }
 
-async function renderTest(topic) {
+export async function renderTest(topic) {
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
     <div class="dashboard-card fade-in">
@@ -371,14 +368,14 @@ async function renderDashboard() {
   const container = document.querySelector(".dashboard-card");
 
   try {
-    const user = auth.currentUser;
+    const user       = auth.currentUser;
     if (!user) throw new Error("Not signed in");
 
-    const uid       = user.uid;
-    const emailFull = user.email || "";
-    const name      = emailFull.split("@")[0];
-    const roleBadge = getRoleBadge(emailFull);
-    const aiTip     = await getAITipOfTheDay();
+    const uid        = user.uid;
+    const emailFull  = user.email || "";
+    const name       = emailFull.split("@")[0];
+    const roleBadge  = getRoleBadge(emailFull);
+    const aiTip      = await getAITipOfTheDay();
     document.body.classList.toggle("dark-mode", new Date().getHours() >= 18);
 
     // 2️⃣ ELDT Checklist Progress (scan+filter by UID)
@@ -394,13 +391,13 @@ async function renderDashboard() {
         })
       );
     });
-    const checklistPct = total ? Math.round((done/total)*100) : 0;
+    const checklistPct     = total ? Math.round((done / total) * 100) : 0;
     const showChecklistBtn = checklistPct < 100;
 
-    // 3️⃣ Latest Test Results (by email)
+    // 3️⃣ Latest Test Results (by UID)
     let testData = null;
     const testSnap = await getDocs(
-      query(collection(db, "testResults"), where("studentId", "==", emailFull))
+      query(collection(db, "testResults"), where("studentId", "==", uid))
     );
     testSnap.forEach(doc => {
       const d = doc.data();
@@ -410,22 +407,26 @@ async function renderDashboard() {
     });
     const showTestBtn = !testData;
 
-    // 4️⃣ License & Experience (by email)
+    // 4️⃣ License & Experience (by UID)
     let license = "Not selected";
     const licSnap = await getDocs(
-      query(collection(db, "licenseSelection"), where("studentId", "==", emailFull))
+      query(collection(db, "licenseSelection"), where("studentId", "==", uid))
     );
-    licSnap.forEach(doc => license = doc.data().licenseType || license);
+    licSnap.forEach(doc => {
+      license = doc.data().licenseType || license;
+    });
 
     let experience = "Unknown";
     const expSnap = await getDocs(
-      query(collection(db, "experienceResponses"), where("studentId", "==", emailFull))
+      query(collection(db, "experienceResponses"), where("studentId", "==", uid))
     );
-    expSnap.forEach(doc => experience = doc.data().experience || experience);
+    expSnap.forEach(doc => {
+      experience = doc.data().experience || experience;
+    });
 
     // 5️⃣ Study Streak
-    const today  = new Date().toDateString();
-    let studyLog = JSON.parse(localStorage.getItem("studyLog") || "[]");
+    const today    = new Date().toDateString();
+    let studyLog   = JSON.parse(localStorage.getItem("studyLog") || "[]");
     if (!studyLog.includes(today)) {
       studyLog.push(today);
       localStorage.setItem("studyLog", JSON.stringify(studyLog));
@@ -484,6 +485,8 @@ async function renderDashboard() {
         <button data-nav="coach">🎧 Talk to AI Coach</button>
       </div>
     `;
+    setupNavigation();
+
   } catch (err) {
     console.error("renderDashboard error:", err);
     container.innerHTML = `
@@ -491,10 +494,13 @@ async function renderDashboard() {
         <strong>Error loading dashboard:</strong><br>${err.message}
       </div>
     `;
-  setupNavigation();
+    setupNavigation();
+  }
 }
 
-    //routes
+    // ─────────────────────────────────────────────────────────────────────────────
+// Routes
+// ─────────────────────────────────────────────────────────────────────────────
 
 const routes = {
   "":                   renderDashboard,
@@ -516,17 +522,21 @@ function handleRoute() {
   (routes[key] || routes[""])();
 }
 
+// Re‐run on hash change
 window.addEventListener("hashchange", handleRoute);
+
+// On initial load, wait for auth then render
 window.addEventListener("DOMContentLoaded", () => {
   onAuthStateChanged(auth, (user) => {
-  console.log("🔄 onAuthStateChanged → user =", user);
-  setupNavigation();
+    console.log("🔄 onAuthStateChanged → user =", user);
+    setupNavigation();
 
-  if (user) {
-    console.log("→ rendering dashboard for uid", user.uid);
-    renderDashboard();
-  } else {
-    console.log("→ rendering login screen");
-    renderLogin();
-  }
+    if (user) {
+      console.log("→ rendering (or routing) for uid", user.uid);
+      handleRoute();
+    } else {
+      console.log("→ rendering login screen");
+      renderLogin();
+    }
+  });
 });
