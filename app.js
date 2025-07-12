@@ -362,7 +362,7 @@ async function renderDashboard() {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  // Show a loading placeholder
+  // 1️⃣ Loading placeholder
   appEl.innerHTML = `<div class="dashboard-card">Loading your dashboard…</div>`;
   const container = document.querySelector(".dashboard-card");
 
@@ -375,27 +375,28 @@ async function renderDashboard() {
     const name      = emailFull.split("@")[0];
     const roleBadge = getRoleBadge(emailFull);
     const aiTip     = await getAITipOfTheDay();
+    document.body.classList.toggle("dark-mode", new Date().getHours() >= 18);
 
-    // Fetch ELDT checklist progress by UID
+    // 2️⃣ ELDT Checklist Progress (scan+filter by UID)
     let total = 0, done = 0;
     const eldtSnap = await getDocs(collection(db, "eldtProgress"));
-let total = 0, done = 0;
-eldtSnap.forEach(doc => {
-  if (!doc.id.startsWith(`${uid}-section-`)) return;      // skip other users
-  const prog = doc.data().progress || {};
-  Object.values(prog).forEach(sec =>
-    Object.values(sec).forEach(val => {
-      total++;
-      if (val) done++;
-    })
-  );
-});
-const checklistPct = total ? Math.round((done/total)*100) : 0;
+    eldtSnap.forEach(doc => {
+      if (!doc.id.startsWith(`${uid}-section-`)) return;
+      const prog = doc.data().progress || {};
+      Object.values(prog).forEach(sec =>
+        Object.values(sec).forEach(val => {
+          total++;
+          if (val) done++;
+        })
+      );
+    });
+    const checklistPct = total ? Math.round((done/total)*100) : 0;
+    const showChecklistBtn = checklistPct < 100;
 
-    // Fetch latest test results by UID
+    // 3️⃣ Latest Test Results (by email)
     let testData = null;
     const testSnap = await getDocs(
-      query(collection(db, "testResults"), where("studentId", "==", uid))
+      query(collection(db, "testResults"), where("studentId", "==", emailFull))
     );
     testSnap.forEach(doc => {
       const d = doc.data();
@@ -405,27 +406,22 @@ const checklistPct = total ? Math.round((done/total)*100) : 0;
     });
     const showTestBtn = !testData;
 
-    // Fetch license selection by UID
+    // 4️⃣ License & Experience (by email)
     let license = "Not selected";
     const licSnap = await getDocs(
-      query(collection(db, "licenseSelection"), where("studentId", "==", uid))
+      query(collection(db, "licenseSelection"), where("studentId", "==", emailFull))
     );
-    licSnap.forEach(doc => {
-      license = doc.data().licenseType || license;
-    });
+    licSnap.forEach(doc => license = doc.data().licenseType || license);
 
-    // Fetch experience responses by UID
     let experience = "Unknown";
     const expSnap = await getDocs(
-      query(collection(db, "experienceResponses"), where("studentId", "==", uid))
+      query(collection(db, "experienceResponses"), where("studentId", "==", emailFull))
     );
-    expSnap.forEach(doc => {
-      experience = doc.data().experience || experience;
-    });
+    expSnap.forEach(doc => experience = doc.data().experience || experience);
 
-    // Compute study streak from localStorage
-    const today    = new Date().toDateString();
-    let studyLog   = JSON.parse(localStorage.getItem("studyLog") || "[]");
+    // 5️⃣ Study Streak
+    const today  = new Date().toDateString();
+    let studyLog = JSON.parse(localStorage.getItem("studyLog") || "[]");
     if (!studyLog.includes(today)) {
       studyLog.push(today);
       localStorage.setItem("studyLog", JSON.stringify(studyLog));
@@ -434,7 +430,7 @@ const checklistPct = total ? Math.round((done/total)*100) : 0;
     cutoff.setDate(cutoff.getDate() - 6);
     const streak = studyLog.filter(d => new Date(d) >= cutoff).length;
 
-    // Render the full dashboard
+    // 6️⃣ Render the dashboard
     container.innerHTML = `
       <h1>Welcome back, ${name}!</h1>
       ${roleBadge}
@@ -447,7 +443,7 @@ const checklistPct = total ? Math.round((done/total)*100) : 0;
             <div class="progress-fill" style="width:${checklistPct}%;"></div>
           </div>
           <p>${checklistPct}% complete</p>
-          ${checklistPct < 100 ? `<span class="notify-bubble">!</span>` : ""}
+          ${showChecklistBtn ? `<span class="notify-bubble">!</span>` : ""}
           <button data-nav="checklists">View Checklist</button>
         </div>
 
@@ -479,8 +475,8 @@ const checklistPct = total ? Math.round((done/total)*100) : 0;
       </div>
 
       <div class="dashboard-actions">
-        ${checklistPct < 100 ? `<button data-nav="checklists">Resume Checklist</button>` : ""}
-        ${showTestBtn ? `<button data-nav="tests">Start First Test</button>` : ""}
+        ${showChecklistBtn ? `<button data-nav="checklists">Resume Checklist</button>` : ""}
+        ${showTestBtn      ? `<button data-nav="tests">Start First Test</button>` : ""}
         <button data-nav="coach">🎧 Talk to AI Coach</button>
       </div>
     `;
@@ -491,8 +487,6 @@ const checklistPct = total ? Math.round((done/total)*100) : 0;
         <strong>Error loading dashboard:</strong><br>${err.message}
       </div>
     `;
-  }
-
   setupNavigation();
 }
 
