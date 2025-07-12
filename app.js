@@ -23,7 +23,6 @@ import {
   doc,
   setDoc
 } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
-
 // UI helpers
 import {
   setupNavigation,
@@ -497,6 +496,8 @@ async function renderDashboard() {
     `;
   setupNavigation();
 }
+
+    //routes
 
 const routes = {
   "":                   renderDashboard,
