@@ -3,15 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <title>CDL Trainer</title>
-  <!-- (Your other head content like CSS links can stay here) -->
 </head>
 <body>
-  <!-- 1) Prove the HTML is loading -->
+  <!-- 1) Prove HTML is loading -->
   <script>
     alert("✅ HTML loaded");
   </script>
 
-  <!-- 2) Unregister any stale Service Workers -->
+  <!-- 2) Inline module test -->
+  <script type="module">
+    alert("🧪 Inline module is running!");
+  </script>
+
+  <!-- 3) Smoke–test that app.js is reachable -->
+  <script>
+    fetch('app.js')
+      .then(r => alert("🔍 fetch app.js → " + r.status + " " + r.statusText))
+      .catch(e => alert("❌ fetch error: " + e.message));
+  </script>
+
+  <!-- 4) Unregister any old SWs -->
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
@@ -24,17 +35,23 @@
     }
   </script>
 
-  <!-- 3) Smoke–test that app.js is reachable -->
+  <!-- 5) Register your new SW -->
   <script>
-    fetch('app.js')
-      .then(r => alert("🔍 fetch app.js → " + r.status + " " + r.statusText))
-      .catch(e => alert("❌ fetch error: " + e.message));
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('serviceworker.js')
+        .then(reg => {
+          alert("✅ SW registered at " + reg.scope);
+        })
+        .catch(err => {
+          alert("❌ SW registration failed: " + err);
+        });
+    }
   </script>
 
-  <!-- 4) Your actual app mount point -->
+  <!-- 6) App mount point -->
   <div id="app"></div>
 
-  <!-- 5) Load your JavaScript module -->
+  <!-- 7) Load your JavaScript module -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
