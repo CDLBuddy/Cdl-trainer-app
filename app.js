@@ -578,16 +578,150 @@ async function renderTestResults(container) {
   setupNavigation();
 }
 
-// ─── 11. TEST ENGINE PLACEHOLDER ───────────────────────────────────────────────
-function renderTestEngine(container, testName) {
-  container.innerHTML = `
-    <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
-      <h2>🧪 ${testName} Test</h2>
-      <p>This is where your questions will go. 🎉</p>
-      <button data-nav="tests" style="margin-top:20px;">⬅️ Back to Tests</button>
-    </div>
-  `;
-  setupNavigation();
+// ─── 11. REAL TEST ENGINE ──────────────────────────────────────────────────────
+async function renderTestEngine(container, testName) {
+  // 1) Define your question banks
+  const questionBanks = {
+    "General Knowledge": [
+      {
+        q: "What is the maximum allowed blood alcohol concentration for CDL drivers?",
+        choices: ["0.02%", "0.04%", "0.08%", "0.10%"],
+        answer: 1
+      },
+      {
+        q: "When approaching a railroad crossing without gates, you should:",
+        choices: [
+          "Stop, look, and listen",
+          "Slow down, look, and prepare to stop",
+          "Maintain speed if no train in sight",
+          "Honk your horn continuously"
+        ],
+        answer: 1
+      }
+      // …add more…
+    ],
+    "Air Brakes": [
+      {
+        q: "Before driving with air brakes, you must wait until the air pressure reaches at least:",
+        choices: ["60 psi", "80 psi", "100 psi", "120 psi"],
+        answer: 2
+      },
+      {
+        q: "The air compressor governor controls:",
+        choices: [
+          "When the compressor stops pumping air",
+          "How fast the compressor runs",
+          "The warning buzzer pressure",
+          "Brake chamber pressure"
+        ],
+        answer: 0
+      }
+    ],
+    "Combination Vehicles": [
+      {
+        q: "The fifth-wheel locking jaws must completely surround the shank of the kingpin. This is called:",
+        choices: [
+          "Coupling lock",
+          "Safety latch",
+          "Locking engagement",
+          "Full lock"
+        ],
+        answer: 3
+      },
+      {
+        q: "When uncoupling a trailer you must:",
+        choices: [
+          "Raise the landing gear",
+          "Disengage the locking handle",
+          "Chock the trailer wheels",
+          "All of the above"
+        ],
+        answer: 2
+      }
+    ]
+  };
+
+  // 2) Grab the selected bank
+  const questions = questionBanks[testName] || [];
+  let currentIdx = 0;
+  let correctCount = 0;
+
+  // Utility: Render a single question
+  function showQuestion() {
+    const { q, choices } = questions[currentIdx];
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
+        <h2>🧪 ${testName} (${currentIdx + 1}/${questions.length})</h2>
+        <p style="margin:16px 0;"><strong>${q}</strong></p>
+        <ul style="list-style:none; padding:0;">
+          ${choices
+            .map((c, i) => `<li style="margin:8px 0;">
+              <button class="choice-btn" data-choice="${i}" style="width:100%; padding:10px;">
+                ${c}
+              </button>
+            </li>`)
+            .join("")}
+        </ul>
+      </div>
+    `;
+    // Bind choice buttons
+    container.querySelectorAll(".choice-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const chosen = parseInt(btn.dataset.choice, 10);
+        if (chosen === questions[currentIdx].answer) correctCount++;
+        currentIdx++;
+        if (currentIdx < questions.length) {
+          showQuestion();
+        } else {
+          showResults();
+        }
+      });
+    });
+  }
+
+  // Utility: Render final results & save to Firestore
+  async function showResults() {
+    const total = questions.length;
+    const pct   = total ? Math.round((correctCount / total) * 100) : 0;
+
+    // Save result
+    try {
+      await addDoc(collection(db, "testResults"), {
+        studentId: currentUserEmail,
+        testName,
+        correct:   correctCount,
+        total,
+        timestamp: new Date().toISOString()
+      });
+    } catch (e) {
+      console.error("❌ Failed to save test result:", e);
+    }
+
+    // Render results screen
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto; text-align:center;">
+        <h2>📊 ${testName} Results</h2>
+        <p style="font-size:1.2em; margin:16px 0;">
+          You scored <strong>${correctCount}/${total}</strong> (${pct}%)
+        </p>
+        <button data-nav="dashboard" style="padding:10px 20px; margin-top:20px;">
+          🏠 Back to Dashboard
+        </button>
+        <button data-nav="tests" style="padding:10px 20px; margin-top:12px;">
+          🔄 Try Again
+        </button>
+      </div>
+    `;
+    setupNavigation();
+  }
+
+  // Kick things off
+  if (questions.length === 0) {
+    container.innerHTML = `<p>No questions found for "${testName}".</p>`;
+    setupNavigation();
+  } else {
+    showQuestion();
+  }
 }
 
 // ─── Kick everything off ───────────────────────────────────────────────────────
