@@ -134,7 +134,7 @@ function renderWelcome() {
     </div>
   `;
 
-  // 1) Bind the click _directly_ to the button
+  // 1) Direct click binding for Login
   const loginBtn = document.getElementById("login-btn");
   if (loginBtn) {
     loginBtn.addEventListener("click", () => {
@@ -143,7 +143,7 @@ function renderWelcome() {
     });
   }
 
-  // 2) (Optional) still wire up any other nav items generically
+  // 2) Wire up any other data-nav elements
   setupNavigation();
 }
 
@@ -156,27 +156,28 @@ function setupNavigation() {
     });
   });
 }
-// ─── 7. CORE NAVIGATION HANDLER & RENDERER (DEBUG) ─────────────────────────────
+
+// ─── 7. CORE NAVIGATION HANDLER & RENDERER ─────────────────────────────────────
 async function handleNavigation(targetPage, pushToHistory = false) {
   alert(`🧭 handleNavigation→ ${targetPage}`);   // debug
 
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  // fade-out stub
+  // Fade‐out stub
   appEl.classList.remove("fade-in");
   appEl.classList.add("fade-out");
   await new Promise(r => setTimeout(r, 150));
 
-  // history
+  // Push history
   if (pushToHistory) {
     history.pushState({ page: targetPage }, "", `#${targetPage}`);
   }
 
-  // route
+  // Route
   renderPage(targetPage);
 
-  // fade-in stub
+  // Fade‐in stub
   appEl.classList.remove("fade-out");
   appEl.classList.add("fade-in");
 }
@@ -193,17 +194,104 @@ function renderPage(page) {
   }
 }
 
+// ─── 8. FULL LOGIN FORM & HANDLERS ─────────────────────────────────────────────
 function renderLogin(container) {
-  alert("🚪 renderLogin() called");  // debug
   container.innerHTML = `
-    <div style="padding:20px; text-align:center;">
-      <h2>🚪 Login Screen</h2>
-      <p>(Coming soon…)</p>
-      <button data-nav="home">⬅️ Back</button>
+    <div class="login-card fade-in" style="padding:20px; max-width:400px; margin:40px auto;">
+      <h2>🚀 Login or Signup</h2>
+      <form id="login-form">
+        <input id="email" type="email" placeholder="Email" required style="width:100%; padding:8px; margin:8px 0;" />
+        <div style="position:relative; margin:8px 0;">
+          <input id="password" type="password" placeholder="Password" required style="width:100%; padding:8px;" />
+          <button type="button" id="toggle-password" style="position:absolute; right:8px; top:8px;">👁️</button>
+        </div>
+        <div id="error-msg" style="color:red; display:none; margin:8px 0;"></div>
+        <button id="login-submit" type="submit" style="width:100%; padding:10px; margin-top:12px;">Login / Signup</button>
+      </form>
+      <div style="margin-top:12px; text-align:center;">
+        <button data-nav="home">⬅️ Back</button>
+        <button id="google-login" style="margin-left:8px;">Continue with Google</button>
+      </div>
+      <p style="text-align:center; margin-top:8px;"><a href="#" id="reset-password">Forgot password?</a></p>
     </div>
   `;
+
+  // 1) Back button and any other nav
   setupNavigation();
+
+  // 2) Toggle password visibility
+  const passwordInput = document.getElementById("password");
+  document.getElementById("toggle-password").onclick = () => {
+    passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+  };
+
+  // 3) Login / Signup handler
+  document.getElementById("login-form").onsubmit = async e => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const pwd   = passwordInput.value;
+    const errorDiv = document.getElementById("error-msg");
+    errorDiv.style.display = "none";
+
+    if (!email || !pwd) {
+      errorDiv.textContent = "Please enter both email and password.";
+      errorDiv.style.display = "block";
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, pwd);
+    } catch (err) {
+      if (err.code === "auth/user-not-found") {
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, email, pwd);
+          await addDoc(collection(db, "users"), {
+            uid:       cred.user.uid,
+            email,
+            name:      "CDL User",
+            role:      "student",
+            verified:  false,
+            createdAt: new Date().toISOString(),
+            lastLogin: new Date().toISOString(),
+          });
+          alert("🎉 Account created and signed in!");
+        } catch (suErr) {
+          errorDiv.textContent = suErr.message;
+          errorDiv.style.display = "block";
+        }
+      } else {
+        errorDiv.textContent = err.message;
+        errorDiv.style.display = "block";
+      }
+    }
+  };
+
+  // 4) Google Sign-In
+  document.getElementById("google-login").onclick = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      alert("Google Sign-In failed: " + err.message);
+    }
+  };
+
+  // 5) Reset password
+  document.getElementById("reset-password").onclick = async e => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    if (!email) {
+      alert("Enter your email to receive a reset link.");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("📬 Reset link sent!");
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  };
 }
 
-// kick it off
+// ─── Kick everything off ───────────────────────────────────────────────────────
 renderWelcome();
