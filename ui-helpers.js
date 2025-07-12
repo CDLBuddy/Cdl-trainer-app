@@ -1,75 +1,47 @@
 // ui-helpers.js
 
-/**
- * Wire up any [data-nav] buttons for hash‐based routing.
- * Listens on the body and captures clicks on elements with a data-nav attribute.
- * Updates window.location.hash and calls handleRoute() if defined.
- */
-export function setupNavigation() {
-  console.log('🔧 setupNavigation() initialized');
-  document.body.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-nav]');
-    if (!btn) return;
-    e.preventDefault();
+export function showToast(message, duration = 3000) {
+  const toast = document.createElement("div");
+  toast.className = "toast-message";
+  toast.textContent = message;
 
-    const dest = btn.getAttribute('data-nav');
-    console.log(`🔀 Navigating to hash: "${dest}"`);
-    window.location.hash = dest;
+  toast.style.position = "fixed";
+  toast.style.bottom = "20px";
+  toast.style.left = "50%";
+  toast.style.transform = "translateX(-50%)";
+  toast.style.background = "#333";
+  toast.style.color = "#fff";
+  toast.style.padding = "10px 20px";
+  toast.style.borderRadius = "5px";
+  toast.style.opacity = "1";
+  toast.style.transition = "opacity 0.5s ease";
 
-    // If your router exposes a global handleRoute function, invoke it immediately:
-    if (typeof window.handleRoute === 'function') {
-      window.handleRoute();
-    }
-  });
-}
-
-/**
- * Simple non‐blocking toast.
- * Creates a transient message at the bottom of the screen.
- */
-export function showToast(msg) {
-  const toast = document.createElement('div');
-  toast.className = 'toast-message';
-  toast.textContent = msg;
   document.body.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add('visible'));
+
   setTimeout(() => {
-    toast.classList.remove('visible');
-    toast.addEventListener('transitionend', () => toast.remove());
-  }, 2500);
+    toast.style.opacity = "0";
+    setTimeout(() => toast.remove(), 600);
+  }, duration);
 }
 
-/**
- * Return a colored badge based on role (inferred from email).
- */
-export function getRoleBadge(email) {
-  let role = 'student';
-  if (email.includes('instructor')) role = 'instructor';
-  if (email.includes('admin'))      role = 'admin';
+export function setupNavigation() {
+  console.log("🧭 setupNavigation() called");
 
-  const label = role.charAt(0).toUpperCase() + role.slice(1);
-  return `<span class="role-badge role-${role}">${label}</span>`;
-}
+  const buttons = document.querySelectorAll("[data-nav]");
 
-/**
- * Pick an "AI tip" based on today’s date index.
- */
-const aiTips = [
-  "Break down study sessions into 25-minute sprints (Pomodoro Technique).",
-  "Review one checklist section each day to build steady progress.",
-  "Practice test questions in short bursts to improve recall.",
-  "Teach someone else what you’ve just learned--it cements knowledge.",
-  "Set a recurring reminder to take practice tests weekly."
-];
+  if (buttons.length === 0) {
+    console.warn("⚠️ No navigation buttons found for setupNavigation()");
+  }
 
-export async function getAITipOfTheDay() {
-  const day = new Date().getDate();
-  return aiTips[day % aiTips.length];
-}
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.getAttribute("data-nav");
+      console.log(`🔗 Nav button clicked: ${target}`);
 
-/**
- * Stub for opening your AI-Coach form / modal.
- */
-export function openStudentHelpForm() {
-  showToast("🎧 AI Coach is coming soon--stay tuned!");
+      if (target) {
+        history.pushState({ page: target }, "", `#${target}`);
+        window.dispatchEvent(new PopStateEvent("popstate", { state: { page: target } }));
+      }
+    });
+  });
 }

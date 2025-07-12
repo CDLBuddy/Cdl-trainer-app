@@ -1,17 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CDL Trainer App</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Updated CSP: allow inline styles so .style.display = 'none' works -->
+  <meta http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://www.gstatic.com;
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: blob:;
+        connect-src *;
+      " />
+
+  <title>CDL Trainer</title>
+  <meta name="description" content="CDL Trainer – Your AI-powered CDL training app with quizzes, checklists, walkthroughs, and more." />
+  <meta name="theme-color" content="#003366" />
+
+  <!-- Tiny "boot" script: apply dark/light before paint -->
+  <script>
+    (function() {
+      const hour = new Date().getHours();
+      const shouldDark = localStorage.getItem('theme') === 'dark' || hour >= 18 || hour < 6;
+      document.documentElement.classList.toggle('dark', shouldDark);
+    })();
+  </script>
+
+  <!-- Manifest & Icons -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
+
+  <!-- Mobile PWA Meta -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="CDL Trainer" />
+
+  <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <div id="app"></div>
 
-  <!-- Load UI helpers BEFORE your main app module -->
-  <script type="module" src="ui-helpers.js"></script>
-  <!-- Then load your app logic -->
-  <script type="module" src="app.js"></script>
+<body role="application">
+  <!-- JavaScript Load Warning -->
+  <div id="js-error" class="js-error">
+    ⚠️ JavaScript failed to load. Please check your internet connection or try refreshing.
+  </div>
+
+  <!-- Loading Fallback -->
+  <div id="loading-screen" class="loading-screen" aria-hidden="false" aria-live="polite">
+    <div class="loading-spinner"></div>
+    <h2>Loading CDL Trainer...</h2>
+    <p>Preparing your dashboard...</p>
+  </div>
+
+  <!-- Main App Container -->
+  <main id="app" role="main" tabindex="-1"></main>
+
+  <!-- Theme & Voice Controls -->
+  <aside class="controls">
+    <button id="mic-button" class="mic-button" title="Voice Login" aria-label="Voice Login"></button>
+    <button id="theme-toggle" class="theme-toggle" title="Toggle Theme" aria-label="Toggle Dark Mode">🌓 Theme</button>
+  </aside>
+
+  <!-- Language Selector -->
+  <div id="language-selector-container" class="language-selector-container">
+    <label for="language-selector">🌐 Select Language:</label>
+    <select id="language-selector" aria-label="Select language">
+      <option value="en" selected>🇺🇸 English</option>
+      <option value="es">🇪🇸 Español</option>
+      <option value="fr">🇫🇷 Français</option>
+      <option value="de">🇩🇪 Deutsch</option>
+      <option value="zh">🇨🇳 中文</option>
+    </select>
+  </div>
+
+  <!-- No-JS Fallback -->
+  <noscript>
+    <div class="no-js-warning">
+      <strong>⚠️ JavaScript is required to run CDL Trainer. Please enable it in your browser settings.</strong>
+    </div>
+  </noscript> 
+
+  <!-- Your App Logic (deferred) -->
+  <script type="module" src="./app.js" defer></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+          .catch(err => console.warn('❌ Service Worker registration failed:', err));
+      });
+    }
+
+    // Hide error & loading once page is interactive
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('js-error').style.display = 'none';
+      const loader = document.getElementById('loading-screen');
+      if (loader) loader.style.display = 'none';
+    });
+  </script>
 </body>
 </html>
