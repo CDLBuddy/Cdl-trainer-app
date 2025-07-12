@@ -3,30 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <title>CDL Trainer</title>
+  <!-- (Your other head content like CSS links can stay here) -->
 </head>
 <body>
-  <!-- verify this alert still fires -->
+  <!-- 1) Prove the HTML is loading -->
   <script>
     alert("✅ HTML loaded");
-    fetch("app.js")
-      .then(r => alert("🔍 fetch app.js → " + r.status))
-      .catch(e => alert("❌ fetch error: " + e.message));
-      <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(regs => {
-      regs.forEach(reg => {
-        reg.unregister().then(ok => {
-          console.log("🗑️ Service Worker unregistered:", ok);
-          alert("🗑️ SW unregistered: " + ok);
-        });
-      });
-    });
-  }
-</script>
   </script>
 
+  <!-- 2) Unregister any stale Service Workers -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(reg => {
+          reg.unregister().then(ok => {
+            alert("🗑️ SW unregistered: " + ok);
+          });
+        });
+      });
+    }
+  </script>
+
+  <!-- 3) Smoke–test that app.js is reachable -->
+  <script>
+    fetch('app.js')
+      .then(r => alert("🔍 fetch app.js → " + r.status + " " + r.statusText))
+      .catch(e => alert("❌ fetch error: " + e.message));
+  </script>
+
+  <!-- 4) Your actual app mount point -->
   <div id="app"></div>
-  <!-- ← use plain "app.js" here, no "./" or leading slash -->
+
+  <!-- 5) Load your JavaScript module -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
