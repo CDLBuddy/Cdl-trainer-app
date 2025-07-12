@@ -1,3 +1,4 @@
+console.log("🚀 [DEBUG] app.js start");
 // ─── 1. MODULE IMPORTS ─────────────────────────────────────────────────────────
 // Firebase App
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
