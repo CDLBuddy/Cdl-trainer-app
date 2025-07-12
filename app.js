@@ -359,42 +359,30 @@ function renderLogin() {
 }
 
 async function renderDashboard() {
-  document.body.style.border = ""; 
   const appEl = document.getElementById("app");
-  if (!appEl) return console.error("❌ #app mount point missing");
-  
-  // 1️⃣ Show loading stub
-  appEl.innerHTML = `
-    <div class="dashboard-card slide-in-up fade-in">
-      Loading your dashboard...
-    </div>
-  `;
+  if (!appEl) return;
+
+  // Show a loading placeholder
+  appEl.innerHTML = `<div class="dashboard-card">Loading your dashboard…</div>`;
   const container = document.querySelector(".dashboard-card");
 
   try {
-    console.log("👉 renderDashboard starting…");
-
     const user = auth.currentUser;
-    if (!user) throw new Error("No authenticated user found");
-    console.log(" • user.uid =", user.uid);
+    if (!user) throw new Error("Not signed in");
 
-    const email = user.email || "unknown";
-    const name  = email.split("@")[0];
-    console.log(" • user.email =", email);
-
-    const roleBadge = getRoleBadge(email);
+    const uid       = user.uid;
+    const emailFull = user.email || "";
+    const name      = emailFull.split("@")[0];
+    const roleBadge = getRoleBadge(emailFull);
     const aiTip     = await getAITipOfTheDay();
-    document.body.classList.toggle("dark-mode", new Date().getHours() >= 18);
 
-    // 2️⃣ Checklist progress
-    let total=0, done=0;
+    // Fetch ELDT checklist progress by UID
+    let total = 0, done = 0;
     const eldtSnap = await getDocs(
-      query(collection(db, "eldtProgress"), where("studentId", "==", email))
+      query(collection(db, "eldtProgress"), where("studentId", "==", uid))
     );
-    console.log(` • eldtProgress docs found: ${eldtSnap.size}`);
     eldtSnap.forEach(doc => {
-      const prog = doc.data().progress;
-      if (!prog) throw new Error("Missing `.progress` on ELDT doc");
+      const prog = doc.data().progress || {};
       Object.values(prog).forEach(sec =>
         Object.values(sec).forEach(val => {
           total++;
@@ -402,39 +390,42 @@ async function renderDashboard() {
         })
       );
     });
-    const checklistPct = total ? Math.round((done/total)*100) : 0;
-    console.log(" • checklistPct =", checklistPct);
+    const checklistPct = total ? Math.round((done / total) * 100) : 0;
 
-    // 3️⃣ Latest test
+    // Fetch latest test results by UID
     let testData = null;
     const testSnap = await getDocs(
-      query(collection(db, "testResults"), where("studentId", "==", email))
+      query(collection(db, "testResults"), where("studentId", "==", uid))
     );
-    console.log(` • testResults docs found: ${testSnap.size}`);
     testSnap.forEach(doc => {
       const d = doc.data();
       if (!testData || d.timestamp.toDate() > testData.timestamp.toDate()) {
         testData = d;
       }
     });
+    const showTestBtn = !testData;
 
-    // 4️⃣ License & experience
-    let license = "Not selected", experience = "Unknown";
+    // Fetch license selection by UID
+    let license = "Not selected";
     const licSnap = await getDocs(
-      query(collection(db, "licenseSelection"), where("studentId", "==", email))
+      query(collection(db, "licenseSelection"), where("studentId", "==", uid))
     );
-    console.log(` • licenseSelection docs found: ${licSnap.size}`);
-    licSnap.forEach(doc => license = doc.data().licenseType || license);
+    licSnap.forEach(doc => {
+      license = doc.data().licenseType || license;
+    });
 
+    // Fetch experience responses by UID
+    let experience = "Unknown";
     const expSnap = await getDocs(
-      query(collection(db, "experienceResponses"), where("studentId", "==", email))
+      query(collection(db, "experienceResponses"), where("studentId", "==", uid))
     );
-    console.log(` • experienceResponses docs found: ${expSnap.size}`);
-    expSnap.forEach(doc => experience = doc.data().experience || experience);
+    expSnap.forEach(doc => {
+      experience = doc.data().experience || experience;
+    });
 
-    // 5️⃣ Study streak
-    const today = new Date().toDateString();
-    let studyLog = JSON.parse(localStorage.getItem("studyLog")||"[]");
+    // Compute study streak from localStorage
+    const today    = new Date().toDateString();
+    let studyLog   = JSON.parse(localStorage.getItem("studyLog") || "[]");
     if (!studyLog.includes(today)) {
       studyLog.push(today);
       localStorage.setItem("studyLog", JSON.stringify(studyLog));
@@ -442,9 +433,8 @@ async function renderDashboard() {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 6);
     const streak = studyLog.filter(d => new Date(d) >= cutoff).length;
-    console.log(" • streak =", streak);
 
-    // 6️⃣ Render the real dashboard
+    // Render the full dashboard
     container.innerHTML = `
       <h1>Welcome back, ${name}!</h1>
       ${roleBadge}
@@ -457,7 +447,7 @@ async function renderDashboard() {
             <div class="progress-fill" style="width:${checklistPct}%;"></div>
           </div>
           <p>${checklistPct}% complete</p>
-          ${checklistPct<100?`<span class="notify-bubble">!</span>`:""}
+          ${checklistPct < 100 ? `<span class="notify-bubble">!</span>` : ""}
           <button data-nav="checklists">View Checklist</button>
         </div>
 
@@ -468,40 +458,37 @@ async function renderDashboard() {
             <p>${testData.correct}/${testData.total} correct</p>
             <p><small>${new Date(testData.timestamp.toDate()).toLocaleDateString()}</small></p>
           ` : `<p>No tests taken yet.</p>`}
-          ${!testData?`<span class="notify-bubble">!</span>`:""}
+          ${showTestBtn ? `<span class="notify-bubble">!</span>` : ""}
           <button data-nav="results">View All Results</button>
         </div>
 
         <div class="dashboard-card">
           <h3>🧾 Your Profile</h3>
-          <p>Email: ${email}</p>
+          <p>Email: ${emailFull}</p>
           <p>License: ${license}</p>
           <p>Experience: ${experience}</p>
-          ${license==="Not selected"?`<span class="notify-bubble">!</span>`:""}
+          ${license === "Not selected" ? `<span class="notify-bubble">!</span>` : ""}
           <button data-nav="license">Update Info</button>
         </div>
 
         <div class="dashboard-card">
           <h3>🔥 Study Streak</h3>
-          <p>${streak} day${streak!==1?"s":""} active this week</p>
+          <p>${streak} day${streak !== 1 ? "s" : ""} active this week</p>
           <button onclick="openStudentHelpForm()">Ask the AI Coach</button>
         </div>
       </div>
 
       <div class="dashboard-actions">
-        ${checklistPct<100?`<button data-nav="checklists">Resume Checklist</button>`:""}
-        ${!testData?`<button data-nav="tests">Start First Test</button>`:""}
+        ${checklistPct < 100 ? `<button data-nav="checklists">Resume Checklist</button>` : ""}
+        ${showTestBtn ? `<button data-nav="tests">Start First Test</button>` : ""}
         <button data-nav="coach">🎧 Talk to AI Coach</button>
       </div>
     `;
-    console.log("✅ renderDashboard() completed");
-
   } catch (err) {
-    console.error("❌ renderDashboard() threw:", err);
+    console.error("renderDashboard error:", err);
     container.innerHTML = `
-      <div class="dashboard-card">
-        <strong>Error loading dashboard:</strong><br>
-        ${err.message}
+      <div class="dashboard-card error">
+        <strong>Error loading dashboard:</strong><br>${err.message}
       </div>
     `;
   }
