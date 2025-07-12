@@ -1,9 +1,13 @@
 // app.js
 
-alert("🚀 app.js loaded – imports start");
+// ─── Global State ─────────────────────────────────────────────────────────────
+let currentUserEmail = null;
 
 // ─── 1. MODULE IMPORTS ─────────────────────────────────────────────────────────
+// Firebase App
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+
+// Firestore
 import {
   getFirestore,
   collection,
@@ -17,6 +21,8 @@ import {
   updateDoc,
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+// Auth
 import {
   getAuth,
   onAuthStateChanged,
@@ -24,11 +30,14 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
-  updateProfile,
   GoogleAuthProvider,
   signInWithPopup
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import { showToast as importedShowToast } from "./ui-helpers.js";
+
+// UI Helpers
+import { showToast } from "./ui-helpers.js";
+
+console.log("✅ app.js loaded");
 
 // ─── 2. FIREBASE CONFIG & INITIALIZATION ────────────────────────────────────────
 const firebaseConfig = {
@@ -45,20 +54,17 @@ const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
-alert("✅ Imports & config OK");
-
-// ─── 3. AUTH STATE LISTENER (FULL) ─────────────────────────────────────────────
-alert("🔔 Attaching full auth listener");
+// ─── 3. AUTH STATE LISTENER ────────────────────────────────────────────────────
 onAuthStateChanged(auth, async user => {
-  console.log("🔥 Firebase auth state changed", user);
-  
-  // Hide any loading overlays (if you have them)
+  console.log("🔔 Firebase auth state changed:", user);
+
+  // Hide any loading overlays if you have them
   document.getElementById("js-error")?.classList.add("hidden");
   document.getElementById("loading-screen")?.classList.add("hidden");
 
   const appEl = document.getElementById("app");
   if (appEl) {
-    // Show a loading placeholder
+    // Show loading placeholder
     appEl.innerHTML = `
       <div class="screen-wrapper fade-in" style="text-align:center">
         <div class="loading-spinner" style="margin:40px auto;"></div>
@@ -68,41 +74,57 @@ onAuthStateChanged(auth, async user => {
   }
 
   if (user) {
-    // User is signed in
-    const email = user.email;
-    currentUserEmail = email;
+    // Signed in
+    currentUserEmail = user.email;
 
-    // 1) Fetch or create profile in Firestore
+    // 1) Fetch or create profile
     let userData;
     try {
-      const userRef   = collection(db, "users");
-      const userQuery = query(userRef, where("email", "==", email));
+      const usersRef  = collection(db, "users");
+      const userQuery = query(usersRef, where("email", "==", user.email));
       const snap      = await getDocs(userQuery);
+
       if (!snap.empty) {
         userData = snap.docs[0].data();
       } else {
         const newUser = {
           uid:       user.uid,
-          email,
+          email:     user.email,
           name:      user.displayName || "CDL User",
           role:      "student",
           verified:  false,
           createdAt: new Date().toISOString(),
-          lastLogin: new Date().toISOString(),
+          lastLogin: new Date().toISOString()
         };
-        await addDoc(userRef, newUser);
+        await addDoc(usersRef, newUser);
         userData = newUser;
       }
+
       // 2) Save to localStorage
-      localStorage.setItem("userRole",    userData.role    || "student");
-      localStorage.setItem("fullName",    userData.name    || "CDL User");
+      localStorage.setItem("userRole", userData.role    || "student");
+      localStorage.setItem("fullName", userData.name    || "CDL User");
     } catch (err) {
       console.error("❌ User profile error:", err);
       showToast("Error loading profile");
       return;
     }
 
-    // 3) Route to dashboard based on role
+    // 3) Setup logout button (you need an element with id="logout-btn" in your dashboard templates)
+    const logoutBtn = document.getElementById("logout-btn");
+    if (logoutBtn) {
+      logoutBtn.onclick = async () => {
+        try {
+          await signOut(auth);
+          showToast("You’ve been logged out.");
+          renderWelcome();
+        } catch (err) {
+          console.error("Logout failed:", err);
+          showToast("Logout error");
+        }
+      };
+    }
+
+    // 4) Route to dashboard based on role
     const role = localStorage.getItem("userRole");
     if (role === "admin") {
       renderAdminDashboard();
@@ -113,37 +135,13 @@ onAuthStateChanged(auth, async user => {
     }
 
   } else {
-    // No user signed in → show welcome screen
+    // Signed out → welcome screen
     currentUserEmail = null;
     renderWelcome();
   }
 });
-alert("✅ Full auth listener attached");
 
 // ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
-function showToast(message, duration = 3000) {
-  const toast = document.createElement("div");
-  toast.className = "toast-message";
-  toast.textContent = message;
-  Object.assign(toast.style, {
-    position:      "fixed",
-    bottom:        "20px",
-    left:          "50%",
-    transform:     "translateX(-50%)",
-    background:    "#333",
-    color:         "#fff",
-    padding:       "10px 20px",
-    borderRadius:  "5px",
-    opacity:       "1",
-    transition:    "opacity 0.5s ease"
-  });
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.style.opacity = "0";
-    setTimeout(() => toast.remove(), 500);
-  }, duration);
-}
-
 function showModal(html) {
   const overlay = document.createElement("div");
   overlay.className = "modal-overlay";
@@ -177,15 +175,11 @@ async function getAITipOfTheDay() {
   return tips[Math.floor(Math.random() * tips.length)];
 }
 
-alert("✅ Utilities OK");
-
 // ─── 5. SIMPLE RENDER & TEST UI ────────────────────────────────────────────────
 function renderWelcome() {
   const appEl = document.getElementById("app");
-  if (!appEl) {
-    alert("❌ #app not found");
-    return;
-  }
+  if (!appEl) return;
+
   appEl.innerHTML = `
     <div style="padding:20px; text-align:center;">
       <h1>Welcome!</h1>
@@ -193,20 +187,17 @@ function renderWelcome() {
     </div>
   `;
 
-  // 1) Direct click binding for Login
+  // Direct click binding for Login
   const loginBtn = document.getElementById("login-btn");
-  if (loginBtn) {
-    loginBtn.addEventListener("click", () => {
-      alert("🛠️ [DEBUG] Direct click on login-btn");
-      handleNavigation("login", true);
-    });
-  }
+  loginBtn?.addEventListener("click", () => {
+    handleNavigation("login", true);
+  });
 
-  // 2) Wire up any other data-nav elements
+  // Wire up any other data-nav elements
   setupNavigation();
 }
 
-// ─── 6. NAVIGATION SETUP (OPTIONAL) ────────────────────────────────────────────
+// ─── 6. NAVIGATION SETUP ───────────────────────────────────────────────────────
 function setupNavigation() {
   document.querySelectorAll("[data-nav]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -218,25 +209,23 @@ function setupNavigation() {
 
 // ─── 7. CORE NAVIGATION HANDLER & RENDERER ─────────────────────────────────────
 async function handleNavigation(targetPage, pushToHistory = false) {
-  alert(`🧭 handleNavigation→ ${targetPage}`);   // debug
+  console.log(`🧭 handleNavigation → ${targetPage}`);
 
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  // Fade‐out stub
+  // Fade-out stub (ensure you have .fade-in/.fade-out in CSS)
   appEl.classList.remove("fade-in");
   appEl.classList.add("fade-out");
   await new Promise(r => setTimeout(r, 150));
 
-  // Push history
   if (pushToHistory) {
     history.pushState({ page: targetPage }, "", `#${targetPage}`);
   }
 
-  // Route
   renderPage(targetPage);
 
-  // Fade‐in stub
+  // Fade-in stub
   appEl.classList.remove("fade-out");
   appEl.classList.add("fade-in");
 }
@@ -244,6 +233,7 @@ async function handleNavigation(targetPage, pushToHistory = false) {
 function renderPage(page) {
   const container = document.getElementById("app");
   if (!container) return;
+
   switch (page) {
     case "login":
       renderLogin(container);
@@ -275,16 +265,16 @@ function renderLogin(container) {
     </div>
   `;
 
-  // 1) Back button and any other nav
+  // Back button and any other nav
   setupNavigation();
 
-  // 2) Toggle password visibility
+  // Toggle password visibility
   const passwordInput = document.getElementById("password");
   document.getElementById("toggle-password").onclick = () => {
     passwordInput.type = passwordInput.type === "password" ? "text" : "password";
   };
 
-  // 3) Login / Signup handler
+  // Login / Signup handler
   document.getElementById("login-form").onsubmit = async e => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
@@ -313,7 +303,7 @@ function renderLogin(container) {
             createdAt: new Date().toISOString(),
             lastLogin: new Date().toISOString(),
           });
-          alert("🎉 Account created and signed in!");
+          showToast("🎉 Account created and signed in!");
         } catch (suErr) {
           errorDiv.textContent = suErr.message;
           errorDiv.style.display = "block";
@@ -325,29 +315,29 @@ function renderLogin(container) {
     }
   };
 
-  // 4) Google Sign-In
+  // Google Sign-In
   document.getElementById("google-login").onclick = async () => {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (err) {
-      alert("Google Sign-In failed: " + err.message);
+      showToast("Google Sign-In failed: " + err.message);
     }
   };
 
-  // 5) Reset password
+  // Reset password
   document.getElementById("reset-password").onclick = async e => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
     if (!email) {
-      alert("Enter your email to receive a reset link.");
+      showToast("Enter your email to receive a reset link.");
       return;
     }
     try {
       await sendPasswordResetEmail(auth, email);
-      alert("📬 Reset link sent!");
+      showToast("📬 Reset link sent!");
     } catch (err) {
-      alert("Error: " + err.message);
+      showToast("Error: " + err.message);
     }
   };
 }
