@@ -447,21 +447,41 @@ function renderPracticeTests(container) {
       <h2>🧪 CDL Practice Tests</h2>
       <p>Select a practice test to begin:</p>
       <ul style="list-style:none; padding:0;">
-        <li><button class="test-btn" data-test="General Knowledge" style="width:100%; padding:10px; margin:6px 0;">General Knowledge</button></li>
-        <li><button class="test-btn" data-test="Air Brakes" style="width:100%; padding:10px; margin:6px 0;">Air Brakes</button></li>
-        <li><button class="test-btn" data-test="Combination Vehicles" style="width:100%; padding:10px; margin:6px 0;">Combination Vehicles</button></li>
+        <li>
+          <button type="button" class="test-btn" data-test="General Knowledge"
+                  style="width:100%; padding:10px; margin:6px 0;">
+            General Knowledge
+          </button>
+        </li>
+        <li>
+          <button type="button" class="test-btn" data-test="Air Brakes"
+                  style="width:100%; padding:10px; margin:6px 0;">
+            Air Brakes
+          </button>
+        </li>
+        <li>
+          <button type="button" class="test-btn" data-test="Combination Vehicles"
+                  style="width:100%; padding:10px; margin:6px 0;">
+            Combination Vehicles
+          </button>
+        </li>
       </ul>
       <button data-nav="dashboard" style="margin-top:20px;">⬅️ Back</button>
     </div>
   `;
+
+  // 1) bind the nav button
   setupNavigation();
-  document.querySelectorAll(".test-btn").forEach(btn => {
+
+  // 2) bind our test buttons
+  container.querySelectorAll(".test-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      showToast(`Starting "${btn.dataset.test}" test...`);
+      console.log("[renderPracticeTests] clicked:", btn.dataset.test);
+      showToast(`Starting "${btn.dataset.test}" test…`);
+      // TODO → hook in your real test engine here
     });
   });
 }
-
 // AI Coach
 function renderAICoach(container) {
   container.innerHTML = `
