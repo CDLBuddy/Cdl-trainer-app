@@ -457,9 +457,10 @@ function renderPracticeTests(container) {
     </div>
   `;
 
+  // Re-bind navigation buttons (Dashboard/back links)
   setupNavigation();
 
-  // Confirm test button click binding
+  // Confirm test button click binding and hook up the engine
   setTimeout(() => {
     const testBtns = container.querySelectorAll(".test-btn");
     console.log("🔎 Found", testBtns.length, "test buttons");
@@ -468,10 +469,11 @@ function renderPracticeTests(container) {
       btn.addEventListener("click", () => {
         console.log("✅ Clicked:", btn.dataset.test);
         showToast(`Loading "${btn.dataset.test}" test…`);
-+      // now invoke our engine stub
-+      renderTestEngine(document.getElementById("app"), btn.dataset.test);
-     });
-   });
+        renderTestEngine(document.getElementById("app"), btn.dataset.test);
+      });
+    });
+  }, 0);
+}
 
 // AI Coach
 function renderAICoach(container) {
