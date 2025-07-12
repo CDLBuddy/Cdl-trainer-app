@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <title>CDL Trainer</title>
+  <!-- (Your other head content like CSS links can stay here) -->
 </head>
 <body>
-  <!-- 1) Prove HTML is loading -->
+  <!-- 1) Prove the HTML is loading -->
   <script>
     alert("✅ HTML loaded");
   </script>
@@ -22,36 +23,24 @@
       .catch(e => alert("❌ fetch error: " + e.message));
   </script>
 
-  <!-- 4) Unregister any old SWs -->
+  <!-- 4) Global error handlers -->
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(regs => {
-        regs.forEach(reg => {
-          reg.unregister().then(ok => {
-            alert("🗑️ SW unregistered: " + ok);
-          });
-        });
-      });
-    }
+    window.addEventListener("error", e => alert("🚨 Global Error: " + e.message));
+    window.addEventListener("unhandledrejection", e => alert("🚨 Promise Rejection: " + e.reason));
   </script>
 
-  <!-- 5) Register your new SW -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('serviceworker.js')
-        .then(reg => {
-          alert("✅ SW registered at " + reg.scope);
-        })
-        .catch(err => {
-          alert("❌ SW registration failed: " + err);
-        });
-    }
-  </script>
-
-  <!-- 6) App mount point -->
+  <!-- 5) App mount point -->
   <div id="app"></div>
 
-  <!-- 7) Load your JavaScript module -->
-  <script type="module" src="app.js"></script>
+  <!-- 6) Dynamic import & error trapping -->
+  <script type="module">
+    import("./app.js")
+      .then(() => {
+        alert("✅ app.js imported successfully!");
+      })
+      .catch(err => {
+        alert("❌ app.js import failed: " + err.message);
+      });
+  </script>
 </body>
 </html>
