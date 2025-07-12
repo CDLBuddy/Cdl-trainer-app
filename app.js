@@ -104,10 +104,12 @@ onAuthStateChanged(auth, async user => {
       localStorage.setItem("userRole", userData.role    || "student");
       localStorage.setItem("fullName", userData.name    || "CDL User");
     } catch (err) {
-      console.error("❌ User profile error:", err);
-      showToast("Error loading profile");
-      return;
-    }
+  console.error("❌ User profile error:", err);
+  const msg = err.message || err;
+  showToast("Error loading profile: " + msg);
+  alert("🛑 Firestore error: " + msg);
+  return;
+}
 
     // 3) Setup logout button (you need an element with id="logout-btn" in your dashboard templates)
     const logoutBtn = document.getElementById("logout-btn");
