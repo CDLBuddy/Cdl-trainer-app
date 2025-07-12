@@ -5,14 +5,14 @@
   <title>CDL Trainer</title>
 </head>
 <body>
-  <!-- Quick check that HTML itself is loading -->
   <script>
     alert("✅ HTML loaded");
+    fetch('/Cdl-trainer-app/app.js')
+      .then(r => alert("🔍 fetch /Cdl-trainer-app/app.js → " + r.status + " " + r.statusText))
+      .catch(e => alert("❌ fetch error: " + e.message));
   </script>
 
   <div id="app"></div>
-
-  <!-- Load your module. Notice no "./" and no defer. -->
   <script type="module" src="/Cdl-trainer-app/app.js"></script>
 </body>
 </html>
