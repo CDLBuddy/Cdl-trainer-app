@@ -11,6 +11,18 @@
     fetch("app.js")
       .then(r => alert("🔍 fetch app.js → " + r.status))
       .catch(e => alert("❌ fetch error: " + e.message));
+      <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(reg => {
+        reg.unregister().then(ok => {
+          console.log("🗑️ Service Worker unregistered:", ok);
+          alert("🗑️ SW unregistered: " + ok);
+        });
+      });
+    });
+  }
+</script>
   </script>
 
   <div id="app"></div>
