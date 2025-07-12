@@ -139,15 +139,17 @@ function renderWelcome() {
 }  // ← Make sure this closes renderWelcome!
 
 
-
 // ─── 6. NAVIGATION SETUP & HANDLERS ────────────────────────────────────────────
-
-// Stub navigation setup
 function setupNavigation() {
-  alert("✅ Navigation setup OK");
-  document.querySelectorAll("[data-nav]").forEach(btn => {
+  // 1) Find all nav buttons
+  const navItems = document.querySelectorAll("[data-nav]");
+  alert(`✅ Navigation setup OK -- found ${navItems.length} nav items`);
+
+  // 2) Attach click listeners and debug each click
+  navItems.forEach(btn => {
     btn.addEventListener("click", e => {
-      const target = e.target.closest("[data-nav]").getAttribute("data-nav");
+      const target = e.target.closest("[data-nav]")?.getAttribute("data-nav");
+      alert(`🛠️ [DEBUG] Clicked nav item for "${target}"`);
       handleNavigation(target, true);
     });
   });
