@@ -442,33 +442,37 @@ async function renderDashboard() {
 
 // Practice Tests
 function renderPracticeTests(container) {
+  console.log("🧪 renderPracticeTests CALLED");
+
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
       <h2>🧪 CDL Practice Tests</h2>
       <p>Select a practice test to begin:</p>
       <ul style="list-style:none; padding:0;">
-        <li>
-          <button type="button" class="test-btn" data-test="General Knowledge"
-                  style="width:100%; padding:10px; margin:6px 0;">
-            General Knowledge
-          </button>
-        </li>
-        <li>
-          <button type="button" class="test-btn" data-test="Air Brakes"
-                  style="width:100%; padding:10px; margin:6px 0;">
-            Air Brakes
-          </button>
-        </li>
-        <li>
-          <button type="button" class="test-btn" data-test="Combination Vehicles"
-                  style="width:100%; padding:10px; margin:6px 0;">
-            Combination Vehicles
-          </button>
-        </li>
+        <li><button class="test-btn" data-test="General Knowledge" style="width:100%;">General Knowledge</button></li>
+        <li><button class="test-btn" data-test="Air Brakes" style="width:100%;">Air Brakes</button></li>
+        <li><button class="test-btn" data-test="Combination Vehicles" style="width:100%;">Combination Vehicles</button></li>
       </ul>
       <button data-nav="dashboard" style="margin-top:20px;">⬅️ Back</button>
     </div>
   `;
+
+  // Confirm nav is working
+  setupNavigation();
+
+  // Confirm test button click binding
+  setTimeout(() => {
+    const testBtns = container.querySelectorAll(".test-btn");
+    console.log("🔎 Found", testBtns.length, "test buttons");
+
+    testBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        console.log("✅ Clicked:", btn.dataset.test);
+        showToast(`Starting ${btn.dataset.test}`);
+      });
+    });
+  }, 0);
+}
 
   // 1) bind the nav button
   setupNavigation();
