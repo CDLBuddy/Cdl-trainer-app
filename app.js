@@ -153,9 +153,11 @@ function setupNavigation() {
   });
 }
 
-// ─── 7. CORE NAVIGATION HANDLER & RENDERER ────────────────────────────────────
+// ─── 7. CORE NAVIGATION HANDLER & RENDERER (DEBUG) ─────────────────────────────
 
 async function handleNavigation(targetPage, pushToHistory = false) {
+  alert(`🧭 handleNavigation→ ${targetPage}`);   // ← debug alert
+
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
@@ -192,8 +194,10 @@ function renderPage(page) {
   }
 }
 
-// Stub `renderLogin` – we’ll flesh this out next
+// Stub `renderLogin` – now with debug alert
 function renderLogin(container) {
+  alert("🚪 renderLogin() called");  // ← debug alert
+
   container.innerHTML = `
     <div style="padding:20px; text-align:center;">
       <h2>🚪 Login Screen</h2>
