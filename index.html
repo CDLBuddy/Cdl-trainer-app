@@ -5,14 +5,16 @@
   <title>CDL Trainer</title>
 </head>
 <body>
+  <!-- verify this alert still fires -->
   <script>
     alert("✅ HTML loaded");
-    fetch('/Cdl-trainer-app/app.js')
-      .then(r => alert("🔍 fetch /Cdl-trainer-app/app.js → " + r.status + " " + r.statusText))
+    fetch("app.js")
+      .then(r => alert("🔍 fetch app.js → " + r.status))
       .catch(e => alert("❌ fetch error: " + e.message));
   </script>
 
   <div id="app"></div>
-  <script type="module" src="/Cdl-trainer-app/app.js"></script>
+  <!-- ← use plain "app.js" here, no "./" or leading slash -->
+  <script type="module" src="app.js"></script>
 </body>
 </html>
