@@ -34,7 +34,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 // UI Helpers
-import { showToast as importedShowToast, setupNavigation } from "./ui-helpers.js";
+import { showToast as importedShowToast } from "./ui-helpers.js";
 
 console.log("✅ app.js loaded");
 
