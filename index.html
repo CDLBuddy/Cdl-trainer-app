@@ -1,44 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <title>CDL Trainer</title>
 </head>
 <body>
+  <!-- 1) HTML load check -->
   <script>
     alert("✅ HTML loaded");
   </script>
 
+  <!-- 2) Inline module test -->
   <script type="module">
     alert("🧪 Inline module is running!");
   </script>
 
+  <!-- 3) Fetch test for app.js -->
   <script>
     fetch('app.js')
-      .then(r => alert("🔍 fetch app.js → " + r.status + " " + r.statusText))
+      .then(r => alert("🔍 fetch app.js → " + r.status))
       .catch(e => alert("❌ fetch error: " + e.message));
   </script>
 
   <div id="app"></div>
 
+  <!-- 4) Global error handlers -->
   <script>
-    window.addEventListener("error", e => {
-      alert(`🚨 Global Error\n${e.message}\nat ${e.filename}:${e.lineno}:${e.colno}`);
-    });
-    window.addEventListener("unhandledrejection", e => {
-      alert(`🚨 Promise Rejection\n${e.reason}`);
-    });
+    window.addEventListener("error", e => alert("🚨 Global Error: " + e.message));
+    window.addEventListener("unhandledrejection", e => alert("🚨 Promise Rejection: " + e.reason));
   </script>
 
-  <!-- Enhanced dynamic import with stack trace -->
+  <!-- 5) Dynamic import of app.js -->
   <script type="module">
     import("./app.js")
-      .then(() => {
-        alert("✅ app.js imported successfully!");
-      })
-      .catch(err => {
-        alert(`❌ app.js import failed:\n${err.message}\n\n${err.stack}`);
-      });
+      .then(() => alert("✅ app.js imported successfully!"))
+      .catch(err => alert("❌ app.js import failed:\n" + err.message));
   </script>
 </body>
 </html>
