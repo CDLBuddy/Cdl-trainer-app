@@ -294,3 +294,8 @@ body::after {
   50%  { transform: translateY(-20px) translateX(10px) scale(1.05); }
   100% { transform: translateY(0)   translateX(0)  scale(1); }
 }
+/* Keep the giant parallax graphic from generating horizontal scroll */
+.parallax {
+  max-width: 100vw;          /* never wider than the viewport */
+  overflow: hidden;          /* clip any excess */
+}
