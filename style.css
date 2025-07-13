@@ -210,6 +210,10 @@ nav button {
 .welcome-content {
   overscroll-behavior: none;
 }
+.card-wrapper {
+  overflow: visible;
+  position: relative;
+}
 
 /* ─── 10. Feature Cards & Interactions ──────────────────────────────────── */
 .feat {
