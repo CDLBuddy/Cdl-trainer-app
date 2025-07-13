@@ -166,17 +166,18 @@ nav button {
   50% { opacity: 0; }
 }
 
-/* ─── 9. Infinite Features Carousel ─────────────────────────────────────── */
+/* ─── 9. Infinite Features Carousel (Revised) ───────────────────────────── */
 .features {
   position: relative;
-  overflow: hidden;    /* contain scroll & page panning */
+  overflow: hidden;    /* contain the scrolling strip */
 }
+
 .features-inner {
-  display: flex;
-  /* adjust total width: (number of cards) × (card width + gap) */
-  width: calc(8 * (120px + 0.5rem));
+  display: flex;       /* lay cards in a row */
+  white-space: nowrap; /* prevent wrapping */
   animation: scrollLoop 24s linear infinite;
 }
+
 @keyframes scrollLoop {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
