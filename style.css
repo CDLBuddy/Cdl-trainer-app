@@ -271,7 +271,12 @@ nav button {
 .fab:hover {
   transform: scale(1.1);
 }
-
+/* ─── 11.1 Carousel Hover Fix ───────────────────────────────────────────── */
+.carousel-section, .carousel-track, .carousel-wrapper {
+  overflow: visible;
+  padding-bottom: 64px; /* small increase to prevent clipping with FAB */
+  position: relative;
+}
 /* ─── 12. Responsive Tweaks ──────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .welcome-content {
