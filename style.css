@@ -331,3 +331,85 @@ body::after {
   max-width: 100vw;          /* never wider than the viewport */
   overflow: hidden;          /* clip any excess */
 }
+
+/* ── Auth Screen Layout ─────────────────────────────────────────────── */
+.auth-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 1.5rem;
+}
+
+.auth-head {
+  font-size: 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.glass-card {
+  background: rgba(255,255,255,0.10);
+  backdrop-filter: blur(12px) saturate(135%);
+  border: 1px solid rgba(255,255,255,0.20);
+  border-radius: 12px;
+  padding: 1.25rem;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.15);
+  color: var(--text-light);
+  font-size: 1rem;
+}
+
+.password-wrap {
+  position: relative;
+}
+.password-wrap .eye-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: 0;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--text-light);
+}
+
+/* buttons reuse global .btn; add variants */
+.btn.wide     { width: 100%; }
+.btn.primary  { background: linear-gradient(135deg,#5faaff,#7b6bff); border:none; }
+.btn.primary:hover { box-shadow: 0 0 14px rgba(95,170,255,.45); }
+
+.btn.outline {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.35);
+}
+.btn.outline:hover { background: rgba(255,255,255,0.12); }
+
+.auth-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 380px;
+  width: 100%;
+}
+
+.reset-link {
+  color: var(--text-light);
+  text-decoration: underline;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+.reset-link:hover { opacity: 1; }
