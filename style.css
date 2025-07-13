@@ -160,12 +160,9 @@ nav button { background: var(--accent); color: var(--text-light); }
 @keyframes blink { 50% { opacity: 0; } }
 
 /* ─── 9. Swipeable, Snap-to-Center, Infinite Carousel ───────────────────── */
-.features {                               /* outer wrapper lets cards lift */
-  overflow: visible;
-  position: relative;
-}
+.features { overflow: visible; position: relative; }
 
-.features-inner {                         /* horizontal scroll-track */
+.features-inner {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -177,50 +174,41 @@ nav button { background: var(--accent); color: var(--text-light); }
 
   scroll-snap-type: x mandatory;
   scroll-padding-inline: 32px;
-  padding: 32px 0 80px;                   /* extra bottom space for FAB */
+  padding: 32px 0 80px;          /* bottom room for FAB */
 }
 .features-inner::-webkit-scrollbar { display: none; }
 
 /* each card */
 .feat {
-  /* fixed square footprint */
   flex: 0 0 160px;
   width: 160px;
   height: 160px;
 
-  /* layout */
+  scroll-snap-align: center;
+
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  scroll-snap-align: center;
-  border-radius: 20px;
-  padding: 16px;
 
-  /* ① frosted-glass interior */
-  backdrop-filter: blur(8px) saturate(135%);
-
-  /* ② gradient layers: inner wash + 1-px neon border */
-  border: 1px solid transparent;                       /* allow gradient to show */
-  background-clip: padding-box, border-box;            /* 2 separate clips       */
-  background-origin: border-box;
-  background-image:
-    /* layer 1 – interior glass wash */
+  /* Option B: frosted glass with gentle vignette */
+  background:
     linear-gradient(
       to bottom right,
       rgba(255,255,255,0.10)  0%,
       rgba(255,255,255,0.06) 40%,
       rgba(0,0,0,0.15)       100%
-    ),
-    /* layer 2 – iridescent border */
-    radial-gradient(circle at top left, #5faaff 0%, #a06bff 100%);
-
-  /* subtle inner shadow for depth */
+    );
+  backdrop-filter: blur(8px) saturate(135%);
+  border: 1px solid rgba(255,255,255,0.12);
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
 
-  /* lift animation */
+  border-radius: 20px;
+  padding: 16px;
+
   transition: transform .35s cubic-bezier(.4,.8,.2,1),
-              box-shadow  .35s;
+              box-shadow .35s;
 }
 .feat:hover {
   transform: translateY(-12px) scale(1.05);
