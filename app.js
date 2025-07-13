@@ -187,7 +187,7 @@ async function getAITipOfTheDay() {
   return tips[Math.floor(Math.random() * tips.length)];
 }
 
-// ─── 5.RENDER & TEST UI ────────────────────────────────────────────────
+// ─── 5. RENDER WELCOME SCREEN ──────────────────────────────────────────────
 function renderWelcome() {
   const appEl = document.getElementById("app");
   if (!appEl) return;
@@ -208,26 +208,27 @@ function renderWelcome() {
         <!-- Login button -->
         <button id="login-btn" class="btn">🚀 Login</button>
 
-        <!-- Features carousel -->
+        <!-- Infinite Features Carousel -->
         <div class="features">
-  <div class="features-inner">
-    <!-- original cards -->
-    <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
-    <div class="feat"><i>✅</i><p>Checklists</p></div>
-    <div class="feat"><i>📊</i><p>Results</p></div>
-    <div class="feat"><i>🎧</i><p>AI Coach</p></div>
-    <!-- duplicate cards for seamless looping -->
-    <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
-    <div class="feat"><i>✅</i><p>Checklists</p></div>
-    <div class="feat"><i>📊</i><p>Results</p></div>
-    <div class="feat"><i>🎧</i><p>AI Coach</p></div>
-  </div>
-</div>
+          <div class="features-inner">
+            <!-- original cards -->
+            <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
+            <div class="feat"><i>✅</i><p>Checklists</p></div>
+            <div class="feat"><i>📊</i><p>Results</p></div>
+            <div class="feat"><i>🎧</i><p>AI Coach</p></div>
+            <!-- duplicate cards for seamless looping -->
+            <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
+            <div class="feat"><i>✅</i><p>Checklists</p></div>
+            <div class="feat"><i>📊</i><p>Results</p></div>
+            <div class="feat"><i>🎧</i><p>AI Coach</p></div>
+          </div>
+        </div>
+      </div>
 
       <!-- Floating AI Coach FAB -->
       <button class="fab" title="AI Coach">🎧</button>
     </div>
-  `;
+  `;  // ← closing backtick
 
   // Wire up navigation
   document.getElementById("login-btn")?.addEventListener("click", () =>
@@ -239,32 +240,6 @@ function renderWelcome() {
 
   setupNavigation();
   startTypewriter();
-}
-
-// ─── Auto-scroll logic ─────────────────────────────────────────────────────────
-  // Advance one card-width
-  function scrollNext() {
-    if (isHovering) return;
-    const card = carousel.querySelector(".feat");
-    if (!card) return;
-    carousel.scrollBy({ left: card.offsetWidth + 16, behavior: "smooth" });
-
-    // If we’ve reached the end, wrap back to start
-    if (carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 1) {
-      setTimeout(() => {
-        carousel.scrollTo({ left: 0, behavior: "smooth" });
-      }, 500);
-    }
-  }
-
-  // Start the interval
-  autoScroll = setInterval(scrollNext, 3000);
-
-  // Pause on hover/touch
-  carousel.addEventListener("mouseenter", () => isHovering = true);
-  carousel.addEventListener("mouseleave", () => isHovering = false);
-  carousel.addEventListener("touchstart", () => isHovering = true);
-  carousel.addEventListener("touchend", () => isHovering = false);
 }
 
 // ─── 6. NAVIGATION SETUP ───────────────────────────────────────────────────────
