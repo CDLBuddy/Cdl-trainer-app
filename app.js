@@ -216,7 +216,7 @@ function initCarousel() {
   const half = () => track.scrollWidth / 2;
 
   let isPaused = false;
-  const speed  = 0.6;            // px per frame  (≈36 px/s at 60 fps)
+  const speed  = 1.0;            // px per frame  (≈36 px/s at 60 fps)
 
   /* Pause on user interaction */
   ["mouseenter","touchstart"].forEach(evt =>
@@ -554,6 +554,23 @@ async function renderDashboard() {
 }
 
 // ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
+/* ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── */
+function renderWalkthrough(c=document.getElementById("app")){
+  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧭 Walkthrough</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
+  setupNavigation();
+}
+function renderFlashcards(c=document.getElementById("app")){
+  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🃏 Flashcards</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
+  setupNavigation();
+}
+function renderExperience(c=document.getElementById("app")){
+  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>💼 Experience Survey</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
+  setupNavigation();
+}
+function renderLicenseSelector(c=document.getElementById("app")){
+  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🚛 Select License</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
+  setupNavigation();
+}
 
 // Practice Tests
 function renderPracticeTests(container) {
