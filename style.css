@@ -1,6 +1,17 @@
 /* ==========================================================================
    CDL Trainer -- style.css
    ========================================================================== */
+/* ─── Block ALL Horizontal Panning on the Page ───────────────────────────── */
+html, body {
+  overflow-x: hidden;           /* no horizontal scrollbars ever */
+  overscroll-behavior-x: none;  /* don’t chain horizontal swipes to page */
+}
+
+/* ─── Restrict Welcome Screen to Vertical-Only Touch Scrolling ──────────── */
+.welcome-screen {
+  touch-action: pan-y;          /* only allow vertical pans */
+  overscroll-behavior: contain; /* contain any bounce inside this element */
+}  
 
 /* ─── 1. CSS Variables (Deep-Blue + Coral Accent) ───────────────────────── */
 :root {
