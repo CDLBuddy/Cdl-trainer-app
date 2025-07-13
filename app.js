@@ -16,7 +16,8 @@ import {
   getDocs,
   addDoc,
   doc,
-  updateDoc
+  updateDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 // Auth
@@ -681,41 +682,42 @@ async function renderTestEngine(container, testName) {
     });
   }
 
-  // Utility: Render final results & save to Firestore
-  async function showResults() {
-    const total = questions.length;
-    const pct   = total ? Math.round((correctCount / total) * 100) : 0;
+// ─── inside renderTestEngine ───
+async function showResults() {
+  const total = questions.length;
+  const pct   = total ? Math.round((correctCount / total) * 100) : 0;
 
-    // Save result
-    try {
-      await addDoc(collection(db, "testResults"), {
-        studentId: currentUserEmail,
-        testName,
-        correct:   correctCount,
-        total,
-        timestamp: new Date().toISOString()
-      });
-    } catch (e) {
-      console.error("❌ Failed to save test result:", e);
-    }
-
-    // Render results screen
-    container.innerHTML = `
-      <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto; text-align:center;">
-        <h2>📊 ${testName} Results</h2>
-        <p style="font-size:1.2em; margin:16px 0;">
-          You scored <strong>${correctCount}/${total}</strong> (${pct}%)
-        </p>
-        <button data-nav="dashboard" style="padding:10px 20px; margin-top:20px;">
-          🏠 Back to Dashboard
-        </button>
-        <button data-nav="tests" style="padding:10px 20px; margin-top:12px;">
-          🔄 Try Again
-        </button>
-      </div>
-    `;
-    setupNavigation();
+  // Save result with Firestore server timestamp
+  try {
+    await addDoc(collection(db, "testResults"), {
+      studentId: currentUserEmail,
+      testName:  testName,
+      correct:   correctCount,
+      total:     total,
+      timestamp: serverTimestamp()    // ← server-side timestamp
+    });
+  } catch (e) {
+    console.error("❌ Failed to save test result:", e);
+    showToast("Error saving test result");
   }
+
+  // Render results screen
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto; text-align:center;">
+      <h2>📊 ${testName} Results</h2>
+      <p style="font-size:1.2em; margin:16px 0;">
+        You scored <strong>${correctCount}/${total}</strong> (${pct}%)
+      </p>
+      <button data-nav="dashboard" style="padding:10px 20px; margin-top:20px;">
+        🏠 Back to Dashboard
+      </button>
+      <button data-nav="tests" style="padding:10px 20px; margin-top:12px;">
+        🔄 Try Again
+      </button>
+    </div>
+  `;
+  setupNavigation();
+}
 
   // Kick things off
   if (questions.length === 0) {
