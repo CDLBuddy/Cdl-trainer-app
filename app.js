@@ -345,28 +345,39 @@ function renderPage(page) {
   }
 }
 
-// ─── 8. FULL LOGIN FORM & HANDLERS ─────────────────────────────────────────────
-function renderLogin(container) {
+// ─── 8. FULL LOGIN FORM & HANDLERS ────────────────────────────────────────
+function renderLogin(container = document.getElementById("app")) {
+  if (!container) return;
+
+  /* 1️⃣  NEW GLASS-MORPHIC MARKUP */
   container.innerHTML = `
-    <div class="login-card fade-in" style="padding:20px; max-width:400px; margin:40px auto;">
-      <h2>🚀 Login or Signup</h2>
-      <form id="login-form">
-        <input id="email" type="email" placeholder="Email" required style="width:100%; padding:8px; margin:8px 0;" />
-        <div style="position:relative; margin:8px 0;">
-          <input id="password" type="password" placeholder="Password" required style="width:100%; padding:8px;" />
-          <button type="button" id="toggle-password" style="position:absolute; right:8px; top:8px;">👁️</button>
+    <div class="auth-wrapper fade-in">
+
+      <h2 class="auth-head">
+        <span class="icon">🚀</span> Login&nbsp;or&nbsp;Signup
+      </h2>
+
+      <form id="login-form" class="glass-card">
+        <input id="email" type="email" placeholder="Email" required />
+        <div class="password-wrap">
+          <input id="password" type="password" placeholder="Password" required />
+          <button type="button" id="toggle-password" class="eye-btn">👁️</button>
         </div>
-        <div id="error-msg" style="color:red; display:none; margin:8px 0;"></div>
-        <button id="login-submit" type="submit" style="width:100%; padding:10px; margin-top:12px;">Login / Signup</button>
+        <div id="error-msg" class="error-msg" style="display:none;"></div>
+        <button id="login-submit" type="submit" class="btn primary wide">Login&nbsp;/&nbsp;Signup</button>
       </form>
-      <div style="margin-top:12px; text-align:center;">
-        <button data-nav="home">⬅️ Back</button>
-        <button id="google-login" style="margin-left:8px;">Continue with Google</button>
+
+      <div class="auth-actions">
+        <button id="back-btn"     class="btn outline">← Back</button>
+        <button id="google-login" class="btn outline">Continue&nbsp;with&nbsp;Google</button>
       </div>
-      <p style="text-align:center; margin-top:8px;"><a href="#" id="reset-password">Forgot password?</a></p>
+
+      <a id="reset-password" href="#" class="reset-link">Forgot&nbsp;password?</a>
     </div>
   `;
-  setupNavigation();
+
+  /* 2️⃣  EXISTING EVENT HANDLERS (unchanged) */
+  setupNavigation();                           // still works for data-nav buttons
 
   const pwdInput = document.getElementById("password");
   document.getElementById("toggle-password").onclick = () => {
@@ -379,13 +390,11 @@ function renderLogin(container) {
     const pwd   = pwdInput.value;
     const errD  = document.getElementById("error-msg");
     errD.style.display = "none";
-
     if (!email || !pwd) {
       errD.textContent = "Please enter both email and password.";
       errD.style.display = "block";
       return;
     }
-
     try {
       await signInWithEmailAndPassword(auth, email, pwd);
       handleNavigation("dashboard", true);
@@ -394,11 +403,11 @@ function renderLogin(container) {
         try {
           const cred = await createUserWithEmailAndPassword(auth, email, pwd);
           await addDoc(collection(db, "users"), {
-            uid:       cred.user.uid,
+            uid: cred.user.uid,
             email,
-            name:      "CDL User",
-            role:      "student",
-            verified:  false,
+            name: "CDL User",
+            role: "student",
+            verified: false,
             createdAt: new Date().toISOString(),
             lastLogin: new Date().toISOString()
           });
@@ -438,6 +447,10 @@ function renderLogin(container) {
       showToast("Error: " + err.message);
     }
   };
+
+  /* Back to welcome page */
+  document.getElementById("back-btn")
+    .addEventListener("click", () => handleNavigation("welcome", true));
 }
 
 // ─── 9. STUDENT DASHBOARD ─────────────────────────────────────────────────────
