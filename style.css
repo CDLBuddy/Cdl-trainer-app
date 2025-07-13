@@ -214,7 +214,68 @@ body.dark-mode .screen-wrapper {
   font-size: 0.85rem;
   color: var(--text-light);
 }
+/* ─── 11b. Features Carousel -- Carousel Mode ────────────────────────────────── */
+.welcome-content {
+  /* make the card narrower so carousel effect is more obvious */
+  max-width: 320px;   /* or adjust to taste (e.g. 70vw) */
+  margin: 4rem auto;
+}
 
+/* allow the features list to scroll and snap */
+.features {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;  /* smooth on iOS */
+  gap: 1rem;
+  padding: 1rem 0;    /* add vertical padding for better tap targets */
+  margin-top: 1.5rem;
+}
+
+/* hide native scrollbar */
+.features::-webkit-scrollbar {
+  display: none;
+}
+
+/* each feature "card" */
+.feat {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  min-width: 120px;         /* bigger so "Practice Tests" fits */
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 1rem 0.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-light);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+.feat:hover {
+  transform: translateY(-3px);
+}
+
+/* optional: show a hint gradient fade at the edges */
+.features::before,
+.features::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 1.5rem);
+  width: 2rem;
+  height: 3rem;
+  pointer-events: none;
+  background: linear-gradient(to right, rgba(31,41,55,0.8), transparent);
+  z-index: 1;
+}
+.features::after {
+  right: 0;
+  transform: rotateZ(180deg);
+}
+
+/* ensure the features container is positioned relative for the fades */
+.features {
+  position: relative;
+}
 /* ─── 12. Floating Action Button ─────────────────────────────────────────── */
 .fab {
   position: fixed;
