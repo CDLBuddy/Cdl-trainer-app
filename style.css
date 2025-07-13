@@ -188,28 +188,31 @@ nav button {
   vertical-align: bottom;      /* keep cursor at the bottom of the reserved area */
 }
 
-/* ─── 9. Swipeable, Snap-to-Center Carousel ─────────────────────────────── */
-.features,                 /* this is the SCROLLING - track  */
-.carousel-track {          /* (some builds use .carousel-track instead) */
+/* ─── 9. Swipeable, Snap-to-Center, Infinite Carousel ───────────────────── */
+.features,                  /* MAIN scroll track  */
+.carousel-track {           /*  (alt name some builds use) */
   display: flex;
+  flex-direction: row;      /* ← stay horizontal */
+  flex-wrap: nowrap;        /* ← never wrap to a new line */
   gap: 32px;
 
   /* keep horizontal scrolling alive */
-  overflow-x: auto;        /* ← critical: restores drag / swipe */
+  overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
 
   scroll-snap-type: x mandatory;
-  scroll-padding-inline: 32px;   /* keeps cards centred post-snap */
+  scroll-padding-inline: 32px;
 
-  padding: 32px 0 80px;          /* extra bottom room for FAB */
+  padding: 32px 0 80px;
 }
 .features::-webkit-scrollbar,
 .carousel-track::-webkit-scrollbar { display: none; }
 
 /* each card */
 .feat {
-  flex: 0 0 260px;
+  flex: 0 0 260px;          /* fixed width, no shrink */
+  min-width: 260px;         /* guards against flex glitches */
   scroll-snap-align: center;
 
   position: relative;
@@ -230,61 +233,23 @@ nav button {
   box-shadow: 0 28px 48px -12px rgba(0,0,0,.45);
 }
 
-/* ─── 10. Floating Action Button & Carousel Controls ────────────────────── */
-.fab {                      /* global FAB (eg. "＋" add-item button) */
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  background: var(--primary, #007bff);
-  color: #fff;
-  box-shadow: 0 8px 16px rgba(0,0,0,.25);
-  transition: transform .3s, box-shadow .3s;
-  z-index: 1000;
-}
-.fab:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0,0,0,.35);
-}
+/* ─── 10. Floating Action Button & Carousel Controls (unchanged) ─────────── */
+.fab{position:fixed;right:24px;bottom:24px;width:56px;height:56px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;font-size:24px;background:var(--primary,#007bff);
+color:#fff;box-shadow:0 8px 16px rgba(0,0,0,.25);transition:transform .3s,box-shadow .3s;z-index:1000}
+.fab:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.35)}
+.carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;
+background:rgba(0,0,0,.55);color:#fff;border:0;cursor:pointer;backdrop-filter:blur(6px)}
+.carousel-arrow.left{left:8px}.carousel-arrow.right{right:8px}
 
-/* optional arrow buttons that sit over the track */
-.carousel-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 48px; height: 48px;
-  border-radius: 50%;
-  background: rgba(0,0,0,.55);
-  color: #fff;
-  border: 0;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-}
-.carousel-arrow.left  { left: 8px; }
-.carousel-arrow.right { right: 8px; }
+/* ─── 11. Optional Glow Pulse (unchanged) ───────────────────────────────── */
+@keyframes carouselGlow{0%,100%{opacity:0}50%{opacity:.6}}
+.feat:hover::before{content:"";position:absolute;inset:-2px;border-radius:inherit;background:inherit;
+filter:blur(24px);animation:carouselGlow 2.4s ease-in-out infinite;z-index:-1}
 
-/* ─── 11. Carousel Card Glow & Keyframes ────────────────────────────────── */
-/* subtle glow pulse on hover (optional eye-candy) */
-@keyframes carouselGlow {
-  0%,100% { opacity: 0; }
-  50%     { opacity: .6; }
-}
-.feat:hover::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: inherit;
-  filter: blur(24px);
-  animation: carouselGlow 2.4s ease-in-out infinite;
-  z-index: -1;
-}
+/* ─── 11.1 Hover-Lift Fix (still required) ──────────────────────────────── */
+.carousel-section,
+.carousel-wrapper{overflow:visible;position:relative}
 
 /* ─── 11.1 Carousel Hover Fix (safe) ─────────────────────────────────────── */
 .carousel-section,
