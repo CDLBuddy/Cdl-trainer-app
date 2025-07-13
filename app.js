@@ -297,45 +297,6 @@ function renderWelcome() {
   startTypewriter();
 }
 
-// ─── CAROUSEL SWIPE + AUTO-LOOP ─────────────────────────────────────────────
-function initCarousel() {
-  const carousel = document.querySelector(".features");
-  const inner    = carousel.querySelector(".features-inner");
-  const half     = inner.scrollWidth / 2;
-  let isHovering = false;
-
-  // Pause auto-scroll on user interaction
-  ["mouseenter", "touchstart"].forEach(evt =>
-    carousel.addEventListener(evt, () => isHovering = true)
-  );
-  ["mouseleave", "touchend"].forEach(evt =>
-    carousel.addEventListener(evt, () => isHovering = false)
-  );
-
-  // Reset mid-scroll for infinite loop
-  carousel.addEventListener("scroll", () => {
-    if (carousel.scrollLeft >= half) {
-      // jump back by exactly half without animation
-      carousel.scrollLeft -= half;
-    }
-  });
-
-  // Every 3s, advance one card -- if past half, loop back to start
-  setInterval(() => {
-    if (isHovering) return;
-    const card = inner.querySelector(".feat");
-    const style = getComputedStyle(card);
-    const cardWidth = card.offsetWidth + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
-
-    carousel.scrollBy({ left: cardWidth, behavior: "smooth" });
-
-    // In case we overshoot, loop back
-    if (carousel.scrollLeft >= half) {
-      carousel.scrollTo({ left: 0 });
-    }
-  }, 3000);
-}
-
 // ─── 6. NAVIGATION SETUP ───────────────────────────────────────────────────────
 function setupNavigation() {
   document.querySelectorAll("[data-nav]").forEach(btn => {
