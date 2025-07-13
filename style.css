@@ -189,110 +189,117 @@ nav button {
 }
 
 /* ─── 9. Swipeable, Snap-to-Center Carousel ─────────────────────────────── */
-.features {
-  width: 100%;
-  overflow-x: auto;                 /* enable swipe/drag */
-  overflow-y: visible;              /* ✅ allow hover lift */
-  scroll-snap-type: x mandatory;    /* snap cards to center */
-  -webkit-overflow-scrolling: touch;/* iOS momentum */
-  touch-action: pan-x;              /* horizontal only */
-  overscroll-behavior: contain;     /* contain any bounce */
-  margin: 1.5rem 0;
-  padding-bottom: 2.5rem;           /* ✅ added space for hover + FAB */
-}
+.features,                 /* this is the SCROLLING - track  */
+.carousel-track {          /* (some builds use .carousel-track instead) */
+  display: flex;
+  gap: 32px;
 
-.features-inner {
-  display: flex;                    /* lay cards side by side */
-  white-space: nowrap;             /* prevent wrapping */
-  overflow: visible;               /* ✅ prevent card clipping */
-}
+  /* keep horizontal scrolling alive */
+  overflow-x: auto;        /* ← critical: restores drag / swipe */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 
-/* Prevent the parent card from bouncing when you hit edges */
-.welcome-content {
-  overscroll-behavior: none;
-}
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 32px;   /* keeps cards centred post-snap */
 
-/* ─── 10. Feature Cards & Interactions ──────────────────────────────────── */
+  padding: 32px 0 80px;          /* extra bottom room for FAB */
+}
+.features::-webkit-scrollbar,
+.carousel-track::-webkit-scrollbar { display: none; }
+
+/* each card */
 .feat {
-  flex: 0 0 auto;
+  flex: 0 0 260px;
   scroll-snap-align: center;
-  min-width: 120px;
-  margin: 0 0.5rem;
-  background: rgba(255,255,255,0.05);     /* ✅ softer background */
-  border-radius: 12px;
-  padding: 1.25rem 0.75rem;
-  text-align: center;
-  color: var(--text-light);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);  /* ✅ subtle shadow */
-  will-change: transform, opacity;
-  transition:
-    transform 0.25s cubic-bezier(0.22,1,0.36,1),
-    box-shadow 0.25s ease,
-    background 0.25s ease,
-    opacity 0.25s ease;
-  position: relative;                     /* ✅ needed for proper hover layering */
-  z-index: 1;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background: var(--card-bg-gradient,
+                  linear-gradient(145deg,#1e1e2e,#343447));
+  border-radius: 24px;
+  padding: 24px;
+
+  transition: transform .35s cubic-bezier(.4,.8,.2,1),
+              box-shadow .35s;
 }
 .feat:hover {
-  transform: translateY(-6px) scale(1.03);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);  /* ✅ cleaner hover shadow */
-  background: rgba(255,255,255,0.1);       /* ✅ smooth lift look */
-  opacity: 0.95;
-}
-.feat:active {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-.feat:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
-.feat i {
-  display: block;
-  font-size: 1.6rem;
-  margin-bottom: 0.5rem;
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
+  transform: translateY(-12px) scale(1.05);
+  box-shadow: 0 28px 48px -12px rgba(0,0,0,.45);
 }
 
-/* ─── 11. Floating Action Button ─────────────────────────────────────────── */
-.fab {
+/* ─── 10. Floating Action Button & Carousel Controls ────────────────────── */
+.fab {                      /* global FAB (eg. "＋" add-item button) */
   position: fixed;
-  bottom: 24px;
   right: 24px;
+  bottom: 24px;
   width: 56px;
   height: 56px;
-  background: var(--accent);
-  color: var(--text-light);
-  border: none;
   border-radius: 50%;
-  font-size: 1.5rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-  cursor: pointer;
-  transition: transform 0.2s;
-  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: var(--primary, #007bff);
+  color: #fff;
+  box-shadow: 0 8px 16px rgba(0,0,0,.25);
+  transition: transform .3s, box-shadow .3s;
+  z-index: 1000;
 }
 .fab:hover {
-  transform: scale(1.1);
-}
-/* ─── 11.1 Carousel Hover Fix ───────────────────────────────────────────── */
-.carousel-section,
-.carousel-track,
-.carousel-wrapper,
-.features,
-.features-inner,
-.feat,
-#welcome,
-#welcome .screen-wrapper,
-#welcome .welcome-content,
-#app {
-  overflow: visible !important;
-  position: relative;
-  z-index: 0; /* ensures stacking works properly unless overridden */
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,.35);
 }
 
-.feat:hover {
-  z-index: 10; /* ensure hovered cards rise above FAB and siblings */
+/* optional arrow buttons that sit over the track */
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  border: 0;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
 }
+.carousel-arrow.left  { left: 8px; }
+.carousel-arrow.right { right: 8px; }
+
+/* ─── 11. Carousel Card Glow & Keyframes ────────────────────────────────── */
+/* subtle glow pulse on hover (optional eye-candy) */
+@keyframes carouselGlow {
+  0%,100% { opacity: 0; }
+  50%     { opacity: .6; }
+}
+.feat:hover::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: inherit;
+  filter: blur(24px);
+  animation: carouselGlow 2.4s ease-in-out infinite;
+  z-index: -1;
+}
+
+/* ─── 11.1 Carousel Hover Fix (safe) ─────────────────────────────────────── */
+.carousel-section,
+.carousel-wrapper {
+  overflow: visible;      /* let lifted cards escape the frame */
+  position: relative;
+}
+
+/* leave scrolling on the *track* only */
+.features,                /* scroll track #1 */
+.carousel-track {         /* scroll track #2 */
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 /* ─── 12. Responsive Tweaks ──────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .welcome-content {
