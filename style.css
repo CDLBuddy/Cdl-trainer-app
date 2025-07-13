@@ -4,7 +4,7 @@
 
 /* ─── 1. CSS Variables (Deep-Blue + Coral Accent) ───────────────────────── */
 :root {
-  /* Gradient stops */
+  /* Brand Gradient Stops */
   --brand-dark:   #0A1F44;
   --brand-mid:    #12355A;
   --brand-light:  #1B4F72;
@@ -14,18 +14,18 @@
   --text-light:   #FFFFFF;
   --text-dark:    #E0E0E0;
 
-  /* Frosted-glass panels */
+  /* Frosted-glass Panels */
   --card-bg:      rgba(255,255,255,0.12);
   --card-bg-dark: rgba(20,30,50,0.7);
 
-  /* Toasts & alerts */
+  /* Toasts & Alerts */
   --toast-bg:     rgba(0,0,0,0.8);
   --toast-text:   #FFFFFF;
   --error:        #E53E3E;
   --success:      #48BB78;
 }
 
-/* ─── 2. Global Reset & Animated Gradient Background ──────────────────────── */
+/* ─── 2. Global Reset & Drifting Gradient Background ─────────────────────── */
 *,
 *::before,
 *::after {
@@ -52,22 +52,22 @@ body.dark-mode {
   color: var(--text-light);
 }
 
-/* ─── 3. Unified Frosted-Glass Panels ───────────────────────────────────── */
+/* ─── 3. Frosted-Glass Panels ───────────────────────────────────────────── */
 .screen-wrapper,
 .welcome-content {
   background: var(--card-bg);
   backdrop-filter: blur(12px);
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
   color: var(--text-light);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
   transition: background 0.3s, color 0.3s;
 }
 body.dark-mode .screen-wrapper {
   background: var(--card-bg-dark);
 }
 
-/* ─── 4. Global Button Styles ────────────────────────────────────────────── */
+/* ─── 4. Global Button Styles ───────────────────────────────────────────── */
 button {
   background: rgba(255,255,255,0.15);
   color: var(--text-light);
@@ -123,15 +123,13 @@ nav button {
   animation: fadeInEnhanced 0.4s ease-out forwards;
 }
 
-/* ─── 7. Welcome Screen Base ─────────────────────────────────────────────── */
+/* ─── 7. Welcome Screen Base & Parallax ─────────────────────────────────── */
 .welcome-screen {
   position: relative;
   height: 100vh;
   overflow-y: auto;
   perspective: 1px;
 }
-
-/* Parallax Accent Layer */
 .parallax {
   position: absolute;
   top: 0;
@@ -141,8 +139,6 @@ nav button {
   opacity: 0.05;
   pointer-events: none;
 }
-
-/* Fade-in Animation */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -151,7 +147,7 @@ nav button {
   animation: fadeInUp 0.6s ease-out both;
 }
 
-/* ─── 8. Typewriter Headline ─────────────────────────────────────────────── */
+/* ─── 8. Typewriter Headline & Cursor ───────────────────────────────────── */
 .typewriter {
   font-size: 2rem;
   margin: 0 0 1rem;
@@ -166,41 +162,37 @@ nav button {
   50% { opacity: 0; }
 }
 
-/* ─── 9. Swipeable, Snap-to-Center + Auto-Loop Carousel ─────────────────── */
+/* ─── 9. Swipeable, Snap-to-Center Carousel ─────────────────────────────── */
 .features {
-  overflow-x: auto;               /* enable swipe/drag */
-  scroll-snap-type: x mandatory;   /* snap cards to center */
-  -webkit-overflow-scrolling: touch;
-  position: relative;
-  margin: 1rem 0;
-  padding-bottom: 1rem;           /* space for scrollbar (if any) */
+  width: 100%;
+  overflow-x: auto;                 /* swipe/drag */
+  overflow-y: hidden;               /* no vertical scroll */
+  scroll-snap-type: x mandatory;    /* snap cards to center */
+  -webkit-overflow-scrolling: touch;/* iOS momentum */
+  touch-action: pan-x;              /* horizontal only */
+  margin: 1.5rem 0;
+  padding-bottom: 1rem;             /* room for scrollbar */
 }
-
 .features-inner {
-  display: flex;       /* lay cards in a row */
-  white-space: nowrap; /* prevent wrapping */
+  display: flex;       /* horizontal row */
+  white-space: nowrap; /* no wrapping */
 }
 
-.feat {
-  scroll-snap-align: center;  /* snap each card to center */
-}
-
-/* ─── 10. Enhanced Feature Card Styling ─────────────────────────────────── */
+/* ─── 10. Feature Cards & Interactions ──────────────────────────────────── */
 .feat {
   flex: 0 0 auto;
   scroll-snap-align: center;
   min-width: 120px;
+  margin: 0 0.5rem;
   background: rgba(255,255,255,0.1);
   border-radius: 12px;
   padding: 1.25rem 0.75rem;
-  margin: 0 0.25rem;
   text-align: center;
-  font-size: 0.9rem;
   color: var(--text-light);
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   will-change: transform, opacity;
   transition:
-    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.25s cubic-bezier(0.22,1,0.36,1),
     box-shadow 0.25s ease,
     background 0.25s ease,
     opacity 0.25s ease;
@@ -256,8 +248,8 @@ nav button {
   }
   .feat {
     min-width: 100px;
+    margin: 0 0.25rem;
     padding: 1rem 0.5rem;
     font-size: 0.85rem;
-    margin: 0 0.2rem;
   }
 }
