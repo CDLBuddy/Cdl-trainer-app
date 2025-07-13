@@ -166,21 +166,23 @@ nav button {
   50% { opacity: 0; }
 }
 
-/* ─── 9. Infinite Features Carousel (Revised) ───────────────────────────── */
+/* ─── 9. Swipeable, Snap-to-Center + Auto-Loop Carousel ─────────────────── */
 .features {
+  overflow-x: auto;               /* enable swipe/drag */
+  scroll-snap-type: x mandatory;   /* snap cards to center */
+  -webkit-overflow-scrolling: touch;
   position: relative;
-  overflow: hidden;    /* contain the scrolling strip */
+  margin: 1rem 0;
+  padding-bottom: 1rem;           /* space for scrollbar (if any) */
 }
 
 .features-inner {
   display: flex;       /* lay cards in a row */
   white-space: nowrap; /* prevent wrapping */
-  animation: scrollLoop 24s linear infinite;
 }
 
-@keyframes scrollLoop {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+.feat {
+  scroll-snap-align: center;  /* snap each card to center */
 }
 
 /* ─── 10. Enhanced Feature Card Styling ─────────────────────────────────── */

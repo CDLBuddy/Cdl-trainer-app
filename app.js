@@ -204,14 +204,14 @@ function renderWelcome() {
 
         <button id="login-btn" class="btn">🚀 Login</button>
 
-        <!-- Infinite carousel -->
+        <!-- Infinite + swipeable carousel -->
         <div class="features">
           <div class="features-inner">
             <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
             <div class="feat"><i>✅</i><p>Checklists</p></div>
             <div class="feat"><i>📊</i><p>Results</p></div>
             <div class="feat"><i>🎧</i><p>AI Coach</p></div>
-            <!-- duplicated for loop -->
+            <!-- duplicated -->
             <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
             <div class="feat"><i>✅</i><p>Checklists</p></div>
             <div class="feat"><i>📊</i><p>Results</p></div>
@@ -224,6 +224,7 @@ function renderWelcome() {
     </div>
   `;
 
+  // navigation wiring
   document.getElementById("login-btn")?.addEventListener("click", () =>
     handleNavigation("login", true)
   );
@@ -233,6 +234,35 @@ function renderWelcome() {
 
   setupNavigation();
   startTypewriter();
+  initCarousel();   // ← kick off swipe+auto-loop
+}
+
+
+// ─── CAROUSEL SWIPE + AUTO-LOOP ─────────────────────────────────────────────
+function initCarousel() {
+  const carousel = document.querySelector(".features");
+  const inner    = carousel.querySelector(".features-inner");
+  let isHovering = false;
+
+  // Pause auto-scroll on user interaction
+  ["mouseenter", "touchstart"].forEach(evt =>
+    carousel.addEventListener(evt, () => isHovering = true)
+  );
+  ["mouseleave", "touchend"].forEach(evt =>
+    carousel.addEventListener(evt, () => isHovering = false)
+  );
+
+  // Every 3s, advance one card -- if past half, jump back to start
+  setInterval(() => {
+    if (isHovering) return;
+    const cardWidth = inner.querySelector(".feat").offsetWidth;
+    carousel.scrollBy({ left: cardWidth, behavior: "smooth" });
+
+    if (carousel.scrollLeft >= inner.scrollWidth / 2) {
+      // instant jump back (no animation) to loop
+      carousel.scrollTo({ left: 0 });
+    }
+  }, 3000);
 }
 
 // ─── 6. NAVIGATION SETUP ───────────────────────────────────────────────────────
