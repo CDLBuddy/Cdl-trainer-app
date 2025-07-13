@@ -194,6 +194,15 @@ function renderWelcome() {
 
   appEl.innerHTML = `
     <div class="welcome-screen">
+
+      <!-- 🌟 Background Glow Bokeh Layer -->
+      <div class="bokeh-layer">
+        <div class="bokeh-dot" style="top:10%; left:15%; animation-delay:0s;"></div>
+        <div class="bokeh-dot" style="top:30%; left:70%; animation-delay:2s;"></div>
+        <div class="bokeh-dot" style="top:60%; left:25%; animation-delay:4s;"></div>
+        <div class="bokeh-dot" style="top:80%; left:80%; animation-delay:6s;"></div>
+      </div>
+
       <img src="pattern.svg" class="parallax" alt="" />
 
       <div class="welcome-content fade-in">
@@ -234,7 +243,7 @@ function renderWelcome() {
 
   setupNavigation();
   startTypewriter();
-  initCarousel();   // ← kick off swipe+auto-loop
+  initCarousel(); // ← kick off swipe+auto-loop
 }
 
 // ─── CAROUSEL SWIPE + AUTO-LOOP ─────────────────────────────────────────────
