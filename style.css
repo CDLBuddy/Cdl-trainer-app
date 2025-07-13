@@ -4,33 +4,29 @@
 
 /* ─── Block ALL Horizontal Panning on the Page ───────────────────────────── */
 html, body {
-  overflow-x: hidden;           /* no horizontal scrollbars ever */
-  overscroll-behavior-x: none;  /* don’t chain horizontal swipes to page */
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 /* ─── Restrict Welcome Screen to Vertical-Only Touch Scrolling ──────────── */
 .welcome-screen {
-  touch-action: pan-y;          /* only allow vertical pans */
-  overscroll-behavior: contain; /* contain any bounce inside this element */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 /* ─── 1. CSS Variables (Deep-Blue + Coral Accent) ───────────────────────── */
 :root {
-  /* Brand Gradient Stops */
   --brand-dark:   #0A1F44;
   --brand-mid:    #12355A;
   --brand-light:  #1B4F72;
-
-  /* Accent & Text */
   --accent:       #FF6F61;
+
   --text-light:   #FFFFFF;
   --text-dark:    #E0E0E0;
 
-  /* Frosted-glass Panels */
   --card-bg:      rgba(255,255,255,0.12);
   --card-bg-dark: rgba(20,30,50,0.7);
 
-  /* Toasts & Alerts */
   --toast-bg:     rgba(0,0,0,0.8);
   --toast-text:   #FFFFFF;
   --error:        #E53E3E;
@@ -47,15 +43,19 @@ html, body {
   height: 100%;
   font-family: "Helvetica Neue", Arial, sans-serif;
   color: var(--text-light);
-  background: linear-gradient(135deg, var(--brand-dark), var(--brand-mid), var(--brand-light));
+  background: linear-gradient(-45deg,
+    var(--brand-dark),
+    var(--brand-mid),
+    var(--brand-light),
+    var(--brand-mid));
   background-size: 300% 300%;
-  animation: gradientBG 20s ease infinite;
+  animation: gradientFlow 30s ease infinite;
   overflow-x: hidden;
 }
-@keyframes gradientBG {
-  0%   { background-position: 0%   50%; }
+@keyframes gradientFlow {
+  0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
-  100% { background-position: 0%   50%; }
+  100% { background-position: 0% 50%; }
 }
 body.dark-mode { background: #121212; color: var(--text-light); }
 
@@ -149,7 +149,7 @@ nav button { background: var(--accent); color: var(--text-light); }
   margin: 0 0 1rem;
   line-height: 1.2;
   text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-  min-height: calc(2 * 1.2em); /* reserves two lines */
+  min-height: calc(2 * 1.2em);
   overflow: hidden;
 }
 .cursor {
@@ -174,14 +174,13 @@ nav button { background: var(--accent); color: var(--text-light); }
 
   scroll-snap-type: x mandatory;
   scroll-padding-inline: 32px;
-  padding: 32px 0 80px;          /* bottom room for FAB */
+  padding: 32px 0 80px;
 }
 .features-inner::-webkit-scrollbar { display: none; }
 
 /* each card */
 .feat {
-  /* 🔒 fixed square footprint */
-  flex: 0 0 160px;   /* width basis & no shrink/grow */
+  flex: 0 0 160px;
   width: 160px;
   height: 160px;
 
@@ -191,10 +190,20 @@ nav button { background: var(--accent); color: var(--text-light); }
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;      /* center icon + label vertically */
+  justify-content: center;
 
-  background: var(--card-bg-gradient,
-                  linear-gradient(145deg,#1e1e2e,#343447));
+  /* ── Option B: glassy gradient + vignette ── */
+  background:
+    linear-gradient(
+      to bottom right,
+      rgba(255,255,255,0.10)  0%,
+      rgba(255,255,255,0.06) 40%,
+      rgba(0,0,0,0.15)       100%
+    );
+  backdrop-filter: blur(8px) saturate(135%);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
+
   border-radius: 20px;
   padding: 16px;
 
@@ -203,7 +212,7 @@ nav button { background: var(--accent); color: var(--text-light); }
 }
 .feat:hover {
   transform: translateY(-12px) scale(1.05);
-  box-shadow: 0 28px 48px -12px rgba(0,0,0,.45);
+  box-shadow: 0 28px 48px -12px rgba(0,0,0,0.45);
 }
 
 /* ─── 10. Floating Action Button & Carousel Controls ────────────────────── */
@@ -223,8 +232,6 @@ filter:blur(24px);animation:carouselGlow 2.4s ease-in-out infinite;z-index:-1}
 /* Hover-lift frame fix */
 .carousel-section,
 .carousel-wrapper{overflow:visible;position:relative}
-
-/* leave scrolling on the *track* only */
 .features,
 .carousel-track { overflow-x: auto; overflow-y: hidden; }
 
@@ -240,22 +247,6 @@ filter:blur(24px);animation:carouselGlow 2.4s ease-in-out infinite;z-index:-1}
 }
 
 /* ─── Background Enhancements: Flowing Gradient, Shimmer, Noise, Bokeh ──── */
-html, body {
-  background: linear-gradient(-45deg,
-    var(--brand-dark),
-    var(--brand-mid),
-    var(--brand-light),
-    var(--brand-mid));
-  background-size: 300% 300%;
-  animation: gradientFlow 30s ease infinite;
-  position: relative;
-  overflow-x: hidden;
-}
-@keyframes gradientFlow {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
 body::before,
 body::after {
   content: "";
@@ -265,7 +256,6 @@ body::after {
   pointer-events: none;
   z-index: -1;
 }
-/* Shimmer */
 body::before {
   background: linear-gradient(
     120deg,
@@ -281,13 +271,11 @@ body::before {
   50%  { background-position: 100% 100%; }
   100% { background-position: 0% 0%; }
 }
-/* Subtle noise overlay */
 body::after {
   background-image: url('noise.png');
   opacity: 0.06;
   mix-blend-mode: overlay;
 }
-/* Bokeh glow */
 .bokeh-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; overflow: hidden; }
 .bokeh-dot {
   position: absolute;
