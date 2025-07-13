@@ -368,9 +368,9 @@ function renderLogin(container = document.getElementById("app")) {
       </form>
 
       <div class="auth-actions">
-        <button id="back-btn"     class="btn outline">← Back</button>
-        <button id="google-login" class="btn outline">Continue&nbsp;with&nbsp;Google</button>
-      </div>
+  <button id="back-btn" type="button" class="btn outline">← Back</button>
+  <button id="google-login" type="button" class="btn outline">Continue&nbsp;with&nbsp;Google</button>
+</div>
 
       <a id="reset-password" href="#" class="reset-link">Forgot&nbsp;password?</a>
     </div>
