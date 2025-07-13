@@ -194,29 +194,24 @@ function renderWelcome() {
 
   appEl.innerHTML = `
     <div class="welcome-screen">
-      <!-- Parallax accent layer -->
-      <img src="pattern.svg" class="parallax" alt="Decorative pattern" />
+      <img src="pattern.svg" class="parallax" alt="" />
 
-      <!-- Frosted-glass content card -->
       <div class="welcome-content fade-in">
-        <!-- Typewriter headline -->
         <h1 class="typewriter">
           <span id="headline"></span><span class="cursor">|</span>
         </h1>
         <p>Your all-in-one CDL prep coach. Scroll down to get started!</p>
 
-        <!-- Login button -->
         <button id="login-btn" class="btn">🚀 Login</button>
 
-        <!-- Infinite Features Carousel -->
+        <!-- Infinite carousel -->
         <div class="features">
           <div class="features-inner">
-            <!-- original cards -->
             <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
             <div class="feat"><i>✅</i><p>Checklists</p></div>
             <div class="feat"><i>📊</i><p>Results</p></div>
             <div class="feat"><i>🎧</i><p>AI Coach</p></div>
-            <!-- duplicate cards for seamless looping -->
+            <!-- duplicated for loop -->
             <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
             <div class="feat"><i>✅</i><p>Checklists</p></div>
             <div class="feat"><i>📊</i><p>Results</p></div>
@@ -225,12 +220,10 @@ function renderWelcome() {
         </div>
       </div>
 
-      <!-- Floating AI Coach FAB -->
       <button class="fab" title="AI Coach">🎧</button>
     </div>
-  `;  // ← closing backtick
+  `;
 
-  // Wire up navigation
   document.getElementById("login-btn")?.addEventListener("click", () =>
     handleNavigation("login", true)
   );
