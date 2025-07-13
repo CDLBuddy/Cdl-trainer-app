@@ -159,39 +159,44 @@ nav button { background: var(--accent); color: var(--text-light); }
 }
 @keyframes blink { 50% { opacity: 0; } }
 
-/* ─── 9. Swipeable, Snap-to-Center, Infinite Carousel ───────────────────── */
-.features { overflow: visible; position: relative; }
+/* ─── 9. Swipeable, Infinite-Drift Carousel ─────────────────────────────── */
+.features {                       /* outer wrapper lets cards lift */
+  overflow: visible;
+  position: relative;
+}
 
-.features-inner {
+.features-inner {                 /* horizontal scroll-track */
   display: flex;
   flex-direction: row;
-  flex-wrap: nowrap;
+  flex-wrap: nowrap;              /* NEVER wrap to a new line   */
   gap: 32px;
 
-  overflow-x: auto;
+  overflow-x: auto;               /* keeps element scrollable   */
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
 
-  scroll-padding-inline: 32px;
-  padding: 32px 0 80px;          /* bottom room for FAB */
+  /* scroll-snap removed for continuous drift */
+  /* scroll-snap-type: x mandatory;  ←  do NOT reinstate */
+
+  scroll-padding-inline: 32px;    /* side spacing for peeking   */
+  padding: 32px 0 80px;           /* bottom room for the FAB    */
 }
 .features-inner::-webkit-scrollbar { display: none; }
 
 /* each card */
 .feat {
+  /* fixed square footprint */
   flex: 0 0 160px;
   width: 160px;
   height: 160px;
 
-  scroll-snap-align: center;
-
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  scroll-snap-align: center;      /* harmless now, can remove if desired */
 
-  /* Option B: frosted glass with gentle vignette */
+  /* Option B: subtle glass panel with vignette */
   background:
     linear-gradient(
       to bottom right,
@@ -207,7 +212,7 @@ nav button { background: var(--accent); color: var(--text-light); }
   padding: 16px;
 
   transition: transform .35s cubic-bezier(.4,.8,.2,1),
-              box-shadow .35s;
+              box-shadow  .35s;
 }
 .feat:hover {
   transform: translateY(-12px) scale(1.05);

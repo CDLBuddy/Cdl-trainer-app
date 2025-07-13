@@ -278,10 +278,9 @@ function renderWelcome() {
       <button class="fab" title="AI Coach">🎧</button>
     </div>
   `;
-
-  /* 2️⃣ Initialise the carousel (must run AFTER HTML injection) */
-  initInfiniteCarousel();   // clones cards & creates seamless loop
-  initCarousel();           // auto-drift every 3 s, pauses on touch/hover
+  
+  initInfiniteCarousel();   
+  initCarousel();           
 
   /* 3️⃣ Navigation wiring & extras */
   document.getElementById("login-btn")?.addEventListener("click", () =>
