@@ -189,30 +189,30 @@ nav button {
 }
 
 /* ─── 9. Swipeable, Snap-to-Center, Infinite Carousel ───────────────────── */
-.features,                  /* MAIN scroll track  */
-.carousel-track {           /*  (alt name some builds use) */
+.features {                         /* OUTER wrapper, lets cards pop out */
+  overflow: visible;
+  position: relative;
+}
+
+.features-inner {                   /* REAL scroll-track */
   display: flex;
-  flex-direction: row;      /* ← stay horizontal */
-  flex-wrap: nowrap;        /* ← never wrap to a new line */
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: 32px;
 
-  /* keep horizontal scrolling alive */
-  overflow-x: auto;
+  overflow-x: auto;                 /* keeps horizontal scroll alive */
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
 
   scroll-snap-type: x mandatory;
   scroll-padding-inline: 32px;
-
-  padding: 32px 0 80px;
+  padding: 32px 0 80px;             /* bottom room for FAB */
 }
-.features::-webkit-scrollbar,
-.carousel-track::-webkit-scrollbar { display: none; }
+.features-inner::-webkit-scrollbar { display: none; }
 
 /* each card */
 .feat {
-  flex: 0 0 260px;          /* fixed width, no shrink */
-  min-width: 260px;         /* guards against flex glitches */
+  flex: 0 0 260px;                  /* fixed width, no shrink */
   scroll-snap-align: center;
 
   position: relative;
