@@ -172,7 +172,6 @@ nav button { background: var(--accent); color: var(--text-light); }
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
 
-  scroll-snap-type: x mandatory;
   scroll-padding-inline: 32px;
   padding: 32px 0 80px;          /* bottom room for FAB */
 }

@@ -207,36 +207,40 @@ function initInfiniteCarousel(trackSelector = ".features-inner") {
   });
 }
 
-//Auto-scroll helper
-
+/* Auto-scroll helper: continuous drift, pauses on hover/touch */
 function initCarousel() {
   const track = document.querySelector(".features-inner");
   if (!track) return;
 
-  const half = track.scrollWidth / 2;
-  let  isHovering = false;
+  const half = () => track.scrollWidth / 2;   // recompute if window resizes
+  let  isPaused = false;                      // hover/touch pause flag
+  const speed   = 0.25;                       // pixels per frame (~15 px/s @60fps)
 
+  // Pause when the user interacts
   ["mouseenter","touchstart"].forEach(evt =>
-    track.addEventListener(evt, () => isHovering = true)
+    track.addEventListener(evt, () => isPaused = true)
   );
   ["mouseleave","touchend"].forEach(evt =>
-    track.addEventListener(evt, () => isHovering = false)
+    track.addEventListener(evt, () => isPaused = false)
   );
 
+  // Continuous drift loop
+  function drift() {
+    if (!isPaused) {
+      track.scrollLeft += speed;
+
+      // teleport back when we cross the mid-point
+      if (track.scrollLeft >= half()) track.scrollLeft -= half();
+    }
+    requestAnimationFrame(drift);
+  }
+  requestAnimationFrame(drift);
+
+  // Also keep the snap-back on manual scroll so the loop is seamless
   track.addEventListener("scroll", () => {
-    if (track.scrollLeft >= half) track.scrollLeft -= half;
+    if (track.scrollLeft >= half()) track.scrollLeft -= half();
+    else if (track.scrollLeft <= 0) track.scrollLeft += half();
   });
-
-  setInterval(() => {
-    if (isHovering) return;
-    const card      = track.querySelector(".feat");
-    const style     = getComputedStyle(card);
-    const cardWidth = card.offsetWidth +
-                      parseFloat(style.marginLeft) + parseFloat(style.marginRight);
-
-    track.scrollBy({ left: cardWidth, behavior: "smooth" });
-    if (track.scrollLeft >= half) track.scrollLeft = 0;
-  }, 3000);
 }
 
 // ─── 5. RENDER WELCOME SCREEN ──────────────────────────────────────────────
