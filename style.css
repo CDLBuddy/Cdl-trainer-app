@@ -1,24 +1,24 @@
 /* ==========================================================================
-   CDL Trainer -- Unified Theme Stylesheet
+   CDL Trainer -- style.css
    ========================================================================== */
 
 /* ─── 1. CSS Variables (Deep-Blue + Coral Accent) ───────────────────────── */
 :root {
-  /* Brand Gradient Stops */
-  --brand-dark:   #0A1F44;   /* very dark navy */
-  --brand-mid:    #12355A;   /* deep ocean blue */
-  --brand-light:  #1B4F72;   /* royal sapphire */
+  /* Gradient stops */
+  --brand-dark:   #0A1F44;
+  --brand-mid:    #12355A;
+  --brand-light:  #1B4F72;
 
   /* Accent & Text */
-  --accent:       #FF6F61;   /* coral accent for buttons/FAB */
+  --accent:       #FF6F61;
   --text-light:   #FFFFFF;
   --text-dark:    #E0E0E0;
 
-  /* Frosted-glass Panels */
+  /* Frosted-glass panels */
   --card-bg:      rgba(255,255,255,0.12);
   --card-bg-dark: rgba(20,30,50,0.7);
 
-  /* Toasts & Alerts */
+  /* Toasts & alerts */
   --toast-bg:     rgba(0,0,0,0.8);
   --toast-text:   #FFFFFF;
   --error:        #E53E3E;
@@ -32,7 +32,9 @@
   box-sizing: border-box;
 }
 html, body {
-  margin: 0; padding: 0; height: 100%;
+  margin: 0;
+  padding: 0;
+  height: 100%;
   font-family: "Helvetica Neue", Arial, sans-serif;
   color: var(--text-light);
   background: linear-gradient(135deg, var(--brand-dark), var(--brand-mid), var(--brand-light));
@@ -90,11 +92,14 @@ header, footer {
   background: rgba(0,0,0,0.4);
   backdrop-filter: blur(8px);
   color: var(--text-light);
-  padding: 1rem; text-align: center;
+  padding: 1rem;
+  text-align: center;
 }
 nav {
-  display: flex; flex-wrap: wrap;
-  justify-content: center; gap: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
   margin: 0.5rem 0;
 }
 nav button {
@@ -104,7 +109,9 @@ nav button {
 
 /* ─── 6. Toast Notifications ────────────────────────────────────────────── */
 .toast-message {
-  position: fixed; bottom: 30px; left: 50%;
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
   transform: translateX(-50%);
   background: var(--toast-bg);
   color: var(--toast-text);
@@ -126,7 +133,9 @@ nav button {
 
 /* Parallax Accent Layer */
 .parallax {
-  position: absolute; top: 0; left: 50%;
+  position: absolute;
+  top: 0;
+  left: 50%;
   width: 150%;
   transform: translateX(-50%) translateZ(-1px) scale(2);
   opacity: 0.05;
@@ -157,71 +166,85 @@ nav button {
   50% { opacity: 0; }
 }
 
-/* ─── 9. Features Carousel ───────────────────────────────────────────────── */
+/* ─── 9. Infinite Features Carousel ─────────────────────────────────────── */
 .features {
   position: relative;
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  gap: 1rem;
-  padding: 1rem 0;
-  margin-top: 1.5rem;
+  overflow: hidden;    /* contain scroll & page panning */
 }
-.features::-webkit-scrollbar {
-  display: none;
+.features-inner {
+  display: flex;
+  /* adjust total width: (number of cards) × (card width + gap) */
+  width: calc(8 * (120px + 0.5rem));
+  animation: scrollLoop 24s linear infinite;
+}
+@keyframes scrollLoop {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
-/* Individual Feature Cards */
+/* ─── 10. Enhanced Feature Card Styling ─────────────────────────────────── */
 .feat {
   flex: 0 0 auto;
   scroll-snap-align: center;
   min-width: 120px;
   background: rgba(255,255,255,0.1);
-  border-radius: 8px;
-  padding: 1rem 0.5rem;
+  border-radius: 12px;
+  padding: 1.25rem 0.75rem;
+  margin: 0 0.25rem;
   text-align: center;
   font-size: 0.9rem;
   color: var(--text-light);
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  transition: transform 0.2s;
+  will-change: transform, opacity;
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease,
+    background 0.25s ease,
+    opacity 0.25s ease;
 }
 .feat:hover {
-  transform: translateY(-3px);
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  background: rgba(255,255,255,0.2);
+  opacity: 0.95;
+}
+.feat:active {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.feat:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.feat i {
+  display: block;
+  font-size: 1.6rem;
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
 }
 
-/* Edge-Fade Hints */
-.features::before,
-.features::after {
-  content: "";
-  position: absolute;
-  top: calc(50% - 1.5rem);
-  width: 2rem; height: 3rem;
-  pointer-events: none;
-  background: linear-gradient(to right, var(--brand-dark), transparent);
-  z-index: 1;
-}
-.features::after {
-  right: 0; transform: rotateZ(180deg);
-}
-
-/* ─── 10. Floating Action Button ─────────────────────────────────────────── */
+/* ─── 11. Floating Action Button ─────────────────────────────────────────── */
 .fab {
-  position: fixed; bottom: 24px; right: 24px;
-  width: 56px; height: 56px;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
   background: var(--accent);
   color: var(--text-light);
-  border: none; border-radius: 50%;
+  border: none;
+  border-radius: 50%;
   font-size: 1.5rem;
   box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-  cursor: pointer; transition: transform 0.2s;
+  cursor: pointer;
+  transition: transform 0.2s;
   z-index: 100;
 }
 .fab:hover {
   transform: scale(1.1);
 }
 
-/* ─── 11. Responsive Tweaks ──────────────────────────────────────────────── */
+/* ─── 12. Responsive Tweaks ──────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .welcome-content {
     margin: 2rem 1rem;
@@ -230,6 +253,8 @@ nav button {
   }
   .feat {
     min-width: 100px;
-    font-size: 0.8rem;
+    padding: 1rem 0.5rem;
+    font-size: 0.85rem;
+    margin: 0 0.2rem;
   }
 }

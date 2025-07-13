@@ -210,12 +210,19 @@ function renderWelcome() {
 
         <!-- Features carousel -->
         <div class="features">
-          <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
-          <div class="feat"><i>✅</i><p>Checklists</p></div>
-          <div class="feat"><i>📊</i><p>Results</p></div>
-          <div class="feat"><i>🎧</i><p>AI Coach</p></div>
-        </div>
-      </div>
+  <div class="features-inner">
+    <!-- original cards -->
+    <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
+    <div class="feat"><i>✅</i><p>Checklists</p></div>
+    <div class="feat"><i>📊</i><p>Results</p></div>
+    <div class="feat"><i>🎧</i><p>AI Coach</p></div>
+    <!-- duplicate cards for seamless looping -->
+    <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
+    <div class="feat"><i>✅</i><p>Checklists</p></div>
+    <div class="feat"><i>📊</i><p>Results</p></div>
+    <div class="feat"><i>🎧</i><p>AI Coach</p></div>
+  </div>
+</div>
 
       <!-- Floating AI Coach FAB -->
       <button class="fab" title="AI Coach">🎧</button>
@@ -232,16 +239,9 @@ function renderWelcome() {
 
   setupNavigation();
   startTypewriter();
-  initCarouselAutoScroll();
 }
 
 // ─── Auto-scroll logic ─────────────────────────────────────────────────────────
-function initCarouselAutoScroll() {
-  const carousel = document.querySelector(".features");
-  if (!carousel) return;
-
-  let autoScroll, isHovering = false;
-
   // Advance one card-width
   function scrollNext() {
     if (isHovering) return;
