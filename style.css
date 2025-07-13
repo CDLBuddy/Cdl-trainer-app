@@ -1,66 +1,106 @@
+/* ==========================================================================
+   CDL Buddy v2.0 -- Unified Theme Stylesheet
+   ========================================================================== */
+
+/* ─── 1. CSS Variables ───────────────────────────────────────────────────── */
 :root {
-  --primary: #007bff;
-  --primary-dark: #005bb5;
-  --text: #333;
-  --bg: #f0f4f8;
-  --card-bg: #fff;
-  --error: #d9534f;
-  --success: #28a745;
-  --dark-bg: #121212;
-  --dark-card: #1e1e1e;
-  --dark-text: #f0f0f0;
-  --toast-bg: rgba(0, 0, 0, 0.8);
-  --toast-text: #fff;
+  /* Brand Colors */
+  --brand-dark:   #1f2937;  /* navy-gray */
+  --brand-mid:    #4b5563;  /* slate */
+  --brand-light:  #6b7280;  /* dove */
+  --accent:       #2563eb;  /* bright blue accent (FAB) */
+
+  /* Neutrals & Text */
+  --text-light:   #ffffff;
+  --text-dark:    #333333;
+  
+  /* Frosted-glass panels */
+  --card-bg:      rgba(255,255,255,0.15);
+  --card-bg-dark: rgba(30,30,30,0.6);
+
+  /* Toasts & alerts */
+  --toast-bg:     rgba(0,0,0,0.8);
+  --toast-text:   #ffffff;
+  --error:        #e53e3e;
+  --success:      #48bb78;
 }
 
-/* === Base Layout === */
-body {
+/* ─── 2. Global Reset & Typography ───────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  padding: 0;
+  height: 100%;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  color: var(--text-dark);
+  background: linear-gradient(135deg, var(--brand-dark), var(--brand-mid), var(--brand-light));
+  background-size: 300% 300%;
+  animation: gradientBG 15s ease infinite;
+  overflow-x: hidden;
   transition: background 0.3s, color 0.3s;
 }
 body.dark-mode {
-  background: var(--dark-bg);
-  color: var(--dark-text);
+  background: #121212;
+  color: var(--text-light);
 }
+
+/* ─── 3. Animated Gradient Keyframes ─────────────────────────────────────── */
+@keyframes gradientBG {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── 4. Global Button Styles ────────────────────────────────────────────── */
+button {
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-light);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.2s, opacity 0.2s;
+}
+button:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── 5. Header, Footer & Navigation ─────────────────────────────────────── */
 header, footer {
-  background: #003366;
-  color: #fff;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
+  color: var(--text-light);
   padding: 1rem;
   text-align: center;
 }
-main {
-  flex: 1;
-  padding: 1rem;
-}
-
-/* === Navigation Buttons === */
 nav {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin: 0.5rem 0;
 }
 nav button {
+  background: var(--accent);
+  color: var(--text-light);
   padding: 0.5rem 1rem;
-  border: none;
-  background: var(--primary-dark);
-  color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.3s;
 }
 nav button:hover {
-  background: var(--primary);
+  background: var(--brand-light);
 }
 
-/* === Toast Notifications === */
+/* ─── 6. Toast Notifications ────────────────────────────────────────────── */
 .toast-message {
   position: fixed;
   bottom: 30px;
@@ -76,517 +116,140 @@ nav button:hover {
   animation: fadeInEnhanced 0.4s ease-out forwards;
 }
 
-/* === Card Layout === */
-.card, .checklist-card, .result-card, .login-card {
-  background: var(--card-bg);
-  border-radius: 8px;
-  padding: 1.5rem;
-  max-width: 600px;
-  margin: 1rem auto;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  transition: background 0.3s, color 0.3s;
-}
-.checklist-card {
-  border: 1px solid #ddd;
-  background: #fafafa;
-}
-body.dark-mode .card,
-body.dark-mode .checklist-card,
-body.dark-mode .result-card,
-body.dark-mode .login-card {
-  background: var(--dark-card);
-  color: var(--dark-text);
-}
-
-/* === Typography & Lists === */
-ul { list-style: none; padding: 0; margin: 0; }
-li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #e0e0e0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: border-color 0.3s;
-}
-body.dark-mode li { border-color: #444; }
-
-/* === Buttons (global) === */
-button {
-  font-size: 1rem;
-  padding: 0.75rem 1.25rem;
-  border: none;
-  background: var(--primary-dark);
-  color: #fff;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s, opacity 0.3s;
-}
-button:hover:not(:disabled) { background: var(--primary); }
-button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-/* === Responsive === */
-@media (max-width: 600px) {
-  nav { flex-direction: column; }
-  .card, .checklist-card, .result-card { margin: 1rem; }
-  button { font-size: 0.95rem; }
-}
-
-/* Only card/grid buttons full-width */
-.card button,
-.button-grid button {
-  display: block;
-  width: 100%;
-  max-width: 300px;
-  margin: 0.5rem auto;
-}
-
-/* === Login UI === */
-.login-card {
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-  max-width: 420px;
-  margin: 2rem auto;
-  animation: fadeInEnhanced 0.5s ease-out forwards;
-  transition: background 0.3s, color 0.3s;
-}
-.login-card input,
-.login-card select {
-  width: 100%;
-  padding: 0.75rem;
-  margin: 0.5rem 0 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-  transition: background 0.3s, border-color 0.3s, color 0.3s;
-}
-body.dark-mode .login-card input,
-body.dark-mode .login-card select {
-  background: #2a2a2a;
-  border-color: #555;
-  color: var(--dark-text);
-}
-.password-wrapper {
-  position: relative;
-}
-.password-wrapper input {
-  width: 100%;
-  padding-right: 2.5rem;
-}
-#toggle-password,
-#togglePassword {
-  position: absolute;
-  top: 50%; right: 0.75rem;
-  transform: translateY(-50%);
-  border: none;
-  background: none;
-  font-size: 1.1rem;
-  cursor: pointer;
-  color: #888;
-}
-body.dark-mode #toggle-password,
-body.dark-mode #togglePassword { color: #ccc; }
-.alt-login-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin: 1rem 0;
-}
-.alt-login-buttons button {
-  background: #f5f5f5;
-  color: #333;
-  border: 1px solid #ccc;
-  padding: 0.7rem;
-  border-radius: 8px;
-  font-weight: bold;
-  transition: background 0.3s;
-}
-.alt-login-buttons button:hover { background: #e0e0e0; }
-body.dark-mode .alt-login-buttons button {
-  background: #333;
-  color: #eee;
-  border-color: #555;
-}
-
-/* === Welcome Screen === */
-.welcome-container {
-  text-align: center;
-  padding: 2rem 1rem;
-}
-.header-icon {
-  width: 64px;
-  margin-bottom: 1rem;
-}
-.subtitle {
-  font-size: 1.1rem;
-  color: #555;
-  margin-bottom: 2rem;
-}
-
-/* === Home Screen & Button Grid === */
-.home-container {
-  padding: 2rem;
-  text-align: center;
-  background: linear-gradient(145deg, #0b1f3a, #082142);
-  min-height: 100vh;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  transition: background 0.3s, color 0.3s;
-}
-.home-container h1 {
-  font-size: 1.8rem;
-  margin-bottom: 0.4rem;
-}
-.home-container .subtitle {
-  font-size: 1rem;
-  opacity: 0.85;
-  margin-bottom: 2rem;
-}
-.grid,
-.button-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1rem;
-  justify-content: center;
-  padding: 0 1rem;
-}
-.home-tile,
-.button-grid button {
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.home-tile {
-  background: #1f62e0;
-  color: #fff;
-  padding: 1rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-.home-tile:hover,
-.button-grid button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-}
-.tile-icon {
-  display: block;
-  font-size: 1.5rem;
-  margin-bottom: 0.25rem;
-}
-body.dark-mode .home-tile {
-  background: #3a4f78;
-}
-
-/* === Unified Screen Wrapper === */
+/* ─── 7. Unified Frosted-Glass Panel ─────────────────────────────────────── */
 .screen-wrapper {
   background: var(--card-bg);
+  backdrop-filter: blur(8px);
   border-radius: 12px;
   padding: 2rem;
   margin: 2rem auto;
   max-width: 640px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
   transition: background 0.3s, color 0.3s;
 }
 body.dark-mode .screen-wrapper {
-  background: var(--dark-card);
-  color: var(--dark-text);
-}
-.screen-wrapper input,
-.screen-wrapper select {
-  width: 100%;
-  padding: 0.75rem;
-  margin: 0.5rem 0 1rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  background: #f9f9f9;
-  box-sizing: border-box;
-  transition: background 0.3s, border-color 0.3s, color 0.3s;
-}
-body.dark-mode .screen-wrapper input,
-body.dark-mode .screen-wrapper select {
-  background: #2c2c2c;
-  border: 1px solid #555;
-  color: var(--dark-text);
-}
-input[type="radio"],
-input[type="checkbox"] {
-  accent-color: var(--primary);
-}
-.screen-wrapper h2,
-.screen-wrapper h3 {
-  text-align: center;
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-  color: var(--primary-dark);
-  transition: color 0.3s;
-}
-body.dark-mode .screen-wrapper h2,
-body.dark-mode .screen-wrapper h3 {
-  color: #66b2ff;
+  background: var(--card-bg-dark);
+  color: var(--text-light);
 }
 
-/* === Loading Spinner === */
-.loading-spinner {
-  width: 36px;
-  height: 36px;
-  margin: 3rem auto;
-  border: 4px solid rgba(255,255,255,0.2);
-  border-top: 4px solid var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+/* ─── 8. Welcome Screen ──────────────────────────────────────────────────── */
+.welcome-screen {
+  position: relative;
+  height: 100vh;
+  overflow: auto;
+  perspective: 1px;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
 
-/* === Transitions & Animations === */
-.fade-in { animation: fadeInEnhanced 0.7s ease-in forwards; }
-.fade-out { animation: fadeOut 0.2s ease-out forwards; }
-@keyframes fadeInEnhanced { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fadeOut { from { opacity: 1; } to { opacity: 0.1; } }
-.slide-in-up { animation: slideInUp 0.4s ease-out forwards; }
-.slide-out-down { animation: slideOutDown 0.3s ease-in forwards; }
-@keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-@keyframes slideOutDown { from { transform: translateY(0); opacity: 1; } to { transform: translateY(40px); opacity: 0; } }
-.scale-in { animation: scaleIn 0.3s ease-out forwards; }
-@keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-@keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
-.shake { animation: shake 0.3s ease-in-out; }
+/* Parallax accent image */
+.parallax {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 150%;
+  transform: translateX(-50%) translateZ(-1px) scale(2);
+  opacity: 0.1;
+  pointer-events: none;
+}
 
-/* === Instructor Dashboard Enhancements === */
-.role-badge {
-  background: var(--primary);
-  color: #fff;
-  padding: 0.25rem 0.6rem;
-  margin-left: 0.5rem;
+/* Frosted card on welcome */
+.welcome-content {
+  position: relative;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
   border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  vertical-align: middle;
-}
-.ai-tip-box {
-  background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
-  color: #eee; border-left: 4px solid var(--primary);
-  padding: 1rem; border-radius: 8px;
-  margin: 1.5rem 0; font-size: 1rem;
-  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  padding: 2rem;
+  max-width: 360px;
+  margin: 4rem auto;
+  color: var(--text-light);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  text-align: center;
 }
 
-/* === Dashboard Layout === */
-.dashboard-summary {
+/* Fade-in for welcome content */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+/* ─── 9. Typewriter Headline ─────────────────────────────────────────────── */
+.typewriter {
+  font-size: 1.8rem;
+  margin: 0;
+  line-height: 1.2;
+}
+.cursor {
+  display: inline-block;
+  animation: blink 0.7s step-end infinite;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* ─── 10. Welcome‐Screen Button ───────────────────────────────────────────── */
+.welcome-content .btn {
+  background: rgba(0, 0, 0, 0.3);
+  margin-top: 1.5rem;
+}
+.welcome-content .btn:hover {
+  background: rgba(0,0,0,0.5);
+}
+
+/* ─── 11. Features Carousel ───────────────────────────────────────────────── */
+.features {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-  justify-content: space-between;
-  margin-top: 1.25rem;
+  overflow-x: auto;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-bottom: 0.5rem;
 }
-.dashboard-summary .card {
-  padding: 1.25rem; flex: 1 1 300px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  transition: transform 0.3s;
+.features::-webkit-scrollbar {
+  display: none;
 }
-.dashboard-summary .card:hover {
-  transform: translateY(-4px);
-}
-body.dark-mode .dashboard-summary .card {
-  background: var(--dark-card);
-  color: var(--dark-text);
-}
-.activity-feed {
-  list-style: none; padding: 0; margin-top: 0.75rem;
-}
-.activity-feed li {
-  padding: 0.5rem 0; border-bottom: 1px solid #ddd;
-  font-size: 0.95rem; transition: border-color 0.3s;
-}
-body.dark-mode .activity-feed li {
-  border-color: #444;
-}
-.activity-feed li:last-child {
-  border-bottom: none;
-}
-.progress-bar {
-  width: 100%; height: 12px; background: #ddd;
-  border-radius: 8px; overflow: hidden;
-  margin-top: 0.75rem;
-}
-.progress-fill {
-  height: 100%; background: var(--primary);
-  width: 0%;
-  transition: width 0.5s ease-in-out;
-}
-.card.actions {
-  text-align: center; margin-top: 1rem;
-}
-.card.actions button {
-  margin: 0.5rem 0.5rem 0 0;
+.feat {
+  flex: 0 0 auto;
+  width: 80px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem 0.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-light);
 }
 
-/* === Admin Badge Variant === */
-.role-badge.admin {
-  background: #c0392b;
+/* ─── 12. Floating Action Button ─────────────────────────────────────────── */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  background: var(--accent);
+  color: var(--text-light);
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: transform 0.2s;
+  z-index: 100;
+}
+.fab:hover {
+  transform: scale(1.1);
 }
 
-/* === Notifications & Bubbles === */
-.notification-bubble {
-  position: fixed; bottom: 20px; right: 20px;
-  background: #ff4444; color: #fff;
-  padding: 0.5rem 0.75rem; border-radius: 50px;
-  font-weight: bold; box-shadow: 0 0 10px rgba(0,0,0,0.3);
-  animation: fadeInEnhanced 0.6s ease-out forwards;
+/* ─── 13. Responsive Adjustments ─────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .welcome-content {
+    margin: 2rem 1rem;
+    padding: 1.5rem;
+    max-width: calc(100% - 2rem);
+  }
+  .feat {
+    width: 60px;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
 }
-body.dark-mode .notification-bubble {
-  background: #ff6666;
-}
-
-/* === Dashboard Card Wrapper === */
-.dashboard-card {
-  padding: 1.5rem; border-radius: 12px;
-  margin: 1rem auto; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-  max-width: 600px; transition: transform 0.3s;
-}
-body.dark-mode .dashboard-card {
-  background: var(--dark-card);
-  color: var(--dark-text);
-}
-
-/* === Dashboard Actions Container === */
-.dashboard-actions {
-  display: flex; flex-wrap: wrap; gap: 1rem;
-  justify-content: center; margin-top: 2rem;
-}
-
-/* === Modals & Overlays === */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.65);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 999;
-}
-.modal-content {
-  padding: 2rem; border-radius: 10px;
-  width: 90%; max-width: 500px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  animation: scaleIn 0.25s ease-out forwards;
-  transition: background 0.3s, color 0.3s;
-}
-body.dark-mode .modal-content {
-  background: var(--dark-card);
-  color: var(--dark-text);
-}
-.button-secondary {
-  background: #6c757d; color: #fff;
-}
-.button-secondary:hover { background: #5a6268; }
-.button-danger {
-  background: #dc3545; color: #fff;
-}
-.button-danger:hover { background: #c82333; }
-
-/* === Controls Panel Buttons === */
-.controls {
-  position: fixed; bottom: 1rem; right: 1rem;
-  display: flex; gap: 0.5rem; z-index: 100;
-}
-.controls button {
-  padding: 0.5rem; font-size: 1.25rem;
-  border: none; background: var(--card-bg); cursor: pointer;
-  transition: background 0.3s;
-}
-body.dark-mode .controls button {
-  background: var(--dark-card);
-  color: var(--dark-text);
-}
-
-/* === Success & Error Messages === */
-.success-message {
-  color: var(--success); font-size: 0.95rem;
-  margin-top: 0.5rem; font-weight: bold;
-}
-.error-text {
-  color: var(--error); font-size: 0.9rem;
-  margin-top: 1rem; text-align: center; font-weight: 600;
-}
-
-/* === Rate Limit Warning === */
-.rate-limit-warning {
-  background: #fff3cd; color: #856404;
-  border: 1px solid #ffeeba; padding: 0.75rem 1rem;
-  border-radius: 6px; font-size: 0.9rem; margin-top: 1rem;
-}
-
-/* === Shake Animation === */
-@keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-/* === Input Focus Highlight === */
-input:focus,
-select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 3px var(--primary);
-  outline: none;
-}
-
-/* === Checklist Form === */
-.checklist-form fieldset {
-  border: 1px solid #444; padding: 1rem;
-  margin-bottom: 1rem; border-radius: 8px;
-  background-color: var(--card-bg);
-}
-.checklist-form legend {
-  font-weight: bold; margin-bottom: 0.5rem;
-  color: var(--text);
-}
-.checklist-buttons {
-  display: flex; flex-wrap: wrap; gap: 1rem;
-  justify-content: center; margin-top: 1rem;
-}
-
-/* === Test Results Grid & Cards === */
-.results-grid {
-  display: flex; flex-wrap: wrap; gap: 1rem;
-  justify-content: center; margin-top: 1rem;
-}
-.result-card {
-  padding: 1rem; border-radius: 10px; width: 280px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.result-card:hover {
-  transform: scale(1.02); box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-.result-card h3 {
-  margin-top: 0; color: var(--primary-dark);
-}
-.empty-state {
-  text-align: center; padding: 2rem; color: #999;
-}
-
-/* === Toggle-Password Icon === */
-.toggle-password,
-#togglePassword {
-  position: absolute; top: 50%; right: 0.75rem;
-  transform: translateY(-50%); background: none; border: none;
-  font-size: 1.1rem; cursor: pointer; color: #888;
-}
-body.dark-mode .toggle-password,
-body.dark-mode #togglePassword {
-  color: #ccc;
-}
-
-/* === "Continue with X" Buttons === */
-.btn-google { background: #db4437; color: #fff; }
-.btn-apple  { background: #000;    color: #fff; }
-.btn-sms    { background: #28a745; color: #fff; }
-.btn-google:hover,
-.btn-apple:hover,
-.btn-sms:hover { opacity: 0.9; }
-
-/* in style.css */
-.hidden { display: none !important; }
