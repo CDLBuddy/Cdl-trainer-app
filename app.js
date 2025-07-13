@@ -187,6 +187,27 @@ async function getAITipOfTheDay() {
   return tips[Math.floor(Math.random() * tips.length)];
 }
 
+/* ── Infinite-carousel helper ───────────────────────────────────────── */
+function initInfiniteCarousel(trackSelector) {
+  const track = document.querySelector(trackSelector);
+  if (!track || track.dataset.looped) return;   // already initialised
+
+  // 1️⃣ duplicate once so we can scroll forever
+  track.innerHTML += track.innerHTML;
+  track.dataset.looped = "true";
+
+  // 2️⃣ reset scroll when we hit either end
+  track.addEventListener("scroll", () => {
+    const max = track.scrollWidth / 2;           // length of the original set
+    if (track.scrollLeft >= max) {               // passed the end
+      track.scrollLeft -= max;                   // jump back to start copy
+    } else if (track.scrollLeft <= 0) {          // before the start
+      track.scrollLeft += max;                   // jump to end copy
+    }
+  });
+}
+
+
 // ─── 5. RENDER WELCOME SCREEN ──────────────────────────────────────────────
 function renderWelcome() {
   const appEl = document.getElementById("app");
@@ -221,10 +242,6 @@ function renderWelcome() {
             <div class="feat"><i>📊</i><p>Results</p></div>
             <div class="feat"><i>🎧</i><p>AI Coach</p></div>
             <!-- duplicated -->
-            <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
-            <div class="feat"><i>✅</i><p>Checklists</p></div>
-            <div class="feat"><i>📊</i><p>Results</p></div>
-            <div class="feat"><i>🎧</i><p>AI Coach</p></div>
           </div>
         </div>
       </div>
@@ -243,6 +260,7 @@ function renderWelcome() {
 
   setupNavigation();
   startTypewriter();
+  initInfiniteCarousel(".features");
   initCarousel(); // ← kick off swipe+auto-loop
 }
 
