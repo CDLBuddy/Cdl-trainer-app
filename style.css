@@ -1,70 +1,83 @@
-/* ─── 1. CSS Variables ───────────────────────────────────────────────────── */
+/* ==========================================================================
+   CDL Trainer -- Unified Theme Stylesheet
+   ========================================================================== */
+
+/* ─── 1. CSS Variables (Deep-Blue + Coral Accent) ───────────────────────── */
 :root {
-  /* Brand Colors */
-  --brand-dark:   #1f2937;  /* navy-gray */
-  --brand-mid:    #4b5563;  /* slate */
-  --brand-light:  #6b7280;  /* dove */
-  --accent:       #2563eb;  /* bright blue accent (FAB) */
+  /* Brand Gradient Stops */
+  --brand-dark:   #0A1F44;   /* very dark navy */
+  --brand-mid:    #12355A;   /* deep ocean blue */
+  --brand-light:  #1B4F72;   /* royal sapphire */
 
-  /* Neutrals & Text */
-  --text-light:   #ffffff;
-  --text-dark:    #333333;
-  
-  /* Frosted-glass panels */
-  --card-bg:      rgba(255,255,255,0.15);
-  --card-bg-dark: rgba(30,30,30,0.6);
+  /* Accent & Text */
+  --accent:       #FF6F61;   /* coral accent for buttons/FAB */
+  --text-light:   #FFFFFF;
+  --text-dark:    #E0E0E0;
 
-  /* Toasts & alerts */
+  /* Frosted-glass Panels */
+  --card-bg:      rgba(255,255,255,0.12);
+  --card-bg-dark: rgba(20,30,50,0.7);
+
+  /* Toasts & Alerts */
   --toast-bg:     rgba(0,0,0,0.8);
-  --toast-text:   #ffffff;
-  --error:        #e53e3e;
-  --success:      #48bb78;
+  --toast-text:   #FFFFFF;
+  --error:        #E53E3E;
+  --success:      #48BB78;
 }
 
-/* ─── 2. Global Reset & Typography ───────────────────────────────────────── */
+/* ─── 2. Global Reset & Animated Gradient Background ──────────────────────── */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
-
 html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
+  margin: 0; padding: 0; height: 100%;
   font-family: "Helvetica Neue", Arial, sans-serif;
-  color: var(--text-dark);
+  color: var(--text-light);
   background: linear-gradient(135deg, var(--brand-dark), var(--brand-mid), var(--brand-light));
   background-size: 300% 300%;
-  animation: gradientBG 15s ease infinite;
+  animation: gradientBG 20s ease infinite;
   overflow-x: hidden;
-  transition: background 0.3s, color 0.3s;
+}
+@keyframes gradientBG {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
 }
 body.dark-mode {
   background: #121212;
   color: var(--text-light);
 }
 
-/* ─── 3. Animated Gradient Keyframes ─────────────────────────────────────── */
-@keyframes gradientBG {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* ─── 3. Unified Frosted-Glass Panels ───────────────────────────────────── */
+.screen-wrapper,
+.welcome-content {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  color: var(--text-light);
+  transition: background 0.3s, color 0.3s;
+}
+body.dark-mode .screen-wrapper {
+  background: var(--card-bg-dark);
 }
 
 /* ─── 4. Global Button Styles ────────────────────────────────────────────── */
 button {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255,255,255,0.15);
   color: var(--text-light);
-  border: none;
+  border: 1px solid rgba(255,255,255,0.3);
   border-radius: 8px;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.25s, transform 0.2s, opacity 0.2s;
+  transition: background 0.25s, transform 0.2s;
 }
 button:hover:not(:disabled) {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(255,255,255,0.25);
   transform: translateY(-2px);
 }
 button:disabled {
@@ -77,30 +90,21 @@ header, footer {
   background: rgba(0,0,0,0.4);
   backdrop-filter: blur(8px);
   color: var(--text-light);
-  padding: 1rem;
-  text-align: center;
+  padding: 1rem; text-align: center;
 }
 nav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
+  display: flex; flex-wrap: wrap;
+  justify-content: center; gap: 0.5rem;
   margin: 0.5rem 0;
 }
 nav button {
   background: var(--accent);
   color: var(--text-light);
-  padding: 0.5rem 1rem;
-}
-nav button:hover {
-  background: var(--brand-light);
 }
 
 /* ─── 6. Toast Notifications ────────────────────────────────────────────── */
 .toast-message {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
+  position: fixed; bottom: 30px; left: 50%;
   transform: translateX(-50%);
   background: var(--toast-bg);
   color: var(--toast-text);
@@ -112,56 +116,24 @@ nav button:hover {
   animation: fadeInEnhanced 0.4s ease-out forwards;
 }
 
-/* ─── 7. Unified Frosted-Glass Panel ─────────────────────────────────────── */
-.screen-wrapper {
-  background: var(--card-bg);
-  backdrop-filter: blur(8px);
-  border-radius: 12px;
-  padding: 2rem;
-  margin: 2rem auto;
-  max-width: 640px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  transition: background 0.3s, color 0.3s;
-}
-body.dark-mode .screen-wrapper {
-  background: var(--card-bg-dark);
-  color: var(--text-light);
-}
-
-/* ─── 8. Welcome Screen ──────────────────────────────────────────────────── */
+/* ─── 7. Welcome Screen Base ─────────────────────────────────────────────── */
 .welcome-screen {
   position: relative;
   height: 100vh;
-  overflow: auto;
+  overflow-y: auto;
   perspective: 1px;
 }
 
-/* Parallax accent image */
+/* Parallax Accent Layer */
 .parallax {
-  position: absolute;
-  top: 0;
-  left: 50%;
+  position: absolute; top: 0; left: 50%;
   width: 150%;
   transform: translateX(-50%) translateZ(-1px) scale(2);
-  opacity: 0.1;
+  opacity: 0.05;
   pointer-events: none;
 }
 
-/* Frosted card on welcome */
-.welcome-content {
-  position: relative;
-  background: var(--card-bg);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 2rem;
-  max-width: 360px;
-  margin: 4rem auto;
-  color: var(--text-light);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  text-align: center;
-}
-
-/* Fade-in for welcome content */
+/* Fade-in Animation */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -170,11 +142,12 @@ body.dark-mode .screen-wrapper {
   animation: fadeInUp 0.6s ease-out both;
 }
 
-/* ─── 9. Typewriter Headline ─────────────────────────────────────────────── */
+/* ─── 8. Typewriter Headline ─────────────────────────────────────────────── */
 .typewriter {
-  font-size: 1.8rem;
-  margin: 0;
+  font-size: 2rem;
+  margin: 0 0 1rem;
   line-height: 1.2;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
 .cursor {
   display: inline-block;
@@ -184,64 +157,26 @@ body.dark-mode .screen-wrapper {
   50% { opacity: 0; }
 }
 
-/* ─── 10. Welcome‐Screen Button ───────────────────────────────────────────── */
-.welcome-content .btn {
-  background: rgba(0, 0, 0, 0.3);
-  margin-top: 1.5rem;
-}
-.welcome-content .btn:hover {
-  background: rgba(0,0,0,0.5);
-}
-
-/* ─── 11. Features Carousel ───────────────────────────────────────────────── */
+/* ─── 9. Features Carousel ───────────────────────────────────────────────── */
 .features {
-  display: flex;
-  overflow-x: auto;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  padding-bottom: 0.5rem;
-}
-.features::-webkit-scrollbar {
-  display: none;
-}
-.feat {
-  flex: 0 0 auto;
-  width: 80px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 1rem 0.5rem;
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--text-light);
-}
-/* ─── 11b. Features Carousel -- Carousel Mode ────────────────────────────────── */
-.welcome-content {
-  /* make the card narrower so carousel effect is more obvious */
-  max-width: 320px;   /* or adjust to taste (e.g. 70vw) */
-  margin: 4rem auto;
-}
-
-/* allow the features list to scroll and snap */
-.features {
+  position: relative;
   display: flex;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;  /* smooth on iOS */
+  -webkit-overflow-scrolling: touch;
   gap: 1rem;
-  padding: 1rem 0;    /* add vertical padding for better tap targets */
+  padding: 1rem 0;
   margin-top: 1.5rem;
 }
-
-/* hide native scrollbar */
 .features::-webkit-scrollbar {
   display: none;
 }
 
-/* each feature "card" */
+/* Individual Feature Cards */
 .feat {
   flex: 0 0 auto;
   scroll-snap-align: center;
-  min-width: 120px;         /* bigger so "Practice Tests" fits */
+  min-width: 120px;
   background: rgba(255,255,255,0.1);
   border-radius: 8px;
   padding: 1rem 0.5rem;
@@ -255,49 +190,38 @@ body.dark-mode .screen-wrapper {
   transform: translateY(-3px);
 }
 
-/* optional: show a hint gradient fade at the edges */
+/* Edge-Fade Hints */
 .features::before,
 .features::after {
   content: "";
   position: absolute;
   top: calc(50% - 1.5rem);
-  width: 2rem;
-  height: 3rem;
+  width: 2rem; height: 3rem;
   pointer-events: none;
-  background: linear-gradient(to right, rgba(31,41,55,0.8), transparent);
+  background: linear-gradient(to right, var(--brand-dark), transparent);
   z-index: 1;
 }
 .features::after {
-  right: 0;
-  transform: rotateZ(180deg);
+  right: 0; transform: rotateZ(180deg);
 }
 
-/* ensure the features container is positioned relative for the fades */
-.features {
-  position: relative;
-}
-/* ─── 12. Floating Action Button ─────────────────────────────────────────── */
+/* ─── 10. Floating Action Button ─────────────────────────────────────────── */
 .fab {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 56px;
-  height: 56px;
+  position: fixed; bottom: 24px; right: 24px;
+  width: 56px; height: 56px;
   background: var(--accent);
   color: var(--text-light);
-  border: none;
-  border-radius: 50%;
+  border: none; border-radius: 50%;
   font-size: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  cursor: pointer;
-  transition: transform 0.2s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  cursor: pointer; transition: transform 0.2s;
   z-index: 100;
 }
 .fab:hover {
   transform: scale(1.1);
 }
 
-/* ─── 13. Responsive Adjustments ─────────────────────────────────────────── */
+/* ─── 11. Responsive Tweaks ──────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .welcome-content {
     margin: 2rem 1rem;
@@ -305,8 +229,7 @@ body.dark-mode .screen-wrapper {
     max-width: calc(100% - 2rem);
   }
   .feat {
-    width: 60px;
-    padding: 0.75rem 0.5rem;
+    min-width: 100px;
     font-size: 0.8rem;
   }
 }

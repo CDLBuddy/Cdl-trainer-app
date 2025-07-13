@@ -232,6 +232,39 @@ function renderWelcome() {
 
   setupNavigation();
   startTypewriter();
+  initCarouselAutoScroll();
+}
+
+// ─── Auto-scroll logic ─────────────────────────────────────────────────────────
+function initCarouselAutoScroll() {
+  const carousel = document.querySelector(".features");
+  if (!carousel) return;
+
+  let autoScroll, isHovering = false;
+
+  // Advance one card-width
+  function scrollNext() {
+    if (isHovering) return;
+    const card = carousel.querySelector(".feat");
+    if (!card) return;
+    carousel.scrollBy({ left: card.offsetWidth + 16, behavior: "smooth" });
+
+    // If we’ve reached the end, wrap back to start
+    if (carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 1) {
+      setTimeout(() => {
+        carousel.scrollTo({ left: 0, behavior: "smooth" });
+      }, 500);
+    }
+  }
+
+  // Start the interval
+  autoScroll = setInterval(scrollNext, 3000);
+
+  // Pause on hover/touch
+  carousel.addEventListener("mouseenter", () => isHovering = true);
+  carousel.addEventListener("mouseleave", () => isHovering = false);
+  carousel.addEventListener("touchstart", () => isHovering = true);
+  carousel.addEventListener("touchend", () => isHovering = false);
 }
 
 // ─── 6. NAVIGATION SETUP ───────────────────────────────────────────────────────
