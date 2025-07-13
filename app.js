@@ -458,7 +458,6 @@ function renderPracticeTests(container) {
     </div>
   `;
 
-  // Re-bind navigation buttons (Dashboard/back links)
   setupNavigation();
 
   // Confirm test button click binding and hook up the engine
@@ -559,24 +558,65 @@ async function renderChecklists(container) {
 
 // Test Results
 async function renderTestResults(container) {
-  container.innerHTML = `<div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;"><h2>📊 Test Results</h2><p>Loading...</p></div>`;
+  // 1) Show a loading state
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
+      <h2>📊 Test Results</h2>
+      <p>Loading...</p>
+    </div>`;
 
-  const snap = await getDocs(query(collection(db, "testResults"), where("studentId", "==", currentUserEmail)));
-  const results = snap.docs.map(d => d.data());
-  results.sort((a,b) => b.timestamp.seconds - a.timestamp.seconds);
+  // 2) Fetch testResults for the current user
+  const snap = await getDocs(
+    query(
+      collection(db, "testResults"),
+      where("studentId", "==", currentUserEmail)
+    )
+  );
 
-  let html = `<div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;"><h2>📊 Test Results</h2><ul style="list-style:none; padding:0;">`;
+  // 3) Normalize timestamps (handle either Firestore Timestamp or ISO string)
+  const results = snap.docs.map(d => {
+    const data = d.data();
+    const ts   = data.timestamp;
+    const date = ts?.toDate
+      ? ts.toDate()        // Firestore Timestamp case
+      : new Date(ts);      // ISO‐string fallback
+    return { ...data, timestamp: date };
+  });
+
+  // 4) Sort descending by date
+  results.sort((a, b) => b.timestamp - a.timestamp);
+
+  // 5) Build the results HTML
+  let html = `
+    <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
+      <h2>📊 Test Results</h2>
+      <ul style="list-style:none; padding:0;">
+  `;
+
   if (results.length === 0) {
     html += `<li>No test results found.</li>`;
   } else {
     results.forEach(r => {
-      const pct  = Math.round((r.correct/r.total)*100);
-      const date = r.timestamp.toDate().toLocaleDateString();
-      html += `<li style="margin:8px 0;"><strong>${r.testName}</strong> -- ${pct}% (${r.correct}/${r.total}) on ${date}</li>`;
+      const pct  = Math.round((r.correct / r.total) * 100);
+      const date = r.timestamp.toLocaleDateString();
+      html  += `
+        <li style="margin:8px 0;">
+          <strong>${r.testName}</strong> -- ${pct}% (${r.correct}/${r.total}) on ${date}
+        </li>
+      `;
     });
   }
-  html += `</ul><button data-nav="dashboard">⬅️ Back</button></div>`;
 
+  html += `
+      </ul>
+      <div style="text-align:center; margin-top:20px;">
+        <button data-nav="dashboard" style="padding:8px 16px; margin-right:8px;">⬅️ Back to Dashboard</button>
+        <button data-nav="tests" style="padding:8px 16px;">🔄 Retake a Test</button>
+      </div>
+    </div>
+  `;
+
+  // 6) Render and re-bind navigation
   container.innerHTML = html;
   setupNavigation();
 }
@@ -600,7 +640,7 @@ async function renderTestEngine(container, testName) {
           "Honk your horn continuously"
         ],
         answer: 1
-      }
+      },
       // …add more…
     ],
     "Air Brakes": [
