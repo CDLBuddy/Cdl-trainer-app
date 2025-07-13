@@ -37,6 +37,31 @@ import { showToast } from "./ui-helpers.js";
 
 console.log("✅ app.js loaded");
 
+// ─── Typewriter Headline Logic ───────────────────────────────────────────────
+const _headlines = [
+  "CDL Buddy",
+  "Your CDL Prep Coach",
+  "Study Smarter, Not Harder"
+];
+let _hw = 0, _hc = 0;
+
+function startTypewriter() {
+  const el = document.getElementById("headline");
+  if (!el) return;
+
+  if (_hc < _headlines[_hw].length) {
+    el.textContent += _headlines[_hw][_hc++];
+    setTimeout(startTypewriter, 100);
+  } else {
+    setTimeout(() => {
+      el.textContent = "";
+      _hc = 0;
+      _hw = (_hw + 1) % _headlines.length;
+      startTypewriter();
+    }, 2000);
+  }
+}
+
 // ─── 2. FIREBASE CONFIG & INITIALIZATION ────────────────────────────────────────
 const firebaseConfig = {
   apiKey:            "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
@@ -162,22 +187,51 @@ async function getAITipOfTheDay() {
   return tips[Math.floor(Math.random() * tips.length)];
 }
 
-// ─── 5. SIMPLE RENDER & TEST UI ────────────────────────────────────────────────
+// ─── 5.RENDER & TEST UI ────────────────────────────────────────────────
 function renderWelcome() {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
   appEl.innerHTML = `
-    <div style="padding:20px; text-align:center;">
-      <h1>Welcome!</h1>
-      <button id="login-btn">🚀 Login</button>
+    <div class="welcome-screen">
+      <!-- Parallax accent layer -->
+      <img src="pattern.svg" class="parallax" alt="Decorative pattern" />
+
+      <!-- Frosted-glass content card -->
+      <div class="welcome-content fade-in">
+        <!-- Typewriter headline -->
+        <h1 class="typewriter">
+          <span id="headline"></span><span class="cursor">|</span>
+        </h1>
+        <p>Your all-in-one CDL prep coach. Scroll down to get started!</p>
+
+        <!-- Login button -->
+        <button id="login-btn" class="btn">🚀 Login</button>
+
+        <!-- Features carousel -->
+        <div class="features">
+          <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
+          <div class="feat"><i>✅</i><p>Checklists</p></div>
+          <div class="feat"><i>📊</i><p>Results</p></div>
+          <div class="feat"><i>🎧</i><p>AI Coach</p></div>
+        </div>
+      </div>
+
+      <!-- Floating AI Coach FAB -->
+      <button class="fab" title="AI Coach">🎧</button>
     </div>
   `;
 
-  document.getElementById("login-btn")?.addEventListener("click", () => {
-    handleNavigation("login", true);
-  });
+  // Wire up navigation
+  document.getElementById("login-btn")?.addEventListener("click", () =>
+    handleNavigation("login", true)
+  );
+  document.querySelector(".fab")?.addEventListener("click", () =>
+    handleNavigation("coach", true)
+  );
+
   setupNavigation();
+  startTypewriter();
 }
 
 // ─── 6. NAVIGATION SETUP ───────────────────────────────────────────────────────
