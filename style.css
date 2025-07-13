@@ -275,10 +275,23 @@ nav button {
   transform: scale(1.1);
 }
 /* ─── 11.1 Carousel Hover Fix ───────────────────────────────────────────── */
-.carousel-section, .carousel-track, .carousel-wrapper {
-  overflow: visible;
-  padding-bottom: 64px; /* small increase to prevent clipping with FAB */
+.carousel-section,
+.carousel-track,
+.carousel-wrapper,
+.features,
+.features-inner,
+.feat,
+#welcome,
+#welcome .screen-wrapper,
+#welcome .welcome-content,
+#app {
+  overflow: visible !important;
   position: relative;
+  z-index: 0; /* ensures stacking works properly unless overridden */
+}
+
+.feat:hover {
+  z-index: 10; /* ensure hovered cards rise above FAB and siblings */
 }
 /* ─── 12. Responsive Tweaks ──────────────────────────────────────────────── */
 @media (max-width: 600px) {
