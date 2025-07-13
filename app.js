@@ -207,16 +207,18 @@ function initInfiniteCarousel(trackSelector = ".features-inner") {
   });
 }
 
-/* Auto-scroll helper: continuous drift, pauses on hover/touch */
+/* Auto-scroll helper: seamless drift, pauses on hover/touch */
 function initCarousel() {
   const track = document.querySelector(".features-inner");
   if (!track) return;
 
-  const half = () => track.scrollWidth / 2;   // recompute if window resizes
-  let  isPaused = false;                      // hover/touch pause flag
-  const speed   = 0.25;                       // pixels per frame (~15 px/s @60fps)
+  // convenience getter -- half the total width (after duplication)
+  const half = () => track.scrollWidth / 2;
 
-  // Pause when the user interacts
+  let isPaused = false;
+  const speed  = 0.6;            // px per frame  (≈36 px/s at 60 fps)
+
+  /* Pause on user interaction */
   ["mouseenter","touchstart"].forEach(evt =>
     track.addEventListener(evt, () => isPaused = true)
   );
@@ -224,23 +226,15 @@ function initCarousel() {
     track.addEventListener(evt, () => isPaused = false)
   );
 
-  // Continuous drift loop
+  /* Continuous drift loop */
   function drift() {
     if (!isPaused) {
-      track.scrollLeft += speed;
-
-      // teleport back when we cross the mid-point
-      if (track.scrollLeft >= half()) track.scrollLeft -= half();
+      // add, then wrap with modulus -- no visible jump
+      track.scrollLeft = (track.scrollLeft + speed) % half();
     }
     requestAnimationFrame(drift);
   }
   requestAnimationFrame(drift);
-
-  // Also keep the snap-back on manual scroll so the loop is seamless
-  track.addEventListener("scroll", () => {
-    if (track.scrollLeft >= half()) track.scrollLeft -= half();
-    else if (track.scrollLeft <= 0) track.scrollLeft += half();
-  });
 }
 
 // ─── 5. RENDER WELCOME SCREEN ──────────────────────────────────────────────
