@@ -882,5 +882,7 @@ async function showResults() {
   }
 }
 
-// ─── Kick everything off ───────────────────────────────────────────────────────
-renderWelcome();
+// ─── Kick everything off ────────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", () => {
+  if (!auth.currentUser) renderWelcome();
+});
