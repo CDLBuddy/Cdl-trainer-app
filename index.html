@@ -2,9 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CDL Trainer</title>
-</head>
-<body>
+
+  <!-- Your unified theme stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
   <!-- 1) HTML load check -->
   <script>
     alert("✅ HTML loaded");
@@ -21,16 +24,18 @@
       .then(r => alert("🔍 fetch app.js → " + r.status))
       .catch(e => alert("❌ fetch error: " + e.message));
   </script>
-
+</head>
+<body>
+  <!-- 4) App root -->
   <div id="app"></div>
 
-  <!-- 4) Global error handlers -->
+  <!-- 5) Global error handlers -->
   <script>
     window.addEventListener("error", e => alert("🚨 Global Error: " + e.message));
     window.addEventListener("unhandledrejection", e => alert("🚨 Promise Rejection: " + e.reason));
   </script>
 
-  <!-- 5) Dynamic import of app.js -->
+  <!-- 6) Dynamic import of your app code -->
   <script type="module">
     import("./app.js")
       .then(() => alert("✅ app.js imported successfully!"))
