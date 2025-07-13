@@ -164,13 +164,28 @@ nav button {
   margin: 0 0 1rem;
   line-height: 1.2;
   text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+
+  /* Reserve 3 lines */
+  min-height: calc(3 * 1.2em);
+  overflow: hidden;
 }
+
 .cursor {
   display: inline-block;
   animation: blink 0.7s step-end infinite;
 }
+
 @keyframes blink {
   50% { opacity: 0; }
+}
+
+/* ─── 8b. Fix headline height to prevent card resize ────────────────────── */
+.typewriter {
+  min-height: calc(2 * 1.2em); /* reserves two lines of text */
+  overflow: hidden;            /* hide any overflow during typing */
+}
+.cursor {
+  vertical-align: bottom;      /* keep cursor at the bottom of the reserved area */
 }
 
 /* ─── 9. Swipeable, Snap-to-Center Carousel ─────────────────────────────── */
