@@ -262,7 +262,9 @@ function renderWelcome() {
         </h1>
         <p>Your all-in-one CDL prep coach. Scroll down to get started!</p>
 
-        <button id="login-btn" class="btn">🚀 Login</button>
+        <button id="welcome-login-btn" class="btn">
+  <span class="icon">🚀</span> Login
+</button>
 
         <!-- Swipeable + infinite carousel -->
         <div class="features">

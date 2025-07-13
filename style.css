@@ -89,6 +89,38 @@ button:hover:not(:disabled) {
 }
 button:disabled { opacity: 0.6; cursor: not-allowed; }
 
+/* ── Login button: centred glass, icon pulse ─────────────────────────── */
+#welcome-login-btn {
+  display: block;
+  width: 100%;
+  max-width: 280px;          /* tidy cap on larger screens   */
+  margin: 1.25rem auto;      /* centres horizontally & vert. */
+  padding: 0.9rem 1.5rem;
+  text-align: center;
+
+  /* Glass surface */
+  background: rgba(255,255,255,0.10);
+  backdrop-filter: blur(10px) saturate(135%);
+  border: 1px solid rgba(255,255,255,0.20);
+  border-radius: 10px;
+  color: var(--text-light);
+
+  /* subtle lift */
+  transition: background .25s, box-shadow .25s, transform .15s;
+}
+#welcome-login-btn:hover  { box-shadow: 0 0 14px rgba(95,170,255,.45); }
+#welcome-login-btn:active { transform: scale(0.97); }
+
+/* icon pulse */
+#welcome-login-btn .icon {
+  display: inline-block;
+  animation: iconPulse 1.8s ease-in-out infinite;
+}
+@keyframes iconPulse {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.15); }
+}
+
 /* ─── 5. Header, Footer & Navigation ────────────────────────────────────── */
 header, footer {
   background: rgba(0,0,0,0.4);
