@@ -188,31 +188,63 @@ async function getAITipOfTheDay() {
 }
 
 /* ── Infinite-carousel helper ───────────────────────────────────────── */
-function initInfiniteCarousel(trackSelector) {
+function initInfiniteCarousel(trackSelector = ".features-inner") {
   const track = document.querySelector(trackSelector);
   if (!track || track.dataset.looped) return;   // already initialised
 
-  // 1️⃣ duplicate once so we can scroll forever
+  /* 1️⃣ duplicate once so we can scroll forever */
   track.innerHTML += track.innerHTML;
   track.dataset.looped = "true";
 
-  // 2️⃣ reset scroll when we hit either end
+  /* 2️⃣ reset scroll when we hit either end */
   track.addEventListener("scroll", () => {
-    const max = track.scrollWidth / 2;           // length of the original set
-    if (track.scrollLeft >= max) {               // passed the end
-      track.scrollLeft -= max;                   // jump back to start copy
-    } else if (track.scrollLeft <= 0) {          // before the start
-      track.scrollLeft += max;                   // jump to end copy
+    const max = track.scrollWidth / 2;          // length of the original set
+    if (track.scrollLeft >= max) {              // passed the end
+      track.scrollLeft -= max;                  // jump back to start copy
+    } else if (track.scrollLeft <= 0) {         // before the start
+      track.scrollLeft += max;                  // jump to end copy
     }
   });
 }
 
+//Auto-scroll helper
+
+function initCarousel() {
+  const track = document.querySelector(".features-inner");
+  if (!track) return;
+
+  const half = track.scrollWidth / 2;
+  let  isHovering = false;
+
+  ["mouseenter","touchstart"].forEach(evt =>
+    track.addEventListener(evt, () => isHovering = true)
+  );
+  ["mouseleave","touchend"].forEach(evt =>
+    track.addEventListener(evt, () => isHovering = false)
+  );
+
+  track.addEventListener("scroll", () => {
+    if (track.scrollLeft >= half) track.scrollLeft -= half;
+  });
+
+  setInterval(() => {
+    if (isHovering) return;
+    const card      = track.querySelector(".feat");
+    const style     = getComputedStyle(card);
+    const cardWidth = card.offsetWidth +
+                      parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+
+    track.scrollBy({ left: cardWidth, behavior: "smooth" });
+    if (track.scrollLeft >= half) track.scrollLeft = 0;
+  }, 3000);
+}
 
 // ─── 5. RENDER WELCOME SCREEN ──────────────────────────────────────────────
 function renderWelcome() {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
+  /* 1️⃣ Inject the HTML */
   appEl.innerHTML = `
     <div class="welcome-screen">
 
@@ -234,14 +266,13 @@ function renderWelcome() {
 
         <button id="login-btn" class="btn">🚀 Login</button>
 
-        <!-- Infinite + swipeable carousel -->
+        <!-- Swipeable + infinite carousel -->
         <div class="features">
           <div class="features-inner">
             <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
             <div class="feat"><i>✅</i><p>Checklists</p></div>
             <div class="feat"><i>📊</i><p>Results</p></div>
             <div class="feat"><i>🎧</i><p>AI Coach</p></div>
-            <!-- duplicated -->
           </div>
         </div>
       </div>
@@ -250,7 +281,11 @@ function renderWelcome() {
     </div>
   `;
 
-  // navigation wiring
+  /* 2️⃣ Initialise the carousel (must run AFTER HTML injection) */
+  initInfiniteCarousel();   // clones cards & creates seamless loop
+  initCarousel();           // auto-drift every 3 s, pauses on touch/hover
+
+  /* 3️⃣ Navigation wiring & extras */
   document.getElementById("login-btn")?.addEventListener("click", () =>
     handleNavigation("login", true)
   );
@@ -260,8 +295,6 @@ function renderWelcome() {
 
   setupNavigation();
   startTypewriter();
-  initInfiniteCarousel(".features");
-  initCarousel(); // ← kick off swipe+auto-loop
 }
 
 // ─── CAROUSEL SWIPE + AUTO-LOOP ─────────────────────────────────────────────
