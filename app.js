@@ -237,11 +237,11 @@ function renderWelcome() {
   initCarousel();   // ← kick off swipe+auto-loop
 }
 
-
 // ─── CAROUSEL SWIPE + AUTO-LOOP ─────────────────────────────────────────────
 function initCarousel() {
   const carousel = document.querySelector(".features");
   const inner    = carousel.querySelector(".features-inner");
+  const half     = inner.scrollWidth / 2;
   let isHovering = false;
 
   // Pause auto-scroll on user interaction
@@ -252,14 +252,25 @@ function initCarousel() {
     carousel.addEventListener(evt, () => isHovering = false)
   );
 
-  // Every 3s, advance one card -- if past half, jump back to start
+  // Reset mid-scroll for infinite loop
+  carousel.addEventListener("scroll", () => {
+    if (carousel.scrollLeft >= half) {
+      // jump back by exactly half without animation
+      carousel.scrollLeft -= half;
+    }
+  });
+
+  // Every 3s, advance one card -- if past half, loop back to start
   setInterval(() => {
     if (isHovering) return;
-    const cardWidth = inner.querySelector(".feat").offsetWidth;
+    const card = inner.querySelector(".feat");
+    const style = getComputedStyle(card);
+    const cardWidth = card.offsetWidth + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+
     carousel.scrollBy({ left: cardWidth, behavior: "smooth" });
 
-    if (carousel.scrollLeft >= inner.scrollWidth / 2) {
-      // instant jump back (no animation) to loop
+    // In case we overshoot, loop back
+    if (carousel.scrollLeft >= half) {
       carousel.scrollTo({ left: 0 });
     }
   }, 3000);

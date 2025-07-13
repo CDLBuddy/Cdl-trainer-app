@@ -165,17 +165,24 @@ nav button {
 /* ─── 9. Swipeable, Snap-to-Center Carousel ─────────────────────────────── */
 .features {
   width: 100%;
-  overflow-x: auto;                 /* swipe/drag */
-  overflow-y: hidden;               /* no vertical scroll */
+  overflow-x: auto;                 /* enable swipe/drag */
+  overflow-y: hidden;               /* lock vertical scroll */
   scroll-snap-type: x mandatory;    /* snap cards to center */
   -webkit-overflow-scrolling: touch;/* iOS momentum */
   touch-action: pan-x;              /* horizontal only */
+  overscroll-behavior: contain;     /* contain any bounce */
   margin: 1.5rem 0;
   padding-bottom: 1rem;             /* room for scrollbar */
 }
+
 .features-inner {
-  display: flex;       /* horizontal row */
-  white-space: nowrap; /* no wrapping */
+  display: flex;       /* lay cards side by side */
+  white-space: nowrap; /* prevent wrapping */
+}
+
+/* Prevent the parent card from bouncing when you hit edges */
+.welcome-content {
+  overscroll-behavior: none;
 }
 
 /* ─── 10. Feature Cards & Interactions ──────────────────────────────────── */
