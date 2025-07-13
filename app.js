@@ -284,13 +284,13 @@ function renderWelcome() {
   initInfiniteCarousel();   
   initCarousel();           
 
-  /* 3️⃣ Navigation wiring & extras */
-  document.getElementById("login-btn")?.addEventListener("click", () =>
-    handleNavigation("login", true)
-  );
-  document.querySelector(".fab")?.addEventListener("click", () =>
-    handleNavigation("coach", true)
-  );
+  // navigation wiring
+document.getElementById("welcome-login-btn")?.addEventListener("click", () =>
+  handleNavigation("login", true)
+);
+document.querySelector(".fab")?.addEventListener("click", () =>
+  handleNavigation("coach", true)
+);
 
   setupNavigation();
   startTypewriter();
