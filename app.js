@@ -450,8 +450,16 @@ function renderLogin(container = document.getElementById("app")) {
 
   /* Back to welcome page */
   document.getElementById("back-btn")
-    .addEventListener("click", () => handleNavigation("welcome", true));
-}
+  .addEventListener("click", async () => {
+    if (auth.currentUser) {
+      try {          // sign the user out so auth listener won't redirect
+        await signOut(auth);
+      } catch (err) {
+        console.error("Sign-out failed:", err);
+      }
+    }
+    handleNavigation("welcome", true);
+  });
 
 // ─── 9. STUDENT DASHBOARD ─────────────────────────────────────────────────────
 async function renderDashboard() {
