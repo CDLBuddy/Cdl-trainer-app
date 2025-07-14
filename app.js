@@ -358,34 +358,26 @@ break;
 
 // ─── 8. FULL LOGIN FORM & HANDLERS ────────────────────────────────────────
 function renderLogin(container = document.getElementById("app")) {
-  if (!container) return;
-
-  /* 1️⃣  NEW GLASS-MORPHIC MARKUP */
   container.innerHTML = `
-    <div class="auth-wrapper fade-in">
-
-      <h2 class="auth-head">
-        <span class="icon">🚀</span> Login&nbsp;or&nbsp;Signup
-      </h2>
-
-      <form id="login-form" class="glass-card">
-        <input id="email" type="email" placeholder="Email" required />
-        <div class="password-wrap">
-          <input id="password" type="password" placeholder="Password" required />
-          <button type="button" id="toggle-password" class="eye-btn">👁️</button>
+    <div class="login-card fade-in">
+      <h2>🚚 CDL Trainer Login</h2>
+      <form id="login-form" autocomplete="off">
+        <div class="form-group">
+          <label>Email</label>
+          <input name="email" type="email" required />
         </div>
-        <div id="error-msg" class="error-msg" style="display:none;"></div>
-        <button id="login-submit" type="submit" class="btn primary wide">Login&nbsp;/&nbsp;Signup</button>
+        <div class="form-group">
+          <label>Password</label>
+          <input name="password" type="password" required />
+        </div>
+        <button class="btn primary" type="submit">Log In</button>
       </form>
-
-      <div class="auth-actions">
-  <button id="back-btn" type="button" class="btn outline">← Back</button>
-  <button id="google-login" type="button" class="btn outline">Continue&nbsp;with&nbsp;Google</button>
-</div>
-
-      <a id="reset-password" href="#" class="reset-link">Forgot&nbsp;password?</a>
+      <div class="login-footer">
+        New? <button class="btn outline" type="button" id="go-signup">Sign Up</button>
+      </div>
     </div>
   `;
+  document.getElementById("go-signup").onclick = () => renderSignup(container);
 
   /* 2️⃣  EXISTING EVENT HANDLERS (unchanged) */
   setupNavigation();                           // still works for data-nav buttons
@@ -443,7 +435,6 @@ function renderLogin(container = document.getElementById("app")) {
       showToast("Google Sign-In failed: " + err.message);
     }
   };
-
   document.getElementById("reset-password").onclick = async e => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
@@ -471,6 +462,72 @@ function renderLogin(container = document.getElementById("app")) {
     }
   handleNavigation("home", true);
   });
+}
+// Render Signup
+function renderSignup(container = document.getElementById("app")) {
+  container.innerHTML = `
+    <div class="signup-card fade-in">
+      <h2>✍️ Sign Up for CDL Trainer</h2>
+      <form id="signup-form" autocomplete="off">
+        <div class="form-group">
+          <label>Name</label>
+          <input name="name" type="text" required />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input name="email" type="email" required />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input name="password" type="password" required minlength="6" />
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input name="confirm" type="password" required minlength="6" />
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <div class="role-badge-select">
+            <label>
+              <input type="radio" name="role" value="student" checked />
+              <span>Student</span>
+            </label>
+            <label>
+              <input type="radio" name="role" value="instructor" />
+              <span>Instructor</span>
+            </label>
+            <label>
+              <input type="radio" name="role" value="admin" />
+              <span>Admin</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group" id="access-code-group" style="display:none;">
+          <label>Instructor/Admin Access Code</label>
+          <input name="accessCode" type="text" autocomplete="one-time-code" />
+        </div>
+        <button class="btn primary" type="submit">Create Account</button>
+        <div class="signup-footer">
+          Already have an account? <button class="btn outline" type="button" id="go-login">Log In</button>
+        </div>
+      </form>
+    </div>
+  `;
+  // Role toggle: show code only for instructor/admin
+  const radioEls = container.querySelectorAll('input[name="role"]');
+  const codeGroup = container.querySelector("#access-code-group");
+  radioEls.forEach(radio => {
+    radio.addEventListener("change", () => {
+      if (container.querySelector('input[name="role"]:checked').value !== "student") {
+        codeGroup.style.display = "";
+      } else {
+        codeGroup.style.display = "none";
+      }
+    });
+  });
+  document.getElementById("go-login").onclick = () => renderLogin(container);
+
+  // Add your signup handling logic here: validate, check code, create user, etc.
 }
 // ─── 9. STUDENT DASHBOARD ────────────────────────────────────────────────
 async function renderDashboard(container = document.getElementById("app")) {
