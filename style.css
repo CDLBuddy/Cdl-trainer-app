@@ -611,6 +611,50 @@ nav button {
 .dashboard-wrapper {
   padding-bottom: 36px;
 }
+.dashboard-nav-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 1rem;
+  margin: 20px 0 0 0;
+}
+.dashboard-nav-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--card-bg);
+  border: none;
+  border-radius: 13px;
+  box-shadow: 0 1.5px 8px rgba(0,0,0,0.09);
+  padding: 1.1rem 0 0.8rem 0;
+  font-size: 1.13em;
+  color: var(--text-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
+  cursor: pointer;
+  font-weight: 600;
+}
+.dashboard-nav-btn i, .dashboard-nav-btn img {
+  font-size: 1.45em;
+  margin-bottom: 0.18em;
+  display: block;
+}
+.dashboard-nav-btn:active {
+  transform: scale(0.97);
+  background: var(--card-bg-dark);
+}
+@media (max-width: 600px) {
+  .dashboard-nav-row {
+    gap: 0.7rem;
+  }
+  .dashboard-nav-btn {
+    font-size: 1em;
+    padding: 1rem 0 0.7rem 0;
+  }
+}
 
 /* Responsive adjustments for mobile */
 @media (max-width: 700px) {
