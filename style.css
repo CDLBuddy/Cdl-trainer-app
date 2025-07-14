@@ -493,6 +493,22 @@ nav button {
 .rail-btn:active {
   transform: scale(0.96);
 }
+.dashboard-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  padding: 18px 18px 14px 18px;
+  margin-bottom: 18px;
+}
+.dash-layout {
+  padding: 0 14px;
+  /* You may adjust px value as needed for desktop/tablet */
+}
+@media (max-width: 600px) {
+  .dash-layout {
+    padding: 0 8px;
+  }
+}
 
 /* ─── 11. Glow Pulse for Carousel (unchanged) ──────────────────────────── */
 @keyframes carouselGlow {
