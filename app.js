@@ -632,64 +632,68 @@ async function renderDashboard(container = document.getElementById("app")) {
 }
 // ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
 /* ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── */
-function renderWalkthrough(container = document.getElementById("app")) {
-  const user = firebase.auth().currentUser;
-  if (!user || !user.email) {
+async function renderWalkthrough(container = document.getElementById("app")) {
+  if (!auth.currentUser || !auth.currentUser.email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
     return;
   }
 
-  const uid = user.uid;
-  const db = firebase.firestore();
+  // Get user profile from Firestore using modular API
+  let userData;
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", auth.currentUser.email));
+    const snap = await getDocs(q);
+    userData = snap.empty ? null : snap.docs[0].data();
+  } catch (e) {
+    container.innerHTML = "<p>Error loading user profile.</p>";
+    return;
+  }
+  const cdlClass = userData?.cdlClass || null;
 
-  db.collection("users").doc(uid).get().then((doc) => {
-    const userData = doc.data();
-    const cdlClass = userData?.cdlClass || null;
+  let content = `
+    <div class="screen-wrapper walkthrough-page fade-in">
+      <h2>🧭 CDL Walkthrough Practice</h2>
+  `;
 
-    let content = `
-      <div class="screen-wrapper walkthrough-page fade-in">
-        <h2>🧭 CDL Walkthrough Practice</h2>
+  if (!cdlClass) {
+    content += `
+      <div class="alert-box">
+        ⚠️ You haven’t selected your CDL class yet.<br>
+        Please go to your <strong>Profile</strong> and select one so we can load the correct walkthrough script.
+      </div>
+      <button data-nav="profile" class="btn">Go to Profile</button>
     `;
+  } else {
+    content += `
+      <p><strong>CDL Class:</strong> ${cdlClass}</p>
+      <p>Study the following walkthrough to prepare for your in-person vehicle inspection test. Critical sections will be highlighted.</p>
 
-    if (!cdlClass) {
-      content += `
-        <div class="alert-box">
-          ⚠️ You haven’t selected your CDL class yet.<br>
-          Please go to your <strong>Profile</strong> and select one so we can load the correct walkthrough script.
+      <div class="walkthrough-script">
+        <h3>🚨 Three-Point Brake Check (Must Memorize Word-for-Word)</h3>
+        <div class="highlight-section">
+          <p>"With the engine off and key on, I will release the parking brake, hold the service brake pedal for 1 minute, and check for air loss no more than 3 PSI."</p>
+          <p>"Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI."</p>
+          <p>"Finally, I will fan the brakes to trigger the spring brake pop-out between 20–45 PSI."</p>
         </div>
-        <button data-nav="profile" class="btn">Go to Profile</button>
-      `;
-    } else {
-      content += `
-        <p><strong>CDL Class:</strong> ${cdlClass}</p>
-        <p>Study the following walkthrough to prepare for your in-person vehicle inspection test. Critical sections will be highlighted.</p>
 
-        <div class="walkthrough-script">
-          <h3>🚨 Three-Point Brake Check (Must Memorize Word-for-Word)</h3>
-          <div class="highlight-section">
-            <p>"With the engine off and key on, I will release the parking brake, hold the service brake pedal for 1 minute, and check for air loss no more than 3 PSI."</p>
-            <p>"Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI."</p>
-            <p>"Finally, I will fan the brakes to trigger the spring brake pop-out between 20–45 PSI."</p>
-          </div>
+        <h3>✅ Entering the Vehicle</h3>
+        <p>Say: "Getting in using three points of contact."</p>
 
-          <h3>✅ Entering the Vehicle</h3>
-          <p>Say: "Getting in using three points of contact."</p>
+        <h3>✅ Exiting the Vehicle</h3>
+        <p>Say: "Getting out using three points of contact."</p>
 
-          <h3>✅ Exiting the Vehicle</h3>
-          <p>Say: "Getting out using three points of contact."</p>
+        <h3>🔧 Engine Compartment (Sample)</h3>
+        <p>Check oil level with dipstick. Look for leaks, cracks, or broken hoses...</p>
+        
+        <!-- More walkthrough sections will go here -->
+      </div>
+    `;
+  }
 
-          <h3>🔧 Engine Compartment (Sample)</h3>
-          <p>Check oil level with dipstick. Look for leaks, cracks, or broken hoses...</p>
-          
-          <!-- More walkthrough sections will go here -->
-        </div>
-      `;
-    }
-
-    content += `<button data-nav="dashboard" class="btn">⬅️ Back to Dashboard</button></div>`;
-    container.innerHTML = content;
-    setupNavigation();
-  });
+  content += `<button data-nav="dashboard" class="btn">⬅️ Back to Dashboard</button></div>`;
+  container.innerHTML = content;
+  setupNavigation();
 }
 
 function renderFlashcards(c=document.getElementById("app")){
