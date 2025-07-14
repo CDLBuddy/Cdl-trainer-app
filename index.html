@@ -42,9 +42,21 @@
       .catch(err => alert("❌ app.js import failed:\n" + err.message));
   </script>
 </body>
-<!-- Full-viewport loader -->
+<!-- Initial Boot Loader -->
 <div id="app-loader">
-  <div class="loader-logo">🚛 CDL&nbsp;Trainer</div>
+  <div class="loader-logo glow-shimmer">🚛 CDL&nbsp;Trainer</div>
+</div>
+
+<!-- Page Transition Loader -->
+<div id="page-loader" class="loader-overlay hidden">
+  <div class="truck-spinner">
+    <div class="truck-body">🚛</div>
+    <div class="trailers">
+      <div class="trailer"></div>
+      <div class="trailer"></div>
+    </div>
+  </div>
+</div>
 
   <!-- animated dots -->
   <div class="dots">
