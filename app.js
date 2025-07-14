@@ -366,10 +366,13 @@ function renderLogin(container = document.getElementById("app")) {
           <label>Email</label>
           <input name="email" type="email" required />
         </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input name="password" type="password" required />
-        </div>
+        <div class="form-group password-group">
+  <label>Password</label>
+  <div style="position:relative;">
+    <input id="login-password" name="password" type="password" required style="padding-right:2.4rem;">
+    <button type="button" id="toggle-password" style="position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);font-size:1.1em;cursor:pointer;">👁️</button>
+  </div>
+</div>
         <button class="btn primary" type="submit">Log In</button>
       </form>
       <div class="login-footer">
@@ -378,6 +381,15 @@ function renderLogin(container = document.getElementById("app")) {
     </div>
   `;
   document.getElementById("go-signup").onclick = () => renderSignup(container);
+  
+  const pwdInput = container.querySelector("#login-password");
+const togglePwd = container.querySelector("#toggle-password");
+if (pwdInput && togglePwd) {
+  togglePwd.onclick = () => {
+    pwdInput.type = pwdInput.type === "password" ? "text" : "password";
+    togglePwd.textContent = pwdInput.type === "password" ? "👁️" : "🙈";
+  };
+}
 
   /* 2️⃣  EXISTING EVENT HANDLERS (unchanged) */
   setupNavigation();                           // still works for data-nav buttons
