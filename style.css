@@ -539,21 +539,42 @@ body::after {
     transform: translate(0, 0) scale(1);
   }
 }
-/* ─── Floating radial glow overlay (optional) ─────────────────────────── */
-body::before {
+/* ─── Off-screen spotlight glow ───────────────────────────────────────── */
+body::before,
+body::after {
   content: "";
   position: fixed;
-  inset: -10%;
+  width: 140vmax;                /* huge circle */
+  height: 140vmax;
+  border-radius: 50%;
   pointer-events: none;
-  z-index: -2;
-
-  background:
-    radial-gradient(circle at 20% 30%, rgba(255, 110, 255, 0.25) 0%, transparent 60%),
-    radial-gradient(circle at 80% 70%, rgba(95, 170, 255, 0.27) 0%, transparent 60%);
-  mix-blend-mode: screen;           /* lets colours add without haze    */
-  animation: spinBg 60s linear infinite;
+  z-index: -2;                   /* behind cards but above gradient */
+  filter: blur(120px);           /* big feather */
+  opacity: 0.45;                 /* dim light */
 }
-@keyframes spinBg { to { transform: rotate(360deg); } }
+
+/* Left-top violet glow */
+body::before {
+  background: radial-gradient(circle, rgba(185,120,255,1) 0%, rgba(185,120,255,0) 60%);
+  top: -50vmax;                  /* mostly off-canvas */
+  left: -40vmax;
+  transform: translate3d(0,0,0); /* keeps it in its own layer */
+}
+
+/* Right-bottom indigo-blue glow */
+body::after {
+  background: radial-gradient(circle, rgba(95,170,255,1) 0%, rgba(95,170,255,0) 60%);
+  bottom: -55vmax;
+  right: -45vmax;
+  transform: translate3d(0,0,0);
+  animation: driftGlow 40s ease-in-out alternate infinite;
+}
+
+/* gentle slow drift for the blue one */
+@keyframes driftGlow {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(15vmax, 10vmax, 0); }
+}
 /* ─── 14. Auth Screen ───────────────────────────────────────────────────── */
 .auth-wrapper {
   display: flex;
