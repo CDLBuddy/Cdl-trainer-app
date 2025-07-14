@@ -2,24 +2,22 @@
    CDL Trainer -- style.css
    ========================================================================== */
 
-/* ─── Block ALL Horizontal Panning on the Page ───────────────────────────── */
+/* ─── Block ALL Horizontal Panning on the Page ─────────────────────────── */
 html, body {
   overflow-x: hidden;
   overscroll-behavior-x: none;
 }
 
-/* ─── Restrict Welcome Screen to Vertical-Only Touch Scrolling ──────────── */
-.welcome-screen {
-  touch-action: pan-y;
-  overscroll-behavior: contain;
-}
+/* ─── Restrict Welcome Screen to Vertical-Only Touch Scrolling ─────────── */
+.welcome-screen { touch-action: pan-y; overscroll-behavior: contain; }
 
-/* ─── 1. CSS Variables (Deep-Blue + Coral Accent) ───────────────────────── */
+/* ─── 1. CSS Variables (Deep-Blue + Lavender Accent) ───────────────────── */
 :root {
   --brand-dark:   #0A1F44;
   --brand-mid:    #12355A;
   --brand-light:  #1B4F72;
-  --accent:       #FF6F61;
+
+  --accent:       #7B6BFF;          /* ★ single accent */
 
   --text-light:   #FFFFFF;
   --text-dark:    #E0E0E0;
@@ -33,33 +31,34 @@ html, body {
   --success:      #48BB78;
 }
 
-/* ─── 2. Global Reset & Drifting Gradient Background ─────────────────────── */
+/* ─── 2. Global Reset & Animated Gradient Backdrop ─────────────────────── */
 *,
 *::before,
 *::after { box-sizing: border-box; }
+
 html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
+  margin: 0; padding: 0; height: 100%;
   font-family: "Helvetica Neue", Arial, sans-serif;
   color: var(--text-light);
+
+  /* ★ deeper moving gradient */
   background: linear-gradient(-45deg,
-    var(--brand-dark),
-    var(--brand-mid),
-    var(--brand-light),
-    var(--brand-mid));
-  background-size: 300% 300%;
-  animation: gradientFlow 30s ease infinite;
-  overflow-x: hidden;
+              var(--brand-dark)   0%,
+              var(--brand-mid)   25%,
+              var(--brand-light) 50%,
+              var(--brand-mid)   75%,
+              var(--brand-dark)  100%);
+  background-size: 400% 400%;
+  animation: gradientFlow 32s linear infinite;
 }
 @keyframes gradientFlow {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0%  { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+ 100% { background-position: 0% 50%; }
 }
 body.dark-mode { background: #121212; color: var(--text-light); }
 
-/* ─── 3. Frosted-Glass Panels ───────────────────────────────────────────── */
+/* ─── 3. Frosted-Glass Panels ──────────────────────────────────────────── */
 .screen-wrapper,
 .welcome-content {
   background: var(--card-bg);
@@ -68,58 +67,26 @@ body.dark-mode { background: #121212; color: var(--text-light); }
   padding: 2rem;
   color: var(--text-light);
   box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  transition: background 0.3s, color 0.3s;
+  transition: background .3s, color .3s;
 }
 body.dark-mode .screen-wrapper { background: var(--card-bg-dark); }
 
-/* ─── 4. Global Button Styles ───────────────────────────────────────────── */
+/* ─── 4. Global Button Styles ──────────────────────────────────────────── */
 button {
   background: rgba(255,255,255,0.15);
   color: var(--text-light);
   border: 1px solid rgba(255,255,255,0.3);
   border-radius: 8px;
-  padding: 0.75rem 1.5rem;
+  padding: .75rem 1.5rem;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.25s, transform 0.2s;
+  transition: background .25s, transform .2s;
 }
 button:hover:not(:disabled) {
   background: rgba(255,255,255,0.25);
   transform: translateY(-2px);
 }
-button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-/* ── Login button: centred glass, icon pulse ─────────────────────────── */
-#welcome-login-btn {
-  display: block;
-  width: 100%;
-  max-width: 280px;          /* tidy cap on larger screens   */
-  margin: 1.25rem auto;      /* centres horizontally & vert. */
-  padding: 0.9rem 1.5rem;
-  text-align: center;
-
-  /* Glass surface */
-  background: rgba(255,255,255,0.10);
-  backdrop-filter: blur(10px) saturate(135%);
-  border: 1px solid rgba(255,255,255,0.20);
-  border-radius: 10px;
-  color: var(--text-light);
-
-  /* subtle lift */
-  transition: background .25s, box-shadow .25s, transform .15s;
-}
-#welcome-login-btn:hover  { box-shadow: 0 0 14px rgba(95,170,255,.45); }
-#welcome-login-btn:active { transform: scale(0.97); }
-
-/* icon pulse */
-#welcome-login-btn .icon {
-  display: inline-block;
-  animation: iconPulse 1.8s ease-in-out infinite;
-}
-@keyframes iconPulse {
-  0%,100% { transform: scale(1); }
-  50%     { transform: scale(1.15); }
-}
+button:disabled { opacity: .6; cursor: not-allowed; }
 
 /* ─── 5. Header, Footer & Navigation ────────────────────────────────────── */
 header, footer {
@@ -298,26 +265,95 @@ color:#fff;box-shadow:0 8px 16px rgba(0,0,0,.25);transition:transform .3s,box-sh
 background:rgba(0,0,0,.55);color:#fff;border:0;cursor:pointer;backdrop-filter:blur(6px)}
 .carousel-arrow.left{left:8px}.carousel-arrow.right{right:8px}
 
-/* ─── 10.5 Dashboard Action Buttons ───────────────────────────────────── */
-.dash-actions {                    /* flex row container on dashboard */
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-  margin: 1.5rem 0;
+/* ==========================================================================
+   CDL Trainer -- style.css
+   ========================================================================== */
+
+/* ─── Block ALL Horizontal Panning on the Page ─────────────────────────── */
+html, body {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
-.dash-actions .dash-btn {          /* only buttons inside .dash-actions */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .35rem;                     /* space between icon & label */
+/* ─── Restrict Welcome Screen to Vertical-Only Touch Scrolling ─────────── */
+.welcome-screen { touch-action: pan-y; overscroll-behavior: contain; }
+
+/* ─── 1. CSS Variables (Deep-Blue + Lavender Accent) ───────────────────── */
+:root {
+  --brand-dark:   #0A1F44;
+  --brand-mid:    #12355A;
+  --brand-light:  #1B4F72;
+
+  --accent:       #7B6BFF;          /* ★ single accent */
+
+  --text-light:   #FFFFFF;
+  --text-dark:    #E0E0E0;
+
+  --card-bg:      rgba(255,255,255,0.12);
+  --card-bg-dark: rgba(20,30,50,0.7);
+
+  --toast-bg:     rgba(0,0,0,0.8);
+  --toast-text:   #FFFFFF;
+  --error:        #E53E3E;
+  --success:      #48BB78;
 }
 
-/* optional sizing tweaks for icon + label */
-.dash-actions .dash-btn .icon  { font-size: 1.4rem; }
-.dash-actions .dash-btn .label { font-size: .92rem; }
+/* ─── 2. Global Reset & Animated Gradient Backdrop ─────────────────────── */
+*,
+*::before,
+*::after { box-sizing: border-box; }
 
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  color: var(--text-light);
+
+  /* ★ deeper moving gradient */
+  background: linear-gradient(-45deg,
+              var(--brand-dark)   0%,
+              var(--brand-mid)   25%,
+              var(--brand-light) 50%,
+              var(--brand-mid)   75%,
+              var(--brand-dark)  100%);
+  background-size: 400% 400%;
+  animation: gradientFlow 32s linear infinite;
+}
+@keyframes gradientFlow {
+  0%  { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+ 100% { background-position: 0% 50%; }
+}
+body.dark-mode { background: #121212; color: var(--text-light); }
+
+/* ─── 3. Frosted-Glass Panels ──────────────────────────────────────────── */
+.screen-wrapper,
+.welcome-content {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 2rem;
+  color: var(--text-light);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  transition: background .3s, color .3s;
+}
+body.dark-mode .screen-wrapper { background: var(--card-bg-dark); }
+
+/* ─── 4. Global Button Styles ──────────────────────────────────────────── */
+button {
+  background: rgba(255,255,255,0.15);
+  color: var(--text-light);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  padding: .75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background .25s, transform .2s;
+}
+button:hover:not(:disabled) {
+  background: rgba(255,255,255,0.25);
+  transform: translateY(-2px);
+}
+button:disabled { opacity: .6; cursor: not-allowed; }
 /* ─── 11. Optional Glow Pulse ───────────────────────────────────────────── */
 @keyframes carouselGlow{0%,100%{opacity:0}50%{opacity:.6}}
 .feat:hover::before{content:"";position:absolute;inset:-2px;border-radius:inherit;background:inherit;
