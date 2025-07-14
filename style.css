@@ -204,63 +204,92 @@ nav button {
   animation: fadeInEnhanced 0.4s ease-out forwards;
 }
 
-/* ─── 6.1   Full-Viewport Loader (dots) ───────────────────────────────── */
+/* ─── 6.1 Loaders ───────────────────────────────────────────────────────── */
+
+/* Boot Loader */
 #app-loader {
   position: fixed;
   inset: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  background: linear-gradient(
-    -45deg,
-    var(--brand-dark),
-    var(--brand-mid),
-    var(--brand-light),
-    var(--brand-mid)
-  );
-  background-size: 300% 300%;
-  animation: gradientFlow 30s ease infinite;
-
-  color: var(--text-light);
-  z-index: 2000;
+  background: linear-gradient(-45deg, var(--brand-dark), var(--brand-mid), var(--brand-light), var(--brand-mid));
+  background-size: 600% 600%;
+  animation: gradientFlow 20s linear infinite;
+  z-index: 9999;
+  color: white;
+  font-size: 2rem;
   opacity: 1;
   transition: opacity 0.3s ease;
 }
-#app-loader.hide {
+#app-loader.hide, #app-loader.hidden {
   opacity: 0;
   pointer-events: none;
 }
-.dots {
+.loader-logo {
+  font-weight: bold;
+  letter-spacing: 1px;
+  font-family: "Helvetica Neue", sans-serif;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.1);
+  box-shadow: 0 0 24px var(--accent);
+}
+.glow-shimmer {
+  animation: shimmer 2s infinite ease-in-out;
+}
+@keyframes shimmer {
+  0%, 100% { text-shadow: 0 0 6px var(--accent); }
+  50% { text-shadow: 0 0 24px var(--accent); }
+}
+
+/* Page Transition Loader */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
-  gap: 0.5rem;
-  margin-top: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.3s ease;
 }
-.dots span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #5faaff;
-  animation: bounce 0.9s infinite;
+.loader-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
 }
-.dots span:nth-child(2) {
-  animation-delay: 0.15s;
+/* Truck Spinner */
+.truck-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: truck-bounce 1.4s infinite ease-in-out;
 }
-.dots span:nth-child(3) {
-  animation-delay: 0.3s;
+.truck-body {
+  font-size: 2.8rem;
+  animation: wiggle 1s infinite ease-in-out;
 }
-@keyframes bounce {
-  0%,
-  80%,
-  100% {
-    transform: scale(0);
-    opacity: 0.6;
-  }
-  40% {
-    transform: scale(1);
-    opacity: 1;
-  }
+.trailers {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.trailer {
+  width: 24px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 4px;
+  box-shadow: 0 0 6px var(--accent);
+}
+@keyframes truck-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
 }
 
 /* ─── 7. Welcome Parallax & Fade-in ────────────────────────────────────── */
