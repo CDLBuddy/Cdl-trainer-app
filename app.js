@@ -564,12 +564,29 @@ async function renderDashboard() {
         <h3>🔥 Study Streak</h3>
         <p>${streak} day${streak !== 1 ? "s" : ""} active this week</p>
       </div>
-      <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:30px;">
-        <button data-nav="tests" style="flex:1; padding:10px;">🧪 Practice Tests</button>
-        <button data-nav="coach" style="flex:1; padding:10px;">🎧 AI Coach</button>
-        <button data-nav="checklists" style="flex:1; padding:10px;">✅ My Checklist</button>
-        <button data-nav="results" style="flex:1; padding:10px;">📊 Test Results</button>
-      </div>
+      <div class="dash-actions">
+  <button class="dash-btn" data-nav="profile">
+    <span class="icon">👤</span>
+    <span class="label">My&nbsp;Profile</span>
+  </button>
+
+  <button class="dash-btn" data-nav="checklist">
+    <span class="icon">✅</span>
+    <span class="label">My&nbsp;Checklist</span>
+  </button>
+
+  <button class="dash-btn" data-nav="test">
+    <span class="icon">🧪</span>
+    <span class="label">Testing</span>
+  </button>
+
+  <button class="dash-btn" data-nav="coach">
+    <span class="icon">🎧</span>
+    <span class="label">AI&nbsp;Coach</span>
+  </button>
+</div>
+
+<!-- existing Logout button stays below -->
       <div style="text-align:center; margin-top:30px;">
         <button id="logout-btn" style="padding:8px 16px;">🚪 Logout</button>
       </div>
