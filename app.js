@@ -631,7 +631,6 @@ async function renderDashboard(container = document.getElementById("app")) {
     });
 }
 // ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
-/* ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── */
 async function renderWalkthrough(container = document.getElementById("app")) {
   if (!auth.currentUser || !auth.currentUser.email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
@@ -696,6 +695,153 @@ async function renderWalkthrough(container = document.getElementById("app")) {
   setupNavigation();
 }
 
+async function renderProfile(container = document.getElementById("app")) {
+  if (!container) return;
+
+  // Fetch user data from Firestore
+  let userData = {};
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", currentUserEmail));
+    const snap = await getDocs(q);
+    if (!snap.empty) userData = snap.docs[0].data();
+  } catch (e) {
+    userData = {};
+  }
+
+  // Default values
+  const {
+    name = "",
+    dob = "",
+    profilePicUrl = "",
+    cdlClass = "",
+    cdlPermit = "",
+    permitPhotoUrl = "",
+    vehicleQualified = "",
+    truckPlateUrl = "",
+    trailerPlateUrl = "",
+    experience = ""
+  } = userData;
+
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in profile-page" style="max-width: 480px; margin: 0 auto;">
+      <h2>👤 My Profile</h2>
+      <form id="profile-form" autocomplete="off" style="display:flex; flex-direction:column; gap:1.3rem;">
+        <label>
+          Name:
+          <input type="text" name="name" value="${name}" required />
+        </label>
+        <label>
+          Date of Birth:
+          <input type="date" name="dob" value="${dob}" required />
+        </label>
+        <label>
+          Profile Picture:
+          <input type="file" name="profilePic" accept="image/*" />
+          ${profilePicUrl ? `<img src="${profilePicUrl}" alt="Profile Picture" style="max-width:90px;border-radius:12px;display:block;margin-top:7px;" />` : ""}
+        </label>
+        <label>
+          CDL License Pursued:
+          <select name="cdlClass" required>
+            <option value="">Select</option>
+            <option value="A" ${cdlClass==="A"?"selected":""}>Class A</option>
+            <option value="B" ${cdlClass==="B"?"selected":""}>Class B</option>
+            <option value="C" ${cdlClass==="C"?"selected":""}>Class C</option>
+          </select>
+        </label>
+        <label>
+          Do you have your CDL permit?
+          <select name="cdlPermit" required>
+            <option value="">Select</option>
+            <option value="yes" ${cdlPermit==="yes"?"selected":""}>Yes</option>
+            <option value="no" ${cdlPermit==="no"?"selected":""}>No</option>
+          </select>
+        </label>
+        <div id="permit-photo-section" style="${cdlPermit==="yes"?"":"display:none"}">
+          <label>
+            Upload Permit Photo:
+            <input type="file" name="permitPhoto" accept="image/*" />
+            ${permitPhotoUrl ? `<img src="${permitPhotoUrl}" alt="Permit Photo" style="max-width:90px;border-radius:8px;display:block;margin-top:7px;" />` : ""}
+          </label>
+        </div>
+        <label>
+          Does the vehicle you plan to train/test in qualify for that CDL license?
+          <select name="vehicleQualified" required>
+            <option value="">Select</option>
+            <option value="yes" ${vehicleQualified==="yes"?"selected":""}>Yes</option>
+            <option value="no" ${vehicleQualified==="no"?"selected":""}>No</option>
+          </select>
+        </label>
+        <div id="vehicle-photos-section" style="${vehicleQualified==="yes"?"":"display:none"}">
+          <label>
+            Upload Truck Data Plate Photo:
+            <input type="file" name="truckPlate" accept="image/*" />
+            ${truckPlateUrl ? `<img src="${truckPlateUrl}" alt="Truck Data Plate" style="max-width:90px;border-radius:8px;display:block;margin-top:7px;" />` : ""}
+          </label>
+          <label>
+            Upload Trailer Data Plate Photo:
+            <input type="file" name="trailerPlate" accept="image/*" />
+            ${trailerPlateUrl ? `<img src="${trailerPlateUrl}" alt="Trailer Data Plate" style="max-width:90px;border-radius:8px;display:block;margin-top:7px;" />` : ""}
+          </label>
+        </div>
+        <label>
+          Experience:
+          <select name="experience" required>
+            <option value="">Select</option>
+            <option value="none" ${experience==="none"?"selected":""}>No experience</option>
+            <option value="1-2" ${experience==="1-2"?"selected":""}>1–2 years</option>
+            <option value="3-5" ${experience==="3-5"?"selected":""}>3–5 years</option>
+            <option value="6-10" ${experience==="6-10"?"selected":""}>6–10 years</option>
+            <option value="10+" ${experience==="10+"?"selected":""}>10+ years</option>
+          </select>
+        </label>
+        <button class="btn primary wide" type="submit">Save Profile</button>
+        <button class="btn outline" type="button" data-nav="dashboard" style="margin-top:0.5rem;">⬅️ Back to Dashboard</button>
+      </form>
+    </div>
+  `;
+
+  // Show/hide sections based on select fields
+  container.querySelector('select[name="cdlPermit"]').addEventListener('change', function() {
+    document.getElementById('permit-photo-section').style.display = this.value === "yes" ? "" : "none";
+  });
+  container.querySelector('select[name="vehicleQualified"]').addEventListener('change', function() {
+    document.getElementById('vehicle-photos-section').style.display = this.value === "yes" ? "" : "none";
+  });
+
+  setupNavigation();
+
+  // Save handler (expand this to upload images to storage if needed!)
+  container.querySelector("#profile-form").onsubmit = async e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+
+    // For demo: Not handling image uploads yet--just save text/choices
+    const data = {
+      name: fd.get("name"),
+      dob: fd.get("dob"),
+      cdlClass: fd.get("cdlClass"),
+      cdlPermit: fd.get("cdlPermit"),
+      vehicleQualified: fd.get("vehicleQualified"),
+      experience: fd.get("experience")
+      // TODO: image upload handling
+    };
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", currentUserEmail));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        // Update
+        await updateDoc(doc(db, "users", snap.docs[0].id), data);
+      }
+      showToast("✅ Profile saved!");
+    } catch (e) {
+      showToast("Profile update failed.");
+    }
+  };
+}
+
+/* ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── */
 function renderFlashcards(c=document.getElementById("app")){
   c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🃏 Flashcards</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
   setupNavigation();
