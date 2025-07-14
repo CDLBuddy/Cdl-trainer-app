@@ -298,6 +298,26 @@ color:#fff;box-shadow:0 8px 16px rgba(0,0,0,.25);transition:transform .3s,box-sh
 background:rgba(0,0,0,.55);color:#fff;border:0;cursor:pointer;backdrop-filter:blur(6px)}
 .carousel-arrow.left{left:8px}.carousel-arrow.right{right:8px}
 
+/* ─── 10.5 Dashboard Action Buttons ───────────────────────────────────── */
+.dash-actions {                    /* flex row container on dashboard */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.dash-actions .dash-btn {          /* only buttons inside .dash-actions */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;                     /* space between icon & label */
+}
+
+/* optional sizing tweaks for icon + label */
+.dash-actions .dash-btn .icon  { font-size: 1.4rem; }
+.dash-actions .dash-btn .label { font-size: .92rem; }
+
 /* ─── 11. Optional Glow Pulse ───────────────────────────────────────────── */
 @keyframes carouselGlow{0%,100%{opacity:0}50%{opacity:.6}}
 .feat:hover::before{content:"";position:absolute;inset:-2px;border-radius:inherit;background:inherit;
