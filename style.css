@@ -60,7 +60,7 @@ body {
     var(--brand-dark) 100%
   );
   background-size: 600% 600%;
-  animation: gradientFlow 20s linear infinite;
+  animation: gradientFlow 12s linear infinite;
 }
 @keyframes gradientFlow {
   0% {
