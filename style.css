@@ -507,31 +507,32 @@ body::before {
   100% { background-position: 0%   0%,   0 0; }
 }
 
-/* stronger off-screen spotlight glow */
+/* ─── Off-screen spotlight glow  v2  -- brighter & closer ─────────────── */
 body::after {
   content: "";
   position: fixed;
-  width: 130vmax;                  /* slightly smaller = denser colour */
-  height: 130vmax;
+  inset: -25vmax;              /* pulls the circles nearer to edges   */
   pointer-events: none;
-  z-index: -2;
-  filter: blur(120px);             /* ↓ blur   (was 160px) */
-  opacity: 0.75;                   /* ↑ opacity (was 0.60) */
-  mix-blend-mode: screen;          /* makes colour add, not darken */
+  z-index: -2;                 /* above shimmer / below cards        */
 
-  /* three radial halos */
+  width: 175vmax;
+  height: 175vmax;
+
+  /* colour & light shaping */
   background:
-    /* violet – now only 20 vmax off-canvas */
-    radial-gradient(circle at -20vmax -15vmax,
-                    rgba(185,120,255,1) 0%, transparent 65%),
-    /* blue  – starts just below/right */
-    radial-gradient(circle at 120vmax 110vmax,
-                    rgba(95,170,255,1) 0%, transparent 65%),
-    /* soft pink  – subtle extra depth */
-    radial-gradient(circle at 30% 120%,
-                    rgba(255,100,200,0.35) 0%, transparent 70%);
+    radial-gradient(circle at 0%   -10%, rgba(185,120,255,0.95) 0%,  transparent 65%),
+    radial-gradient(circle at 120% 110%, rgba( 95,170,255,0.95) 0%, transparent 65%),
+    radial-gradient(circle at 50%  140%, rgba(255,100,200,0.40) 0%, transparent 70%);
 
-  animation: driftGlow 24s ease-in-out alternate infinite; /* slightly faster */
+  filter: blur(90px) saturate(170%);
+  opacity: 0.85;
+  mix-blend-mode: screen;
+
+  animation: driftGlow 22s ease-in-out alternate infinite;
+}
+@keyframes driftGlow {
+  0%   { transform: translate(  0,   0); }
+  100% { transform: translate(-6vmax, -5vmax); }
 }
 @keyframes driftGlow {
   0%   { transform: translate(0, 0); }
