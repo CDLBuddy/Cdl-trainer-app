@@ -15,23 +15,26 @@ body {
   overscroll-behavior: contain;
 }
 
-/* ─── 1.  Violet-Indigo Palette ───────────────────────────────────────── */
+/* ─── 1.  Darf forest night sky───────────────────────────────────────── */
 :root {
-  /* diagonal gradient stops */
-  --brand-dark:   #0b0a34;   /* midnight indigo   */
-  --brand-mid:    #26115a;   /* deep violet       */
-  --brand-light:  #3f1784;   /* royal purple edge */
+  /* Dark forest + night sky theme */
+  --brand-dark:   #0e1b1b;   /* deep forest black */
+  --brand-mid:    #004d66;   /* deep teal */
+  --brand-light:  #4e91ad;   /* faded blue edge */
 
-  /* accent colour for buttons / bars / glows */
-  --accent:       #b48aff;   /* soft lavender      */
+  /* Accent (you can pick any pop color, but here we go muted ice) */
+  --accent:       #c4dbe8;   /* ice mist (button hover, glow) */
 
-  /* unchanged support vars */
+  /* Support variables (mostly unchanged) */
   --text-light:   #ffffff;
   --text-dark:    #e0e0e0;
-  --card-bg:      rgba(255,255,255,0.11);
-  --card-bg-dark: rgba(16,12,37,0.7);
-  --toast-bg:     rgba(0,0,0,0.8);
+
+  --card-bg:      rgba(255, 255, 255, 0.06);  /* faint glow on dark */
+  --card-bg-dark: rgba(10, 15, 20, 0.6);      /* dark frosted glass */
+
+  --toast-bg:     rgba(0, 0, 0, 0.85);
   --toast-text:   #ffffff;
+
   --error:        #e53e3e;
   --success:      #48bb78;
 }
