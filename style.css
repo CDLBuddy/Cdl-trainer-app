@@ -524,8 +524,8 @@ body::after {
     radial-gradient(circle at 120% 110%, rgba( 95,170,255,0.95) 0%, transparent 65%),
     radial-gradient(circle at 50%  140%, rgba(255,100,200,0.40) 0%, transparent 70%);
 
-  filter: blur(90px) saturate(170%);
-  opacity: 0.85;
+  filter: blur(70px) saturate(170%);
+  opacity: 0.95;
   mix-blend-mode: screen;
 
   animation: driftGlow 22s ease-in-out alternate infinite;
