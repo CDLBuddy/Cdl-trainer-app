@@ -390,16 +390,9 @@ if (pwdInput && togglePwd) {
     togglePwd.textContent = pwdInput.type === "password" ? "👁️" : "🙈";
   };
 }
+  setupNavigation();
 
-  /* 2️⃣  EXISTING EVENT HANDLERS (unchanged) */
-  setupNavigation();                           // still works for data-nav buttons
-
-  const pwdInput = document.getElementById("password");
-  document.getElementById("toggle-password").onclick = () => {
-    pwdInput.type = pwdInput.type === "password" ? "text" : "password";
-  };
-
-  document.getElementById("login-form").onsubmit = async e => {
+document.getElementById("login-form").onsubmit = async e => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
     const pwd   = pwdInput.value;
