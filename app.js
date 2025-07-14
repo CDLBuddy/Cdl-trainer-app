@@ -569,17 +569,17 @@ async function renderDashboard(container = document.getElementById("app")) {
           <progress value="${checklistPct}" max="100"></progress>
           <p><span class="big-num" id="checklist-pct">${checklistPct}</span>% complete</p>
         </div>
-
-        <div class="glass-card metric">
-          <h3>🧪 Last Test</h3>
-          <p id="last-test">${lastTestStr}</p>
-        </div>
         
         <div class="dashboard-card">
   <h3>🧭 Walkthrough</h3>
   <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
   <button data-nav="walkthrough">Open Walkthrough</button>
 </div>
+
+        <div class="glass-card metric">
+          <h3>🧪 Last Test</h3>
+          <p id="last-test">${lastTestStr}</p>
+        </div>
 
         <div class="glass-card metric">
           <h3>🔥 Study Streak</h3>
