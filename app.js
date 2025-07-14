@@ -355,7 +355,8 @@ break;
     default:            renderDashboard();       break;
   }
 }
-// Render Login
+
+//Render Login
 
 function renderLogin(container = document.getElementById("app")) {
   container.innerHTML = `
@@ -375,7 +376,9 @@ function renderLogin(container = document.getElementById("app")) {
         </div>
         <div id="error-msg" style="display:none;color:var(--error);margin-bottom:10px;font-weight:500;"></div>
         <button class="btn primary" type="submit">Log In</button>
-        <button type="button" class="btn" id="google-login" style="margin-top:0.8rem;display:flex;align-items:center;justify-content:center;gap:0.5em;"><img src="https://www.svgrepo.com/show/475656/google-color.svg" style="height:1.1em;width:1.1em;vertical-align:middle;"> Sign in with Google</button>
+        <button type="button" class="btn" id="google-login" style="margin-top:0.8rem;display:flex;align-items:center;justify-content:center;gap:0.5em;">
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" style="height:1.1em;width:1.1em;vertical-align:middle;"> Sign in with Google
+        </button>
         <button type="button" class="btn outline" id="reset-password" style="margin-top:0.6rem;">Forgot Password?</button>
       </form>
       <div class="login-footer">
@@ -384,8 +387,11 @@ function renderLogin(container = document.getElementById("app")) {
     </div>
   `;
 
-  document.getElementById("go-signup").onclick = () => renderSignup(container);
+  // Navigation to sign-up
+  const goSignup = container.querySelector("#go-signup");
+  if (goSignup) goSignup.onclick = () => renderSignup(container);
 
+  // Password toggle
   const pwdInput = container.querySelector("#login-password");
   const togglePwd = container.querySelector("#toggle-password");
   if (pwdInput && togglePwd) {
@@ -394,13 +400,15 @@ function renderLogin(container = document.getElementById("app")) {
       togglePwd.textContent = pwdInput.type === "password" ? "👁️" : "🙈";
     };
   }
+
   setupNavigation();
 
-  document.getElementById("login-form").onsubmit = async e => {
+  // Email/password login
+  container.querySelector("#login-form").onsubmit = async e => {
     e.preventDefault();
-    const email = document.getElementById("email").value.trim();
+    const email = container.querySelector("#email").value.trim();
     const pwd   = pwdInput.value;
-    const errD  = document.getElementById("error-msg");
+    const errD  = container.querySelector("#error-msg");
     errD.style.display = "none";
     if (!email || !pwd) {
       errD.textContent = "Please enter both email and password.";
@@ -436,7 +444,8 @@ function renderLogin(container = document.getElementById("app")) {
     }
   };
 
-  const googleBtn = document.getElementById("google-login");
+  // Google sign-in
+  const googleBtn = container.querySelector("#google-login");
   if (googleBtn) {
     googleBtn.onclick = async () => {
       try {
@@ -448,11 +457,12 @@ function renderLogin(container = document.getElementById("app")) {
     };
   }
 
-  const resetBtn = document.getElementById("reset-password");
+  // Reset password
+  const resetBtn = container.querySelector("#reset-password");
   if (resetBtn) {
     resetBtn.onclick = async e => {
       e.preventDefault();
-      const email = document.getElementById("email").value.trim();
+      const email = container.querySelector("#email").value.trim();
       if (!email) {
         showToast("Enter your email to receive a reset link.");
         return;
@@ -466,7 +476,6 @@ function renderLogin(container = document.getElementById("app")) {
     };
   }
 }
-
   /* Back to welcome page */
   document.getElementById("back-btn")
   .addEventListener("click", async () => {
