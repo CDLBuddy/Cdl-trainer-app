@@ -78,6 +78,9 @@ const db   = getFirestore(app);
 const auth = getAuth(app);
 
 // ─── 3. AUTH STATE LISTENER ────────────────────────────────────────────────────
+const loaderEl      = document.getElementById("app-loader"); // ⏳ full-screen loader
+const loaderShownAt = Date.now();                            // time it first appeared
+
 onAuthStateChanged(auth, async user => {
   console.log("🔔 Firebase auth state changed:", user);
 
@@ -158,6 +161,12 @@ onAuthStateChanged(auth, async user => {
     currentUserEmail = null;
     renderWelcome();
   }
+
+  /* fade the loader out after it’s been visible at least 400 ms */
+  const elapsed  = Date.now() - loaderShownAt;
+  const minShown = 400;                       // ms
+  setTimeout(() => loaderEl?.classList.add("hide"),
+             Math.max(0, minShown - elapsed));
 });
 
 // ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
