@@ -485,26 +485,29 @@ body::before {
   pointer-events: none;
   z-index: -3;
 
-  /* layer 1 – subtle diagonal shimmer */
+  /* layer 1 – diagonal shimmer */
   background:
     linear-gradient(
       120deg,
       rgba(255,255,255,0.03) 0%,
-      rgba(255,255,255,0.05)50%,
-      rgba(255,255,255,0.03 100%
+      rgba(255,255,255,0.05) 50%,
+      rgba(255,255,255,0.03) 100%
     ),
-    /* layer 2 – grain/noise */
+    /* layer 2 – grain / noise */
     url("noise.png");
+
   background-size:
-    300% 300%,                 /* shimmer */
-    auto;                      /* noise   */
+    300% 300%,   /* shimmer */
+    auto;        /* noise   */
+
   animation: shimmer 6s linear infinite;
-  mix-blend-mode: overlay;     /* lets noise sit lightly over the bg */
+  mix-blend-mode: overlay;   /* lets noise sit lightly over the bg */
 }
+
 @keyframes shimmer {
-  0%   { background-position: 0%   0%,   0 0; }
-  50%  { background-position: 100% 100%, 0 0; }
-  100% { background-position: 0%   0%,   0 0; }
+  0%   { background-position: 0%   0%,    0 0; }
+  50%  { background-position: 100% 100%,  0 0; }
+  100% { background-position: 0%   0%,    0 0; }
 }
 
 /*  violet / indigo spotlight glow  */
