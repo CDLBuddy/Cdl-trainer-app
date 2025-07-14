@@ -400,6 +400,106 @@ nav button {
 .carousel-arrow:hover { background: rgba(0,0,0,0.7); }
 .carousel-arrow.left  { left: 8px;  }
 .carousel-arrow.right { right: 8px; }
+/* Glass Login/Signup Card */
+.login-card, .signup-card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  max-width: 400px;
+  margin: 48px auto 0 auto;
+  padding: 2.4rem 2rem 2rem 2rem;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.24);
+  backdrop-filter: blur(14px) saturate(130%);
+  color: var(--text-light);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: fadeInUp 0.6s cubic-bezier(.5,.95,.17,1.12);
+}
+
+.login-card h2, .signup-card h2 {
+  margin-bottom: 0.7rem;
+  letter-spacing: .01em;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.1rem;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--text-light);
+  margin-bottom: 2px;
+}
+
+.login-card input, .signup-card input, .signup-card select {
+  border: none;
+  border-radius: 8px;
+  padding: 0.74rem 1rem;
+  font-size: 1rem;
+  background: rgba(255,255,255,0.13);
+  color: var(--text-light);
+  outline: none;
+  margin-bottom: 0.3rem;
+  transition: background 0.18s, box-shadow 0.18s;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.09);
+}
+/*_———login———*/
+
+.login-card input:focus, .signup-card input:focus, .signup-card select:focus {
+  background: rgba(196,219,232,0.16);
+  box-shadow: 0 0 0 2px var(--accent);
+  color: var(--text-dark);
+}
+
+.login-card .btn, .signup-card .btn {
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.login-footer, .signup-footer {
+  text-align: center;
+  margin-top: 0.8rem;
+  color: var(--text-dark);
+  font-size: 1rem;
+}
+
+.role-badge-select {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 0.4rem;
+}
+.role-badge-select label {
+  background: rgba(255,255,255,0.08);
+  border-radius: 7px;
+  padding: 0.3rem 0.9rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-light);
+  transition: background 0.18s, box-shadow 0.18s;
+  border: 1.5px solid transparent;
+  user-select: none;
+}
+.role-badge-select input[type="radio"] {
+  display: none;
+}
+.role-badge-select input[type="radio"]:checked + span {
+  background: var(--accent);
+  color: var(--brand-dark);
+  border: 1.5px solid var(--brand-light);
+}
+
+@media (max-width: 600px) {
+  .login-card, .signup-card {
+    max-width: 98vw;
+    padding: 1.3rem 0.6rem 1.3rem 0.6rem;
+  }
+}
 /* ─── 10.5 Legacy dash-actions row (can delete later) ──────────────────── */
 .dash-actions {
   display: flex;
