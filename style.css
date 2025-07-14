@@ -15,23 +15,21 @@ body {
   overscroll-behavior: contain;
 }
 
-/* ─── 1. CSS Variables  (Violet / Indigo theme) ───────────────────────── */
+/* ─── 1.  Violet-Indigo Palette ───────────────────────────────────────── */
 :root {
-  /* backdrop gradient stops */
-  --brand-dark:   #10072d;   /* deep indigo   */
-  --brand-mid:    #24104b;   /* rich purple   */
-  --brand-light:  #432c7a;   /* violet edge   */
+  /* diagonal gradient stops */
+  --brand-dark:   #0b0a34;   /* midnight indigo   */
+  --brand-mid:    #26115a;   /* deep violet       */
+  --brand-light:  #3f1784;   /* royal purple edge */
 
-  /* interactive accent (buttons, bars, glows) */
-  --accent:       #9d82ff;   /* lavender-violet */
+  /* accent colour for buttons / bars / glows */
+  --accent:       #b48aff;   /* soft lavender      */
 
-  /* text & surface vars stay the same */
+  /* unchanged support vars */
   --text-light:   #ffffff;
   --text-dark:    #e0e0e0;
-
   --card-bg:      rgba(255,255,255,0.11);
   --card-bg-dark: rgba(16,12,37,0.7);
-
   --toast-bg:     rgba(0,0,0,0.8);
   --toast-text:   #ffffff;
   --error:        #e53e3e;
@@ -61,18 +59,18 @@ body {
     var(--brand-mid) 75%,
     var(--brand-dark) 100%
   );
-  background-size: 400% 400%;
-  animation: gradientFlow 32s linear infinite;
+  background-size: 600% 600%;
+  animation: gradientFlow 20s linear infinite;
 }
 @keyframes gradientFlow {
   0% {
-    background-position: 0% 50%;
+    background-position: 0% 40%;
   }
   50% {
-    background-position: 100% 50%;
+    background-position: 100% 60%;
   }
   100% {
-    background-position: 0% 50%;
+    background-position: 0% 40%;
   }
 }
 body.dark-mode {
@@ -541,6 +539,21 @@ body::after {
     transform: translate(0, 0) scale(1);
   }
 }
+/* ─── Floating radial glow overlay (optional) ─────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  pointer-events: none;
+  z-index: -2;
+
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255, 110, 255, 0.25) 0%, transparent 60%),
+    radial-gradient(circle at 80% 70%, rgba(95, 170, 255, 0.27) 0%, transparent 60%);
+  mix-blend-mode: screen;           /* lets colours add without haze    */
+  animation: spinBg 60s linear infinite;
+}
+@keyframes spinBg { to { transform: rotate(360deg); } }
 /* ─── 14. Auth Screen ───────────────────────────────────────────────────── */
 .auth-wrapper {
   display: flex;
