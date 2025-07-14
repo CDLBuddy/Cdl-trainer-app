@@ -475,7 +475,6 @@ function renderLogin(container = document.getElementById("app")) {
       }
     };
   }
-}
   /* Back to welcome page */
   document.getElementById("back-btn")
   .addEventListener("click", async () => {
