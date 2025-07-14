@@ -574,6 +574,12 @@ async function renderDashboard(container = document.getElementById("app")) {
           <h3>🧪 Last Test</h3>
           <p id="last-test">${lastTestStr}</p>
         </div>
+        
+        <div class="dashboard-card">
+  <h3>🧭 Walkthrough</h3>
+  <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
+  <button data-nav="walkthrough">Open Walkthrough</button>
+</div>
 
         <div class="glass-card metric">
           <h3>🔥 Study Streak</h3>
