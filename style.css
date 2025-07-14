@@ -439,23 +439,6 @@ nav button {
   transform: scale(0.96);
 }
 
-/* collapse rail on phones */
-@media (max-width: 480px) {
-  .dash-layout {
-    flex-direction: column;
-    align-items: center;
-  }
-  .dash-rail {
-    flex-direction: row;
-    flex-wrap: wrap;
-    width: 100%;
-    justify-content: center;
-  }
-  .rail-btn {
-    width: 120px;
-  }
-}
-
 /* ─── 11. Glow Pulse for Carousel (unchanged) ──────────────────────────── */
 @keyframes carouselGlow {
   0%,
