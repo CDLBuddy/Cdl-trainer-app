@@ -15,24 +15,27 @@ body {
   overscroll-behavior: contain;
 }
 
-/* ─── 1. CSS Variables (Deep-Blue + Lavender Accent) ───────────────────── */
+/* ─── 1. CSS Variables  (Violet / Indigo theme) ───────────────────────── */
 :root {
-  --brand-dark: #0a1f44;
-  --brand-mid: #12355a;
-  --brand-light: #1b4f72;
+  /* backdrop gradient stops */
+  --brand-dark:   #10072d;   /* deep indigo   */
+  --brand-mid:    #24104b;   /* rich purple   */
+  --brand-light:  #432c7a;   /* violet edge   */
 
-  --accent: #7b6bff; /* lavender accent */
+  /* interactive accent (buttons, bars, glows) */
+  --accent:       #9d82ff;   /* lavender-violet */
 
-  --text-light: #ffffff;
-  --text-dark: #e0e0e0;
+  /* text & surface vars stay the same */
+  --text-light:   #ffffff;
+  --text-dark:    #e0e0e0;
 
-  --card-bg: rgba(255, 255, 255, 0.12);
-  --card-bg-dark: rgba(20, 30, 50, 0.7);
+  --card-bg:      rgba(255,255,255,0.11);
+  --card-bg-dark: rgba(16,12,37,0.7);
 
-  --toast-bg: rgba(0, 0, 0, 0.8);
-  --toast-text: #ffffff;
-  --error: #e53e3e;
-  --success: #48bb78;
+  --toast-bg:     rgba(0,0,0,0.8);
+  --toast-text:   #ffffff;
+  --error:        #e53e3e;
+  --success:      #48bb78;
 }
 
 /* ─── 2. Reset & Animated Gradient Backdrop ────────────────────────────── */
