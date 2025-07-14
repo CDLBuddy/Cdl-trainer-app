@@ -340,6 +340,8 @@ function renderPage(page) {
   if (!c) return;
   switch (page) {
     case "walkthrough": renderWalkthrough(c);    break;
+    case "profile":   renderProfile();   
+break;
     case "tests":       renderPracticeTests(c);  break;
     case "coach":       renderAICoach(c);        break;
     case "checklists":  renderChecklists(c);     break;
@@ -578,6 +580,11 @@ async function renderDashboard() {
   <button class="dash-btn" data-nav="test">
     <span class="icon">🧪</span>
     <span class="label">Testing</span>
+  </button>
+  
+  <!-- 🔹 new Flashcards button -->
+  <button class="dash-btn" data-nav="flashcards">
+    <span class="icon">🃏</span><span class="label">Flashcards</span>
   </button>
 
   <button class="dash-btn" data-nav="coach">

@@ -298,6 +298,14 @@ color:#fff;box-shadow:0 8px 16px rgba(0,0,0,.25);transition:transform .3s,box-sh
 background:rgba(0,0,0,.55);color:#fff;border:0;cursor:pointer;backdrop-filter:blur(6px)}
 .carousel-arrow.left{left:8px}.carousel-arrow.right{right:8px}
 
+/* ─── 10.5  Dashboard Action Buttons ────────────────────────────────────── */
+.dash-actions       { display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; }
+.dash-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+
 /* ─── 11. Optional Glow Pulse ───────────────────────────────────────────── */
 @keyframes carouselGlow{0%,100%{opacity:0}50%{opacity:.6}}
 .feat:hover::before{content:"";position:absolute;inset:-2px;border-radius:inherit;background:inherit;
