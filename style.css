@@ -490,8 +490,8 @@ body::before {
     linear-gradient(
       120deg,
       rgba(255,255,255,0.03) 0%,
-      rgba(255,255,255,0.05) 50%,
-      rgba(255,255,255,0.03) 100%
+      rgba(255,255,255,0.05)50%,
+      rgba(255,255,255,0.03 100%
     ),
     /* layer 2 – grain/noise */
     url("noise.png");
@@ -507,36 +507,26 @@ body::before {
   100% { background-position: 0%   0%,   0 0; }
 }
 
-/* ─── Off-screen spotlight glow  v2  -- brighter & closer ─────────────── */
-body::after {
-  content: "";
-  position: fixed;
-  inset: -25vmax;              /* pulls the circles nearer to edges   */
-  pointer-events: none;
-  z-index: -2;                 /* above shimmer / below cards        */
+/*  violet / indigo spotlight glow  */
+body::after{
+  content:"";
+  position:fixed;
+  width:160vmax; height:160vmax;
+  pointer-events:none;
+  z-index:-1;                       /* ↑ one layer higher than bokeh  */
+  filter:blur(90px) saturate(170%);
+  opacity:.85;
+  mix-blend-mode:screen;
 
-  width: 175vmax;
-  height: 175vmax;
-
-  /* colour & light shaping */
   background:
-    radial-gradient(circle at 0%   -10%, rgba(185,120,255,0.95) 0%,  transparent 65%),
-    radial-gradient(circle at 120% 110%, rgba( 95,170,255,0.95) 0%, transparent 65%),
-    radial-gradient(circle at 50%  140%, rgba(255,100,200,0.40) 0%, transparent 70%);
+    radial-gradient(circle at -15% -10%, rgba(185,120,255,.95) 0%, transparent 65%),
+    radial-gradient(circle at 115% 110%, rgba(95,170,255,.95) 0%,  transparent 65%);
 
-  filter: blur(70px) saturate(170%);
-  opacity: 0.95;
-  mix-blend-mode: screen;
-
-  animation: driftGlow 22s ease-in-out alternate infinite;
+  animation:driftGlow 24s ease-in-out alternate infinite;
 }
-@keyframes driftGlow {
-  0%   { transform: translate(  0,   0); }
-  100% { transform: translate(-6vmax, -5vmax); }
-}
-@keyframes driftGlow {
-  0%   { transform: translate(0, 0); }
-  100% { transform: translate(-10vmax, -8vmax); }
+@keyframes driftGlow{
+  0%{transform:translate(0,0)}
+  100%{transform:translate(-8vmax,-6vmax)}
 }
 /* ─── 14. Auth Screen ───────────────────────────────────────────────────── */
 .auth-wrapper {
