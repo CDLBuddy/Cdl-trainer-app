@@ -841,6 +841,104 @@ async function renderProfile(container = document.getElementById("app")) {
   };
 }
 
+async function renderChecklists(container = document.getElementById("app")) {
+  if (!auth.currentUser) {
+    container.innerHTML = "<p>You must be logged in to view this page.</p>";
+    return;
+  }
+
+  // --- Load student data (from Firestore) ---
+  let userData = {};
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", auth.currentUser.email));
+    const snap = await getDocs(q);
+    if (!snap.empty) userData = snap.docs[0].data();
+  } catch (e) {
+    userData = {};
+  }
+
+  // Simulate system-detected progress
+  // (Replace with real logic/calculations as your backend grows)
+  const {
+    cdlClass,
+    cdlPermit,
+    permitPhotoUrl,
+    vehicleQualified,
+    truckPlateUrl,
+    trailerPlateUrl,
+    experience,
+    lastTestScore,
+    walkthroughProgress,
+    studyMinutes,
+  } = userData;
+
+  // Calculate completion percent and which sections are incomplete
+  let complete = 0, total = 5;
+  const checklist = [
+    {
+      label: "Profile Complete",
+      done: cdlClass && cdlPermit && experience,
+      link: "profile",
+      notify: !(cdlClass && cdlPermit && experience),
+    },
+    {
+      label: "Permit Uploaded",
+      done: cdlPermit === "yes" && permitPhotoUrl,
+      link: "profile",
+      notify: cdlPermit === "yes" && !permitPhotoUrl,
+    },
+    {
+      label: "Vehicle Data Plates Uploaded",
+      done: vehicleQualified === "yes" && truckPlateUrl && trailerPlateUrl,
+      link: "profile",
+      notify: vehicleQualified === "yes" && (!truckPlateUrl || !trailerPlateUrl),
+    },
+    {
+      label: "Practice Test Passed",
+      done: lastTestScore >= 80,
+      link: "tests",
+      notify: lastTestScore < 80,
+    },
+    {
+      label: "Walkthrough Progress",
+      done: walkthroughProgress >= 1,
+      link: "walkthrough",
+      notify: walkthroughProgress < 1,
+    },
+    // Add more if needed!
+  ];
+  complete = checklist.filter(x => x.done).length;
+  const percent = Math.round((complete / checklist.length) * 100);
+
+  // Page HTML
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in checklist-page" style="max-width:480px;margin:0 auto;">
+      <h2>📋 Student Checklist</h2>
+      <div class="progress-track" style="margin-bottom:18px;">
+        <div class="progress-fill" style="width:${percent}%;"></div>
+        <span class="progress-label">${percent}% Complete</span>
+      </div>
+      <ul class="checklist-list">
+        ${checklist.map(item => `
+          <li class="${item.done ? 'done' : ''}">
+            <span>${item.label}</span>
+            ${item.done 
+              ? `<span class="badge badge-success">✔</span>` 
+              : `<button class="btn outline btn-sm" data-nav="${item.link}">Complete</button>
+                 ${item.notify ? `<span class="notify-bubble">!</span>` : ""}`
+            }
+          </li>
+        `).join("")}
+      </ul>
+      <button class="btn wide" data-nav="dashboard" style="margin-top:24px;">⬅️ Back to Dashboard</button>
+    </div>
+  `;
+
+  // Setup navigation for buttons
+  setupNavigation();
+}
+
 /* ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── */
 function renderFlashcards(c=document.getElementById("app")){
   c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🃏 Flashcards</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
