@@ -460,7 +460,7 @@ function renderLogin(container = document.getElementById("app")) {
     }
   handleNavigation("welcome", true);
   });
-
+}
 // ─── 9. STUDENT DASHBOARD ─────────────────────────────────────────────────────
 async function renderDashboard() {
   const appEl = document.getElementById("app");
