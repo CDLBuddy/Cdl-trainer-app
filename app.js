@@ -458,7 +458,7 @@ function renderLogin(container = document.getElementById("app")) {
         console.error("Sign-out failed:", err);
       }
     }
-    handleNavigation("welcome", true);
+  handleNavigation("welcome", true);
   });
 
 // ─── 9. STUDENT DASHBOARD ─────────────────────────────────────────────────────
