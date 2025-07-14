@@ -472,22 +472,26 @@ function renderLogin(container = document.getElementById("app")) {
   handleNavigation("home", true);
   });
 }
-// ─── 9. STUDENT DASHBOARD ─────────────────────────────────────────────────────
-async function renderDashboard() {
-  const appEl = document.getElementById("app");
-  if (!appEl) return;
+// ─── 9. STUDENT DASHBOARD ────────────────────────────────────────────────
+async function renderDashboard(container = document.getElementById("app")) {
+  if (!container) return;
 
-  // Fetch ELDT progress
+  /* 1️⃣  FETCH DATA ----------------------------------------------------- */
+  // Checklist %
   let checklistPct = 0;
   try {
     const snap = await getDocs(
       query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail))
     );
-    let total = 0, done = 0;
-    snap.forEach(d => {
+    let total = 0,
+      done = 0;
+    snap.forEach((d) => {
       const prog = d.data().progress;
-      Object.values(prog).forEach(sec =>
-        Object.values(sec).forEach(val => { total++; if (val) done++; })
+      Object.values(prog).forEach((sec) =>
+        Object.values(sec).forEach((val) => {
+          total++;
+          if (val) done++;
+        })
       );
     });
     checklistPct = total ? Math.round((done / total) * 100) : 0;
@@ -495,34 +499,44 @@ async function renderDashboard() {
     console.error("ELDT fetch error", e);
   }
 
-  // Fetch last test result
-  let lastTestData = null;
+  // Last-test summary
+  let lastTestStr = "No tests taken yet.";
   try {
-    const snap2 = await getDocs(
+    const snap = await getDocs(
       query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
     );
-    snap2.forEach(d => {
+    let latest = null;
+    snap.forEach((d) => {
       const t = d.data();
-      if (!lastTestData || t.timestamp.toDate() > lastTestData.timestamp.toDate()) {
-        lastTestData = t;
-      }
+      if (!latest || t.timestamp.toDate() > latest.timestamp.toDate()) latest = t;
     });
+    if (latest) {
+      const pct = Math.round((latest.correct / latest.total) * 100);
+      lastTestStr = `${latest.testName} – ${pct}% on ${latest.timestamp
+        .toDate()
+        .toLocaleDateString()}`;
+    }
   } catch (e) {
     console.error("TestResults fetch error", e);
   }
 
-  // Fetch profile info (license & experience)
-  let license = "Not selected", experience = "Unknown";
+  // License & experience
+  let license = "Not selected",
+    experience = "Unknown";
   try {
-    (await getDocs(query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail))))
-      .forEach(d => license = d.data().licenseType || license);
-    (await getDocs(query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail))))
-      .forEach(d => experience = d.data().experience || experience);
+    const licSnap = await getDocs(
+      query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail))
+    );
+    licSnap.forEach((d) => (license = d.data().licenseType || license));
+    const expSnap = await getDocs(
+      query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail))
+    );
+    expSnap.forEach((d) => (experience = d.data().experience || experience));
   } catch (e) {
     console.error("Profile fetch error", e);
   }
 
-  // Compute study streak (last 7 days)
+  // 7-day study streak
   let streak = 0;
   try {
     const today = new Date().toDateString();
@@ -533,82 +547,83 @@ async function renderDashboard() {
     }
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 6);
-    streak = log.filter(d => new Date(d) >= cutoff).length;
+    streak = log.filter((d) => new Date(d) >= cutoff).length;
   } catch (e) {
     console.error("Streak calc error", e);
   }
 
+  /* 2️⃣  RENDER DASHBOARD LAYOUT --------------------------------------- */
   const name = localStorage.getItem("fullName") || "CDL User";
   const roleBadge = getRoleBadge(currentUserEmail);
 
-  appEl.innerHTML = `
-    <div style="padding:20px; max-width:600px; margin:0 auto;">
-      <h1>Welcome back, ${name}!</h1>
-      ${roleBadge}
-      <div style="margin:20px 0;">
-        <h3>📋 Checklist Progress</h3>
-        <div class="progress-track"><div class="progress-fill" style="width:${checklistPct}%"></div></div>
-        <p>${checklistPct}% complete</p>
-      </div>
-      <div style="margin:20px 0;">
-        <h3>🧪 Last Test</h3>
-        ${lastTestData
-          ? `<p><strong>${lastTestData.testName}</strong> -- ${lastTestData.correct}/${lastTestData.total} (${Math.round(lastTestData.correct/lastTestData.total*100)}%)</p>`
-          : `<p>No tests taken yet.</p>`
-        }
-      </div>
-      <div style="margin:20px 0;">
-        <h3>📝 Your Profile</h3>
-        <p><strong>License:</strong> ${license}</p>
-        <p><strong>Experience:</strong> ${experience}</p>
-      </div>
-      <div style="margin:20px 0;">
-        <h3>🔥 Study Streak</h3>
-        <p>${streak} day${streak !== 1 ? "s" : ""} active this week</p>
-      </div>
-      <div class="dash-actions">
-  <button class="dash-btn" data-nav="profile">
-    <span class="icon">👤</span>
-    <span class="label">My&nbsp;Profile</span>
-  </button>
+  container.innerHTML = `
+    <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
 
-  <button class="dash-btn" data-nav="checklist">
-    <span class="icon">✅</span>
-    <span class="label">My&nbsp;Checklist</span>
-  </button>
+    <div class="dash-layout">
 
-  <button class="dash-btn" data-nav="test">
-    <span class="icon">🧪</span>
-    <span class="label">Testing</span>
-  </button>
-  
-  <!-- 🔹 new Flashcards button -->
-  <button class="dash-btn" data-nav="flashcards">
-    <span class="icon">🃏</span><span class="label">Flashcards</span>
-  </button>
+      <!-- metric cards ---------------------------- -->
+      <section class="dash-metrics">
 
-  <button class="dash-btn" data-nav="coach">
-    <span class="icon">🎧</span>
-    <span class="label">AI&nbsp;Coach</span>
-  </button>
-</div>
+        <div class="glass-card metric" id="metric-checklist">
+          <h3>✅ Checklist Progress</h3>
+          <progress value="${checklistPct}" max="100"></progress>
+          <p><span class="big-num" id="checklist-pct">${checklistPct}</span>% complete</p>
+        </div>
 
-<!-- existing Logout button stays below -->
-      <div style="text-align:center; margin-top:30px;">
-        <button id="logout-btn" style="padding:8px 16px;">🚪 Logout</button>
-      </div>
+        <div class="glass-card metric">
+          <h3>🧪 Last Test</h3>
+          <p id="last-test">${lastTestStr}</p>
+        </div>
+
+        <div class="glass-card metric">
+          <h3>🔥 Study Streak</h3>
+          <p><span class="big-num" id="streak-days">${streak}</span> day${
+    streak !== 1 ? "s" : ""
+  } active this week</p>
+        </div>
+
+        <div class="glass-card metric">
+          <h3>🚛 Profile</h3>
+          <p><strong>License:</strong> ${license}</p>
+          <p><strong>Experience:</strong> ${experience}</p>
+        </div>
+
+      </section>
+
+      <!-- compact rail ---------------------------- -->
+      <aside class="dash-rail">
+        <button class="rail-btn" data-nav="profile">👤<span>My&nbsp;Profile</span></button>
+        <button class="rail-btn" data-nav="checklist">✅<span>My&nbsp;Checklist</span></button>
+        <button class="rail-btn" data-nav="test">🧪<span>Testing</span></button>
+        <button class="rail-btn" data-nav="flashcards">🃏<span>Flashcards</span></button>
+        <button class="rail-btn" data-nav="coach">🎧<span>AI&nbsp;Coach</span></button>
+      </aside>
+
+    </div>
+
+    <div style="text-align:center; margin-top:2rem;">
+      <button id="logout-btn" class="btn outline">🚪 Logout</button>
     </div>
   `;
 
-  setupNavigation();
-  document.getElementById("logout-btn")?.addEventListener("click", async () => {
-    await signOut(auth);
-    localStorage.removeItem("fullName");
-    localStorage.removeItem("userRole");
-    renderWelcome();
-  });
-}
+  /* 3️⃣  UPDATE ELEMENTS & WIRE NAV ------------------------------------ */
+  document.getElementById("checklist-pct").textContent =
+    checklistPct.toString();
+  document
+    .querySelector("#metric-checklist progress")
+    .setAttribute("value", checklistPct);
 
+  setupNavigation();
+
+  document
+    .getElementById("logout-btn")
+    ?.addEventListener("click", async () => {
+      await signOut(auth);
+      localStorage.removeItem("fullName");
+      localStorage.removeItem("userRole");
+      renderWelcome();
+    });
+}
 // ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
 /* ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── */
 function renderWalkthrough(c=document.getElementById("app")){
