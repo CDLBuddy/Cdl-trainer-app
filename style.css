@@ -477,103 +477,57 @@ nav button {
   }
 }
 
-/* ─── 13. Background Enhancements (noise, shimmer, bokeh) ─────────────── */
-body::before,
-body::after {
+/* ─── 13. Background Enhancements (shimmer + noise) ──────────────────── */
+body::before {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
-}
-body::before {
-  background: linear-gradient(
-    120deg,
-    rgba(255, 255, 255, 0.03) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0.03) 100%
-  );
-  background-size: 300% 300%;
+  z-index: -3;
+
+  /* layer 1 – subtle diagonal shimmer */
+  background:
+    linear-gradient(
+      120deg,
+      rgba(255,255,255,0.03) 0%,
+      rgba(255,255,255,0.05) 50%,
+      rgba(255,255,255,0.03) 100%
+    ),
+    /* layer 2 – grain/noise */
+    url("noise.png");
+  background-size:
+    300% 300%,                 /* shimmer */
+    auto;                      /* noise   */
   animation: shimmer 6s linear infinite;
+  mix-blend-mode: overlay;     /* lets noise sit lightly over the bg */
 }
 @keyframes shimmer {
-  0% {
-    background-position: 0% 0%;
-  }
-  50% {
-    background-position: 100% 100%;
-  }
-  100% {
-    background-position: 0% 0%;
-  }
+  0%   { background-position: 0%   0%,   0 0; }
+  50%  { background-position: 100% 100%, 0 0; }
+  100% { background-position: 0%   0%,   0 0; }
 }
-body::after {
-  background-image: url("noise.png");
-  opacity: 0.06;
-  mix-blend-mode: overlay;
-}
-.bokeh-layer {
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  overflow: hidden;
-  pointer-events: none;
-}
-.bokeh-dot {
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  filter: blur(24px);
-  animation: floatBokeh 12s linear infinite;
-}
-@keyframes floatBokeh {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(10px, -20px) scale(1.05);
-  }
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-}
-/* ─── Off-screen spotlight glow ───────────────────────────────────────── */
-body::before,
+
+/* ─── Off-screen spotlight glow (on ::after) ─────────────────────────── */
 body::after {
   content: "";
   position: fixed;
-  width: 140vmax;                /* huge circle */
-  height: 140vmax;
-  border-radius: 50%;
+  width: 150vmax;
+  height: 150vmax;
   pointer-events: none;
-  z-index: -2;                   /* behind cards but above gradient */
-  filter: blur(120px);           /* big feather */
-  opacity: 0.45;                 /* dim light */
-}
+  z-index: -2;                /* above shimmer/noise, below cards */
+  filter: blur(160px);
+  opacity: 0.60;
 
-/* Left-top violet glow */
-body::before {
-  background: radial-gradient(circle, rgba(185,120,255,1) 0%, rgba(185,120,255,0) 60%);
-  top: -50vmax;                  /* mostly off-canvas */
-  left: -40vmax;
-  transform: translate3d(0,0,0); /* keeps it in its own layer */
-}
+  /* two huge radial halos spilling in from off-screen */
+  background:
+    radial-gradient(circle at -30% -20%, rgba(185,120,255,0.85) 0%, transparent 60%),
+    radial-gradient(circle at 130% 120%, rgba( 95,170,255,0.85) 0%, transparent 60%);
 
-/* Right-bottom indigo-blue glow */
-body::after {
-  background: radial-gradient(circle, rgba(95,170,255,1) 0%, rgba(95,170,255,0) 60%);
-  bottom: -55vmax;
-  right: -45vmax;
-  transform: translate3d(0,0,0);
-  animation: driftGlow 40s ease-in-out alternate infinite;
+  animation: driftGlow 30s ease-in-out alternate infinite;
 }
-
-/* gentle slow drift for the blue one */
 @keyframes driftGlow {
-  0%   { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(15vmax, 10vmax, 0); }
+  0%   { transform: translate(0, 0); }
+  100% { transform: translate(-10vmax, -8vmax); }
 }
 /* ─── 14. Auth Screen ───────────────────────────────────────────────────── */
 .auth-wrapper {
