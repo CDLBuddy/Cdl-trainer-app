@@ -685,3 +685,58 @@ body::after{
   background: #d6b4ff;
   transform: scale(1.03);
 }
+/* ─── 16. Dashboard Card Layout Fixes ─────────────────────────────────── */
+
+.dashboard-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 16px;
+}
+
+.dashboard-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  padding: 16px 20px;
+  color: var(--text-light);
+  width: 100%;
+  max-width: 300px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  flex: 1 1 calc(50% - 20px); /* 2-column layout */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease;
+}
+.dashboard-card:hover {
+  transform: translateY(-4px);
+}
+
+.dashboard-card h3 {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
+}
+
+.dashboard-card p {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--text-light);
+}
+
+.dashboard-card button {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-top: 12px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  width: 100%;
+}
+.dashboard-card button:hover {
+  background: #d6b4ff;
+}
