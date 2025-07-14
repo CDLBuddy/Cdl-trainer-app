@@ -631,6 +631,7 @@ async function renderDashboard(container = document.getElementById("app")) {
     });
 }
 // ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
+//Render Walkthrough
 async function renderWalkthrough(container = document.getElementById("app")) {
   if (!auth.currentUser || !auth.currentUser.email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
@@ -694,7 +695,7 @@ async function renderWalkthrough(container = document.getElementById("app")) {
   container.innerHTML = content;
   setupNavigation();
 }
-
+// Render Profile
 async function renderProfile(container = document.getElementById("app")) {
   if (!container) return;
 
@@ -840,7 +841,7 @@ async function renderProfile(container = document.getElementById("app")) {
     }
   };
 }
-
+// Render Checklist
 async function renderChecklists(container = document.getElementById("app")) {
   if (!auth.currentUser) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
@@ -1009,63 +1010,6 @@ function renderAICoach(container) {
     logEl.innerHTML += `<div style="margin:8px 0; color:#0066cc;"><strong>AI Coach:</strong> ${reply}</div>`;
     logEl.scrollTop = logEl.scrollHeight;
   });
-}
-
-// My Checklist
-async function renderChecklists(container) {
-  container.innerHTML = `<div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;"><h2>✅ My ELDT Checklist</h2><p>Loading...</p></div>`;
-
-  const q = query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail));
-  const snap = await getDocs(q);
-
-  let docId, progressData;
-  if (snap.empty) {
-    progressData = {
-      studentId: currentUserEmail,
-      progress: {
-        "Section 1": { "Item A": false, "Item B": false },
-        "Section 2": { "Item C": false, "Item D": false }
-      }
-    };
-    const r = await addDoc(collection(db, "eldtProgress"), progressData);
-    docId = r.id;
-  } else {
-    docId = snap.docs[0].id;
-    progressData = snap.docs[0].data();
-  }
-
-  let html = `<div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;"><h2>✅ My ELDT Checklist</h2><ul style="list-style:none; padding:0;">`;
-  Object.entries(progressData.progress).forEach(([sect, items]) => {
-    html += `<li style="margin-bottom:16px;"><strong>${sect}</strong><ul style="list-style:none; padding-left:12px;">`;
-    Object.entries(items).forEach(([item, done]) => {
-      html += `
-        <li style="margin:6px 0;">
-          <label>
-            <input type="checkbox" data-item="${item}" ${done ? "checked" : ""}>
-            ${item}
-          </label>
-        </li>
-      `;
-    });
-    html += `</ul></li>`;
-  });
-  html += `</ul><button data-nav="dashboard">⬅️ Back</button></div>`;
-
-  container.innerHTML = html;
-  setupNavigation();
-
-  container.querySelectorAll("input[type=checkbox]").forEach(cb =>
-    cb.addEventListener("change", async () => {
-      const itemName = cb.dataset.item;
-      for (let [sect, items] of Object.entries(progressData.progress)) {
-        if (items.hasOwnProperty(itemName)) {
-          progressData.progress[sect][itemName] = cb.checked;
-          break;
-        }
-      }
-      await updateDoc(doc(db, "eldtProgress", docId), { progress: progressData.progress });
-    })
-  );
 }
 
 // Test Results
