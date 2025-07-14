@@ -573,7 +573,7 @@ async function renderDashboard(container = document.getElementById("app")) {
         <div class="dashboard-card">
   <h3>🧭 Walkthrough</h3>
   <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
-  <button data-nav="walkthrough">Open Walkthrough</button>
+  <button class="btn" data-nav="walkthrough">Open Walkthrough</button>
 </div>
 
         <div class="glass-card metric">

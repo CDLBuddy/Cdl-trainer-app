@@ -15,17 +15,17 @@ body {
   overscroll-behavior: contain;
 }
 
-/* ─── 1.  Darf forest night sky───────────────────────────────────────── */
+/* ─── 1.  Dark forest night sky─────────────────────────────────────────── */
 :root {
   /* Dark forest + night sky theme */
   --brand-dark:   #0e1b1b;   /* deep forest black */
   --brand-mid:    #004d66;   /* deep teal */
   --brand-light:  #4e91ad;   /* faded blue edge */
 
-  /* Accent (you can pick any pop color, but here we go muted ice) */
+  /* Accent (muted ice) */
   --accent:       #c4dbe8;   /* ice mist (button hover, glow) */
 
-  /* Support variables (mostly unchanged) */
+  /* Support variables */
   --text-light:   #ffffff;
   --text-dark:    #e0e0e0;
 
@@ -97,23 +97,75 @@ body.dark-mode .screen-wrapper {
 }
 
 /* ─── 4. Global Button Styles ──────────────────────────────────────────── */
-button {
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--text-light);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+/* Unified .btn and button styles for ALL app buttons */
+.btn,
+button,
+input[type="button"],
+input[type="submit"] {
+  background: var(--accent);
+  color: var(--brand-dark);
+  border: none;
   border-radius: 8px;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
+  font-weight: bold;
   cursor: pointer;
-  transition: background 0.25s, transform 0.2s;
+  box-shadow: 0 2px 8px rgba(76, 134, 158, 0.07);
+  transition: background 0.25s, box-shadow 0.22s, transform 0.18s;
+  outline: none;
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  letter-spacing: 0.02em;
 }
-button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
+
+.btn:hover,
+button:hover:not(:disabled),
+input[type="button"]:hover:not(:disabled),
+input[type="submit"]:hover:not(:disabled) {
+  background: #a5c9d6; /* deeper ice for hover */
+  box-shadow: 0 4px 18px rgba(76, 134, 158, 0.18);
+  transform: translateY(-2px) scale(1.015);
 }
-button:disabled {
-  opacity: 0.6;
+
+.btn:active,
+button:active:not(:disabled),
+input[type="button"]:active:not(:disabled),
+input[type="submit"]:active:not(:disabled) {
+  background: #90b3c3; /* pressed */
+  box-shadow: 0 2px 8px rgba(76, 134, 158, 0.11);
+  transform: scale(0.97);
+}
+
+.btn:disabled,
+button:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
+}
+
+/* Variant: Wide full-width */
+.btn.wide          { width: 100%; }
+.btn.primary {
+  background: linear-gradient(135deg, #4e91ad 20%, #c4dbe8 100%);
+  color: var(--brand-dark);
+  border: none;
+}
+.btn.primary:hover {
+  background: linear-gradient(135deg, #3288a7 15%, #a5c9d6 100%);
+  box-shadow: 0 0 18px rgba(76,134,158,0.18);
+}
+.btn.outline {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.35);
+  color: var(--text-light);
+}
+.btn.outline:hover { background: rgba(255,255,255,0.12); }
+
+.btn.on-dark {
+  background: var(--accent);
+  color: var(--brand-dark);
 }
 
 /* ─── 5. Header, Footer & Navigation ───────────────────────────────────── */
@@ -133,8 +185,7 @@ nav {
   margin: 0.5rem 0;
 }
 nav button {
-  background: var(--accent);
-  color: var(--text-light);
+  /* Uses the unified .btn/button style */
 }
 
 /* ─── 6. Toasts ────────────────────────────────────────────────────────── */
@@ -480,7 +531,7 @@ nav button {
   }
 }
 
-/* ─── 13. Background Enhancements (shimmer + noise) ──────────────────── */
+/* ─── 13. Background Enhancements (shimmer + noise) ───────────────────── */
 body::before {
   content: "";
   position: fixed;
@@ -492,251 +543,4 @@ body::before {
   background:
     linear-gradient(
       120deg,
-      rgba(255,255,255,0.03) 0%,
-      rgba(255,255,255,0.05) 50%,
-      rgba(255,255,255,0.03) 100%
-    ),
-    /* layer 2 – grain / noise */
-    url("noise.png");
-
-  background-size:
-    300% 300%,   /* shimmer */
-    auto;        /* noise   */
-
-  animation: shimmer 6s linear infinite;
-  mix-blend-mode: overlay;   /* lets noise sit lightly over the bg */
-}
-
-@keyframes shimmer {
-  0%   { background-position: 0%   0%,    0 0; }
-  50%  { background-position: 100% 100%,  0 0; }
-  100% { background-position: 0%   0%,    0 0; }
-}
-
-/*  violet / indigo spotlight glow  */
-body::after{
-  content:"";
-  position:fixed;
-  width:160vmax; height:160vmax;
-  pointer-events:none;
-  z-index:-1;                       /* ↑ one layer higher than bokeh  */
-  filter:blur(90px) saturate(170%);
-  opacity:.85;
-  mix-blend-mode:screen;
-
-  background:
-    radial-gradient(circle at -15% -10%, rgba(185,120,255,.95) 0%, transparent 65%),
-    radial-gradient(circle at 115% 110%, rgba(95,170,255,.95) 0%,  transparent 65%);
-
-  animation:driftGlow 24s ease-in-out alternate infinite;
-}
-@keyframes driftGlow{
-  0%{transform:translate(0,0)}
-  100%{transform:translate(-8vmax,-6vmax)}
-}
-/* ─── 14. Auth Screen ───────────────────────────────────────────────────── */
-.auth-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  gap: 1.5rem;
-}
-
-.auth-head {
-  font-size: 1.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* glass container for the form */
-.glass-card {
-  background: rgba(255,255,255,0.10);
-  backdrop-filter: blur(12px) saturate(135%);
-  border: 1px solid rgba(255,255,255,0.20);
-  border-radius: 12px;
-  padding: 1.25rem;
-  width: 100%;
-  max-width: 380px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-}
-
-/* form fields */
-.auth-form input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.15);
-  color: var(--text-light);
-  font-size: 1rem;
-}
-
-.password-wrap { position: relative; }
-.password-wrap .eye-btn {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: 0;
-  font-size: 1.1rem;
-  cursor: pointer;
-  color: var(--text-light);
-}
-
-/* button variants reused by auth */
-.btn.wide          { width: 100%; }
-.btn.primary       { background: linear-gradient(135deg,#5faaff,#7b6bff); border: none; }
-.btn.primary:hover { box-shadow: 0 0 14px rgba(95,170,255,.45); }
-
-.btn.outline {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.35);
-}
-.btn.outline:hover { background: rgba(255,255,255,0.12); }
-
-.auth-actions {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  max-width: 380px;
-  width: 100%;
-}
-
-.reset-link {
-  color: var(--text-light);
-  text-decoration: underline;
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-.reset-link:hover { opacity: 1; }
-
-/* ─── 15. Walkthrough Page Styles ───────────────────────────────────── */
-.walkthrough-page {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-.walkthrough-page h2 {
-  font-size: 1.8rem;
-  margin-bottom: 16px;
-  color: var(--text-light);
-}
-
-.walkthrough-page h3 {
-  margin-top: 28px;
-  margin-bottom: 8px;
-  font-size: 1.2rem;
-  color: var(--accent);
-}
-
-.walkthrough-script p {
-  background: var(--card-bg);
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-  color: var(--text-light);
-  line-height: 1.5;
-}
-
-.highlight-section {
-  background: rgba(255, 50, 50, 0.15);
-  padding: 16px;
-  border-left: 5px solid var(--accent);
-  border-radius: 10px;
-  margin: 20px 0;
-  box-shadow: 0 0 12px rgba(180, 138, 255, 0.2);
-}
-
-.alert-box {
-  background: rgba(255, 255, 0, 0.1);
-  border: 2px solid gold;
-  padding: 14px 18px;
-  margin: 24px 0;
-  border-radius: 10px;
-  color: var(--text-light);
-  font-weight: 500;
-  text-align: center;
-  box-shadow: 0 0 6px rgba(255, 255, 0, 0.25);
-}
-
-/* Ensure walkthrough buttons match your core style */
-.walkthrough-page .btn {
-  display: inline-block;
-  margin-top: 20px;
-  background: var(--accent);
-  color: #000;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-.walkthrough-page .btn:hover {
-  background: #d6b4ff;
-  transform: scale(1.03);
-}
-/* ─── 16. Dashboard Card Layout Fixes ─────────────────────────────────── */
-
-.dashboard-summary {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 16px;
-  padding: 0 16px;
-}
-
-.dashboard-card {
-  background: var(--card-bg);
-  backdrop-filter: blur(10px);
-  border-radius: 14px;
-  padding: 16px 20px;
-  color: var(--text-light);
-  width: 100%;
-  max-width: 300px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-  flex: 1 1 calc(50% - 20px); /* 2-column layout */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: transform 0.2s ease;
-}
-.dashboard-card:hover {
-  transform: translateY(-4px);
-}
-
-.dashboard-card h3 {
-  font-size: 1.1rem;
-  margin: 0 0 0.5rem;
-}
-
-.dashboard-card p {
-  font-size: 0.95rem;
-  line-height: 1.4;
-  color: var(--text-light);
-}
-
-.dashboard-card button {
-  background: var(--accent);
-  color: #000;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-weight: bold;
-  margin-top: 12px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  width: 100%;
-}
-.dashboard-card button:hover {
-  background: #d6b4ff;
-}
+      rgba
