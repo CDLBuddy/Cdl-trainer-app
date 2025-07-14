@@ -355,8 +355,8 @@ break;
     default:            renderDashboard();       break;
   }
 }
+// Render Login
 
-// ─── 8. FULL LOGIN FORM & HANDLERS ────────────────────────────────────────
 function renderLogin(container = document.getElementById("app")) {
   container.innerHTML = `
     <div class="login-card fade-in">
@@ -364,35 +364,39 @@ function renderLogin(container = document.getElementById("app")) {
       <form id="login-form" autocomplete="off">
         <div class="form-group">
           <label>Email</label>
-          <input name="email" type="email" required />
+          <input id="email" name="email" type="email" required autocomplete="username" />
         </div>
         <div class="form-group password-group">
-  <label>Password</label>
-  <div style="position:relative;">
-    <input id="login-password" name="password" type="password" required style="padding-right:2.4rem;">
-    <button type="button" id="toggle-password" style="position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);font-size:1.1em;cursor:pointer;">👁️</button>
-  </div>
-</div>
+          <label>Password</label>
+          <div style="position:relative;">
+            <input id="login-password" name="password" type="password" required autocomplete="current-password" style="padding-right:2.3rem;">
+            <button type="button" id="toggle-password" style="position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);font-size:1.17em;cursor:pointer;">👁️</button>
+          </div>
+        </div>
+        <div id="error-msg" style="display:none;color:var(--error);margin-bottom:10px;font-weight:500;"></div>
         <button class="btn primary" type="submit">Log In</button>
+        <button type="button" class="btn" id="google-login" style="margin-top:0.8rem;display:flex;align-items:center;justify-content:center;gap:0.5em;"><img src="https://www.svgrepo.com/show/475656/google-color.svg" style="height:1.1em;width:1.1em;vertical-align:middle;"> Sign in with Google</button>
+        <button type="button" class="btn outline" id="reset-password" style="margin-top:0.6rem;">Forgot Password?</button>
       </form>
       <div class="login-footer">
         New? <button class="btn outline" type="button" id="go-signup">Sign Up</button>
       </div>
     </div>
   `;
+
   document.getElementById("go-signup").onclick = () => renderSignup(container);
-  
+
   const pwdInput = container.querySelector("#login-password");
-const togglePwd = container.querySelector("#toggle-password");
-if (pwdInput && togglePwd) {
-  togglePwd.onclick = () => {
-    pwdInput.type = pwdInput.type === "password" ? "text" : "password";
-    togglePwd.textContent = pwdInput.type === "password" ? "👁️" : "🙈";
-  };
-}
+  const togglePwd = container.querySelector("#toggle-password");
+  if (pwdInput && togglePwd) {
+    togglePwd.onclick = () => {
+      pwdInput.type = pwdInput.type === "password" ? "text" : "password";
+      togglePwd.textContent = pwdInput.type === "password" ? "👁️" : "🙈";
+    };
+  }
   setupNavigation();
 
-document.getElementById("login-form").onsubmit = async e => {
+  document.getElementById("login-form").onsubmit = async e => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
     const pwd   = pwdInput.value;
@@ -432,28 +436,36 @@ document.getElementById("login-form").onsubmit = async e => {
     }
   };
 
-  document.getElementById("google-login").onclick = async () => {
-    try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
-      handleNavigation("dashboard", true);
-    } catch (err) {
-      showToast("Google Sign-In failed: " + err.message);
-    }
-  };
-  document.getElementById("reset-password").onclick = async e => {
-    e.preventDefault();
-    const email = document.getElementById("email").value.trim();
-    if (!email) {
-      showToast("Enter your email to receive a reset link.");
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      showToast("📬 Reset link sent!");
-    } catch (err) {
-      showToast("Error: " + err.message);
-    }
-  };
+  const googleBtn = document.getElementById("google-login");
+  if (googleBtn) {
+    googleBtn.onclick = async () => {
+      try {
+        await signInWithPopup(auth, new GoogleAuthProvider());
+        handleNavigation("dashboard", true);
+      } catch (err) {
+        showToast("Google Sign-In failed: " + err.message);
+      }
+    };
+  }
+
+  const resetBtn = document.getElementById("reset-password");
+  if (resetBtn) {
+    resetBtn.onclick = async e => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      if (!email) {
+        showToast("Enter your email to receive a reset link.");
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        showToast("📬 Reset link sent!");
+      } catch (err) {
+        showToast("Error: " + err.message);
+      }
+    };
+  }
+}
 
   /* Back to welcome page */
   document.getElementById("back-btn")
