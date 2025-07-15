@@ -683,6 +683,26 @@ body, html {
   transform: scale(0.96);
   background: var(--card-bg-dark);
 }
+/* Hide scrollbar for all WebKit browsers (iOS/Safari/Chrome) */
+.dash-rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for Firefox */
+.dash-rail {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+/* Ensure horizontal scrolling still works */
+.dash-rail {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+.dash-rail {
+  scroll-behavior: smooth;
+}
 
 /* Mobile adjustments */
 @media (max-width: 600px) {

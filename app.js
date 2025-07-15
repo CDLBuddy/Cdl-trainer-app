@@ -263,8 +263,6 @@ function renderWelcome() {
         <div class="bokeh-dot" style="top:80%; left:80%; animation-delay:6s;"></div>
       </div>
 
-      <img src="pattern.svg" class="parallax" alt="" />
-
       <div class="welcome-content fade-in">
         <h1 class="typewriter">
           <span id="headline"></span><span class="cursor">|</span>
