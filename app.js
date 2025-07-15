@@ -231,16 +231,16 @@ async function getAITipOfTheDay() {
   return tips[Math.floor(Math.random() * tips.length)];
 }
 
-/* ── Infinite-carousel helper ───────────────────────────────────────── */
+// ── Infinite-carousel helper ───────────────────────────────────────── //
 function initInfiniteCarousel(trackSelector = ".features-inner") {
   const track = document.querySelector(trackSelector);
   if (!track || track.dataset.looped) return;   // already initialised
 
-  /* 1 duplicate once so we can scroll forever */
+  // 1 duplicate once so we can scroll forever //
   track.innerHTML += track.innerHTML;
   track.dataset.looped = "true";
 
-  /* 2 reset scroll when we hit either end */
+  // 2 reset scroll when we hit either end //
   track.addEventListener("scroll", () => {
     const max = track.scrollWidth / 2;          // length of the original set
     if (track.scrollLeft >= max) {              // passed the end
@@ -251,7 +251,7 @@ function initInfiniteCarousel(trackSelector = ".features-inner") {
   });
 }
 
-/* Auto-scroll helper: seamless drift, pauses on hover/touch */
+// Auto-scroll helper: seamless drift, pauses on hover/touch //
 function initCarousel() {
   const track = document.querySelector(".features-inner");
   if (!track) return;
@@ -262,7 +262,7 @@ function initCarousel() {
   let isPaused = false;
   const speed  = 1.0;            // px per frame  (≈36 px/s at 60 fps)
 
-  /* Pause on user interaction */
+  // Pause on user interaction //
   ["mouseenter","touchstart"].forEach(evt =>
     track.addEventListener(evt, () => isPaused = true)
   );
@@ -270,7 +270,7 @@ function initCarousel() {
     track.addEventListener(evt, () => isPaused = false)
   );
 
-  /* Continuous drift loop */
+  // Continuous drift loop //
   function drift() {
     if (!isPaused) {
       // add, then wrap with modulus -- no visible jump
@@ -619,7 +619,7 @@ function renderSignup(container = document.getElementById("app")) {
 async function renderDashboard(container = document.getElementById("app")) {
   if (!container) return;
 
-  /* 1  FETCH DATA ----------------------------------------------------- */
+  // 1  FETCH DATA ----------------------------------------------------- //
   // Checklist %
   let checklistPct = 0;
   try {
@@ -695,7 +695,7 @@ async function renderDashboard(container = document.getElementById("app")) {
     console.error("Streak calc error", e);
   }
 
- 2  RENDER DASHBOARD LAYOUT --------------------------------------- */
+ // 2  RENDER DASHBOARD LAYOUT ---------------------------------------
   const name = localStorage.getItem("fullName") || "CDL User";
   const roleBadge = getRoleBadge(currentUserEmail);
 
@@ -1210,7 +1210,7 @@ function renderAICoach(container = document.getElementById("app")) {
 }
 
 // ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
-/* ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── */
+// ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── //
 function renderExperience(c=document.getElementById("app")){
   c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧳 Experience Survey</h2><p>Coming soon…</p><button data-nav="dashboard">⬅ Back</button></div>`;
   setupNavigation();
