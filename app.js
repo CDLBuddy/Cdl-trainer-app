@@ -406,7 +406,7 @@ function setupNavigation() {
 function renderLogin(container = document.getElementById("app")) {
   container.innerHTML = `
     <div class="login-card fade-in">
-      <h2>🚚 CDL Trainer Login</h2>
+      <h2>🚛 CDL Trainer Login</h2>
       <form id="login-form" autocomplete="off">
         <div class="form-group">
           <label>Email</label>
