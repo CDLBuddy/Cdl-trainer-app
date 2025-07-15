@@ -337,35 +337,34 @@ function handleNavigation(page) {
   }
 
   showPageTransitionLoader();
-
-  setTimeout(() => {
+ setTimeout(() => {
     switch (page) {
       case "dashboard":
-        renderDashboard(appEl);
+      renderDashboard(appEl);
         break;
       case "instructor":
-        renderInstructorDashboard(appEl);
+renderInstructorDashboard(appEl);
         break;
       case "admin":
-        renderAdminDashboard(appEl);
+  renderAdminDashboard(appEl);
         break;
       case "checklists":
-        renderChecklists(appEl);
+    renderChecklists(appEl);
         break;
       case "tests":
-        renderPracticeTests(appEl);
+  renderPracticeTests(appEl);
         break;
       case "results":
-        renderTestResults(appEl);
+    renderTestResults(appEl);
         break;
       case "coach":
         renderAICoach(appEl);
         break;
       case "profile":
-        renderProfilePage(appEl);
+    renderProfilePage(appEl);
         break;
       case "walkthrough":
-        renderWalkthrough(appEl);
+    renderWalkthrough(appEl);
         break;
       case "login":                    // <------  Add this line!
         renderLogin(appEl);
@@ -743,7 +742,7 @@ async function renderDashboard(container = document.getElementById("app")) {
         <aside class="dash-rail">
           <button class="rail-btn" data-nav="profile"><i>👤</i><span>My&nbsp;Profile</span></button>
           <button class="rail-btn" data-nav="checklist"><i>✅</i><span>My&nbsp;Checklist</span></button>
-          <button class="rail-btn" data-nav="test"><i>🧪</i><span>Testing</span></button>
+          <button class="rail-btn" data-nav="tests"><i>🧪</i><span>Testing</span></button>
           <button class="rail-btn" data-nav="flashcards"><i>🃏</i><span>Flashcards</span></button>
           <button class="rail-btn" data-nav="coach"><i>🎧</i><span>AI&nbsp;Coach</span></button>
         </aside>
@@ -1118,7 +1117,7 @@ function renderPracticeTests(container = document.getElementById("app")) {
   // Confirm test button click binding and hook up the engine
   setTimeout(() => {
     const testBtns = container.querySelectorAll(".test-btn");
-    console.log("🔎 Found", testBtns.length, "test buttons");
+    console.log("🔍 Found", testBtns.length, "test buttons");
 
     testBtns.forEach(btn => {
       btn.addEventListener("click", () => {
