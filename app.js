@@ -202,8 +202,8 @@ onAuthStateChanged(auth, async user => {
   // Fade the full-screen boot loader after a minimum duration
   const elapsed  = Date.now() - loaderShownAt;
   const minShown = 400; // ms
-  setTimeout(() => loaderEl?.classList.add("hide"), Math.max(0, minShown - elapsed));
- };
+    setTimeout(() => loaderEl?.classList.add("hide"), Math.max(0, minShown - elapsed));
+});  
 // ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
 function showModal(html) {
   const overlay = document.createElement("div");
