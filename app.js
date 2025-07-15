@@ -642,67 +642,65 @@ async function renderDashboard(container = document.getElementById("app")) {
     console.error("Streak calc error", e);
   }
 
-  /* 2️⃣  RENDER DASHBOARD LAYOUT --------------------------------------- */
-  const name = localStorage.getItem("fullName") || "CDL User";
-  const roleBadge = getRoleBadge(currentUserEmail);
+ /* 2️⃣  RENDER DASHBOARD LAYOUT --------------------------------------- */
+const name = localStorage.getItem("fullName") || "CDL User";
+const roleBadge = getRoleBadge(currentUserEmail);
 
-  container.innerHTML = `
-    <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
+container.innerHTML = `
+  <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
 
-    <div class="dash-layout">
+  <div class="dash-layout">
 
-      <!-- metric cards ---------------------------- -->
-      <section class="dash-metrics">
+    <!-- metric cards ---------------------------- -->
+    <section class="dash-metrics">
 
-        <div class="glass-card metric" id="metric-checklist">
-          <h3>✅ Checklist Progress</h3>
-          <progress value="${checklistPct}" max="100"></progress>
-          <p><span class="big-num" id="checklist-pct">${checklistPct}</span>% complete</p>
-        </div>
-        
-        <div class="dashboard-card">
-  <h3>🧭 Walkthrough</h3>
-  <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
-  <button class="btn" data-nav="walkthrough">Open Walkthrough</button>
-</div>
+      <div class="glass-card metric" id="metric-checklist">
+        <h3>✅ Checklist Progress</h3>
+        <progress value="${checklistPct}" max="100"></progress>
+        <p><span class="big-num" id="checklist-pct">${checklistPct}</span>% complete</p>
+      </div>
 
-        <div class="glass-card metric">
-          <h3>🧪 Last Test</h3>
-          <p id="last-test">${lastTestStr}</p>
-        </div>
+      <div class="dashboard-card">
+        <h3>🧭 Walkthrough</h3>
+        <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
+        <button class="btn" data-nav="walkthrough">Open Walkthrough</button>
+      </div>
 
-        <div class="glass-card metric">
-          <h3>🔥 Study Streak</h3>
-          <p><span class="big-num" id="streak-days">${streak}</span> day${
-    streak !== 1 ? "s" : ""
-  } active this week</p>
-        </div>
+      <div class="glass-card metric">
+        <h3>🧪 Last Test</h3>
+        <p id="last-test">${lastTestStr}</p>
+      </div>
 
-        <div class="glass-card metric">
-          <h3>🚛 Profile</h3>
-          <p><strong>License:</strong> ${license}</p>
-          <p><strong>Experience:</strong> ${experience}</p>
-        </div>
+      <div class="glass-card metric">
+        <h3>🔥 Study Streak</h3>
+        <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? "s" : ""} active this week</p>
+      </div>
 
-      </section>
+      <div class="glass-card metric">
+        <h3>🚛 Profile</h3>
+        <p><strong>License:</strong> ${license}</p>
+        <p><strong>Experience:</strong> ${experience}</p>
+      </div>
 
-      <!-- compact rail ---------------------------- -->
-        <aside class="dash-rail">
-  <div class="dash-rail-wrapper">
-  <aside class="dash-rail">
-    <button class="rail-btn" data-nav="profile"><i>👤</i><span>My&nbsp;Profile</span></button>
-    <button class="rail-btn" data-nav="checklist"><i>✅</i><span>My&nbsp;Checklist</span></button>
-    <button class="rail-btn" data-nav="test"><i>🧪</i><span>Testing</span></button>
-    <button class="rail-btn" data-nav="flashcards"><i>🃏</i><span>Flashcards</span></button>
-    <button class="rail-btn" data-nav="coach"><i>🎧</i><span>AI&nbsp;Coach</span></button>
-  </aside>
-</div>
+    </section>
+
+    <!-- compact scrollable nav ---------------------------- -->
+    <div class="dash-rail-wrapper">
+      <aside class="dash-rail">
+        <button class="rail-btn" data-nav="profile"><i>👤</i><span>My&nbsp;Profile</span></button>
+        <button class="rail-btn" data-nav="checklist"><i>✅</i><span>My&nbsp;Checklist</span></button>
+        <button class="rail-btn" data-nav="test"><i>🧪</i><span>Testing</span></button>
+        <button class="rail-btn" data-nav="flashcards"><i>🃏</i><span>Flashcards</span></button>
+        <button class="rail-btn" data-nav="coach"><i>🎧</i><span>AI&nbsp;Coach</span></button>
+      </aside>
+    </div>
 
     <div style="text-align:center; margin-top:2rem;">
       <button id="logout-btn" class="btn outline">🚪 Logout</button>
     </div>
-  `;
 
+  </div>
+`;
   /* 3️⃣  UPDATE ELEMENTS & WIRE NAV ------------------------------------ */
   document.getElementById("checklist-pct").textContent =
     checklistPct.toString();
