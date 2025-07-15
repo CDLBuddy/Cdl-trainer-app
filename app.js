@@ -1141,11 +1141,11 @@ function renderFlashcards(container = document.getElementById("app")) {
       <div class="screen-wrapper fade-in" style="max-width:420px;margin:0 auto;">
         <h2>🃏 CDL Flashcards</h2>
         <div class="flashcard-card" id="flashcard" tabindex="0">
-          <div class="flashcard-card-inner">
-            <span class="flashcard-q">Q: ${flashcards[current].q}</span>
-            <span class="flashcard-a">A: ${flashcards[current].a}</span>
-          </div>
-        </div>
+  <div class="flashcard-card-inner">
+    <div class="flashcard-front">Q: ${flashcards[current].q}</div>
+    <div class="flashcard-back">A: ${flashcards[current].a}</div>
+  </div>
+</div>
         <div style="display:flex;gap:1rem;justify-content:center;">
           <button id="prev-flash" class="btn outline" ${current === 0 ? "disabled" : ""}>⬅ Prev</button>
           <button id="next-flash" class="btn outline" ${current === flashcards.length-1 ? "disabled" : ""}>Next ➡</button>
