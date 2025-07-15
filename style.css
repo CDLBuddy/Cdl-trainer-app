@@ -89,8 +89,7 @@ body.dark-mode {
 }
 
 /* ─── 3. Frosted-Glass Panels ──────────────────────────────────────────── */
-.screen-wrapper,
-.welcome-content {
+.screen-wrapper {
   background: var(--card-bg);
   backdrop-filter: blur(12px);
   border-radius: 12px;
@@ -99,8 +98,21 @@ body.dark-mode {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   transition: background 0.3s, color 0.3s;
 }
-body.dark-mode .screen-wrapper {
-  background: var(--card-bg-dark);
+
+/* Enhanced Welcome Card */
+.welcome-content {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px) saturate(140%);
+  border-radius: 16px;
+  padding: 3rem 2.5rem;
+  margin: 3rem auto;
+  max-width: 720px;
+  width: 92%;
+  color: var(--text-light);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+  position: relative;
+  z-index: 2;
+  transition: background 0.3s, color 0.3s;
 }
 
 /* ─── 4. Global Button Styles ──────────────────────────────────────────── */
