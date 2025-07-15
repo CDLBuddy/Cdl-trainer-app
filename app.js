@@ -358,34 +358,21 @@ break;
 
 //Render Login
 
-function renderLogin(container = document.getElementById("app")) {
-  container.innerHTML = `
-    <div class="login-card fade-in">
-      <h2>🚚 CDL Trainer Login</h2>
-      <form id="login-form" autocomplete="off">
-        <div class="form-group">
-          <label>Email</label>
-          <input id="email" name="email" type="email" required autocomplete="username" />
-        </div>
-        <div class="form-group password-group">
-          <label>Password</label>
-          <div style="position:relative;">
-            <input id="login-password" name="password" type="password" required autocomplete="current-password" style="padding-right:2.3rem;">
-            <button type="button" id="toggle-password" style="position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);font-size:1.17em;cursor:pointer;">👁️</button>
-          </div>
-        </div>
-        <div id="error-msg" style="display:none;color:var(--error);margin-bottom:10px;font-weight:500;"></div>
-        <button class="btn primary" type="submit">Log In</button>
-        <button type="button" class="btn" id="google-login" style="margin-top:0.8rem;display:flex;align-items:center;justify-content:center;gap:0.5em;">
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" style="height:1.1em;width:1.1em;vertical-align:middle;"> Sign in with Google
-        </button>
-        <button type="button" class="btn outline" id="reset-password" style="margin-top:0.6rem;">Forgot Password?</button>
-      </form>
-      <div class="login-footer">
-        New? <button class="btn outline" type="button" id="go-signup">Sign Up</button>
-      </div>
-    </div>
-  `;
+<div class="login-card fade-in">
+  <h2>🚚 CDL Trainer Login</h2>
+  <form id="login-form" autocomplete="off">
+    <!-- ... form fields ... -->
+    <button class="btn primary" type="submit">Log In</button>
+    <button type="button" class="btn" id="google-login" style="margin-top:0.8rem;display:flex;align-items:center;justify-content:center;gap:0.5em;">
+      <img src="https://www.svgrepo.com/show/475656/google-color.svg" style="height:1.1em;width:1.1em;vertical-align:middle;"> Sign in with Google
+    </button>
+    <button type="button" class="btn outline" id="reset-password" style="margin-top:0.6rem;">Forgot Password?</button>
+  </form>
+  <div class="login-footer" style="margin-top:1.2rem;">
+    New? <button class="btn outline" type="button" id="go-signup">Sign Up</button>
+  </div>
+  <button class="btn outline" id="back-btn" type="button" style="margin-top:0.8rem;width:100%;">⬅️ Back</button>
+</div>
 
   // Navigation to sign-up
   const goSignup = container.querySelector("#go-signup");
@@ -474,20 +461,22 @@ function renderLogin(container = document.getElementById("app")) {
         showToast("Error: " + err.message);
       }
     };
-  }
+  } 
   /* Back to welcome page */
-  document.getElementById("back-btn")
-  .addEventListener("click", async () => {
+  const backBtn = document.getElementById("back-btn");
+if (backBtn) {
+  backBtn.addEventListener("click", async () => {
     if (auth.currentUser) {
-      try {          // sign the user out so auth listener won't redirect
+      try {
         await signOut(auth);
       } catch (err) {
         console.error("Sign-out failed:", err);
       }
     }
-  handleNavigation("home", true);
+    handleNavigation("home", true);
   });
 }
+
 // Render Signup
 function renderSignup(container = document.getElementById("app")) {
   container.innerHTML = `
