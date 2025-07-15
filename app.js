@@ -48,6 +48,18 @@ function hidePageTransitionLoader() {
     setTimeout(() => overlay.classList.add('hidden'), 400);
   }
 }
+// ─── Fade-In on Scroll Animation ──────────────────────────────────────────────
+function initFadeInOnScroll() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in-on-scroll').forEach(el => observer.observe(el));
+}
 // ─── Typewriter Headline Logic ───────────────────────────────────────────────
 const _headlines = [
   "CDL Buddy",
