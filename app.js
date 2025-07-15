@@ -720,7 +720,7 @@ async function renderDashboard(container = document.getElementById("app")) {
       renderWelcome();
     });
 }
-// ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
+
 //Render Walkthrough
 async function renderWalkthrough(container = document.getElementById("app")) {
   if (!auth.currentUser || !auth.currentUser.email) {
@@ -1026,10 +1026,9 @@ async function renderChecklists(container = document.getElementById("app")) {
     </div>
   `;
 
-  // Setup navigation for buttons
   setupNavigation();
 }
-
+// ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
 /* ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── */
 function renderFlashcards(c=document.getElementById("app")){
   c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🃏 Flashcards</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
