@@ -330,16 +330,11 @@ function handleNavigation(page) {
   if (!appEl) return;
 
   const currentScreen = appEl.querySelector(".screen-wrapper");
-
-  // Apply fade-out if current screen exists
-  if (currentScreen) {
-    currentScreen.classList.add("fade-out");
-  }
+  if (currentScreen) currentScreen.classList.add("fade-out");
 
   showPageTransitionLoader();
- setTimeout(() => {
+  setTimeout(() => {
     switch (page) {
-          switch (target) {
       case "dashboard":
         renderDashboard(appEl);
         break;
@@ -356,10 +351,10 @@ function handleNavigation(page) {
         renderPracticeTests(appEl);
         break;
       case "flashcards":
-      renderFlashcards(appEl);
+        renderFlashcards(appEl);
         break;
       case "results":
-    renderTestResults(appEl);
+        renderTestResults(appEl);
         break;
       case "coach":
         renderAICoach(appEl);
@@ -368,7 +363,7 @@ function handleNavigation(page) {
         renderProfile(appEl);
         break;
       case "walkthrough":
-    renderWalkthrough(appEl);
+        renderWalkthrough(appEl);
         break;
       case "login":
         renderLogin(appEl);
@@ -381,14 +376,12 @@ function handleNavigation(page) {
         break;
     }
 
-    // Push to browser history
     if (page !== location.hash.replace("#", "")) {
       history.pushState({}, "", "#" + page);
     }
     hidePageTransitionLoader();
-  }, 350); // match fade-out time
+  }, 350);
 }
-}, 100);
 
 // Click listener + browser history
 function setupNavigation() {
