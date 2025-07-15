@@ -270,7 +270,7 @@ function initCarousel() {
   requestAnimationFrame(drift);
 }
 
-// ─── 5. RENDER WELCOME SCREEN ──────────────────────────────────────────────
+ // ─── 5. RENDER WELCOME SCREEN ──────────────────────────────────────────────
 function renderWelcome() {
   const appEl = document.getElementById("app");
   if (!appEl) return;
@@ -281,21 +281,21 @@ function renderWelcome() {
 
       <!-- 🌟 Background Glow Bokeh Layer -->
       <div class="bokeh-layer">
-        <div class="bokeh-dot" style="top:10%; left:15%; animation-delay:0s;"></div>
-        <div class="bokeh-dot" style="top:30%; left:70%; animation-delay:2s;"></div>
-        <div class="bokeh-dot" style="top:60%; left:25%; animation-delay:4s;"></div>
-        <div class="bokeh-dot" style="top:80%; left:80%; animation-delay:6s;"></div>
+        <div class="bokeh-dot parallax-float" style="top:10%; left:15%; animation-delay:0s;"></div>
+        <div class="bokeh-dot parallax-float" style="top:30%; left:70%; animation-delay:2s;"></div>
+        <div class="bokeh-dot parallax-float" style="top:60%; left:25%; animation-delay:4s;"></div>
+        <div class="bokeh-dot parallax-float" style="top:80%; left:80%; animation-delay:6s;"></div>
       </div>
 
-      <div class="welcome-content fade-in">
+      <div class="welcome-content shimmer-glow fade-in">
         <h1 class="typewriter">
           <span id="headline"></span><span class="cursor">|</span>
         </h1>
         <p>Your all-in-one CDL prep coach. Scroll down to get started!</p>
 
-        <button id="welcome-login-btn" class="btn">
-  <span class="icon">🚀</span> Login
-</button>
+        <button id="login-btn" class="btn pulse">
+          <span class="icon">🚀</span> Login
+        </button>
 
         <!-- Swipeable + infinite carousel -->
         <div class="features">
@@ -311,9 +311,12 @@ function renderWelcome() {
       <button class="fab" title="AI Coach">🎧</button>
     </div>
   `;
-  
-  initInfiniteCarousel();   
-  initCarousel();           
+
+  // 2️⃣ Initialize animations and interactivity
+  initInfiniteCarousel?.();
+  initCarousel?.();
+  initFadeInOnScroll?.(); // Optional if you're using .fade-in-on-scroll items
+}          
 
   // ─── 4. SMART NAVIGATION ───────────────────────────────────────────────────────
 
