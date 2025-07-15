@@ -339,20 +339,24 @@ function handleNavigation(page) {
   showPageTransitionLoader();
  setTimeout(() => {
     switch (page) {
+          switch (target) {
       case "dashboard":
-      renderDashboard(appEl);
+        renderDashboard(appEl);
         break;
       case "instructor":
-renderInstructorDashboard(appEl);
+        renderInstructorDashboard(appEl);
         break;
       case "admin":
-  renderAdminDashboard(appEl);
+        renderAdminDashboard(appEl);
         break;
-      case "checklists":
-    renderChecklists(appEl);
+      case "checklists":  // ✅ match renderChecklists()
+        renderChecklists(appEl);
         break;
-      case "tests":
-  renderPracticeTests(appEl);
+      case "practiceTests":  // ✅ renamed from "tests" to match renderPracticeTests()
+        renderPracticeTests(appEl);
+        break;
+      case "flashcards":
+      renderFlashcards(appEl);
         break;
       case "results":
     renderTestResults(appEl);
@@ -361,12 +365,12 @@ renderInstructorDashboard(appEl);
         renderAICoach(appEl);
         break;
       case "profile":
-    renderProfilePage(appEl);
+        renderProfile(appEl);
         break;
       case "walkthrough":
     renderWalkthrough(appEl);
         break;
-      case "login":                    // <------  Add this line!
+      case "login":
         renderLogin(appEl);
         break;
       case "home":
@@ -374,6 +378,7 @@ renderInstructorDashboard(appEl);
         break;
       default:
         renderHome(appEl);
+        break;
     }
 
     // Push to browser history
