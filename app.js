@@ -81,10 +81,22 @@ const auth = getAuth(app);
 const loaderEl      = document.getElementById("app-loader"); // ⏳ full-screen loader
 const loaderShownAt = Date.now();                            // time it first appeared
 
+// Transition loader helpers
+function showPageTransitionLoader() {
+  const overlay = document.getElementById('loader-overlay');
+  if (overlay) overlay.classList.remove('hidden');
+}
+function hidePageTransitionLoader() {
+  const overlay = document.getElementById('loader-overlay');
+  if (overlay) {
+    setTimeout(() => overlay.classList.add('hidden'), 400);
+  }
+}
+
 onAuthStateChanged(auth, async user => {
   console.log("🔔 Firebase auth state changed:", user);
 
-  // Hide loading overlays
+  // Hide static loading overlays
   document.getElementById("js-error")?.classList.add("hidden");
   document.getElementById("loading-screen")?.classList.add("hidden");
 
@@ -126,12 +138,13 @@ onAuthStateChanged(auth, async user => {
       }
 
       // 2) Save to localStorage
-      localStorage.setItem("userRole", userData.role    || "student");
-      localStorage.setItem("fullName", userData.name    || "CDL User");
+      localStorage.setItem("userRole", userData.role || "student");
+      localStorage.setItem("fullName", userData.name || "CDL User");
+
     } catch (err) {
       console.error("❌ User profile error:", err);
-      showToast("Error loading profile: " + (err.message||err));
-      alert("🛑 Firestore error: " + (err.message||err));
+      showToast("Error loading profile: " + (err.message || err));
+      alert("🛑 Firestore error: " + (err.message || err));
       return;
     }
 
@@ -140,7 +153,11 @@ onAuthStateChanged(auth, async user => {
       try {
         await signOut(auth);
         showToast("You’ve been logged out.");
-        renderWelcome();
+        showPageTransitionLoader();
+        setTimeout(() => {
+          renderWelcome();
+          hidePageTransitionLoader();
+        }, 300);
       } catch (err) {
         console.error("Logout failed:", err);
         showToast("Logout error");
@@ -148,25 +165,33 @@ onAuthStateChanged(auth, async user => {
     });
 
     // 4) Route to dashboard based on role
-    const role = localStorage.getItem("userRole");
-    if (role === "admin") {
-      renderAdminDashboard();
-    } else if (role === "instructor") {
-      renderInstructorDashboard();
-    } else {
-      renderDashboard();
-    }
+    showPageTransitionLoader();
+    setTimeout(() => {
+      const role = localStorage.getItem("userRole");
+      if (role === "admin") {
+        renderAdminDashboard();
+      } else if (role === "instructor") {
+        renderInstructorDashboard();
+      } else {
+        renderDashboard();
+      }
+      hidePageTransitionLoader();
+    }, 300);
+
   } else {
     // Signed out → welcome screen
     currentUserEmail = null;
-    renderWelcome();
+    showPageTransitionLoader();
+    setTimeout(() => {
+      renderWelcome();
+      hidePageTransitionLoader();
+    }, 300);
   }
 
-  /* fade the loader out after it’s been visible at least 400 ms */
+  // Fade the full-screen boot loader after a minimum duration
   const elapsed  = Date.now() - loaderShownAt;
-  const minShown = 400;                       // ms
-  setTimeout(() => loaderEl?.classList.add("hide"),
-             Math.max(0, minShown - elapsed));
+  const minShown = 400; // ms
+  setTimeout(() => loaderEl?.classList.add("hide"), Math.max(0, minShown - elapsed));
 });
 
 // ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
@@ -291,67 +316,98 @@ function renderWelcome() {
   initInfiniteCarousel();   
   initCarousel();           
 
-  // navigation wiring
-document.getElementById("welcome-login-btn")?.addEventListener("click", () =>
-  handleNavigation("login", true)
-);
-document.querySelector(".fab")?.addEventListener("click", () =>
-  handleNavigation("coach", true)
-);
+  // ─── 4. SMART NAVIGATION ───────────────────────────────────────────────────────
 
-  setupNavigation();
-  startTypewriter();
+// Page transition loader
+function showPageTransitionLoader() {
+  const overlay = document.getElementById('loader-overlay');
+  if (overlay) overlay.classList.remove('hidden');
 }
 
-// ─── 6. NAVIGATION SETUP ───────────────────────────────────────────────────────
-function setupNavigation() {
-  document.querySelectorAll("[data-nav]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      handleNavigation(btn.getAttribute("data-nav"), true);
-    });
-  });
+function hidePageTransitionLoader() {
+  const overlay = document.getElementById('loader-overlay');
+  if (overlay) {
+    setTimeout(() => overlay.classList.add('hidden'), 400);
+  }
 }
 
-// ─── 7. CORE NAVIGATION HANDLER & DISPATCHER ───────────────────────────────────
-async function handleNavigation(targetPage, pushToHistory = false) {
-  console.log(`🧭 handleNavigation → ${targetPage}`);
-
+// Route and transition handler
+function handleNavigation(page) {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  appEl.classList.remove("fade-in");
-  appEl.classList.add("fade-out");
-  await new Promise(r => setTimeout(r, 150));
+  const currentScreen = appEl.querySelector(".screen-wrapper");
 
-  if (pushToHistory) {
-    history.pushState({ page: targetPage }, "", `#${targetPage}`);
+  // Apply fade-out if current screen exists
+  if (currentScreen) {
+    currentScreen.classList.add("fade-out");
   }
 
-  renderPage(targetPage);
+  showPageTransitionLoader();
 
-  appEl.classList.remove("fade-out");
-  appEl.classList.add("fade-in");
+  setTimeout(() => {
+    switch (page) {
+      case "dashboard":
+        renderDashboard(appEl);
+        break;
+      case "instructor":
+        renderInstructorDashboard(appEl);
+        break;
+      case "admin":
+        renderAdminDashboard(appEl);
+        break;
+      case "checklists":
+        renderChecklists(appEl);
+        break;
+      case "tests":
+        renderPracticeTests(appEl);
+        break;
+      case "results":
+        renderTestResults(appEl);
+        break;
+      case "coach":
+        renderAICoach(appEl);
+        break;
+      case "profile":
+        renderProfilePage(appEl);
+        break;
+      case "walkthrough":
+        renderWalkthrough(appEl);
+        break;
+      case "home":
+        renderHome(appEl);
+        break;
+      default:
+        renderHome(appEl);
+    }
+
+    // Push to browser history
+    if (page !== location.hash.replace("#", "")) {
+      history.pushState({}, "", "#" + page);
+    }
+
+    hidePageTransitionLoader();
+  }, 350); // match fade-out time
 }
 
-function renderPage(page) {
-  const c = document.getElementById("app");
-  if (!c) return;
-  switch (page) {
-    case "walkthrough": renderWalkthrough(c);    break;
-    case "profile":   renderProfile();   
-break;
-    case "tests":       renderPracticeTests(c);  break;
-    case "coach":       renderAICoach(c);        break;
-    case "checklists":  renderChecklists(c);     break;
-    case "results":     renderTestResults(c);    break;
-    case "flashcards":  renderFlashcards(c);     break;
-    case "experience":  renderExperience(c);     break;
-    case "license":     renderLicenseSelector(c);break;
-    case "login":       renderLogin(c);          break;
-    case "dashboard":   renderDashboard();       break;
-    case "home":        renderWelcome();         break;
-    default:            renderDashboard();       break;
-  }
+// Click listener + browser history
+function setupNavigation() {
+  // Handle button clicks
+  document.body.addEventListener("click", (e) => {
+    const target = e.target.closest("[data-nav]");
+    if (target) {
+      const page = target.getAttribute("data-nav");
+      if (page) {
+        handleNavigation(page);
+      }
+    }
+  });
+
+  // Handle browser back/forward buttons
+  window.addEventListener("popstate", () => {
+    const page = location.hash.replace("#", "") || "home";
+    handleNavigation(page);
+  });
 }
 
 // Render Login
