@@ -192,8 +192,8 @@ onAuthStateChanged(auth, async user => {
   const elapsed  = Date.now() - loaderShownAt;
   const minShown = 400; // ms
   setTimeout(() => loaderEl?.classList.add("hide"), Math.max(0, minShown - elapsed));
-});
-
+ });
+}
 // ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
 function showModal(html) {
   const overlay = document.createElement("div");
@@ -385,8 +385,7 @@ function handleNavigation(page) {
     if (page !== location.hash.replace("#", "")) {
       history.pushState({}, "", "#" + page);
     }
-
-    hidePageTransitionLoader();
+        hidePageTransitionLoader();
   }, 350); // match fade-out time
 }
 
