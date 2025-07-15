@@ -104,12 +104,12 @@ body.dark-mode {
   background: var(--card-bg);
   backdrop-filter: blur(16px) saturate(140%);
   border-radius: 16px;
-  padding: 3rem 2.5rem;
-  margin: 3rem auto;
-  max-width: 720px;
-  width: 92%;
+  padding: 4rem 3rem;         /* 🔺 Taller + roomier sides */
+  margin: 5rem auto;          /* 🔺 More space around it */
+  max-width: 800px;           /* 🔺 Wider card */
+  width: 95%;                 /* 🔺 Closer to edge on large screens */
   color: var(--text-light);
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38);
   position: relative;
   z-index: 2;
   transition: background 0.3s, color 0.3s;
