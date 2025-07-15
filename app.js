@@ -325,11 +325,13 @@ function renderWelcome() {
 
   // 2️⃣ Initialize animations and interactivity
   initInfiniteCarousel?.();
-  initCarousel?.();
-  initFadeInOnScroll?.(); // Optional if you're using .fade-in-on-scroll items
-}          
-
-  // ─── 4. SMART NAVIGATION ───────────────────────────────────────────────────────
+initCarousel?.();
+initFadeInOnScroll?.();
+startTypewriter();
+document.getElementById("login-btn")?.addEventListener("click", () => {
+  handleNavigation('login'); // or renderLogin() if that's your function
+});
+// ─── 4. SMART NAVIGATION ───────────────────────────────────────────────────────
 
 // Route and transition handler
 function handleNavigation(page) {
@@ -374,6 +376,9 @@ function handleNavigation(page) {
       case "walkthrough":
         renderWalkthrough(appEl);
         break;
+      case "login":                    // <------  Add this line!
+        renderLogin(appEl);
+        break;
       case "home":
         renderHome(appEl);
         break;
@@ -385,7 +390,7 @@ function handleNavigation(page) {
     if (page !== location.hash.replace("#", "")) {
       history.pushState({}, "", "#" + page);
     }
-        hidePageTransitionLoader();
+    hidePageTransitionLoader();
   }, 350); // match fade-out time
 }
 
@@ -408,7 +413,6 @@ function setupNavigation() {
     handleNavigation(page);
   });
 }
-
 // Render Login
 
 function renderLogin(container = document.getElementById("app")) {
