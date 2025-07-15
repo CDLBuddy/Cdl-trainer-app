@@ -38,6 +38,13 @@ body {
   --error:        #e53e3e;
   --success:      #48bb78;
 }
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 20px);
+}
+
+body {
+  padding-top: var(--safe-area-inset-top);
+}
 
 /* ─── 2. Reset & Animated Gradient Backdrop ────────────────────────────── */
 *,
@@ -293,20 +300,24 @@ nav button {
 }
 
 /* ─── 7. Welcome Parallax & Fade-in ────────────────────────────────────── */
+/* Welcome Screen Styling */
 .welcome-screen {
-  position: relative;
-  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem;
   overflow-y: auto;
-  perspective: 1px;
+  scroll-behavior: smooth;
+  position: relative;
+  z-index: 1;
 }
-.parallax {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 150%;
-  transform: translateX(-50%) translateZ(-1px) scale(2);
-  opacity: 0.05;
-  pointer-events: none;
+
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 .fade-in {
   animation: fadeInUp 0.6s ease-out both;
@@ -360,6 +371,10 @@ nav button {
 }
 .features-inner::-webkit-scrollbar {
   display: none;
+}
+.features {
+  padding: 2rem 0;
+  margin-top: 2rem;
 }
 .feat {
   flex: 0 0 160px;
