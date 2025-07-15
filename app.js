@@ -404,8 +404,6 @@ function setupNavigation() {
     handleNavigation(page);
   });
 }
-// Render Login
-
 function renderLogin(container = document.getElementById("app")) {
   container.innerHTML = `
     <div class="login-card fade-in">
@@ -432,7 +430,7 @@ function renderLogin(container = document.getElementById("app")) {
       <div class="login-footer" style="margin-top:1.2rem;">
         New? <button class="btn outline" type="button" id="go-signup">Sign Up</button>
       </div>
-      <button class="btn outline" id="back-btn" type="button" style="margin-top:0.8rem;width:100%;">⬅️ Back</button>
+      <button class="btn outline" id="back-to-welcome-btn" type="button" style="margin-top:0.8rem;width:100%;">⬅️ Back</button>
     </div>
   `;
 
@@ -528,8 +526,8 @@ function renderLogin(container = document.getElementById("app")) {
     };
   } 
 
-  // Back to welcome page
-  const backBtn = container.querySelector("#back-btn");
+  // Back to welcome page (context-aware and explicit)
+  const backBtn = container.querySelector("#back-to-welcome-btn");
   if (backBtn) {
     backBtn.addEventListener("click", async () => {
       if (auth.currentUser) {
@@ -539,12 +537,11 @@ function renderLogin(container = document.getElementById("app")) {
           console.error("Sign-out failed:", err);
         }
       }
-      handleNavigation("home", true);
+      renderWelcome(); // Go directly to welcome screen; or use handleNavigation("home")
     });
   }
 }
 
-// Render Signup
 function renderSignup(container = document.getElementById("app")) {
   container.innerHTML = `
     <div class="signup-card fade-in">
@@ -588,12 +585,14 @@ function renderSignup(container = document.getElementById("app")) {
           <input name="accessCode" type="text" autocomplete="one-time-code" />
         </div>
         <button class="btn primary" type="submit">Create Account</button>
-        <div class="signup-footer">
+        <div class="signup-footer" style="margin-top:1rem;">
           Already have an account? <button class="btn outline" type="button" id="go-login">Log In</button>
         </div>
+        <button class="btn outline" id="back-to-welcome-btn" type="button" style="margin-top:0.8rem;width:100%;">⬅️ Back</button>
       </form>
     </div>
   `;
+
   // Role toggle: show code only for instructor/admin
   const radioEls = container.querySelectorAll('input[name="role"]');
   const codeGroup = container.querySelector("#access-code-group");
@@ -606,9 +605,16 @@ function renderSignup(container = document.getElementById("app")) {
       }
     });
   });
-  document.getElementById("go-login").onclick = () => renderLogin(container);
 
-  // Add your signup handling logic here: validate, check code, create user, etc.
+  // Log In button in footer
+  document.getElementById("go-login")?.addEventListener("click", () => renderLogin(container));
+
+  // Context-aware back to welcome button (just like login)
+  document.getElementById("back-to-welcome-btn")?.addEventListener("click", () => {
+    renderWelcome();
+  });
+
+  // TODO: Add your signup handling logic here (validate, check code, create user, etc.)
 }
 // ─── 9. STUDENT DASHBOARD ────────────────────────────────────────────────
 async function renderDashboard(container = document.getElementById("app")) {
@@ -690,85 +696,80 @@ async function renderDashboard(container = document.getElementById("app")) {
     console.error("Streak calc error", e);
   }
 
- /* 2️⃣  RENDER DASHBOARD LAYOUT --------------------------------------- */
-const name = localStorage.getItem("fullName") || "CDL User";
-const roleBadge = getRoleBadge(currentUserEmail);
+ 2️⃣  RENDER DASHBOARD LAYOUT --------------------------------------- */
+  const name = localStorage.getItem("fullName") || "CDL User";
+  const roleBadge = getRoleBadge(currentUserEmail);
 
-container.innerHTML = `
-  <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
+  container.innerHTML = `
+    <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
 
-  <div class="dash-layout">
+    <div class="dash-layout">
 
-    <!-- metric cards ---------------------------- -->
-    <section class="dash-metrics">
+      <!-- metric cards ---------------------------- -->
+      <section class="dash-metrics">
 
-      <div class="glass-card metric" id="metric-checklist">
-        <h3>✅ Checklist Progress</h3>
-        <progress value="${checklistPct}" max="100"></progress>
-        <p><span class="big-num" id="checklist-pct">${checklistPct}</span>% complete</p>
+        <div class="glass-card metric" id="metric-checklist">
+          <h3>✅ Checklist Progress</h3>
+          <progress value="${checklistPct}" max="100"></progress>
+          <p><span class="big-num" id="checklist-pct">${checklistPct}</span>% complete</p>
+        </div>
+
+        <div class="dashboard-card">
+          <h3>🧭 Walkthrough</h3>
+          <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
+          <button class="btn" data-nav="walkthrough">Open Walkthrough</button>
+        </div>
+
+        <div class="glass-card metric">
+          <h3>🧪 Last Test</h3>
+          <p id="last-test">${lastTestStr}</p>
+        </div>
+
+        <div class="glass-card metric">
+          <h3>🔥 Study Streak</h3>
+          <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? "s" : ""} active this week</p>
+        </div>
+
+        <div class="glass-card metric">
+          <h3>🚛 Profile</h3>
+          <p><strong>License:</strong> ${license}</p>
+          <p><strong>Experience:</strong> ${experience}</p>
+        </div>
+
+      </section>
+
+      <!-- compact scrollable nav ---------------------------- -->
+      <div class="dash-rail-wrapper">
+        <aside class="dash-rail">
+          <button class="rail-btn" data-nav="profile"><i>👤</i><span>My&nbsp;Profile</span></button>
+          <button class="rail-btn" data-nav="checklist"><i>✅</i><span>My&nbsp;Checklist</span></button>
+          <button class="rail-btn" data-nav="test"><i>🧪</i><span>Testing</span></button>
+          <button class="rail-btn" data-nav="flashcards"><i>🃏</i><span>Flashcards</span></button>
+          <button class="rail-btn" data-nav="coach"><i>🎧</i><span>AI&nbsp;Coach</span></button>
+        </aside>
       </div>
 
-      <div class="dashboard-card">
-        <h3>🧭 Walkthrough</h3>
-        <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
-        <button class="btn" data-nav="walkthrough">Open Walkthrough</button>
+      <div style="text-align:center; margin-top:2rem;">
+        <button id="logout-btn" class="btn outline">🚪 Logout</button>
       </div>
-
-      <div class="glass-card metric">
-        <h3>🧪 Last Test</h3>
-        <p id="last-test">${lastTestStr}</p>
-      </div>
-
-      <div class="glass-card metric">
-        <h3>🔥 Study Streak</h3>
-        <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? "s" : ""} active this week</p>
-      </div>
-
-      <div class="glass-card metric">
-        <h3>🚛 Profile</h3>
-        <p><strong>License:</strong> ${license}</p>
-        <p><strong>Experience:</strong> ${experience}</p>
-      </div>
-
-    </section>
-
-    <!-- compact scrollable nav ---------------------------- -->
-    <div class="dash-rail-wrapper">
-      <aside class="dash-rail">
-        <button class="rail-btn" data-nav="profile"><i>👤</i><span>My&nbsp;Profile</span></button>
-        <button class="rail-btn" data-nav="checklist"><i>✅</i><span>My&nbsp;Checklist</span></button>
-        <button class="rail-btn" data-nav="test"><i>🧪</i><span>Testing</span></button>
-        <button class="rail-btn" data-nav="flashcards"><i>🃏</i><span>Flashcards</span></button>
-        <button class="rail-btn" data-nav="coach"><i>🎧</i><span>AI&nbsp;Coach</span></button>
-      </aside>
     </div>
+  `;
 
-    <div style="text-align:center; margin-top:2rem;">
-      <button id="logout-btn" class="btn outline">🚪 Logout</button>
-    </div>
-
-  </div>
-`;
-  /* 3️⃣  UPDATE ELEMENTS & WIRE NAV ------------------------------------ */
-  document.getElementById("checklist-pct").textContent =
-    checklistPct.toString();
-  document
-    .querySelector("#metric-checklist progress")
-    .setAttribute("value", checklistPct);
+  // Update progress values (in case of re-render)
+  document.getElementById("checklist-pct").textContent = checklistPct.toString();
+  document.querySelector("#metric-checklist progress").setAttribute("value", checklistPct);
 
   setupNavigation();
 
-  document
-    .getElementById("logout-btn")
-    ?.addEventListener("click", async () => {
-      await signOut(auth);
-      localStorage.removeItem("fullName");
-      localStorage.removeItem("userRole");
-      renderWelcome();
-    });
+  document.getElementById("logout-btn")?.addEventListener("click", async () => {
+    await signOut(auth);
+    localStorage.removeItem("fullName");
+    localStorage.removeItem("userRole");
+    renderWelcome();
+  });
 }
 
-//Render Walkthrough
+// Render Walkthrough
 async function renderWalkthrough(container = document.getElementById("app")) {
   if (!auth.currentUser || !auth.currentUser.email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
@@ -822,15 +823,22 @@ async function renderWalkthrough(container = document.getElementById("app")) {
 
         <h3>🔧 Engine Compartment (Sample)</h3>
         <p>Check oil level with dipstick. Look for leaks, cracks, or broken hoses...</p>
-        
-        <!-- More walkthrough sections will go here -->
       </div>
     `;
   }
 
-  content += `<button data-nav="dashboard" class="btn">⬅️ Back to Dashboard</button></div>`;
+  content += `
+    <button id="back-to-dashboard-btn" class="btn outline" style="margin-top:2rem;">⬅️ Dashboard</button>
+    </div>
+  `;
   container.innerHTML = content;
-  setupNavigation();
+
+  // Directly wire back button for clarity and instant return
+  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+    renderDashboard();
+  });
+
+  setupNavigation(); // Still enable data-nav for profile etc
 }
 // Render Profile
 async function renderProfile(container = document.getElementById("app")) {
@@ -934,7 +942,7 @@ async function renderProfile(container = document.getElementById("app")) {
           </select>
         </label>
         <button class="btn primary wide" type="submit">Save Profile</button>
-        <button class="btn outline" type="button" data-nav="dashboard" style="margin-top:0.5rem;">⬅️ Back to Dashboard</button>
+        <button class="btn outline" id="back-to-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅️ Dashboard</button>
       </form>
     </div>
   `;
@@ -945,6 +953,11 @@ async function renderProfile(container = document.getElementById("app")) {
   });
   container.querySelector('select[name="vehicleQualified"]').addEventListener('change', function() {
     document.getElementById('vehicle-photos-section').style.display = this.value === "yes" ? "" : "none";
+  });
+
+  // Context-aware back navigation (direct, always works)
+  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+    renderDashboard();
   });
 
   setupNavigation();
@@ -997,7 +1010,6 @@ async function renderChecklists(container = document.getElementById("app")) {
   }
 
   // Simulate system-detected progress
-  // (Replace with real logic/calculations as your backend grows)
   const {
     cdlClass,
     cdlPermit,
@@ -1044,7 +1056,6 @@ async function renderChecklists(container = document.getElementById("app")) {
       link: "walkthrough",
       notify: walkthroughProgress < 1,
     },
-    // Add more if needed!
   ];
   complete = checklist.filter(x => x.done).length;
   const percent = Math.round((complete / checklist.length) * 100);
@@ -1069,29 +1080,19 @@ async function renderChecklists(container = document.getElementById("app")) {
           </li>
         `).join("")}
       </ul>
-      <button class="btn wide" data-nav="dashboard" style="margin-top:24px;">⬅️ Back to Dashboard</button>
+      <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅️ Back to Dashboard</button>
     </div>
   `;
 
-  setupNavigation();
-}
-// ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
-/* ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── */
-function renderFlashcards(c=document.getElementById("app")){
-  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🃏 Flashcards</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
-  setupNavigation();
-}
-function renderExperience(c=document.getElementById("app")){
-  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>💼 Experience Survey</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
-  setupNavigation();
-}
-function renderLicenseSelector(c=document.getElementById("app")){
-  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🚛 Select License</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
-  setupNavigation();
-}
+  // Explicit back button (always works, even if navigation logic changes)
+  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+    renderDashboard();
+  });
 
+  setupNavigation();
+}
 // Practice Tests
-function renderPracticeTests(container) {
+function renderPracticeTests(container = document.getElementById("app")) {
   console.log("🧪 renderPracticeTests CALLED");
 
   container.innerHTML = `
@@ -1103,9 +1104,14 @@ function renderPracticeTests(container) {
         <li><button class="test-btn" data-test="Air Brakes" style="width:100%;">Air Brakes</button></li>
         <li><button class="test-btn" data-test="Combination Vehicles" style="width:100%;">Combination Vehicles</button></li>
       </ul>
-      <button data-nav="dashboard" style="margin-top:20px;">⬅️ Back</button>
+      <button id="back-to-dashboard-btn" class="btn wide outline" style="margin-top:20px;">⬅️ Back to Dashboard</button>
     </div>
   `;
+
+  // Explicit back to dashboard for robustness
+  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+    renderDashboard();
+  });
 
   setupNavigation();
 
@@ -1123,29 +1129,96 @@ function renderPracticeTests(container) {
     });
   }, 0);
 }
+function renderFlashcards(container = document.getElementById("app")) {
+  const flashcards = [
+    { q: "What is the minimum tread depth for front tires?", a: "4/32 of an inch." },
+    { q: "What do you check for on rims?", a: "Bent, damaged, or rust trails." },
+    { q: "When must you use 3 points of contact?", a: "When entering and exiting the vehicle." },
+    { q: "What triggers the spring brake pop-out?", a: "Low air pressure (between 20–45 PSI)." }
+  ];
+  let current = 0;
 
-// AI Coach
-function renderAICoach(container) {
+  function renderCard() {
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in" style="max-width:420px;margin:0 auto;">
+        <h2>🃏 CDL Flashcards</h2>
+        <div class="flashcard-card" id="flashcard" tabindex="0">
+          <div class="flashcard-card-inner">
+            <span class="flashcard-q">Q: ${flashcards[current].q}</span>
+            <span class="flashcard-a">A: ${flashcards[current].a}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:1rem;justify-content:center;">
+          <button id="prev-flash" class="btn outline" ${current === 0 ? "disabled" : ""}>⬅️ Prev</button>
+          <button id="next-flash" class="btn outline" ${current === flashcards.length-1 ? "disabled" : ""}>Next ➡️</button>
+        </div>
+        <button class="btn wide outline" id="back-to-dashboard-btn" style="margin:26px 0 0 0;">⬅️ Back to Dashboard</button>
+      </div>
+    `;
+
+    // Flip logic
+    let flipped = false;
+    const flashcard = document.getElementById("flashcard");
+    flashcard.onclick = () => {
+      flipped = !flipped;
+      if (flipped) flashcard.classList.add("flipped");
+      else flashcard.classList.remove("flipped");
+    };
+
+    // Navigation
+    document.getElementById("prev-flash").onclick = () => {
+      if (current > 0) { current--; renderCard(); }
+    };
+    document.getElementById("next-flash").onclick = () => {
+      if (current < flashcards.length-1) { current++; renderCard(); }
+    };
+
+    document.getElementById("back-to-dashboard-btn").onclick = () => renderDashboard();
+  }
+
+  renderCard();
+  setupNavigation();
+}
+// AI Coach (Student Dashboard Only)
+function renderAICoach(container = document.getElementById("app")) {
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
       <h2>🎧 Talk to Your AI Coach</h2>
       <div id="ai-chat-log" style="border:1px solid #ccc; height:300px; overflow-y:auto; padding:10px; margin-bottom:10px;"></div>
       <textarea id="ai-input" placeholder="Ask a question..." style="width:100%; height:60px; padding:8px;"></textarea>
       <button id="ai-send-btn" style="width:100%; padding:10px; margin-top:6px;">Send</button>
-      <button data-nav="dashboard" style="display:block; margin:20px auto;">⬅️ Back</button>
+      <button id="back-to-dashboard-btn" class="btn outline wide" style="display:block; margin:20px auto;">⬅️ Back to Dashboard</button>
     </div>
   `;
+
+  // Back to student dashboard (explicit for clarity)
+  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+    renderDashboard();
+  });
+
   setupNavigation();
+
   const logEl = document.getElementById("ai-chat-log");
   document.getElementById("ai-send-btn").addEventListener("click", async () => {
     const q = document.getElementById("ai-input").value.trim();
     if (!q) return;
     logEl.innerHTML += `<div style="margin:8px 0;"><strong>You:</strong> ${q}</div>`;
     document.getElementById("ai-input").value = "";
-    const reply = await getAITipOfTheDay();
+    const reply = await getAITipOfTheDay(); // Replace with your real AI logic if needed!
     logEl.innerHTML += `<div style="margin:8px 0; color:#0066cc;"><strong>AI Coach:</strong> ${reply}</div>`;
     logEl.scrollTop = logEl.scrollHeight;
   });
+}
+
+// ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
+/* ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── */
+function renderExperience(c=document.getElementById("app")){
+  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>💼 Experience Survey</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
+  setupNavigation();
+}
+function renderLicenseSelector(c=document.getElementById("app")){
+  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🚛 Select License</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
+  setupNavigation();
 }
 
 // Test Results
