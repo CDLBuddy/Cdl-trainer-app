@@ -356,7 +356,7 @@ break;
   }
 }
 
-//Render Login
+// Render Login
 
 function renderLogin(container = document.getElementById("app")) {
   container.innerHTML = `
@@ -381,9 +381,10 @@ function renderLogin(container = document.getElementById("app")) {
         </button>
         <button type="button" class="btn outline" id="reset-password" style="margin-top:0.6rem;">Forgot Password?</button>
       </form>
-      <div class="login-footer">
+      <div class="login-footer" style="margin-top:1.2rem;">
         New? <button class="btn outline" type="button" id="go-signup">Sign Up</button>
-      <button class="btn outline" id="back-btn" type="button" style="margin-top:0.8rem;">⬅️ Back</button></div>
+      </div>
+      <button class="btn outline" id="back-btn" type="button" style="margin-top:0.8rem;width:100%;">⬅️ Back</button>
     </div>
   `;
 
@@ -404,45 +405,48 @@ function renderLogin(container = document.getElementById("app")) {
   setupNavigation();
 
   // Email/password login
-  container.querySelector("#login-form").onsubmit = async e => {
-    e.preventDefault();
-    const email = container.querySelector("#email").value.trim();
-    const pwd   = pwdInput.value;
-    const errD  = container.querySelector("#error-msg");
-    errD.style.display = "none";
-    if (!email || !pwd) {
-      errD.textContent = "Please enter both email and password.";
-      errD.style.display = "block";
-      return;
-    }
-    try {
-      await signInWithEmailAndPassword(auth, email, pwd);
-      handleNavigation("dashboard", true);
-    } catch (err) {
-      if (err.code === "auth/user-not-found") {
-        try {
-          const cred = await createUserWithEmailAndPassword(auth, email, pwd);
-          await addDoc(collection(db, "users"), {
-            uid: cred.user.uid,
-            email,
-            name: "CDL User",
-            role: "student",
-            verified: false,
-            createdAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString()
-          });
-          showToast("🎉 Account created!");
-          handleNavigation("dashboard", true);
-        } catch (suErr) {
-          errD.textContent = suErr.message;
+  const loginForm = container.querySelector("#login-form");
+  if (loginForm) {
+    loginForm.onsubmit = async e => {
+      e.preventDefault();
+      const email = container.querySelector("#email").value.trim();
+      const pwd   = pwdInput.value;
+      const errD  = container.querySelector("#error-msg");
+      errD.style.display = "none";
+      if (!email || !pwd) {
+        errD.textContent = "Please enter both email and password.";
+        errD.style.display = "block";
+        return;
+      }
+      try {
+        await signInWithEmailAndPassword(auth, email, pwd);
+        handleNavigation("dashboard", true);
+      } catch (err) {
+        if (err.code === "auth/user-not-found") {
+          try {
+            const cred = await createUserWithEmailAndPassword(auth, email, pwd);
+            await addDoc(collection(db, "users"), {
+              uid: cred.user.uid,
+              email,
+              name: "CDL User",
+              role: "student",
+              verified: false,
+              createdAt: new Date().toISOString(),
+              lastLogin: new Date().toISOString()
+            });
+            showToast("🎉 Account created!");
+            handleNavigation("dashboard", true);
+          } catch (suErr) {
+            errD.textContent = suErr.message;
+            errD.style.display = "block";
+          }
+        } else {
+          errD.textContent = err.message;
           errD.style.display = "block";
         }
-      } else {
-        errD.textContent = err.message;
-        errD.style.display = "block";
       }
-    }
-  };
+    };
+  }
 
   // Google sign-in
   const googleBtn = container.querySelector("#google-login");
@@ -475,19 +479,21 @@ function renderLogin(container = document.getElementById("app")) {
       }
     };
   } 
-  /* Back to welcome page */
-  const backBtn = document.getElementById("back-btn");
-if (backBtn) {
-  backBtn.addEventListener("click", async () => {
-    if (auth.currentUser) {
-      try {
-        await signOut(auth);
-      } catch (err) {
-        console.error("Sign-out failed:", err);
+
+  // Back to welcome page
+  const backBtn = container.querySelector("#back-btn");
+  if (backBtn) {
+    backBtn.addEventListener("click", async () => {
+      if (auth.currentUser) {
+        try {
+          await signOut(auth);
+        } catch (err) {
+          console.error("Sign-out failed:", err);
+        }
       }
-    }
-    handleNavigation("home", true);
-  });
+      handleNavigation("home", true);
+    });
+  }
 }
 
 // Render Signup
