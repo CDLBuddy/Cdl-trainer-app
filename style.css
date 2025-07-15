@@ -114,6 +114,21 @@ body.dark-mode {
   z-index: 2;
   transition: background 0.3s, color 0.3s;
 }
+.welcome-content .btn {
+  display: block;
+  margin: 2rem auto 0 auto;
+  padding: 1rem 2.2rem;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), #a8d2e2);
+  box-shadow: 0 6px 18px rgba(196, 219, 232, 0.25);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.welcome-content .btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 10px 28px rgba(196, 219, 232, 0.35);
+}
 
 /* ─── 4. Global Button Styles ──────────────────────────────────────────── */
 /* Unified .btn and button styles for ALL app buttons */
