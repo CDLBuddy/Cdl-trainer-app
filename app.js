@@ -1090,42 +1090,134 @@ async function renderChecklists(container = document.getElementById("app")) {
   setupNavigation();
 }
 // Practice Tests
-function renderPracticeTests(container = document.getElementById("app")) {
-  console.log("🧪 renderPracticeTests CALLED");
+async function renderPracticeTests(container = document.getElementById("app")) {
+  const appEl = container || document.getElementById("app");
+  if (!appEl) return;
 
-  container.innerHTML = `
-    <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
-      <h2>🧪 CDL Practice Tests</h2>
-      <p>Select a practice test to begin:</p>
-      <ul style="list-style:none; padding:0;">
-        <li><button class="test-btn" data-test="General Knowledge" style="width:100%;">General Knowledge</button></li>
-        <li><button class="test-btn" data-test="Air Brakes" style="width:100%;">Air Brakes</button></li>
-        <li><button class="test-btn" data-test="Combination Vehicles" style="width:100%;">Combination Vehicles</button></li>
-      </ul>
-      <button id="back-to-dashboard-btn" class="btn wide outline" style="margin-top:20px;">⬅ Back to Dashboard</button>
+  const tests = ["General Knowledge", "Air Brakes", "Combination Vehicles"];
+  const testScores = {};
+
+  try {
+    const snap = await getDocs(
+      query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
+    );
+
+    tests.forEach(test => {
+      const testDocs = snap.docs
+        .map(doc => doc.data())
+        .filter(d => d.testName === test);
+      if (testDocs.length > 0) {
+        const latest = testDocs.sort((a, b) =>
+          (b.timestamp?.toDate?.() || new Date(b.timestamp)) -
+          (a.timestamp?.toDate?.() || new Date(a.timestamp))
+        )[0];
+        const pct = Math.round((latest.correct / latest.total) * 100);
+        testScores[test] = {
+          pct,
+          passed: pct >= 80,
+          lastResult: latest
+        };
+      }
+    });
+  } catch (e) {
+    console.error("❌ Error loading test results:", e);
+  }
+
+  appEl.innerHTML = `
+    <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
+      <h2 class="dash-head">🧪 CDL Practice Tests</h2>
+      <p style="margin-bottom: 1.4rem;">Select a practice test to begin:</p>
+
+      <div class="test-list">
+        ${tests.map(name => {
+          const data = testScores[name];
+          const scoreBadge = data
+            ? data.passed
+              ? `<span class="badge badge-success">✅ ${data.pct}%</span>`
+              : `<span class="badge badge-fail">❌ ${data.pct}%</span>`
+            : `<span class="badge badge-neutral">⏳ Not attempted</span>`;
+          return `
+            <div class="glass-card" style="margin-bottom: 1.2rem; padding:18px;">
+              <h3 style="margin-bottom: 0.6rem;">${name} ${scoreBadge}</h3>
+              <div class="btn-grid">
+                <button class="btn wide retake-btn" data-test="${name}">🔁 Retake</button>
+                ${data ? `<button class="btn wide outline review-btn" data-test="${name}">🧾 Review</button>` : ""}
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+
+      <div style="text-align:center; margin-top:2rem;">
+        <button id="back-to-dashboard-btn" class="btn outline wide">⬅ Back to Dashboard</button>
+      </div>
     </div>
   `;
 
-  // Explicit back to dashboard for robustness
+  setupNavigation();
+
   document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
     renderDashboard();
   });
 
-  setupNavigation();
-
-  // Confirm test button click binding and hook up the engine
   setTimeout(() => {
-    const testBtns = container.querySelectorAll(".test-btn");
-    console.log("🔍 Found", testBtns.length, "test buttons");
-
-    testBtns.forEach(btn => {
+    appEl.querySelectorAll(".retake-btn").forEach(btn => {
       btn.addEventListener("click", () => {
-        console.log("✅ Clicked:", btn.dataset.test);
-        showToast(`Loading "${btn.dataset.test}" test…`);
-        renderTestEngine(document.getElementById("app"), btn.dataset.test);
+        const test = btn.dataset.test;
+        showToast(`Restarting "${test}" test…`);
+        renderTestEngine(appEl, test);
+      });
+    });
+
+    appEl.querySelectorAll(".review-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const test = btn.dataset.test;
+        showToast(`Loading your last "${test}" result…`);
+        renderTestReview(appEl, test);
       });
     });
   }, 0);
+}
+async function renderTestReview(container, testName) {
+  container.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧾 ${testName} Review</h2><p>Loading...</p></div>`;
+
+  try {
+    const snap = await getDocs(
+      query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
+    );
+
+    const results = snap.docs
+      .map(doc => doc.data())
+      .filter(d => d.testName === testName)
+      .sort((a, b) =>
+        (b.timestamp?.toDate?.() || new Date(b.timestamp)) -
+        (a.timestamp?.toDate?.() || new Date(a.timestamp))
+      );
+
+    if (results.length === 0) {
+      container.innerHTML = `<p>No results found for this test.</p>`;
+      return;
+    }
+
+    const latest = results[0];
+    const pct = Math.round((latest.correct / latest.total) * 100);
+
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
+        <h2>🧾 ${testName} Review</h2>
+        <p>You scored <strong>${latest.correct}/${latest.total}</strong> (${pct}%)</p>
+        <p><em>Question-level review coming soon!</em></p>
+        <div style="margin-top:20px;">
+          <button class="btn outline" data-nav="practiceTests">⬅ Back to Practice Tests</button>
+        </div>
+      </div>
+    `;
+
+    setupNavigation();
+  } catch (e) {
+    console.error("❌ Review fetch error:", e);
+    container.innerHTML = `<p>Failed to load review data.</p>`;
+  }
 }
 function renderFlashcards(container = document.getElementById("app")) {
   const flashcards = [
