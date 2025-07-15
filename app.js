@@ -36,7 +36,18 @@ import {
 import { showToast } from "./ui-helpers.js";
 
 console.log("✅ app.js loaded");
+// Loader overlay controller (used by auth + navigation)
+function showPageTransitionLoader() {
+  const overlay = document.getElementById('loader-overlay');
+  if (overlay) overlay.classList.remove('hidden');
+}
 
+function hidePageTransitionLoader() {
+  const overlay = document.getElementById('loader-overlay');
+  if (overlay) {
+    setTimeout(() => overlay.classList.add('hidden'), 400);
+  }
+}
 // ─── Typewriter Headline Logic ───────────────────────────────────────────────
 const _headlines = [
   "CDL Buddy",
@@ -80,18 +91,6 @@ const auth = getAuth(app);
 // ─── 3. AUTH STATE LISTENER ────────────────────────────────────────────────────
 const loaderEl      = document.getElementById("app-loader"); // ⏳ full-screen loader
 const loaderShownAt = Date.now();                            // time it first appeared
-
-// Transition loader helpers
-function showPageTransitionLoader() {
-  const overlay = document.getElementById('loader-overlay');
-  if (overlay) overlay.classList.remove('hidden');
-}
-function hidePageTransitionLoader() {
-  const overlay = document.getElementById('loader-overlay');
-  if (overlay) {
-    setTimeout(() => overlay.classList.add('hidden'), 400);
-  }
-}
 
 onAuthStateChanged(auth, async user => {
   console.log("🔔 Firebase auth state changed:", user);
@@ -319,19 +318,6 @@ function renderWelcome() {
 }          
 
   // ─── 4. SMART NAVIGATION ───────────────────────────────────────────────────────
-
-// Page transition loader
-function showPageTransitionLoader() {
-  const overlay = document.getElementById('loader-overlay');
-  if (overlay) overlay.classList.remove('hidden');
-}
-
-function hidePageTransitionLoader() {
-  const overlay = document.getElementById('loader-overlay');
-  if (overlay) {
-    setTimeout(() => overlay.classList.add('hidden'), 400);
-  }
-}
 
 // Route and transition handler
 function handleNavigation(page) {
