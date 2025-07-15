@@ -338,6 +338,20 @@ nav button {
   25% { transform: rotate(-3deg); }
   75% { transform: rotate(3deg); }
 }
+@keyframes fadeOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+.fade-out {
+  animation: fadeOutDown 0.35s ease forwards;
+}
 
 /* ─── 7. Welcome Parallax & Fade-in ────────────────────────────────────── */
 /* Welcome Screen Styling */
