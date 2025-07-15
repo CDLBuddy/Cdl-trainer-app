@@ -615,44 +615,46 @@ nav button {
 .rail-btn {
   flex: 1 1 0;
   min-width: 0;
-  max-width: 130px;   /* increased from 112px */
+  max-width: 90px;              /* <-- True square width */
+  aspect-ratio: 1 / 1;          /* <-- Enforce square! */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.33rem;
   background: rgba(255, 255, 255, 0.13);
   backdrop-filter: blur(10px) saturate(135%);
   border: 1.5px solid rgba(255,255,255,0.14);
-  border-radius: 15px;
+  border-radius: 20px;
   color: var(--text-light);
-  font-size: 1.16em;   /* increased font size */
-  padding: 18px 4px 13px 4px; /* more vertical & horizontal space */
+  font-size: 1.14em;
   box-shadow: 0 2px 7px rgba(0,0,0,0.08);
   transition: background 0.22s, box-shadow 0.19s, transform 0.19s;
   cursor: pointer;
   font-weight: 500;
   text-align: center;
   outline: none;
+  padding: 0;                   /* Let aspect-ratio handle size */
 }
 
 .rail-btn i, .rail-btn img {
   display: block;
-  font-size: 2em;     /* bigger icon */
-  margin-bottom: 0.14em;
+  font-size: 2.1em;
+  margin-bottom: 0.11em;
   pointer-events: none;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
 .rail-btn span {
-  font-size: 1.05em;
-  white-space: normal;              /* allow wrapping */
+  font-size: 1.02em;
+  white-space: normal;            /* Allow wrapping, not breaking */
   overflow: visible;
   text-overflow: unset;
-  margin-top: 0.13em;
+  margin-top: 0.1em;
   line-height: 1.13;
-  word-break: break-word;           /* break long words if needed */
-  max-width: 90%;
+  word-break: break-word;         /* break long words if needed */
+  max-width: 80%;
+  /* Center text on multiple lines */
+  display: block;
 }
 
 .rail-btn:hover {
@@ -664,18 +666,19 @@ nav button {
   background: var(--card-bg-dark);
 }
 
+/* Responsive for smaller screens */
 @media (max-width: 700px) {
   .dash-rail {
-    gap: 0.6rem;
-    padding: 0 2px;
+    gap: 0.4rem;
+    padding: 0 1px;
   }
   .rail-btn {
-    font-size: 1em;
-    max-width: 90px;
-    padding: 13px 0 9px 0;
+    max-width: 60px;
+    aspect-ratio: 1/1;
+    font-size: 0.97em;
   }
   .rail-btn i, .rail-btn img {
-    font-size: 1.35em;
+    font-size: 1.25em;
   }
 }
 
