@@ -636,8 +636,8 @@ body, html {
 
 .rail-btn {
   flex: none;
-  width: 120px;
-  height: 120px;
+  width: 125px;
+  height: 125px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -667,7 +667,7 @@ body, html {
 
 .rail-btn span {
   font-size: 1em;
-  max-width: 90px;
+  max-width: 100px;
   line-height: 1.2;
   word-break: keep-all;
   white-space: normal;
@@ -694,16 +694,16 @@ body, html {
   -ms-overflow-style: none;  /* IE and Edge */
 }
 
-/* Ensure horizontal scrolling still works */
+/* === FIX 1: Hide scroll bar on nav strip === */
 .dash-rail {
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
+  overflow-y: hidden;       /* hide vertical scroll */
+  overflow-x: auto;         /* allow horizontal scrolling */
+  scrollbar-width: none;    /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
-.dash-rail {
-  scroll-behavior: smooth;
+.dash-rail::-webkit-scrollbar {
+  display: none;            /* Chrome, Safari */
 }
-
 /* Mobile adjustments */
 @media (max-width: 600px) {
   .rail-btn {
