@@ -1212,7 +1212,7 @@ function renderAICoach(container = document.getElementById("app")) {
 // ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
 /* ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── */
 function renderExperience(c=document.getElementById("app")){
-  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>💼 Experience Survey</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
+  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧳 Experience Survey</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
   setupNavigation();
 }
 function renderLicenseSelector(c=document.getElementById("app")){
