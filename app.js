@@ -236,11 +236,11 @@ function initInfiniteCarousel(trackSelector = ".features-inner") {
   const track = document.querySelector(trackSelector);
   if (!track || track.dataset.looped) return;   // already initialised
 
-  /* 1⃣ duplicate once so we can scroll forever */
+  /* 1 duplicate once so we can scroll forever */
   track.innerHTML += track.innerHTML;
   track.dataset.looped = "true";
 
-  /* 2⃣ reset scroll when we hit either end */
+  /* 2 reset scroll when we hit either end */
   track.addEventListener("scroll", () => {
     const max = track.scrollWidth / 2;          // length of the original set
     if (track.scrollLeft >= max) {              // passed the end
@@ -619,7 +619,7 @@ function renderSignup(container = document.getElementById("app")) {
 async function renderDashboard(container = document.getElementById("app")) {
   if (!container) return;
 
-  /* 1⃣  FETCH DATA ----------------------------------------------------- */
+  /* 1  FETCH DATA ----------------------------------------------------- */
   // Checklist %
   let checklistPct = 0;
   try {
@@ -695,7 +695,7 @@ async function renderDashboard(container = document.getElementById("app")) {
     console.error("Streak calc error", e);
   }
 
- 2⃣  RENDER DASHBOARD LAYOUT --------------------------------------- */
+ 2  RENDER DASHBOARD LAYOUT --------------------------------------- */
   const name = localStorage.getItem("fullName") || "CDL User";
   const roleBadge = getRoleBadge(currentUserEmail);
 
