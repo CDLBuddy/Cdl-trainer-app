@@ -688,14 +688,15 @@ async function renderDashboard(container = document.getElementById("app")) {
 
       <!-- compact rail ---------------------------- -->
         <aside class="dash-rail">
-  <button class="rail-btn" data-nav="profile"><i>👤</i><span>My&nbsp;Profile</span></button>
-  <button class="rail-btn" data-nav="checklist"><i>✅</i><span>My&nbsp;Checklist</span></button>
-  <button class="rail-btn" data-nav="test"><i>🧪</i><span>Testing</span></button>
-  <button class="rail-btn" data-nav="flashcards"><i>🃏</i><span>Flashcards</span></button>
-  <button class="rail-btn" data-nav="coach"><i>🎧</i><span>AI&nbsp;Coach</span></button>
-</aside>
-
-    </div>
+  <div class="dash-rail-wrapper">
+  <aside class="dash-rail">
+    <button class="rail-btn" data-nav="profile"><i>👤</i><span>My&nbsp;Profile</span></button>
+    <button class="rail-btn" data-nav="checklist"><i>✅</i><span>My&nbsp;Checklist</span></button>
+    <button class="rail-btn" data-nav="test"><i>🧪</i><span>Testing</span></button>
+    <button class="rail-btn" data-nav="flashcards"><i>🃏</i><span>Flashcards</span></button>
+    <button class="rail-btn" data-nav="coach"><i>🎧</i><span>AI&nbsp;Coach</span></button>
+  </aside>
+</div>
 
     <div style="text-align:center; margin-top:2rem;">
       <button id="logout-btn" class="btn outline">🚪 Logout</button>
