@@ -605,41 +605,47 @@ nav button {
 .dash-rail {
   display: flex;
   flex-direction: row;
-  justify-content: center;
   align-items: flex-end;
   gap: 1.2rem;
-  width: 100%;
+  width: 100vw;
+  max-width: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
   margin-bottom: 18px;
   padding: 0 6px;
+  /* Remove justify-content:center; to allow scrolling */
 }
 
 .rail-btn {
-  flex: 0 0 110px;           /* Always 88px wide */
-  height: 110px;             /* Always 88px tall */
+  flex: 0 0 120px;
+  width: 120px;
+  height: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.13);
-  backdrop-filter: blur(10px) saturate(135%);
-  border: 2px solid rgba(255,255,255,0.16);
-  border-radius: 20px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px) saturate(145%);
+  border: 2.5px solid rgba(255,255,255,0.18);
+  border-radius: 28px;
   color: var(--text-light);
-  font-size: 1.07em;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-  transition: background 0.19s, box-shadow 0.18s, transform 0.15s;
+  font-size: 1.2em;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+  transition: background 0.19s, box-shadow 0.19s, transform 0.14s;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
   text-align: center;
   outline: none;
-  padding: 0 3px;
+  padding: 0 7px;
+  margin: 0; /* remove default button margin */
   overflow: hidden;
 }
 
 .rail-btn i, .rail-btn img {
   display: block;
-  font-size: 2em;
-  margin-bottom: 2px;
+  font-size: 2.2em;
+  margin-bottom: 4px;
   pointer-events: none;
 }
 
@@ -647,22 +653,14 @@ nav button {
   font-size: 1em;
   white-space: normal;
   overflow: visible;
-  text-overflow: unset;
-  margin-top: 0.1em;
+  margin-top: 0.13em;
   line-height: 1.15;
-  max-width: 80px;
+  max-width: 100px;
   display: block;
-  word-break: keep-all;     /* Don't break mid-word */
+  word-break: keep-all;
 }
 
-.rail-btn:hover {
-  box-shadow: 0 0 20px rgba(123, 107, 255, 0.21);
-  transform: translateY(-2px) scale(1.06);
-}
-.rail-btn:active {
-  transform: scale(0.96);
-  background: var(--card-bg-dark);
-}
+/* Remove all !important here; it's not needed now */
 
 /* Responsive: smaller but still square on mobile */
 @media (max-width: 600px) {
