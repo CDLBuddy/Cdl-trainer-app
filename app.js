@@ -1219,7 +1219,7 @@ async function renderTestReview(container, testName) {
     container.innerHTML = `<p>Failed to load review data.</p>`;
   }
 }
-
+//Render Flashcards
 function renderFlashcards(container = document.getElementById("app")) {
   const flashcards = [
     { q: "What is the minimum tread depth for front tires?", a: "4/32 of an inch." },
@@ -1258,7 +1258,7 @@ function renderFlashcards(container = document.getElementById("app")) {
       flashcard.classList.toggle("flipped", flipped);
     };
 
-document.getElementById("prev-flash")?.addEventListener("click", () => {
+    document.getElementById("prev-flash")?.addEventListener("click", () => {
       if (current > 0) {
         current--;
         renderCard();
@@ -1272,11 +1272,11 @@ document.getElementById("prev-flash")?.addEventListener("click", () => {
       }
     });
 
-document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+    document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
       renderDashboard();
     });
 
-    setupNavigation(); 
+    setupNavigation(); // Needed for data-nav buttons
   }
 
   renderCard();
