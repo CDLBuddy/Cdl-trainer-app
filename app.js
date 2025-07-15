@@ -687,13 +687,13 @@ async function renderDashboard(container = document.getElementById("app")) {
       </section>
 
       <!-- compact rail ---------------------------- -->
-      <aside class="dash-rail">
-        <button class="rail-btn" data-nav="profile">👤<span>My&nbsp;Profile</span></button>
-        <button class="rail-btn" data-nav="checklist">✅<span>My&nbsp;Checklist</span></button>
-        <button class="rail-btn" data-nav="test">🧪<span>Testing</span></button>
-        <button class="rail-btn" data-nav="flashcards">🃏<span>Flashcards</span></button>
-        <button class="rail-btn" data-nav="coach">🎧<span>AI&nbsp;Coach</span></button>
-      </aside>
+        <aside class="dash-rail">
+  <button class="rail-btn" data-nav="profile"><i>👤</i><span>My&nbsp;Profile</span></button>
+  <button class="rail-btn" data-nav="checklist"><i>✅</i><span>My&nbsp;Checklist</span></button>
+  <button class="rail-btn" data-nav="test"><i>🧪</i><span>Testing</span></button>
+  <button class="rail-btn" data-nav="flashcards"><i>🃏</i><span>Flashcards</span></button>
+  <button class="rail-btn" data-nav="coach"><i>🎧</i><span>AI&nbsp;Coach</span></button>
+</aside>
 
     </div>
 
