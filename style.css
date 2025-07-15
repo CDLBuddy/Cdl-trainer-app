@@ -615,7 +615,7 @@ nav button {
 .rail-btn {
   flex: 1 1 0;
   min-width: 0;
-  max-width: 90px;              /* <-- True square width */
+  max-width: 110px;              /* <-- True square width */
   aspect-ratio: 1 / 1;          /* <-- Enforce square! */
   display: flex;
   flex-direction: column;
