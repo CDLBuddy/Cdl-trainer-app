@@ -614,8 +614,8 @@ nav button {
 }
 
 .rail-btn {
-  flex: 0 0 88px;           /* Always 88px wide */
-  height: 88px;             /* Always 88px tall */
+  flex: 0 0 110px;           /* Always 88px wide */
+  height: 110px;             /* Always 88px tall */
   display: flex;
   flex-direction: column;
   align-items: center;
