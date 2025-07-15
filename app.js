@@ -148,7 +148,7 @@ onAuthStateChanged(auth, async user => {
         userData = newUser;
       }
 
-      // 2) Save to localStorage
+      // 2 Save to localStorage
       localStorage.setItem("userRole", userData.role || "student");
       localStorage.setItem("fullName", userData.name || "CDL User");
 
@@ -159,7 +159,7 @@ onAuthStateChanged(auth, async user => {
       return;
     }
 
-    // 3) Setup logout button
+    // 3 Setup logout button
     document.getElementById("logout-btn")?.addEventListener("click", async () => {
       try {
         await signOut(auth);
@@ -175,7 +175,7 @@ onAuthStateChanged(auth, async user => {
       }
     });
 
-    // 4) Route to dashboard based on role
+    // 4 Route to dashboard based on role
     showPageTransitionLoader();
     setTimeout(() => {
       const role = localStorage.getItem("userRole");
@@ -203,7 +203,7 @@ onAuthStateChanged(auth, async user => {
   const elapsed  = Date.now() - loaderShownAt;
   const minShown = 400; // ms
   setTimeout(() => loaderEl?.classList.add("hide"), Math.max(0, minShown - elapsed));
- });
+ };
 // ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
 function showModal(html) {
   const overlay = document.createElement("div");
@@ -388,6 +388,7 @@ function handleNavigation(page) {
     hidePageTransitionLoader();
   }, 350); // match fade-out time
 }
+}, 100);
 
 // Click listener + browser history
 function setupNavigation() {
@@ -1227,14 +1228,14 @@ function renderLicenseSelector(c=document.getElementById("app")){
 
 // Test Results
 async function renderTestResults(container) {
-  // 1) Show a loading state
+  // 1 Show a loading state
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
       <h2>📊 Test Results</h2>
       <p>Loading...</p>
     </div>`;
 
-  // 2) Fetch testResults for the current user
+  // 2 Fetch testResults for the current user
   const snap = await getDocs(
     query(
       collection(db, "testResults"),
@@ -1242,7 +1243,7 @@ async function renderTestResults(container) {
     )
   );
 
-  // 3) Normalize timestamps (handle either Firestore Timestamp or ISO string)
+  // 3) Normalize timestamps (handle either Firestore Timestamp or ISO string
   const results = snap.docs.map(d => {
     const data = d.data();
     const ts   = data.timestamp;
@@ -1252,10 +1253,10 @@ async function renderTestResults(container) {
     return { ...data, timestamp: date };
   });
 
-  // 4) Sort descending by date
+  // 4 Sort descending by date
   results.sort((a, b) => b.timestamp - a.timestamp);
 
-  // 5) Build the results HTML
+  // 5 Build the results HTML
   let html = `
     <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
       <h2>📊 Test Results</h2>
@@ -1285,14 +1286,14 @@ async function renderTestResults(container) {
     </div>
   `;
 
-  // 6) Render and re-bind navigation
+  // 6 Render and re-bind navigation
   container.innerHTML = html;
   setupNavigation();
 }
 
 // ─── 11. REAL TEST ENGINE ──────────────────────────────────────────────────────
 async function renderTestEngine(container, testName) {
-  // 1) Define your question banks
+  // 1 Define your question banks
   const questionBanks = {
     "General Knowledge": [
       {
@@ -1353,7 +1354,7 @@ async function renderTestEngine(container, testName) {
     ]
   };
 
-  // 2) Grab the selected bank
+  // 2 Grab the selected bank
   const questions = questionBanks[testName] || [];
   let currentIdx = 0;
   let correctCount = 0;
