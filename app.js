@@ -349,10 +349,10 @@ function handleNavigation(page) {
       case "admin":
         renderAdminDashboard(appEl);
         break;
-      case "checklists":  // ✅ match renderChecklists()
+      case "checklists":
         renderChecklists(appEl);
         break;
-      case "practiceTests":  // ✅ renamed from "tests" to match renderPracticeTests()
+      case "practiceTests":
         renderPracticeTests(appEl);
         break;
       case "flashcards":
