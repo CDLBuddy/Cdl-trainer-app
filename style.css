@@ -736,12 +736,12 @@ body, html {
     justify-content: space-between;
     width: 100%;
     overflow-x: auto;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     gap: 0.7rem;
   }
   .glass-card.metric,
   .dashboard-card {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
   }
 }
 /*My Checklist */
