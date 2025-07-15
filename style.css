@@ -1076,7 +1076,6 @@ body::before {
   opacity: 1;
   transform: translateY(0);
 }
-/* ─── Flashcards —── */
 .flashcard-card {
   background: #23263a;
   color: var(--text-light, #fff);
@@ -1090,42 +1089,57 @@ body::before {
   text-align: center;
   transition: box-shadow 0.2s, background 0.2s, transform 0.45s;
   will-change: transform;
-  perspective: 600px;
+  perspective: 800px;
   position: relative;
+  opacity: 0;
+  animation: cardFadeIn 0.65s cubic-bezier(.43,.23,.6,1.34) forwards;
 }
+.flashcard-card::after {
+  content: "🔄 Tap to flip";
+  position: absolute;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+  font-size: 0.85em;
+  opacity: 0.5;
+  color: #ccc;
+}
+
 .flashcard-card-inner {
-  transition: transform 0.45s cubic-bezier(.32,1.56,.51,.96);
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   transform-style: preserve-3d;
   position: relative;
 }
+
 .flashcard-card.flipped .flashcard-card-inner {
   transform: rotateY(180deg);
 }
-.flashcard-q, .flashcard-a {
+
+.flashcard-front,
+.flashcard-back {
   display: block;
   font-size: 1.18em;
   padding: 18px 8px;
   user-select: none;
   min-height: 60px;
   backface-visibility: hidden;
+  border-radius: 16px;
 }
-.flashcard-a {
+
+.flashcard-back {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   background: #3c3866;
-  border-radius: 16px;
   color: #ffe688;
   transform: rotateY(180deg);
   box-shadow: 0 4px 28px #2223;
 }
+
 .flashcard-card:hover {
   box-shadow: 0 0 24px var(--accent, #b48aff), 0 6px 40px #23263a77;
   transform: translateY(-3px) scale(1.025);
 }
-.flashcard-card {
-  opacity: 0;
-  animation: cardFadeIn 0.65s cubic-bezier(.43,.23,.6,1.34) forwards;
-}
+
 @keyframes cardFadeIn {
   to { opacity: 1; }
 }
