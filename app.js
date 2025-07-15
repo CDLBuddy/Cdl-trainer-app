@@ -281,34 +281,26 @@ function initCarousel() {
   requestAnimationFrame(drift);
 }
 
- // ─── 5. RENDER WELCOME SCREEN ──────────────────────────────────────────────
 function renderWelcome() {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  /* 1️⃣ Inject the HTML */
   appEl.innerHTML = `
     <div class="welcome-screen">
-
-      <!-- 🌟 Background Glow Bokeh Layer -->
       <div class="bokeh-layer">
         <div class="bokeh-dot parallax-float" style="top:10%; left:15%; animation-delay:0s;"></div>
         <div class="bokeh-dot parallax-float" style="top:30%; left:70%; animation-delay:2s;"></div>
         <div class="bokeh-dot parallax-float" style="top:60%; left:25%; animation-delay:4s;"></div>
         <div class="bokeh-dot parallax-float" style="top:80%; left:80%; animation-delay:6s;"></div>
       </div>
-
       <div class="welcome-content shimmer-glow fade-in">
         <h1 class="typewriter">
           <span id="headline"></span><span class="cursor">|</span>
         </h1>
         <p>Your all-in-one CDL prep coach. Scroll down to get started!</p>
-
         <button id="login-btn" class="btn pulse">
           <span class="icon">🚀</span> Login
         </button>
-
-        <!-- Swipeable + infinite carousel -->
         <div class="features">
           <div class="features-inner">
             <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
@@ -318,19 +310,18 @@ function renderWelcome() {
           </div>
         </div>
       </div>
-
-      <button class="fab" title="AI Coach">🎧</button>
+      <button class="fab" title="AI Coach" aria-label="Open AI Coach">🎧</button>
     </div>
   `;
 
-  // 2️⃣ Initialize animations and interactivity
   initInfiniteCarousel?.();
-initCarousel?.();
-initFadeInOnScroll?.();
-startTypewriter();
-document.getElementById("login-btn")?.addEventListener("click", () => {
-  handleNavigation('login'); // or renderLogin() if that's your function
-});
+  initCarousel?.();
+  initFadeInOnScroll?.();
+  startTypewriter();
+  document.getElementById("login-btn")?.addEventListener("click", () => {
+    handleNavigation('login');
+  });
+}
 // ─── 4. SMART NAVIGATION ───────────────────────────────────────────────────────
 
 // Route and transition handler
