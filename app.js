@@ -193,7 +193,6 @@ onAuthStateChanged(auth, async user => {
   const minShown = 400; // ms
   setTimeout(() => loaderEl?.classList.add("hide"), Math.max(0, minShown - elapsed));
  });
-}
 // ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
 function showModal(html) {
   const overlay = document.createElement("div");
