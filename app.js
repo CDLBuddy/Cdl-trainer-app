@@ -236,11 +236,11 @@ function initInfiniteCarousel(trackSelector = ".features-inner") {
   const track = document.querySelector(trackSelector);
   if (!track || track.dataset.looped) return;   // already initialised
 
-  /* 1️⃣ duplicate once so we can scroll forever */
+  /* 1⃣ duplicate once so we can scroll forever */
   track.innerHTML += track.innerHTML;
   track.dataset.looped = "true";
 
-  /* 2️⃣ reset scroll when we hit either end */
+  /* 2⃣ reset scroll when we hit either end */
   track.addEventListener("scroll", () => {
     const max = track.scrollWidth / 2;          // length of the original set
     if (track.scrollLeft >= max) {              // passed the end
@@ -416,7 +416,7 @@ function renderLogin(container = document.getElementById("app")) {
           <label>Password</label>
           <div style="position:relative;">
             <input id="login-password" name="password" type="password" required autocomplete="current-password" style="padding-right:2.3rem;">
-            <button type="button" id="toggle-password" style="position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);font-size:1.17em;cursor:pointer;">👁️</button>
+            <button type="button" id="toggle-password" style="position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);font-size:1.17em;cursor:pointer;">👁</button>
           </div>
         </div>
         <div id="error-msg" style="display:none;color:var(--error);margin-bottom:10px;font-weight:500;"></div>
@@ -429,7 +429,7 @@ function renderLogin(container = document.getElementById("app")) {
       <div class="login-footer" style="margin-top:1.2rem;">
         New? <button class="btn outline" type="button" id="go-signup">Sign Up</button>
       </div>
-      <button class="btn outline" id="back-to-welcome-btn" type="button" style="margin-top:0.8rem;width:100%;">⬅️ Back</button>
+      <button class="btn outline" id="back-to-welcome-btn" type="button" style="margin-top:0.8rem;width:100%;">⬅ Back</button>
     </div>
   `;
 
@@ -443,7 +443,7 @@ function renderLogin(container = document.getElementById("app")) {
   if (pwdInput && togglePwd) {
     togglePwd.onclick = () => {
       pwdInput.type = pwdInput.type === "password" ? "text" : "password";
-      togglePwd.textContent = pwdInput.type === "password" ? "👁️" : "🙈";
+      togglePwd.textContent = pwdInput.type === "password" ? "👁" : "🙈";
     };
   }
 
@@ -544,7 +544,7 @@ function renderLogin(container = document.getElementById("app")) {
 function renderSignup(container = document.getElementById("app")) {
   container.innerHTML = `
     <div class="signup-card fade-in">
-      <h2>✍️ Sign Up for CDL Trainer</h2>
+      <h2>✍ Sign Up for CDL Trainer</h2>
       <form id="signup-form" autocomplete="off">
         <div class="form-group">
           <label>Name</label>
@@ -587,7 +587,7 @@ function renderSignup(container = document.getElementById("app")) {
         <div class="signup-footer" style="margin-top:1rem;">
           Already have an account? <button class="btn outline" type="button" id="go-login">Log In</button>
         </div>
-        <button class="btn outline" id="back-to-welcome-btn" type="button" style="margin-top:0.8rem;width:100%;">⬅️ Back</button>
+        <button class="btn outline" id="back-to-welcome-btn" type="button" style="margin-top:0.8rem;width:100%;">⬅ Back</button>
       </form>
     </div>
   `;
@@ -619,7 +619,7 @@ function renderSignup(container = document.getElementById("app")) {
 async function renderDashboard(container = document.getElementById("app")) {
   if (!container) return;
 
-  /* 1️⃣  FETCH DATA ----------------------------------------------------- */
+  /* 1⃣  FETCH DATA ----------------------------------------------------- */
   // Checklist %
   let checklistPct = 0;
   try {
@@ -695,7 +695,7 @@ async function renderDashboard(container = document.getElementById("app")) {
     console.error("Streak calc error", e);
   }
 
- 2️⃣  RENDER DASHBOARD LAYOUT --------------------------------------- */
+ 2⃣  RENDER DASHBOARD LAYOUT --------------------------------------- */
   const name = localStorage.getItem("fullName") || "CDL User";
   const roleBadge = getRoleBadge(currentUserEmail);
 
@@ -796,7 +796,7 @@ async function renderWalkthrough(container = document.getElementById("app")) {
   if (!cdlClass) {
     content += `
       <div class="alert-box">
-        ⚠️ You haven’t selected your CDL class yet.<br>
+        ⚠ You haven’t selected your CDL class yet.<br>
         Please go to your <strong>Profile</strong> and select one so we can load the correct walkthrough script.
       </div>
       <button data-nav="profile" class="btn">Go to Profile</button>
@@ -827,7 +827,7 @@ async function renderWalkthrough(container = document.getElementById("app")) {
   }
 
   content += `
-    <button id="back-to-dashboard-btn" class="btn outline" style="margin-top:2rem;">⬅️ Dashboard</button>
+    <button id="back-to-dashboard-btn" class="btn outline" style="margin-top:2rem;">⬅ Dashboard</button>
     </div>
   `;
   container.innerHTML = content;
@@ -941,7 +941,7 @@ async function renderProfile(container = document.getElementById("app")) {
           </select>
         </label>
         <button class="btn primary wide" type="submit">Save Profile</button>
-        <button class="btn outline" id="back-to-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅️ Dashboard</button>
+        <button class="btn outline" id="back-to-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅ Dashboard</button>
       </form>
     </div>
   `;
@@ -1079,7 +1079,7 @@ async function renderChecklists(container = document.getElementById("app")) {
           </li>
         `).join("")}
       </ul>
-      <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅️ Back to Dashboard</button>
+      <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅ Back to Dashboard</button>
     </div>
   `;
 
@@ -1103,7 +1103,7 @@ function renderPracticeTests(container = document.getElementById("app")) {
         <li><button class="test-btn" data-test="Air Brakes" style="width:100%;">Air Brakes</button></li>
         <li><button class="test-btn" data-test="Combination Vehicles" style="width:100%;">Combination Vehicles</button></li>
       </ul>
-      <button id="back-to-dashboard-btn" class="btn wide outline" style="margin-top:20px;">⬅️ Back to Dashboard</button>
+      <button id="back-to-dashboard-btn" class="btn wide outline" style="margin-top:20px;">⬅ Back to Dashboard</button>
     </div>
   `;
 
@@ -1148,10 +1148,10 @@ function renderFlashcards(container = document.getElementById("app")) {
           </div>
         </div>
         <div style="display:flex;gap:1rem;justify-content:center;">
-          <button id="prev-flash" class="btn outline" ${current === 0 ? "disabled" : ""}>⬅️ Prev</button>
-          <button id="next-flash" class="btn outline" ${current === flashcards.length-1 ? "disabled" : ""}>Next ➡️</button>
+          <button id="prev-flash" class="btn outline" ${current === 0 ? "disabled" : ""}>⬅ Prev</button>
+          <button id="next-flash" class="btn outline" ${current === flashcards.length-1 ? "disabled" : ""}>Next ➡</button>
         </div>
-        <button class="btn wide outline" id="back-to-dashboard-btn" style="margin:26px 0 0 0;">⬅️ Back to Dashboard</button>
+        <button class="btn wide outline" id="back-to-dashboard-btn" style="margin:26px 0 0 0;">⬅ Back to Dashboard</button>
       </div>
     `;
 
@@ -1186,7 +1186,7 @@ function renderAICoach(container = document.getElementById("app")) {
       <div id="ai-chat-log" style="border:1px solid #ccc; height:300px; overflow-y:auto; padding:10px; margin-bottom:10px;"></div>
       <textarea id="ai-input" placeholder="Ask a question..." style="width:100%; height:60px; padding:8px;"></textarea>
       <button id="ai-send-btn" style="width:100%; padding:10px; margin-top:6px;">Send</button>
-      <button id="back-to-dashboard-btn" class="btn outline wide" style="display:block; margin:20px auto;">⬅️ Back to Dashboard</button>
+      <button id="back-to-dashboard-btn" class="btn outline wide" style="display:block; margin:20px auto;">⬅ Back to Dashboard</button>
     </div>
   `;
 
@@ -1212,11 +1212,11 @@ function renderAICoach(container = document.getElementById("app")) {
 // ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────
 /* ─── PLACEHOLDER RENDERERS TO AVOID ReferenceError ─────────────────── */
 function renderExperience(c=document.getElementById("app")){
-  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧳 Experience Survey</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
+  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧳 Experience Survey</h2><p>Coming soon…</p><button data-nav="dashboard">⬅ Back</button></div>`;
   setupNavigation();
 }
 function renderLicenseSelector(c=document.getElementById("app")){
-  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🚛 Select License</h2><p>Coming soon…</p><button data-nav="dashboard">⬅️ Back</button></div>`;
+  c.innerHTML = `<div class="screen-wrapper fade-in"><h2>🚛 Select License</h2><p>Coming soon…</p><button data-nav="dashboard">⬅ Back</button></div>`;
   setupNavigation();
 }
 
@@ -1274,7 +1274,7 @@ async function renderTestResults(container) {
   html += `
       </ul>
       <div style="text-align:center; margin-top:20px;">
-        <button data-nav="dashboard" style="padding:8px 16px; margin-right:8px;">⬅️ Back to Dashboard</button>
+        <button data-nav="dashboard" style="padding:8px 16px; margin-right:8px;">⬅ Back to Dashboard</button>
         <button data-nav="tests" style="padding:8px 16px;">🔄 Retake a Test</button>
       </div>
     </div>
