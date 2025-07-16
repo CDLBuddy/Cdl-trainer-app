@@ -46,16 +46,19 @@ import {
 
 // ─── ENHANCED ELDT PROGRESS HELPER ──────────────────────────────────────────
 
-// Extra Firestore import for increment and server timestamp
+// ─── MILESTONE MANAGEMENT FOR ALL ROLES ──────────────────────────────
+
 import {
   setDoc,
   updateDoc,
   getDoc,
   doc,
   serverTimestamp,
-  increment
+  increment,
+  collection
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
+// MAIN PROGRESS UPDATER
 /**
  * Updates or creates the eldtProgress document for any user (student/instructor/admin).
  * @param {string} userId  - Email or UID (unique, used as doc id).
@@ -75,7 +78,7 @@ async function updateELDTProgress(userId, fields, options = {}) {
       role
     };
 
-    // (Optional) Add a completion timestamp for any `...Complete` fields
+    // (Optional) Add a completion timestamp for any ...Complete fields
     Object.keys(fields).forEach(k => {
       if (k.endsWith("Complete") && fields[k] === true) {
         updateObj[`${k}dAt`] = serverTimestamp();
@@ -105,6 +108,86 @@ async function updateELDTProgress(userId, fields, options = {}) {
     showToast?.("Failed to update progress: " + (err.message || err), 4000);
     return false;
   }
+}
+
+// GETTER FOR ANY USER'S PROGRESS DOC
+async function getUserProgress(userId) {
+  const progressRef = doc(db, "eldtProgress", userId);
+  const snap = await getDoc(progressRef);
+  return snap.exists() ? snap.data() : {};
+}
+
+// --- CHECKLIST FIELD DEFINITIONS (PER ROLE) ---
+const studentChecklistFields = [
+  { key: "profileComplete", label: "Profile Complete" },
+  { key: "permitUploaded", label: "Permit Uploaded" },
+  { key: "vehicleUploaded", label: "Vehicle Data Plates Uploaded" },
+  { key: "walkthroughComplete", label: "Walkthrough Practiced" },
+  { key: "practiceTestPassed", label: "Practice Test Passed" }
+];
+
+const instructorChecklistFields = [
+  { key: "profileVerified", label: "Profile Approved" },
+  { key: "permitVerified", label: "Permit Verified" },
+  { key: "vehicleVerified", label: "Vehicle Verified" },
+  { key: "walkthroughReviewed", label: "Walkthrough Reviewed" }
+];
+
+const adminChecklistFields = [
+  { key: "adminUnlocked", label: "Module Unlocked" },
+  { key: "adminFlagged", label: "Flagged for Review" }
+];
+
+// --- EXAMPLES OF UPDATING PROGRESS FOR EACH ROLE ---
+// STUDENT EXAMPLES
+async function markStudentProfileComplete(studentEmail) {
+  await updateELDTProgress(studentEmail, { profileComplete: true }, { role: "student" });
+}
+async function markStudentPermitUploaded(studentEmail) {
+  await updateELDTProgress(studentEmail, { permitUploaded: true }, { role: "student" });
+}
+async function markStudentVehicleUploaded(studentEmail) {
+  await updateELDTProgress(studentEmail, { vehicleUploaded: true }, { role: "student" });
+}
+async function markStudentWalkthroughComplete(studentEmail) {
+  await updateELDTProgress(studentEmail, { walkthroughComplete: true }, { role: "student" });
+}
+async function markStudentTestPassed(studentEmail) {
+  await updateELDTProgress(studentEmail, { practiceTestPassed: true }, { role: "student" });
+}
+async function incrementStudentStudyMinutes(studentEmail, minutes) {
+  await updateELDTProgress(studentEmail, { studyMinutes: increment(minutes) }, { role: "student" });
+}
+
+// INSTRUCTOR EXAMPLES
+async function verifyStudentProfile(studentEmail, instructorEmail) {
+  await updateELDTProgress(studentEmail, { profileVerified: true }, { role: "instructor", logHistory: true });
+}
+async function verifyStudentPermit(studentEmail, instructorEmail) {
+  await updateELDTProgress(studentEmail, { permitVerified: true }, { role: "instructor", logHistory: true });
+}
+async function verifyStudentVehicle(studentEmail, instructorEmail) {
+  await updateELDTProgress(studentEmail, { vehicleVerified: true }, { role: "instructor", logHistory: true });
+}
+async function reviewStudentWalkthrough(studentEmail, instructorEmail) {
+  await updateELDTProgress(studentEmail, { walkthroughReviewed: true }, { role: "instructor", logHistory: true });
+}
+
+// ADMIN EXAMPLES
+async function adminUnlockStudentModule(studentEmail, adminEmail) {
+  await updateELDTProgress(studentEmail, { adminUnlocked: true }, { role: "admin", logHistory: true });
+}
+async function adminFlagStudent(studentEmail, adminEmail, note = "") {
+  await updateELDTProgress(studentEmail, { adminFlagged: true, adminNote: note }, { role: "admin", logHistory: true });
+}
+async function adminResetStudentProgress(studentEmail, adminEmail) {
+  await updateELDTProgress(studentEmail, {
+    profileComplete: false,
+    permitUploaded: false,
+    vehicleUploaded: false,
+    walkthroughComplete: false,
+    practiceTestPassed: false
+  }, { role: "admin", logHistory: true });
 }
 
 // ─── 2. FIREBASE CONFIG & INITIALIZATION ────────────────────────────────────────
@@ -1093,7 +1176,7 @@ async function renderWalkthrough(container = document.getElementById("app")) {
 async function renderProfile(container = document.getElementById("app")) {
   if (!container) return;
 
-  // Fetch user data from Firestore
+  // Fetch user data from Firestore (as before)
   let userData = {};
   try {
     const usersRef = collection(db, "users");
@@ -1211,12 +1294,89 @@ async function renderProfile(container = document.getElementById("app")) {
 
   setupNavigation();
 
-  // Save handler (expand this to upload images to storage if needed!)
+  // PERMIT UPLOAD HANDLER -- milestone trigger
+  container.querySelector('input[name="permitPhoto"]')?.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      // Upload to Firebase Storage
+      const storageRef = ref(storage, `permits/${currentUserEmail}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // Save to Firestore
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", currentUserEmail));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        await updateDoc(doc(db, "users", snap.docs[0].id), { permitPhotoUrl: downloadURL });
+      }
+
+      // 🚨 Milestone trigger!
+      await markStudentPermitUploaded(currentUserEmail);
+
+      showToast("Permit uploaded and progress updated!");
+    } catch (err) {
+      showToast("Failed to upload permit: " + err.message);
+    }
+  });
+
+  // VEHICLE DATA PLATE UPLOAD HANDLER -- milestone trigger
+  let truckUploaded = false, trailerUploaded = false;
+
+  container.querySelector('input[name="truckPlate"]')?.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const storageRef = ref(storage, `vehicle-plates/${currentUserEmail}-truck`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", currentUserEmail));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        await updateDoc(doc(db, "users", snap.docs[0].id), { truckPlateUrl: downloadURL });
+        truckUploaded = true;
+        if (truckUploaded && trailerUploaded) {
+          await markStudentVehicleUploaded(currentUserEmail);
+        }
+      }
+      showToast("Truck data plate uploaded!");
+    } catch (err) {
+      showToast("Failed to upload truck plate: " + err.message);
+    }
+  });
+
+  container.querySelector('input[name="trailerPlate"]')?.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const storageRef = ref(storage, `vehicle-plates/${currentUserEmail}-trailer`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", currentUserEmail));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        await updateDoc(doc(db, "users", snap.docs[0].id), { trailerPlateUrl: downloadURL });
+        trailerUploaded = true;
+        if (truckUploaded && trailerUploaded) {
+          await markStudentVehicleUploaded(currentUserEmail);
+        }
+      }
+      showToast("Trailer data plate uploaded!");
+    } catch (err) {
+      showToast("Failed to upload trailer plate: " + err.message);
+    }
+  });
+
+  // PROFILE SAVE HANDLER (already includes milestone)
   container.querySelector("#profile-form").onsubmit = async e => {
     e.preventDefault();
     const fd = new FormData(e.target);
 
-    // For demo: Not handling image uploads yet--just save text/choices
     const data = {
       name: fd.get("name"),
       dob: fd.get("dob"),
@@ -1224,15 +1384,14 @@ async function renderProfile(container = document.getElementById("app")) {
       cdlPermit: fd.get("cdlPermit"),
       vehicleQualified: fd.get("vehicleQualified"),
       experience: fd.get("experience")
-      // TODO: image upload handling
     };
     try {
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("email", "==", currentUserEmail));
       const snap = await getDocs(q);
       if (!snap.empty) {
-        // Update
         await updateDoc(doc(db, "users", snap.docs[0].id), data);
+        await markStudentProfileComplete(currentUserEmail); // 🚨 Already correct
       }
       showToast("✅ Profile saved!");
     } catch (e) {
@@ -1452,6 +1611,16 @@ async function renderTestReview(container, testName) {
 
     const latest = results[0];
     const pct = Math.round((latest.correct / latest.total) * 100);
+
+    // --- Milestone: Mark test as passed if pct >= 80 ---
+    if (pct >= 80) {
+      // Optional: only show toast the first time they pass
+      const progress = await getUserProgress(currentUserEmail);
+      if (!progress.practiceTestPassed) {
+        await markStudentTestPassed(currentUserEmail);
+        showToast("🎉 Practice Test milestone complete! Progress updated.");
+      }
+    }
 
     container.innerHTML = `
       <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
