@@ -791,8 +791,28 @@ async function renderDashboard(container = document.getElementById("app")) {
   </svg>
   <span class="label">My Profile</span>
 </button>
-          <button class="rail-btn" data-nav="checklist"><i>✅</i><span>My&nbsp;Checklist</span></button>
-          <button class="rail-btn" data-nav="tests"><i>🧪</i><span>Testing</span></button>
+          <button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
+  <!-- SVG ICON -->
+  <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="glow" cx="50%" cy="30%" r="65%">
+        <stop offset="0%" stop-color="#d6f6ff" stop-opacity="0.75"/>
+        <stop offset="60%" stop-color="#b9eaff" stop-opacity="0.12"/>
+        <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="main" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#c4dbe8"/>
+        <stop offset="100%" stop-color="#4e91ad"/>
+      </linearGradient>
+    </defs>
+    <circle cx="28" cy="28" r="26" fill="url(#glow)" />
+    <rect x="13" y="17" width="30" height="22" rx="6" fill="url(#main)" opacity="0.92"/>
+    <rect x="19" y="23" width="14" height="2.8" rx="1.3" fill="#fff" opacity="0.8"/>
+    <rect x="19" y="28" width="8" height="2.2" rx="1.1" fill="#fff" opacity="0.6"/>
+    <polyline points="15.5,29.5 19,33 25.5,25.5" fill="none" stroke="#31e6b5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.93" />
+  </svg>
+  <span class="label">My&nbsp;Checklist</span>
+</button>
           <button class="rail-btn" data-nav="flashcards"><i>🃏</i><span>Flashcards</span></button>
           <button class="rail-btn" data-nav="coach"><i>🎧</i><span>AI&nbsp;Coach</span></button>
         </aside>
