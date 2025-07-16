@@ -830,7 +830,7 @@ async function renderDashboard(container = document.getElementById("app")) {
           </filter>
         </defs>
       </svg>
-      <span class="label">Testing</span>
+      <span class="label">Testing<br>&nbsp;</span>
     </button>
 
     <!-- Flashcards -->
@@ -882,7 +882,7 @@ async function renderDashboard(container = document.getElementById("app")) {
           </filter>
         </defs>
       </svg>
-      <span class="label">AI&nbsp;Coach</span>
+      <span class="label">AI<br>Coach</span>
     </button>
   </aside>
 </div>
