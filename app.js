@@ -33,57 +33,16 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 // UI Helpers
-import { showToast } from "./ui-helpers.js";
-
-console.log("✅ app.js loaded");
-// Loader overlay controller (used by auth + navigation)
-function showPageTransitionLoader() {
-  const overlay = document.getElementById('loader-overlay');
-  if (overlay) overlay.classList.remove('hidden');
-}
-
-function hidePageTransitionLoader() {
-  const overlay = document.getElementById('loader-overlay');
-  if (overlay) {
-    setTimeout(() => overlay.classList.add('hidden'), 400);
-  }
-}
-// ─── Fade-In on Scroll Animation ──────────────────────────────────────────────
-function initFadeInOnScroll() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.fade-in-on-scroll').forEach(el => observer.observe(el));
-}
-// ─── Typewriter Headline Logic ───────────────────────────────────────────────
-const _headlines = [
-  "CDL Buddy",
-  "Your CDL Prep Coach",
-  "Study Smarter, Not Harder"
-];
-let _hw = 0, _hc = 0;
-
-function startTypewriter() {
-  const el = document.getElementById("headline");
-  if (!el) return;
-
-  if (_hc < _headlines[_hw].length) {
-    el.textContent += _headlines[_hw][_hc++];
-    setTimeout(startTypewriter, 100);
-  } else {
-    setTimeout(() => {
-      el.textContent = "";
-      _hc = 0;
-      _hw = (_hw + 1) % _headlines.length;
-      startTypewriter();
-    }, 2000);
-  }
-}
+import {
+  showToast,
+  setupNavigation,
+  showPageTransitionLoader,
+  hidePageTransitionLoader,
+  getRandomAITip,
+  initFadeInOnScroll,
+  startTypewriter,
+  debounce
+} from "./ui-helpers.js";
 
 // ─── 2. FIREBASE CONFIG & INITIALIZATION ────────────────────────────────────────
 const firebaseConfig = {
@@ -818,7 +777,7 @@ try {
 
         <div class="dashboard-card">
   <h3>🤖 AI Tip of the Day</h3>
-  <p>Remember to verbally state "three-point brake check" word-for-word during your walkthrough exam!</p>
+  <p>${getRandomAITip()}</p>
   <button data-nav="coach" class="btn ai-tip">Ask AI Coach</button>
 </div>
 
