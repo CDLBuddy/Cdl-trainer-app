@@ -784,11 +784,13 @@ async function renderDashboard(container = document.getElementById("app")) {
         <div class="dashboard-card">
   <h3>✅ Checklist Progress</h3>
   <div class="progress-bar">
-    <div class="progress-fill" style="width: 0%;"></div>
+    <div class="progress-fill" style="width: ${checklistPct}%;"></div>
   </div>
-  <div class="progress-percent"><strong>0%</strong> complete</div>
+  <div class="progress-percent">
+    <strong id="checklist-pct">${checklistPct}</strong>% complete
+  </div>
   <div class="checklist-alert warning">
-    <span>🔔 Permit photo not uploaded! <button data-nav="profile" class="alert-link">Upload now</button></span>
+    <span>${getNextChecklistAlert(userData)}</span>
   </div>
 </div>
 
@@ -974,7 +976,6 @@ async function renderDashboard(container = document.getElementById("app")) {
   `;
 
   // Update progress values (in case of re-render)
-  document.getElementById("checklist-pct").textContent = checklistPct.toString();
   document.querySelector("#metric-checklist progress").setAttribute("value", checklistPct);
 
   setupNavigation();
