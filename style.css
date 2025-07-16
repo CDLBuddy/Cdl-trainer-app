@@ -282,12 +282,12 @@ input[type="submit"]:disabled {
     margin-bottom: 10px;
     gap: 0.7rem;
   }
-.profile-btn, .rail-btn.profile {
+.rail-btn {
   background: linear-gradient(135deg, rgba(196,219,232,0.16) 25%, rgba(78,145,173,0.28) 100%);
   border: 2.5px solid rgba(196,219,232,0.23);
   color: var(--text-light);
   box-shadow:
-    0 4px 24px 2px rgba(78,145,173,0.22),  /* teal/blue glow */
+    0 4px 24px 2px rgba(78,145,173,0.22),
     0 2px 12px rgba(78,145,173,0.18),
     0 0 0 6px rgba(196,219,232,0.10) inset,
     0 16px 36px rgba(0,0,0,0.15);
@@ -307,7 +307,7 @@ input[type="submit"]:disabled {
   font-weight: 700;
 }
 
-.profile-btn:hover, .rail-btn.profile:hover {
+.rail-btn:hover {
   background: linear-gradient(135deg, rgba(196,219,232,0.29) 25%, rgba(78,145,173,0.38) 100%);
   box-shadow:
     0 8px 48px 4px rgba(78,145,173,0.36),
@@ -316,26 +316,24 @@ input[type="submit"]:disabled {
   transform: translateY(-5px) scale(1.045);
 }
 
-.profile-btn:active, .rail-btn.profile:active {
+.rail-btn:active {
   background: linear-gradient(135deg, rgba(196,219,232,0.17) 25%, rgba(78,145,173,0.18) 100%);
   box-shadow: 0 2px 6px rgba(0,0,0,0.18) inset;
   transform: scale(0.98);
 }
 
-.profile-btn .profile-icon,
-.rail-btn.profile .profile-icon {
+.rail-btn .profile-icon {
   font-size: 2.6em;
   display: block;
   margin-bottom: 10px;
-  color: #4e91ad; /* blue/teal accent for icon */
+  color: #4e91ad;
   filter:
     drop-shadow(0 0 18px #4e91ad77)
     drop-shadow(0 0 32px #4e91ad22);
   pointer-events: none;
 }
 
-.profile-btn .label,
-.rail-btn.profile .label {
+.rail-btn .label {
   font-size: 1.08em;
   font-weight: 700;
   color: var(--text-light);
@@ -343,7 +341,7 @@ input[type="submit"]:disabled {
   text-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.profile-btn::before, .rail-btn.profile::before {
+.rail-btn::before {
   content: "";
   position: absolute;
   inset: -10px;
