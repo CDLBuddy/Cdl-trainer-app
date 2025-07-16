@@ -755,7 +755,48 @@ async function renderDashboard(container = document.getElementById("app")) {
       <!-- compact scrollable nav ---------------------------- -->
       <div class="dash-rail-wrapper">
         <aside class="dash-rail">
-          <button class="rail-btn profile" data-nav="profile">
+          <button class="rail-btn profile" data-nav="profile"><svg
+  class="profile-icon"
+  width="56"
+  height="56"
+  viewBox="0 0 56 56"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Frosted Glass Background Circle -->
+  <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
+  
+  <!-- Avatar Head -->
+  <ellipse cx="28" cy="23" rx="8" ry="8.5" fill="#c4dbe8" fill-opacity="0.96"/>
+  <!-- Avatar Shoulders -->
+  <ellipse cx="28" cy="38" rx="15" ry="8.2" fill="#b1d3e5" fill-opacity="0.75"/>
+  
+  <!-- Glowing Accent Outline -->
+  <ellipse
+    cx="28"
+    cy="28"
+    rx="24"
+    ry="24"
+    fill="none"
+    stroke="#a5c9d6"
+    stroke-width="1.5"
+    opacity="0.45"
+    filter="url(#glow)"
+  />
+  <defs>
+    <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#0e1b1b" stop-opacity="0.32"/>
+    </radialGradient>
+    <filter id="glow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="2.2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
   <span class="profile-icon">👤</span>
   <span class="label">My Profile</span>
 </button>
