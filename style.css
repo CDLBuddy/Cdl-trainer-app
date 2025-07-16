@@ -283,7 +283,80 @@ input[type="submit"]:disabled {
     gap: 0.7rem;
   }
 }
+/* === Super-Premium Profile Button ===================================== */
 
+.profile-btn, .rail-btn.profile {
+  background: linear-gradient(135deg, rgba(196,219,232,0.14) 40%, rgba(78,145,173,0.21) 100%);
+  border: 2px solid rgba(196,219,232,0.18);
+  color: var(--text-light);
+  box-shadow:
+    0 2px 8px rgba(78,145,173,0.13),
+    0 0 0 4px rgba(196,219,232,0.07) inset,
+    0 8px 28px rgba(0, 0, 0, 0.14);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  transition:
+    background 0.28s cubic-bezier(.44,1.18,.55,1),
+    box-shadow 0.28s,
+    transform 0.18s;
+  will-change: transform;
+  z-index: 2;
+  outline: none;
+  font-size: 1.11em;
+  font-weight: 600;
+}
+
+.profile-btn:hover, .rail-btn.profile:hover {
+  background: linear-gradient(135deg, rgba(196,219,232,0.24) 40%, rgba(78,145,173,0.31) 100%);
+  box-shadow:
+    0 12px 36px rgba(78,145,173,0.16),
+    0 0 0 9px rgba(196,219,232,0.09) inset;
+  transform: translateY(-4px) scale(1.038);
+}
+
+.profile-btn:active, .rail-btn.profile:active {
+  background: linear-gradient(135deg, rgba(196,219,232,0.19) 40%, rgba(78,145,173,0.17) 100%);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.16) inset;
+  transform: scale(0.98);
+}
+
+.profile-btn .profile-icon,
+.rail-btn.profile .profile-icon {
+  font-size: 2.2em;
+  display: block;
+  margin-bottom: 8px;
+  color: var(--accent);
+  text-shadow: 0 2px 12px rgba(196,219,232,0.13);
+  pointer-events: none;
+}
+
+.profile-btn .label,
+.rail-btn.profile .label {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--text-light);
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.07);
+}
+
+/* Optional: soft animated halo */
+.profile-btn::before, .rail-btn.profile::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 30px;
+  background: radial-gradient(circle at 60% 22%, rgba(196,219,232,0.10) 0%, transparent 75%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.85;
+  animation: haloPulse 3.2s infinite linear;
+}
+@keyframes haloPulse {
+  0%,100% { opacity: 0.85; }
+  40% { opacity: 0.95; }
+  60% { opacity: 0.80; }
+}
 /* === 7. METRICS, CHECKLIST, PROGRESS, BADGES, NOTIFICATIONS ============ */
 .metric h3,
 .dashboard-card h3 {
