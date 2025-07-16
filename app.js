@@ -754,27 +754,148 @@ async function renderDashboard(container = document.getElementById("app")) {
 
       <!-- compact scrollable nav ---------------------------- -->
       <div class="dash-rail-wrapper">
-        <aside class="dash-rail">
-          <button class="rail-btn profile" data-nav="profile">
+  <aside class="dash-rail">
+    <!-- My Profile -->
+    <button class="rail-btn profile" data-nav="profile">
+      <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
+        <ellipse cx="28" cy="23" rx="8" ry="8.5" fill="#c4dbe8" fill-opacity="0.96"/>
+        <ellipse cx="28" cy="38" rx="15" ry="8.2" fill="#b1d3e5" fill-opacity="0.75"/>
+        <ellipse cx="28" cy="28" rx="24" ry="24" fill="none" stroke="#a5c9d6" stroke-width="1.5" opacity="0.45" filter="url(#glow)"/>
+        <defs>
+          <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
+            <stop offset="1" stop-color="#0e1b1b" stop-opacity="0.32"/>
+          </radialGradient>
+          <filter id="glow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse">
+            <feGaussianBlur stdDeviation="2.2" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+      </svg>
+      <span class="label">My Profile</span>
+    </button>
+
+    <!-- My Checklist -->
+    <button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
+      <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
+        <rect x="13" y="17" width="30" height="22" rx="6" fill="#b1d3e5" fill-opacity="0.83"/>
+        <rect x="19" y="23" width="14" height="2.8" rx="1.3" fill="#fff" opacity="0.82"/>
+        <rect x="19" y="28" width="8" height="2.2" rx="1.1" fill="#fff" opacity="0.66"/>
+        <polyline points="15.5,29.5 19,33 25.5,25.5" fill="none" stroke="#31e6b5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.99" />
+        <ellipse cx="28" cy="28" rx="24" ry="24" fill="none" stroke="#a5c9d6" stroke-width="1.5" opacity="0.45" filter="url(#glow)"/>
+        <defs>
+          <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
+            <stop offset="1" stop-color="#0e1b1b" stop-opacity="0.32"/>
+          </radialGradient>
+          <filter id="glow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse">
+            <feGaussianBlur stdDeviation="2.2" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+      </svg>
+      <span class="label">My&nbsp;Checklist</span>
+    </button>
+
+    <!-- Testing -->
+    <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
+      <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
+        <rect x="22" y="14" width="12" height="26" rx="6" fill="#b1d3e5" fill-opacity="0.81"/>
+        <rect x="26" y="10" width="4" height="10" rx="2" fill="#c4dbe8" fill-opacity="0.77"/>
+        <ellipse cx="28" cy="33" rx="4.5" ry="7" fill="#31e6b5" opacity="0.29"/>
+        <rect x="26.7" y="19" width="2.6" height="1.2" rx="0.6" fill="#fff" opacity="0.67"/>
+        <rect x="26.7" y="22" width="2.6" height="1.2" rx="0.6" fill="#fff" opacity="0.6"/>
+        <rect x="26.7" y="25" width="2.6" height="1.2" rx="0.6" fill="#fff" opacity="0.6"/>
+        <ellipse cx="28" cy="28" rx="24" ry="24" fill="none" stroke="#a5c9d6" stroke-width="1.5" opacity="0.45" filter="url(#glow)"/>
+        <defs>
+          <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
+            <stop offset="1" stop-color="#0e1b1b" stop-opacity="0.32"/>
+          </radialGradient>
+          <filter id="glow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse">
+            <feGaussianBlur stdDeviation="2.2" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+      </svg>
+      <span class="label">Testing</span>
+    </button>
+
+    <!-- Flashcards -->
+    <button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
+      <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
+        <rect x="15" y="17" width="20" height="22" rx="4" fill="#b1d3e5" fill-opacity="0.37" transform="rotate(-7 25 28)" />
+        <rect x="21" y="13" width="20" height="28" rx="5" fill="#c4dbe8" fill-opacity="0.89"/>
+        <text x="31" y="32" text-anchor="middle" font-size="16" font-family="Arial, Helvetica, sans-serif" fill="#fff" opacity="0.85" font-weight="bold">?</text>
+        <rect x="28" y="36" width="8" height="2" rx="1" fill="#31e6b5" opacity="0.62"/>
+        <ellipse cx="28" cy="28" rx="24" ry="24" fill="none" stroke="#a5c9d6" stroke-width="1.5" opacity="0.45" filter="url(#glow)"/>
+        <defs>
+          <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
+            <stop offset="1" stop-color="#0e1b1b" stop-opacity="0.32"/>
+          </radialGradient>
+          <filter id="glow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse">
+            <feGaussianBlur stdDeviation="2.2" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+      </svg>
+      <span class="label">Flashcards</span>
+    </button>
+
+    <!-- AI Coach -->
+    <button class="rail-btn coach" data-nav="coach" aria-label="AI Coach">
+      <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
+        <path d="M16 33a12 12 0 0 1 24 0" stroke="#b1d3e5" stroke-width="3" fill="none" opacity="0.92"/>
+        <rect x="13" y="32" width="6" height="10" rx="3" fill="#c4dbe8" fill-opacity="0.91"/>
+        <rect x="37" y="32" width="6" height="10" rx="3" fill="#c4dbe8" fill-opacity="0.91"/>
+        <polyline points="21,42 24,38 28,44 32,36 35,42" fill="none" stroke="#31e6b5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.97"/>
+        <ellipse cx="28" cy="28" rx="24" ry="24" fill="none" stroke="#a5c9d6" stroke-width="1.5" opacity="0.45" filter="url(#glow)"/>
+        <defs>
+          <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
+            <stop offset="1" stop-color="#0e1b1b" stop-opacity="0.32"/>
+          </radialGradient>
+          <filter id="glow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse">
+            <feGaussianBlur stdDeviation="2.2" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+      </svg>
+      <span class="label">AI&nbsp;Coach</span>
+    </button>
+  </aside>
+</div>
+
+<!-- Logout Button - styled to be wider/rectangular and at bottom -->
+<button class="rail-btn logout" id="logout-btn" aria-label="Logout" style="display:block; margin:36px auto 18px auto; width:260px; min-height:68px;">
   <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- Frosted Glass Background Circle -->
     <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
-    <!-- Avatar Head -->
-    <ellipse cx="28" cy="23" rx="8" ry="8.5" fill="#c4dbe8" fill-opacity="0.96"/>
-    <!-- Avatar Shoulders -->
-    <ellipse cx="28" cy="38" rx="15" ry="8.2" fill="#b1d3e5" fill-opacity="0.75"/>
-    <!-- Glowing Accent Outline -->
-    <ellipse
-      cx="28"
-      cy="28"
-      rx="24"
-      ry="24"
-      fill="none"
-      stroke="#a5c9d6"
-      stroke-width="1.5"
-      opacity="0.45"
-      filter="url(#glow)"
-    />
+    <rect x="18" y="16" width="14" height="24" rx="4" fill="#b1d3e5" fill-opacity="0.91"/>
+    <circle cx="20.7" cy="28" r="1.4" fill="#fff" opacity="0.65"/>
+    <polyline points="34,28 41,28" stroke="#31e6b5" stroke-width="2.5" stroke-linecap="round" />
+    <polyline points="38,25 41,28 38,31" fill="none" stroke="#31e6b5" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+    <ellipse cx="28" cy="28" rx="24" ry="24" fill="none" stroke="#a5c9d6" stroke-width="1.5" opacity="0.45" filter="url(#glow)"/>
     <defs>
       <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
         <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
@@ -788,133 +909,6 @@ async function renderDashboard(container = document.getElementById("app")) {
         </feMerge>
       </filter>
     </defs>
-  </svg>
-  <span class="label">My Profile</span>
-</button>
-          <button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
-  <!-- SVG ICON -->
-  <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <radialGradient id="glow" cx="50%" cy="30%" r="65%">
-        <stop offset="0%" stop-color="#d6f6ff" stop-opacity="0.75"/>
-        <stop offset="60%" stop-color="#b9eaff" stop-opacity="0.12"/>
-        <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
-      </radialGradient>
-      <linearGradient id="main" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#c4dbe8"/>
-        <stop offset="100%" stop-color="#4e91ad"/>
-      </linearGradient>
-    </defs>
-    <circle cx="28" cy="28" r="26" fill="url(#glow)" />
-    <rect x="13" y="17" width="30" height="22" rx="6" fill="url(#main)" opacity="0.92"/>
-    <rect x="19" y="23" width="14" height="2.8" rx="1.3" fill="#fff" opacity="0.8"/>
-    <rect x="19" y="28" width="8" height="2.2" rx="1.1" fill="#fff" opacity="0.6"/>
-    <polyline points="15.5,29.5 19,33 25.5,25.5" fill="none" stroke="#31e6b5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.93" />
-  </svg>
-  <span class="label">My&nbsp;Checklist</span>
-</button>
-         
-         <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
-  <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <radialGradient id="test-glow" cx="50%" cy="30%" r="70%">
-        <stop offset="0%" stop-color="#d6f6ff" stop-opacity="0.72"/>
-        <stop offset="60%" stop-color="#b9eaff" stop-opacity="0.13"/>
-        <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
-      </radialGradient>
-      <linearGradient id="test-main" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#c4dbe8"/>
-        <stop offset="100%" stop-color="#4e91ad"/>
-      </linearGradient>
-    </defs>
-    <circle cx="28" cy="28" r="26" fill="url(#test-glow)" />
-    <!-- Flask body -->
-    <rect x="22" y="14" width="12" height="26" rx="6" fill="url(#test-main)" opacity="0.92"/>
-    <!-- Flask neck -->
-    <rect x="26" y="10" width="4" height="10" rx="2" fill="#b9eaff" opacity="0.75"/>
-    <!-- Flask contents -->
-    <ellipse cx="28" cy="33" rx="4.5" ry="7" fill="#31e6b5" opacity="0.35"/>
-    <!-- Measurement lines -->
-    <rect x="26.7" y="19" width="2.6" height="1.2" rx="0.6" fill="#fff" opacity="0.7"/>
-    <rect x="26.7" y="22" width="2.6" height="1.2" rx="0.6" fill="#fff" opacity="0.6"/>
-    <rect x="26.7" y="25" width="2.6" height="1.2" rx="0.6" fill="#fff" opacity="0.6"/>
-  </svg>
-  <span class="label">Testing</span>
-</button>
-          <button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
-  <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <radialGradient id="flash-glow" cx="50%" cy="30%" r="70%">
-        <stop offset="0%" stop-color="#d6f6ff" stop-opacity="0.72"/>
-        <stop offset="60%" stop-color="#b9eaff" stop-opacity="0.13"/>
-        <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
-      </radialGradient>
-      <linearGradient id="flash-main" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#c4dbe8"/>
-        <stop offset="100%" stop-color="#4e91ad"/>
-      </linearGradient>
-    </defs>
-    <circle cx="28" cy="28" r="26" fill="url(#flash-glow)" />
-    <!-- Back Card -->
-    <rect x="15" y="17" width="20" height="22" rx="4" fill="url(#flash-main)" opacity="0.40" transform="rotate(-7 25 28)" />
-    <!-- Front Card -->
-    <rect x="21" y="13" width="20" height="28" rx="5" fill="url(#flash-main)" opacity="0.92"/>
-    <!-- Question Mark -->
-    <text x="31" y="32" text-anchor="middle" font-size="16" font-family="Arial, Helvetica, sans-serif" fill="#fff" opacity="0.85" font-weight="bold">?</text>
-    <!-- Accent underline -->
-    <rect x="28" y="36" width="8" height="2" rx="1" fill="#31e6b5" opacity="0.62"/>
-  </svg>
-  <span class="label">Flashcards</span>
-</button>
-          <button class="rail-btn coach" data-nav="coach" aria-label="AI Coach">
-  <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <radialGradient id="coach-glow" cx="50%" cy="30%" r="72%">
-        <stop offset="0%" stop-color="#d6f6ff" stop-opacity="0.70"/>
-        <stop offset="60%" stop-color="#b9eaff" stop-opacity="0.13"/>
-        <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
-      </radialGradient>
-      <linearGradient id="coach-main" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#c4dbe8"/>
-        <stop offset="100%" stop-color="#4e91ad"/>
-      </linearGradient>
-    </defs>
-    <circle cx="28" cy="28" r="26" fill="url(#coach-glow)" />
-    <!-- Headphone band -->
-    <path d="M16 33a12 12 0 0 1 24 0" stroke="url(#coach-main)" stroke-width="3" fill="none" opacity="0.88"/>
-    <!-- Left earpad -->
-    <rect x="13" y="32" width="6" height="10" rx="3" fill="url(#coach-main)" opacity="0.88"/>
-    <!-- Right earpad -->
-    <rect x="37" y="32" width="6" height="10" rx="3" fill="url(#coach-main)" opacity="0.88"/>
-    <!-- Waveform (AI) -->
-    <polyline points="21,42 24,38 28,44 32,36 35,42" fill="none" stroke="#31e6b5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.93"/>
-  </svg>
-  <span class="label">AI&nbsp;Coach</span>
-</button>
-        </aside>
-      </div>
-
-      <button class="rail-btn logout" id="logout-btn" aria-label="Logout">
-  <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <radialGradient id="logout-glow" cx="50%" cy="30%" r="70%">
-        <stop offset="0%" stop-color="#d6f6ff" stop-opacity="0.68"/>
-        <stop offset="60%" stop-color="#b9eaff" stop-opacity="0.13"/>
-        <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
-      </radialGradient>
-      <linearGradient id="logout-main" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#c4dbe8"/>
-        <stop offset="100%" stop-color="#4e91ad"/>
-      </linearGradient>
-    </defs>
-    <circle cx="28" cy="28" r="26" fill="url(#logout-glow)" />
-    <!-- Door body -->
-    <rect x="18" y="16" width="14" height="24" rx="4" fill="url(#logout-main)" opacity="0.95"/>
-    <!-- Door knob -->
-    <circle cx="20.7" cy="28" r="1.4" fill="#fff" opacity="0.58"/>
-    <!-- Arrow (exit) -->
-    <polyline points="34,28 41,28" stroke="#31e6b5" stroke-width="2.5" stroke-linecap="round" />
-    <polyline points="38,25 41,28 38,31" fill="none" stroke="#31e6b5" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <span class="label">Logout</span>
 </button>
