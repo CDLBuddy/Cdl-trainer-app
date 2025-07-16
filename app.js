@@ -856,7 +856,7 @@ async function renderDashboard(container = document.getElementById("app")) {
           </filter>
         </defs>
       </svg>
-      <span class="label">Flashcards</span>
+      <span class="label">Flash<br>cards</span>
     </button>
 
     <!-- AI Coach -->
