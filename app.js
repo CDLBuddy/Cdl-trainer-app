@@ -975,12 +975,9 @@ async function renderDashboard(container = document.getElementById("app")) {
 </button>
   `;
 
-  // Update progress values (in case of re-render)
-  document.querySelector("#metric-checklist progress").setAttribute("value", checklistPct);
-
   setupNavigation();
-
-  document.getElementById("logout-btn")?.addEventListener("click", async () => {
+  
+document.getElementById("logout-btn")?.addEventListener("click", async () => {
     await signOut(auth);
     localStorage.removeItem("fullName");
     localStorage.removeItem("userRole");
