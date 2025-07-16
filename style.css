@@ -190,99 +190,39 @@ input[type="submit"]:disabled {
 }
 .big-num { font-size: 1.3rem; font-weight: 600; }
 
-/* === 6. DASHBOARD NAV, RAIL, NAV BUTTONS =============================== */
+/* ───── Dashboard Rail Layout ───── */
 .dash-rail-wrapper {
-  overflow-x: auto;
-  overflow-y: hidden;
   width: 100%;
-  margin: 0 auto;
-  padding-bottom: 12px;
-  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
 }
+
 .dash-rail {
   display: flex;
-  flex-direction: row;
-  gap: 1.4rem;
-  padding: 0.5rem 1rem;
-  min-width: max-content;
-  overflow-y: hidden;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  width: 100%;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  margin-bottom: 0 !important;
+  padding: 0;
 }
-.dash-rail::-webkit-scrollbar { display: none; }
+
+/* ───── Glass Rail Buttons ───── */
 .rail-btn {
-  flex: none;
-  width: 125px;
-  height: 125px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(10px) saturate(140%);
-  border: 2px solid rgba(255, 255, 255, 0.18);
-  border-radius: 24px;
-  color: var(--text-light);
-  font-size: 1em;
-  font-weight: 600;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  margin: 0 3px;
-  position: relative;
-  overflow: hidden;
-}
-.rail-btn i,
-.rail-btn img {
-  font-size: 2.3em;
-  margin-bottom: 6px;
-  display: block;
-  pointer-events: none;
-}
-.rail-btn span {
-  font-size: 1em;
-  max-width: 120px;
-  line-height: 1.2;
-  word-break: keep-all;
-  white-space: normal;
-  overflow: visible;
-  display: block;
-}
-.rail-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0 20px rgba(147, 127, 255, 0.3);
-}
-.rail-btn:active {
-  transform: scale(0.96);
-  background: var(--card-bg-dark);
-}
-/* Responsive */
-@media (max-width: 600px) {
-  .rail-btn {
-    width: 120px;
-    height: 120px;
-    font-size: 0.95em;
-  }
-  .rail-btn i {
-    font-size: 2em;
-  }
-  .rail-btn span {
-    max-width: 80px;
-    font-size: 0.95em;
-  }
-}
-@media (max-width: 700px) {
-  .dash-rail {
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100%;
-    overflow-x: auto;
-    margin-bottom: 10px;
-    gap: 0.7rem;
-  }
-.rail-btn {
+  width: 240px;
+  min-height: 82px;
+  padding: 20px 0 10px 0;
+  margin: 0 auto;
+  border-radius: 28px;
   background: linear-gradient(135deg, rgba(196,219,232,0.16) 25%, rgba(78,145,173,0.28) 100%);
   border: 2.5px solid rgba(196,219,232,0.23);
   color: var(--text-light);
@@ -291,7 +231,6 @@ input[type="submit"]:disabled {
     0 2px 12px rgba(78,145,173,0.18),
     0 0 0 6px rgba(196,219,232,0.10) inset,
     0 16px 36px rgba(0,0,0,0.15);
-  border-radius: 22px;
   position: relative;
   overflow: hidden;
   transition:
@@ -305,6 +244,7 @@ input[type="submit"]:disabled {
   outline: none;
   font-size: 1.18em;
   font-weight: 700;
+  user-select: none;
 }
 
 .rail-btn:hover {
@@ -322,25 +262,35 @@ input[type="submit"]:disabled {
   transform: scale(0.98);
 }
 
+/* ───── SVG Icon Consistency ───── */
 .rail-btn .profile-icon {
   font-size: 2.6em;
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 7px;
   color: #4e91ad;
   filter:
     drop-shadow(0 0 18px #4e91ad77)
     drop-shadow(0 0 32px #4e91ad22);
   pointer-events: none;
+  border-radius: 50%;
 }
 
+/* ───── Label Style ───── */
 .rail-btn .label {
-  font-size: 1.08em;
+  display: block;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.15;
+  word-break: break-word;
+  font-size: 1.11em;
   font-weight: 700;
   color: var(--text-light);
+  margin-top: 2px;
   letter-spacing: 0.01em;
   text-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
+/* ───── Glass Halo Effect ───── */
 .rail-btn::before {
   content: "";
   position: absolute;
@@ -357,11 +307,37 @@ input[type="submit"]:disabled {
   40% { opacity: 1; }
   60% { opacity: 0.89; }
 }
-.profile-icon {
+
+/* ───── Special: Logout Button ───── */
+.rail-btn.logout {
+  margin-top: 32px;
+  width: 260px;
+  min-height: 72px;
+  border-radius: 24px;
   display: block;
-  margin: 0 auto 10px auto;
-  filter: drop-shadow(0 0 18px #4e91ad88);
-  border-radius: 50%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ───── Responsive (Mobile) ───── */
+@media (max-width: 540px) {
+  .rail-btn, .rail-btn.logout {
+    width: 96vw;
+    max-width: 320px;
+    min-width: 165px;
+    font-size: 1.02em;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* ───── Remove accidental borders or separators under the rail ───── */
+.dash-rail hr,
+.dash-rail > .divider,
+.dash-rail + hr {
+  display: none !important;
+  border: none !important;
+  margin: 0 !important;
 }
 /* === 7. METRICS, CHECKLIST, PROGRESS, BADGES, NOTIFICATIONS ============ */
 .metric h3,
