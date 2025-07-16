@@ -694,80 +694,91 @@ async function renderDashboard(container = document.getElementById("app")) {
   if (!container) return;
 
   // 1  FETCH DATA ----------------------------------------------------- //
-  // Checklist %
-  let checklistPct = 0;
-  try {
-    const snap = await getDocs(
-      query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail))
-    );
-    let total = 0,
-      done = 0;
-    snap.forEach((d) => {
-      const prog = d.data().progress;
-      Object.values(prog).forEach((sec) =>
-        Object.values(sec).forEach((val) => {
-          total++;
-          if (val) done++;
-        })
-      );
-    });
-    checklistPct = total ? Math.round((done / total) * 100) : 0;
-  } catch (e) {
-    console.error("ELDT fetch error", e);
-  }
+  if (!container) return;
 
-  // Last-test summary
-  let lastTestStr = "No tests taken yet.";
-  try {
-    const snap = await getDocs(
-      query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
-    );
-    let latest = null;
-    snap.forEach((d) => {
-      const t = d.data();
-      if (!latest || t.timestamp.toDate() > latest.timestamp.toDate()) latest = t;
-    });
-    if (latest) {
-      const pct = Math.round((latest.correct / latest.total) * 100);
-      lastTestStr = `${latest.testName} – ${pct}% on ${latest.timestamp
-        .toDate()
-        .toLocaleDateString()}`;
-    }
-  } catch (e) {
-    console.error("TestResults fetch error", e);
-  }
+// --- Fetch student Firestore profile (userData) ---
+let userData = {};
+try {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("email", "==", currentUserEmail));
+  const snap = await getDocs(q);
+  if (!snap.empty) userData = snap.docs[0].data();
+} catch (e) {
+  userData = {};
+}
 
-  // License & experience
-  let license = "Not selected",
-    experience = "Unknown";
-  try {
-    const licSnap = await getDocs(
-      query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail))
+// --- Checklist Progress ---
+let checklistPct = 0;
+try {
+  const snap = await getDocs(
+    query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail))
+  );
+  let total = 0, done = 0;
+  snap.forEach((d) => {
+    const prog = d.data().progress;
+    Object.values(prog).forEach((sec) =>
+      Object.values(sec).forEach((val) => {
+        total++;
+        if (val) done++;
+      })
     );
-    licSnap.forEach((d) => (license = d.data().licenseType || license));
-    const expSnap = await getDocs(
-      query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail))
-    );
-    expSnap.forEach((d) => (experience = d.data().experience || experience));
-  } catch (e) {
-    console.error("Profile fetch error", e);
-  }
+  });
+  checklistPct = total ? Math.round((done / total) * 100) : 0;
+} catch (e) {
+  console.error("ELDT fetch error", e);
+}
 
-  // 7-day study streak
-  let streak = 0;
-  try {
-    const today = new Date().toDateString();
-    let log = JSON.parse(localStorage.getItem("studyLog") || "[]");
-    if (!log.includes(today)) {
-      log.push(today);
-      localStorage.setItem("studyLog", JSON.stringify(log));
-    }
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 6);
-    streak = log.filter((d) => new Date(d) >= cutoff).length;
-  } catch (e) {
-    console.error("Streak calc error", e);
+// --- Last-test summary (optional card/alert) ---
+let lastTestStr = "No tests taken yet.";
+try {
+  const snap = await getDocs(
+    query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
+  );
+  let latest = null;
+  snap.forEach((d) => {
+    const t = d.data();
+    if (!latest || t.timestamp.toDate() > latest.timestamp.toDate()) latest = t;
+  });
+  if (latest) {
+    const pct = Math.round((latest.correct / latest.total) * 100);
+    lastTestStr = `${latest.testName} – ${pct}% on ${latest.timestamp
+      .toDate()
+      .toLocaleDateString()}`;
   }
+} catch (e) {
+  console.error("TestResults fetch error", e);
+}
+
+// --- License & Experience ---
+let license = "Not selected", experience = "Unknown";
+try {
+  const licSnap = await getDocs(
+    query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail))
+  );
+  licSnap.forEach((d) => (license = d.data().licenseType || license));
+  const expSnap = await getDocs(
+    query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail))
+  );
+  expSnap.forEach((d) => (experience = d.data().experience || experience));
+} catch (e) {
+  console.error("Profile fetch error", e);
+}
+
+// --- 7-day Study Streak ---
+let streak = 0;
+try {
+  const today = new Date().toDateString();
+  let log = JSON.parse(localStorage.getItem("studyLog") || "[]");
+  if (!log.includes(today)) {
+    log.push(today);
+    localStorage.setItem("studyLog", JSON.stringify(log));
+  }
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 6);
+  streak = log.filter((d) => new Date(d) >= cutoff).length;
+} catch (e) {
+  console.error("Streak calc error", e);
+}
 
  // 2  RENDER DASHBOARD LAYOUT ---------------------------------------
   const name = localStorage.getItem("fullName") || "CDL User";
