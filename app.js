@@ -336,25 +336,25 @@ function handleNavigation(page) {
   setTimeout(() => {
     switch (page) {
       case "dashboard":
-        renderDashboard(appEl);
+      renderDashboard(appEl);
         break;
       case "instructor":
-        renderInstructorDashboard(appEl);
+renderInstructorDashboard(appEl);
         break;
       case "admin":
-        renderAdminDashboard(appEl);
+  renderAdminDashboard(appEl);
         break;
       case "checklist":
-        renderChecklists(appEl);
+      renderChecklists(appEl);
         break;
       case "tests":
-        renderPracticeTests(appEl);
+   renderPracticeTests(appEl);
         break;
       case "flashcards":
-        renderFlashcards(appEl);
+      renderFlashcards(appEl);
         break;
       case "results":
-        renderTestResults(appEl);
+     renderTestResults(appEl);
         break;
       case "coach":
         renderAICoach(appEl);
@@ -363,7 +363,7 @@ function handleNavigation(page) {
         renderProfile(appEl);
         break;
       case "walkthrough":
-        renderWalkthrough(appEl);
+     renderWalkthrough(appEl);
         break;
       case "login":
         renderLogin(appEl);
