@@ -330,57 +330,72 @@ function handleNavigation(page) {
   if (!appEl) return;
 
   const currentScreen = appEl.querySelector(".screen-wrapper");
-  if (currentScreen) currentScreen.classList.add("fade-out");
 
-  showPageTransitionLoader();
-  setTimeout(() => {
-    switch (page) {
-      case "dashboard":
+  // Only animate out if there's a screen to fade
+  if (currentScreen) {
+    currentScreen.classList.add("fade-out");
+
+    // Listen for fade-out transition end (best for smoothness)
+    currentScreen.addEventListener("transitionend", function onFade() {
+      currentScreen.removeEventListener("transitionend", onFade);
+
+      doNavigation(page, appEl);
+    }, { once: true });
+
+    showPageTransitionLoader(); // Show loader during transition
+  } else {
+    doNavigation(page, appEl);
+  }
+}
+
+function doNavigation(page, appEl) {
+  switch (page) {
+    case "dashboard":
       renderDashboard(appEl);
-        break;
-      case "instructor":
-renderInstructorDashboard(appEl);
-        break;
-      case "admin":
-  renderAdminDashboard(appEl);
-        break;
-      case "checklist":
+      break;
+    case "instructor":
+      renderInstructorDashboard(appEl);
+      break;
+    case "admin":
+      renderAdminDashboard(appEl);
+      break;
+    case "checklist":
       renderChecklists(appEl);
-        break;
-      case "tests":
-   renderPracticeTests(appEl);
-        break;
-      case "flashcards":
+      break;
+    case "tests":
+      renderPracticeTests(appEl);
+      break;
+    case "flashcards":
       renderFlashcards(appEl);
-        break;
-      case "results":
-     renderTestResults(appEl);
-        break;
-      case "coach":
-        renderAICoach(appEl);
-        break;
-      case "profile":
-        renderProfile(appEl);
-        break;
-      case "walkthrough":
-     renderWalkthrough(appEl);
-        break;
-      case "login":
-        renderLogin(appEl);
-        break;
-      case "home":
-        renderHome(appEl);
-        break;
-      default:
-        renderHome(appEl);
-        break;
-    }
+      break;
+    case "results":
+      renderTestResults(appEl);
+      break;
+    case "coach":
+      renderAICoach(appEl);
+      break;
+    case "profile":
+      renderProfile(appEl);
+      break;
+    case "walkthrough":
+      renderWalkthrough(appEl);
+      break;
+    case "login":
+      renderLogin(appEl);
+      break;
+    case "home":
+      renderHome(appEl);
+      break;
+    default:
+      renderHome(appEl);
+      break;
+  }
 
-    if (page !== location.hash.replace("#", "")) {
-      history.pushState({}, "", "#" + page);
-    }
-    hidePageTransitionLoader();
-  }, 350);
+  if (page !== location.hash.replace("#", "")) {
+    history.pushState({}, "", "#" + page);
+  }
+
+  hidePageTransitionLoader(); // Hide loader when done
 }
 
 // Click listener + browser history
@@ -402,6 +417,7 @@ function setupNavigation() {
     handleNavigation(page);
   });
 }
+//Render login
 function renderLogin(container = document.getElementById("app")) {
   container.innerHTML = `
     <div class="login-card fade-in">
