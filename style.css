@@ -357,6 +357,12 @@ input[type="submit"]:disabled {
   40% { opacity: 0.95; }
   60% { opacity: 0.80; }
 }
+.profile-icon {
+  display: block;
+  margin: 0 auto 7px auto;
+  filter: drop-shadow(0 0 14px #c4dbe888);
+  border-radius: 50%;
+}
 /* === 7. METRICS, CHECKLIST, PROGRESS, BADGES, NOTIFICATIONS ============ */
 .metric h3,
 .dashboard-card h3 {
