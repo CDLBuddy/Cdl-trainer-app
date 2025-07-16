@@ -51,7 +51,6 @@ import {
 import {
   setDoc,
   getDoc,
-  serverTimestamp,
   increment,
   collection
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
