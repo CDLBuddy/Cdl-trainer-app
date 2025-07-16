@@ -755,7 +755,10 @@ async function renderDashboard(container = document.getElementById("app")) {
       <!-- compact scrollable nav ---------------------------- -->
       <div class="dash-rail-wrapper">
         <aside class="dash-rail">
-          <button class="rail-btn" data-nav="profile"><i>👤</i><span>My&nbsp;Profile</span></button>
+          <button class="rail-btn" data-nav="profile">
+  <i class="icon">👤</i>
+  <span>My&nbsp;Profile</span>
+</button>
           <button class="rail-btn" data-nav="checklist"><i>✅</i><span>My&nbsp;Checklist</span></button>
           <button class="rail-btn" data-nav="tests"><i>🧪</i><span>Testing</span></button>
           <button class="rail-btn" data-nav="flashcards"><i>🃏</i><span>Flashcards</span></button>

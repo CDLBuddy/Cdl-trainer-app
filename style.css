@@ -2,57 +2,32 @@
    CDL Trainer -- style.css
    ========================================================================== */
 
-/* ─── Block ALL Horizontal Panning on the Page ─────────────────────────── */
-html,
-body {
-  overflow-x: hidden;
-  overscroll-behavior-x: none;
-}
-
-/* ─── Restrict Welcome Screen to Vertical-Only Touch Scrolling ─────────── */
-.welcome-screen {
-  touch-action: pan-y;
-  overscroll-behavior: contain;
-}
-
-/* ─── 1.  Dark forest night sky─────────────────────────────────────────── */
+/* === 0. THEME & BASE VARIABLES ========================================= */
 :root {
-  /* Dark forest + night sky theme */
-  --brand-dark:   #0e1b1b;   /* deep forest black */
-  --brand-mid:    #004d66;   /* deep teal */
-  --brand-light:  #4e91ad;   /* faded blue edge */
-
-  /* Accent (muted ice) */
-  --accent:       #c4dbe8;   /* ice mist (button hover, glow) */
-
-  /* Support variables */
+  --brand-dark:   #0e1b1b;
+  --brand-mid:    #004d66;
+  --brand-light:  #4e91ad;
+  --accent:       #c4dbe8;
   --text-light:   #ffffff;
   --text-dark:    #e0e0e0;
-
-  --card-bg:      rgba(255, 255, 255, 0.06);  /* faint glow on dark */
-  --card-bg-dark: rgba(10, 15, 20, 0.6);      /* dark frosted glass */
-
+  --card-bg:      rgba(255, 255, 255, 0.06);
+  --card-bg-dark: rgba(10, 15, 20, 0.6);
   --toast-bg:     rgba(0, 0, 0, 0.85);
   --toast-text:   #ffffff;
-
   --error:        #e53e3e;
   --success:      #48bb78;
-}
-:root {
   --safe-area-inset-top: env(safe-area-inset-top, 20px);
 }
-
 body {
   padding-top: var(--safe-area-inset-top);
 }
 
-/* ─── 2. Reset & Animated Gradient Backdrop ────────────────────────────── */
+/* === 1. RESET & BASE STYLES ============================================ */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
-
 html,
 body {
   margin: 0;
@@ -60,7 +35,18 @@ body {
   height: 100%;
   font-family: "Helvetica Neue", Arial, sans-serif;
   color: var(--text-light);
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
 
+/* === 2. BACKGROUND, GRADIENTS & ANIMATIONS ============================= */
+body {
   background: linear-gradient(
     -45deg,
     var(--brand-dark) 0%,
@@ -73,78 +59,32 @@ body {
   animation: gradientFlow 12s linear infinite;
 }
 @keyframes gradientFlow {
-  0% {
-    background-position: 0% 40%;
-  }
-  50% {
-    background-position: 100% 60%;
-  }
-  100% {
-    background-position: 0% 40%;
-  }
+  0% { background-position: 0% 40%; }
+  50% { background-position: 100% 60%; }
+  100% { background-position: 0% 40%; }
 }
 body.dark-mode {
   background: #121212;
   color: var(--text-light);
 }
 
-/* ─── 3. Frosted-Glass Panels ──────────────────────────────────────────── */
-.screen-wrapper {
-  background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-  padding: 2rem;
-  color: var(--text-light);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  transition: background 0.3s, color 0.3s;
+/* === 3. TYPOGRAPHY, TYPEWRITER, HEADLINE, CURSOR ======================= */
+.typewriter {
+  font-size: 2rem;
+  margin: 0 0 1rem;
+  line-height: 1.2;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  min-height: calc(2 * 1.2em);
+  overflow: hidden;
 }
+.cursor {
+  display: inline-block;
+  vertical-align: bottom;
+  animation: blink 0.7s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
 
-/* Enhanced Welcome Card */
-.welcome-content {
-  background: var(--card-bg);
-  backdrop-filter: blur(16px) saturate(140%);
-  border-radius: 16px;
-  padding: 4rem 3rem;         /* 🔺 Taller + roomier sides */
-  margin: 5rem auto;          /* 🔺 More space around it */
-  max-width: 800px;           /* 🔺 Wider card */
-  width: 95%;                 /* 🔺 Closer to edge on large screens */
-  color: var(--text-light);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38);
-  position: relative;
-  z-index: 2;
-  transition: background 0.3s, color 0.3s;
-}
-.welcome-content .btn {
-  display: block;
-  margin: 2rem auto 0 auto;
-  padding: 1rem 2.2rem;
-  font-size: 1.1rem;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), #a8d2e2);
-  box-shadow: 0 6px 18px rgba(196, 219, 232, 0.25);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.welcome-content .btn:hover {
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 10px 28px rgba(196, 219, 232, 0.35);
-}
-#login-btn {
-  font-size: 1.1rem;
-  padding: 1rem 2.2rem;
-  margin-top: 2.2rem;
-  background: linear-gradient(135deg, var(--accent), #a8d2e2);
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(196, 219, 232, 0.25);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-#login-btn:hover {
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 10px 28px rgba(196, 219, 232, 0.35);
-}
-
-/* ─── 4. Global Button Styles ──────────────────────────────────────────── */
-/* Unified .btn and button styles for ALL app buttons */
+/* === 4. BUTTONS (Universal) ============================================ */
 .btn,
 button,
 input[type="button"],
@@ -165,25 +105,22 @@ input[type="submit"] {
   display: inline-block;
   letter-spacing: 0.02em;
 }
-
 .btn:hover,
 button:hover:not(:disabled),
 input[type="button"]:hover:not(:disabled),
 input[type="submit"]:hover:not(:disabled) {
-  background: #a5c9d6; /* deeper ice for hover */
+  background: #a5c9d6;
   box-shadow: 0 4px 18px rgba(76, 134, 158, 0.18);
   transform: translateY(-2px) scale(1.015);
 }
-
 .btn:active,
 button:active:not(:disabled),
 input[type="button"]:active:not(:disabled),
 input[type="submit"]:active:not(:disabled) {
-  background: #90b3c3; /* pressed */
+  background: #90b3c3;
   box-shadow: 0 2px 8px rgba(76, 134, 158, 0.11);
   transform: scale(0.97);
 }
-
 .btn:disabled,
 button:disabled,
 input[type="button"]:disabled,
@@ -191,8 +128,6 @@ input[type="submit"]:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
-
-/* Variant: Wide full-width */
 .btn.wide          { width: 100%; }
 .btn.primary {
   background: linear-gradient(135deg, #4e91ad 20%, #c4dbe8 100%);
@@ -209,33 +144,249 @@ input[type="submit"]:disabled {
   color: var(--text-light);
 }
 .btn.outline:hover { background: rgba(255,255,255,0.12); }
-
 .btn.on-dark {
   background: var(--accent);
   color: var(--brand-dark);
 }
+.btn-sm {
+  font-size: 0.93em;
+  padding: 6px 13px;
+}
 
-/* ─── 5. Header, Footer & Navigation ───────────────────────────────────── */
-header,
-footer {
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
+/* === 5. SCREEN WRAPPER, LAYOUT, CARDS, GLASS =========================== */
+.screen-wrapper {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 2rem;
   color: var(--text-light);
-  padding: 1rem;
-  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: background 0.3s, color 0.3s;
 }
-nav {
+.dashboard-card,
+.glass-card,
+.glass-card.metric {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px) saturate(135%);
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  color: var(--text-light);
+  transition: background 0.3s, color 0.3s;
+}
+.dash-layout {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-  margin: 0.5rem 0;
+  align-items: flex-start;
+  gap: 2rem;
+  padding: 0 14px;
 }
-nav button {
-  /* Uses the unified .btn/button style */
+.dash-metrics {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.3rem;
+}
+.big-num { font-size: 1.3rem; font-weight: 600; }
+
+/* === 6. DASHBOARD NAV, RAIL, NAV BUTTONS =============================== */
+.dash-rail-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  margin: 0 auto;
+  padding-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+.dash-rail {
+  display: flex;
+  flex-direction: row;
+  gap: 1.4rem;
+  padding: 0.5rem 1rem;
+  min-width: max-content;
+  overflow-y: hidden;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.dash-rail::-webkit-scrollbar { display: none; }
+.rail-btn {
+  flex: none;
+  width: 125px;
+  height: 125px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px) saturate(140%);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  color: var(--text-light);
+  font-size: 1em;
+  font-weight: 600;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin: 0 3px;
+  position: relative;
+  overflow: hidden;
+}
+.rail-btn i,
+.rail-btn img {
+  font-size: 2.3em;
+  margin-bottom: 6px;
+  display: block;
+  pointer-events: none;
+}
+.rail-btn span {
+  font-size: 1em;
+  max-width: 120px;
+  line-height: 1.2;
+  word-break: keep-all;
+  white-space: normal;
+  overflow: visible;
+  display: block;
+}
+.rail-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 20px rgba(147, 127, 255, 0.3);
+}
+.rail-btn:active {
+  transform: scale(0.96);
+  background: var(--card-bg-dark);
+}
+/* Responsive */
+@media (max-width: 600px) {
+  .rail-btn {
+    width: 120px;
+    height: 120px;
+    font-size: 0.95em;
+  }
+  .rail-btn i {
+    font-size: 2em;
+  }
+  .rail-btn span {
+    max-width: 80px;
+    font-size: 0.95em;
+  }
+}
+@media (max-width: 700px) {
+  .dash-rail {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 10px;
+    gap: 0.7rem;
+  }
 }
 
-/* ─── 6. Toasts ────────────────────────────────────────────────────────── */
+/* === 7. METRICS, CHECKLIST, PROGRESS, BADGES, NOTIFICATIONS ============ */
+.metric h3,
+.dashboard-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.08rem;
+}
+.metric progress {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  appearance: none;
+}
+.metric progress::-webkit-progress-bar {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+.metric progress::-webkit-progress-value {
+  background: var(--accent);
+  border-radius: 4px;
+}
+.checklist-page { }
+.progress-track {
+  background: rgba(255,255,255,0.13);
+  border-radius: 6px;
+  height: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.progress-fill {
+  background: linear-gradient(90deg, var(--brand-light) 60%, var(--accent) 100%);
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.5s cubic-bezier(.6,.5,.18,1.2);
+}
+.progress-label {
+  position: absolute;
+  right: 8px; top: 0;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+}
+.checklist-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.checklist-list li {
+  background: var(--card-bg);
+  border-radius: 10px;
+  margin-bottom: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 1.08rem;
+  box-shadow: 0 2px 7px rgba(0,0,0,0.09);
+  position: relative;
+}
+.checklist-list li.done {
+  opacity: 0.75;
+  text-decoration: line-through;
+}
+.badge-success {
+  background: var(--success);
+  color: #fff;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 1.02em;
+  font-weight: bold;
+}
+.badge {
+  font-size: 0.8em;
+  padding: 4px 10px;
+  margin-left: 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  display: inline-block;
+}
+.badge-fail {
+  background-color: #e74c3c;
+  color: #fff;
+}
+.badge-neutral {
+  background-color: #666a;
+  color: #fff;
+}
+.notify-bubble {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: var(--error);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.85em;
+  padding: 2.5px 7px;
+  font-weight: bold;
+  z-index: 3;
+}
+
+/* === 8. TOASTS, LOADERS, OVERLAYS, ANIMATIONS ========================== */
 .toast-message {
   position: fixed;
   bottom: 30px;
@@ -250,10 +401,6 @@ nav button {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   animation: fadeInEnhanced 0.4s ease-out forwards;
 }
-
-/* ─── 6.1 Loaders ───────────────────────────────────────────────────────── */
-
-/* Boot Loader */
 #app-loader {
   position: fixed;
   inset: 0;
@@ -282,15 +429,6 @@ nav button {
   background: rgba(255,255,255,0.1);
   box-shadow: 0 0 24px var(--accent);
 }
-.glow-shimmer {
-  animation: shimmer 2s infinite ease-in-out;
-}
-@keyframes shimmer {
-  0%, 100% { text-shadow: 0 0 6px var(--accent); }
-  50% { text-shadow: 0 0 24px var(--accent); }
-}
-
-/* Page Transition Loader */
 .loader-overlay {
   position: fixed;
   inset: 0;
@@ -306,7 +444,6 @@ nav button {
   opacity: 0;
   pointer-events: none;
 }
-/* Truck Spinner */
 .truck-spinner {
   display: flex;
   flex-direction: column;
@@ -329,32 +466,8 @@ nav button {
   border-radius: 4px;
   box-shadow: 0 0 6px var(--accent);
 }
-@keyframes truck-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-@keyframes wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-3deg); }
-  75% { transform: rotate(3deg); }
-}
-@keyframes fadeOutDown {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-}
 
-.fade-out {
-  animation: fadeOutDown 0.35s ease forwards;
-}
-
-/* ─── 7. Welcome Parallax & Fade-in ────────────────────────────────────── */
-/* Welcome Screen Styling */
+/* === 9. WELCOME, FEATURES, CAROUSEL, FAB, PARALLAX ===================== */
 .welcome-screen {
   min-height: 100vh;
   display: flex;
@@ -365,52 +478,78 @@ nav button {
   scroll-behavior: smooth;
   position: relative;
   z-index: 1;
+  isolation: isolate;
+}
+.welcome-content {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px) saturate(140%);
+  border-radius: 16px;
+  padding: 4rem 3rem;
+  margin: 5rem auto;
+  max-width: 800px;
+  width: 95%;
+  color: var(--text-light);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38);
+  position: relative;
+  z-index: 2;
+  transition: background 0.3s, color 0.3s;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 32px rgba(196, 219, 232, 0.07);
+}
+.welcome-content::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 20px;
+  background: radial-gradient(ellipse at center, rgba(196, 219, 232, 0.07), transparent 70%);
+  box-shadow: 0 0 42px rgba(196, 219, 232, 0.06);
+  z-index: -1;
+  pointer-events: none;
+}
+.welcome-content h1,
+.welcome-content .typewriter {
+  text-shadow: 0 0 8px rgba(196, 219, 232, 0.15);
+  animation: pulseTextGlow 3.4s ease-in-out infinite;
 }
 
-body, html {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-}
-.fade-in {
-  animation: fadeInUp 0.6s ease-out both;
-}
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes pulseTextGlow {
+  0%, 100% { text-shadow: 0 0 6px rgba(196, 219, 232, 0.15);}
+  50% { text-shadow: 0 0 16px rgba(196, 219, 232, 0.3);}
 }
 
-/* ─── 8. Typewriter Headline ──────────────────────────────────────────── */
-.typewriter {
-  font-size: 2rem;
-  margin: 0 0 1rem;
-  line-height: 1.2;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-  min-height: calc(2 * 1.2em);
-  overflow: hidden;
+.welcome-content .btn {
+  display: block;
+  margin: 2rem auto 0 auto;
+  padding: 1rem 2.2rem;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), #a8d2e2);
+  box-shadow: 0 6px 18px rgba(196, 219, 232, 0.25);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.cursor {
-  display: inline-block;
-  vertical-align: bottom;
-  animation: blink 0.7s step-end infinite;
+.welcome-content .btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 10px 28px rgba(196, 219, 232, 0.35);
 }
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
+#login-btn {
+  font-size: 1.1rem;
+  padding: 1rem 2.2rem;
+  margin-top: 2.2rem;
+  background: linear-gradient(135deg, var(--accent), #a8d2e2);
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(196, 219, 232, 0.25);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+#login-btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 10px 28px rgba(196, 219, 232, 0.35);
 }
 
-/* ─── 9. Welcome Carousel (infinite drift) ─────────────────────────────── */
 .features {
   overflow: visible;
   position: relative;
+  padding: 2rem 0;
+  margin-top: 2rem;
 }
 .features-inner {
   display: flex;
@@ -423,13 +562,7 @@ body, html {
   scroll-padding-inline: 32px;
   padding: 32px 0 80px;
 }
-.features-inner::-webkit-scrollbar {
-  display: none;
-}
-.features {
-  padding: 2rem 0;
-  margin-top: 2rem;
-}
+.features-inner::-webkit-scrollbar { display: none; }
 .feat {
   flex: 0 0 160px;
   width: 160px;
@@ -450,13 +583,24 @@ body, html {
   padding: 16px;
   transition: transform 0.35s cubic-bezier(0.4, 0.8, 0.2, 1),
     box-shadow 0.35s;
+  position: relative;
 }
 .feat:hover {
   transform: translateY(-12px) scale(1.05);
   box-shadow: 0 28px 48px -12px rgba(0, 0, 0, 0.45);
 }
+.feat:hover::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: inherit;
+  filter: blur(24px);
+  animation: carouselGlow 2.4s ease-in-out infinite;
+  z-index: -1;
+}
 
-/* ─── 10. Floating Action Button & Carousel Controls ────────────────────── */
+/* Carousel FAB and Arrows */
 .fab {
   position: fixed;
   right: 24px;
@@ -476,7 +620,6 @@ body, html {
 }
 .fab:hover   { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,.35); }
 .fab:active  { transform: scale(.95); }
-
 .carousel-arrow {
   position: absolute;
   top: 50%;
@@ -498,7 +641,44 @@ body, html {
 .carousel-arrow:hover { background: rgba(0,0,0,0.7); }
 .carousel-arrow.left  { left: 8px;  }
 .carousel-arrow.right { right: 8px; }
-/* Glass Login/Signup Card */
+
+/* Welcome Parallax/Noise Enhancements */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -3;
+  /* Optional shimmer/noise overlay layers */
+}
+.welcome-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image: url('noise.png');
+  opacity: 0.07;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* Mobile welcome tweaks */
+@media (max-width: 600px) {
+  .welcome-content {
+    margin: 2rem 1rem;
+    padding: 1.5rem;
+    max-width: calc(100% - 2rem);
+  }
+  .feat {
+    width: 120px;
+    height: 120px;
+    flex: 0 0 120px;
+    padding: 1rem 0.5rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* === 10. AUTH, LOGIN, SIGNUP, FORMS ==================================== */
 .login-card, .signup-card {
   background: var(--card-bg);
   border-radius: 20px;
@@ -513,27 +693,23 @@ body, html {
   gap: 1.5rem;
   animation: fadeInUp 0.6s cubic-bezier(.5,.95,.17,1.12);
 }
-
 .login-card h2, .signup-card h2 {
   margin-bottom: 0.7rem;
   letter-spacing: .01em;
   font-size: 2rem;
   text-align: center;
 }
-
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
   margin-bottom: 1.1rem;
 }
-
 .form-group label {
   font-weight: 500;
   color: var(--text-light);
   margin-bottom: 2px;
 }
-
 .login-card input, .signup-card input, .signup-card select {
   border: none;
   border-radius: 8px;
@@ -546,26 +722,21 @@ body, html {
   transition: background 0.18s, box-shadow 0.18s;
   box-shadow: 0 1px 6px rgba(0,0,0,0.09);
 }
-/*_------login------*/
-
 .login-card input:focus, .signup-card input:focus, .signup-card select:focus {
   background: rgba(196,219,232,0.16);
   box-shadow: 0 0 0 2px var(--accent);
   color: var(--text-dark);
 }
-
 .login-card .btn, .signup-card .btn {
   margin-top: 0.5rem;
   width: 100%;
 }
-
 .login-footer, .signup-footer {
   text-align: center;
   margin-top: 0.8rem;
   color: var(--text-dark);
   font-size: 1rem;
 }
-
 .role-badge-select {
   display: flex;
   gap: 1rem;
@@ -598,168 +769,228 @@ body, html {
     padding: 1.3rem 0.6rem 1.3rem 0.6rem;
   }
 }
-/* ─── 10.5 Legacy dash-actions row (can delete later) ──────────────────── */
-.dash-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-  margin: 1.5rem 0;
-}
-.dash-actions .dash-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-}
-.dash-actions .dash-btn .icon {
-  font-size: 1.4rem;
-}
-.dash-actions .dash-btn .label {
-  font-size: 0.92rem;
-}
 
-/* ─── 10.6 Dashboard Layout & Vertical Rail ───────────────────────────── */
-.dash-layout {
-  display: flex;
-  align-items: flex-start;
-  gap: 2rem;
-  padding: 0 14px;
-}
-
-.dash-metrics {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.3rem;
-}
-
-.glass-card.metric,
-.dashboard-card {
+/* === 11. PROFILE, FORMS, FILE UPLOADS, IMAGES ========================== */
+.profile-page {
   background: var(--card-bg);
-  backdrop-filter: blur(12px) saturate(135%);
-  border-radius: 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+  padding: 2rem 1.7rem 1.7rem 1.7rem;
+  max-width: 470px;
+  margin: 32px auto 0 auto;
+  backdrop-filter: blur(14px) saturate(130%);
+  color: var(--text-light);
+  position: relative;
+  animation: fadeInUp 0.6s cubic-bezier(.5,.95,.17,1.12);
 }
-
-.metric h3,
-.dashboard-card h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1.08rem;
-}
-
-.metric progress {
-  width: 100%;
-  height: 8px;
-  border-radius: 4px;
-  appearance: none;
-}
-.metric progress::-webkit-progress-bar {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-}
-.metric progress::-webkit-progress-value {
-  background: var(--accent);
-  border-radius: 4px;
-}
-
-.big-num {
-  font-size: 1.3rem;
-  font-weight: 600;
-}
-
-.dash-rail-wrapper {
-  overflow-x: auto;
-  overflow-y: hidden;
-  width: 100%;
-  margin: 0 auto;
-  padding-bottom: 12px;
-  -webkit-overflow-scrolling: touch;
-}
-
-.dash-rail {
-  display: flex;
-  flex-direction: row;
-  gap: 1.4rem;
-  padding: 0.5rem 1rem;
-  min-width: max-content;
-}
-
-.rail-btn {
-  flex: none;
-  width: 125px;
-  height: 125px;
+#profile-form label {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(10px) saturate(140%);
-  border: 2px solid rgba(255, 255, 255, 0.18);
-  border-radius: 24px;
+  gap: 6px;
+  background: rgba(255,255,255,0.09);
+  border-radius: 10px;
+  padding: 0.7rem 1rem 0.7rem 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.08rem;
+  font-weight: 500;
+  box-shadow: 0 2px 7px rgba(0,0,0,0.09);
+  border: 1px solid rgba(255,255,255,0.11);
+  transition: background 0.22s;
+}
+#profile-form label:focus-within {
+  background: rgba(196,219,232,0.16);
+  border-color: var(--accent);
+}
+#profile-form input[type="text"],
+#profile-form input[type="date"],
+#profile-form select {
+  border: none;
+  border-radius: 7px;
+  padding: 0.6rem 0.9rem;
+  font-size: 1rem;
+  margin-top: 2px;
+  background: rgba(255,255,255,0.13);
   color: var(--text-light);
-
-  font-size: 1em;
-  font-weight: 600;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  outline: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+  transition: background 0.16s, box-shadow 0.2s;
+}
+#profile-form input[type="text"]:focus,
+#profile-form input[type="date"]:focus,
+#profile-form select:focus {
+  background: rgba(196,219,232,0.18);
+  box-shadow: 0 0 0 2px var(--accent);
+  color: var(--text-dark);
+}
+#profile-form input[type="file"] {
+  background: none;
+  color: var(--accent);
+  font-size: 0.99em;
+  margin-top: 3px;
+}
+#profile-form img {
+  margin-top: 9px;
+  border-radius: 10px;
+  box-shadow: 0 1.5px 8px rgba(0,0,0,0.18);
+  border: 1.5px solid rgba(196,219,232,0.14);
+  max-width: 110px;
+}
+#profile-form .btn {
+  margin-top: 0.8rem;
+}
+#profile-form .btn.outline {
+  margin-top: 0.25rem;
+  background: transparent;
+  color: var(--text-light);
+  border: 1.5px solid var(--accent);
 }
 
-.rail-btn i,
-.rail-btn img {
-  font-size: 2.3em;
-  margin-bottom: 6px;
-  display: block;
+@media (max-width: 600px) {
+  .profile-page {
+    padding: 1rem 0.7rem 1.1rem 0.7rem;
+    max-width: 98vw;
+  }
+}
+/* === 12. FLASHCARDS ==================================================== */
+.flashcard-card {
+  background: #23263a;
+  color: var(--text-light, #fff);
+  border-radius: 16px;
+  margin: 24px 0;
+  padding: 0;
+  font-size: 1.16em;
+  cursor: pointer;
+  box-shadow: 0 6px 30px #0002;
+  min-height: 140px;
+  text-align: center;
+  transition: box-shadow 0.2s, background 0.2s, transform 0.45s;
+  will-change: transform;
+  perspective: 1000px;
+  position: relative;
+  opacity: 0;
+  animation: cardFadeIn 0.65s cubic-bezier(.43,.23,.6,1.34) forwards;
+}
+.flashcard-card::after {
+  content: "🔄 Tap to flip";
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.85em;
+  opacity: 0.5;
+  color: #ccc;
   pointer-events: none;
 }
-
-.rail-btn span {
-  font-size: 1em;
-  max-width: 120px;
-  line-height: 1.2;
-  word-break: keep-all;
-  white-space: normal;
-  overflow: visible;
+.flashcard-card:hover {
+  box-shadow: 0 0 24px var(--accent, #b48aff), 0 6px 40px #23263a77;
+  transform: translateY(-3px) scale(1.025);
+}
+.flashcard-card-inner {
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-style: preserve-3d;
+  position: relative;
+  height: 100%;
+}
+.flashcard-card.flipped .flashcard-card-inner {
+  transform: rotateY(180deg);
+}
+.flashcard-front,
+.flashcard-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  padding: 24px;
+  min-height: 140px;
+  border-radius: 16px;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  transition: background 0.3s;
+  user-select: none;
+}
+.flashcard-front {
+  background: #23263a;
+  color: var(--text-light);
+  z-index: 2;
+}
+.flashcard-back {
+  background: #3c3866;
+  color: #ffe688;
+  transform: rotateY(180deg);
+  box-shadow: 0 4px 28px #2223;
 }
 
-.rail-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0 20px rgba(147, 127, 255, 0.3);
+@keyframes cardFadeIn {
+  to { opacity: 1; }
 }
 
-.rail-btn:active {
-  transform: scale(0.96);
-  background: var(--card-bg-dark);
+/* === 13. PRACTICE TESTS + REVIEW ======================================= */
+.test-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-top: 1.2rem;
 }
-/* Hide scrollbar for all WebKit browsers (iOS/Safari/Chrome) */
-.dash-rail::-webkit-scrollbar {
-  display: none;
+.glass-card {
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  color: var(--text-light);
+  transition: transform 0.3s ease;
+}
+.glass-card:hover {
+  transform: translateY(-3px) scale(1.01);
+}
+.btn-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.btn.wide {
+  width: 100%;
+  font-weight: bold;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 1.05em;
+}
+.test-review-page h2 {
+  font-size: 1.6em;
+  margin-bottom: 0.4em;
+}
+.test-review-page p {
+  margin: 8px 0 18px;
 }
 
-/* Hide scrollbar for Firefox */
-.dash-rail {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* IE and Edge */
+/* === 14. FADE-IN ON SCROLL, UTILITY CLASSES, LEGACY, ETC =============== */
+.fade-in-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-in-on-scroll.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-/* === FIX 1: Hide scroll bar on nav strip === */
-.dash-rail {
-  overflow-y: hidden;       /* hide vertical scroll */
-  overflow-x: auto;         /* allow horizontal scrolling */
-  scrollbar-width: none;    /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-}
-.dash-rail::-webkit-scrollbar {
-  display: none;            /* Chrome, Safari */
-}
-/* Mobile adjustments */
+/* === 15. MEDIA QUERIES (keep at bottom) ================================ */
 @media (max-width: 600px) {
+  .welcome-content {
+    margin: 2rem 1rem;
+    padding: 1.5rem;
+    max-width: calc(100% - 2rem);
+  }
+  .feat {
+    width: 120px;
+    height: 120px;
+    flex: 0 0 120px;
+    padding: 1rem 0.5rem;
+    font-size: 0.85rem;
+  }
   .rail-btn {
     width: 120px;
     height: 120px;
@@ -772,9 +1003,15 @@ body, html {
     max-width: 80px;
     font-size: 0.95em;
   }
+  .login-card, .signup-card {
+    max-width: 98vw;
+    padding: 1.3rem 0.6rem 1.3rem 0.6rem;
+  }
+  .profile-page {
+    padding: 1rem 0.7rem 1.1rem 0.7rem;
+    max-width: 98vw;
+  }
 }
-
-/* Responsive adjustments for mobile */
 @media (max-width: 700px) {
   .dash-layout {
     flex-direction: column;
@@ -798,433 +1035,5 @@ body, html {
     margin-bottom: 12px;
   }
 }
-/*My Checklist */
 
-.checklist-page {
-  /* inherit .screen-wrapper */
-}
-
-.progress-track {
-  background: rgba(255,255,255,0.13);
-  border-radius: 6px;
-  height: 18px;
-  position: relative;
-  overflow: hidden;
-}
-.progress-fill {
-  background: linear-gradient(90deg, var(--brand-light) 60%, var(--accent) 100%);
-  height: 100%;
-  border-radius: 6px;
-  transition: width 0.5s cubic-bezier(.6,.5,.18,1.2);
-}
-.progress-label {
-  position: absolute;
-  right: 8px; top: 0;
-  font-size: 0.95rem;
-  color: var(--text-dark);
-  height: 100%;
-  display: flex;
-  align-items: center;
-  font-weight: bold;
-}
-
-.checklist-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.checklist-list li {
-  background: var(--card-bg);
-  border-radius: 10px;
-  margin-bottom: 14px;
-  padding: 1rem 1.1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  font-size: 1.08rem;
-  box-shadow: 0 2px 7px rgba(0,0,0,0.09);
-  position: relative;
-}
-.checklist-list li.done {
-  opacity: 0.75;
-  text-decoration: line-through;
-}
-.badge-success {
-  background: var(--success);
-  color: #fff;
-  border-radius: 10px;
-  padding: 2px 8px;
-  font-size: 1.02em;
-  font-weight: bold;
-}
-.notify-bubble {
-  position: absolute;
-  top: 12px; right: 12px;
-  background: var(--error);
-  color: #fff;
-  border-radius: 50%;
-  font-size: 0.85em;
-  padding: 2.5px 7px;
-  font-weight: bold;
-  z-index: 3;
-}
-.btn-sm {
-  font-size: 0.93em;
-  padding: 6px 13px;
-}
-/* ─── Profile Page Styling ────────────────────────────────────────────── */
-.profile-page {
-  background: var(--card-bg);
-  border-radius: 16px;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.22);
-  padding: 2rem 1.7rem 1.7rem 1.7rem;
-  max-width: 470px;
-  margin: 32px auto 0 auto;
-  backdrop-filter: blur(14px) saturate(130%);
-  color: var(--text-light);
-  position: relative;
-  animation: fadeInUp 0.6s cubic-bezier(.5,.95,.17,1.12);
-}
-
-/* Make form fields look like glass cards */
-#profile-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background: rgba(255,255,255,0.09);
-  border-radius: 10px;
-  padding: 0.7rem 1rem 0.7rem 1rem;
-  margin-bottom: 0.5rem;
-  font-size: 1.08rem;
-  font-weight: 500;
-  box-shadow: 0 2px 7px rgba(0,0,0,0.09);
-  border: 1px solid rgba(255,255,255,0.11);
-  transition: background 0.22s;
-}
-#profile-form label:focus-within {
-  background: rgba(196,219,232,0.16);
-  border-color: var(--accent);
-}
-
-/* Inputs - modern, rounded, clean */
-#profile-form input[type="text"],
-#profile-form input[type="date"],
-#profile-form select {
-  border: none;
-  border-radius: 7px;
-  padding: 0.6rem 0.9rem;
-  font-size: 1rem;
-  margin-top: 2px;
-  background: rgba(255,255,255,0.13);
-  color: var(--text-light);
-  outline: none;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
-  transition: background 0.16s, box-shadow 0.2s;
-}
-#profile-form input[type="text"]:focus,
-#profile-form input[type="date"]:focus,
-#profile-form select:focus {
-  background: rgba(196,219,232,0.18);
-  box-shadow: 0 0 0 2px var(--accent);
-  color: var(--text-dark);
-}
-
-/* File upload and images */
-#profile-form input[type="file"] {
-  background: none;
-  color: var(--accent);
-  font-size: 0.99em;
-  margin-top: 3px;
-}
-#profile-form img {
-  margin-top: 9px;
-  border-radius: 10px;
-  box-shadow: 0 1.5px 8px rgba(0,0,0,0.18);
-  border: 1.5px solid rgba(196,219,232,0.14);
-  max-width: 110px;
-}
-
-/* Button spacing and alignment */
-#profile-form .btn {
-  margin-top: 0.8rem;
-}
-#profile-form .btn.outline {
-  margin-top: 0.25rem;
-  background: transparent;
-  color: var(--text-light);
-  border: 1.5px solid var(--accent);
-}
-
-@media (max-width: 600px) {
-  .profile-page {
-    padding: 1rem 0.7rem 1.1rem 0.7rem;
-    max-width: 98vw;
-  }
-}
-/* ─── 11. Glow Pulse for Carousel (unchanged) ──────────────────────────── */
-@keyframes carouselGlow {
-  0%,
-  100% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-.feat:hover::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: inherit;
-  filter: blur(24px);
-  animation: carouselGlow 2.4s ease-in-out infinite;
-  z-index: -1;
-}
-
-/* ─── 12. Responsive Welcome Tweaks ────────────────────────────────────── */
-@media (max-width: 600px) {
-  .welcome-content {
-    margin: 2rem 1rem;
-    padding: 1.5rem;
-    max-width: calc(100% - 2rem);
-  }
-  .feat {
-    width: 120px;
-    height: 120px;
-    flex: 0 0 120px;
-    padding: 1rem 0.5rem;
-    font-size: 0.85rem;
-  }
-}
-
-/* ─── 13. Background Enhancements (shimmer + noise) ───────────────────── */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -3;
-
-  /* layer 1 – diagonal shimmer */
-  background:
-    linear-gradient(
-      120deg,
-      rgba;
-  }
-}      
-/* ─── Welcome Screen Enhancements ────────────────────────────────────── */
-.welcome-screen {
-  isolation: isolate;
-  position: relative;
-}
-
-.welcome-content {
-  position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 32px rgba(196, 219, 232, 0.07);
-  backdrop-filter: blur(16px) saturate(140%);
-}
-
-/* Subtle ambient glow halo */
-.welcome-content::before {
-  content: "";
-  position: absolute;
-  inset: -12px;
-  border-radius: 20px;
-  background: radial-gradient(ellipse at center, rgba(196, 219, 232, 0.07), transparent 70%);
-  box-shadow: 0 0 42px rgba(196, 219, 232, 0.06);
-  z-index: -1;
-  pointer-events: none;
-}
-
-/* Pulse shimmer for greeting area */
-.welcome-content h1,
-.welcome-content .typewriter {
-  text-shadow: 0 0 8px rgba(196, 219, 232, 0.15);
-  animation: pulseTextGlow 3.4s ease-in-out infinite;
-}
-
-@keyframes pulseTextGlow {
-  0%, 100% {
-    text-shadow: 0 0 6px rgba(196, 219, 232, 0.15);
-  }
-  50% {
-    text-shadow: 0 0 16px rgba(196, 219, 232, 0.3);
-  }
-}
-
-/* Optional: particle noise layer to add visual depth */
-.welcome-screen::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  background-image: url('noise.png'); /* your noise texture */
-  opacity: 0.07;
-  pointer-events: none;
-  mix-blend-mode: screen;
-}
-/* ─── 12. Flashcards ───────────────────────────────────────────────────────── */
-
-.flashcard-card {
-  background: #23263a;
-  color: var(--text-light, #fff);
-  border-radius: 16px;
-  margin: 24px 0;
-  padding: 0;
-  font-size: 1.16em;
-  cursor: pointer;
-  box-shadow: 0 6px 30px #0002;
-  min-height: 140px;
-  text-align: center;
-  transition: box-shadow 0.2s, background 0.2s, transform 0.45s;
-  will-change: transform;
-  perspective: 1000px;
-  position: relative;
-  opacity: 0;
-  animation: cardFadeIn 0.65s cubic-bezier(.43,.23,.6,1.34) forwards;
-}
-
-.flashcard-card::after {
-  content: "🔄 Tap to flip";
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.85em;
-  opacity: 0.5;
-  color: #ccc;
-  pointer-events: none;
-}
-
-.flashcard-card:hover {
-  box-shadow: 0 0 24px var(--accent, #b48aff), 0 6px 40px #23263a77;
-  transform: translateY(-3px) scale(1.025);
-}
-
-.flashcard-card-inner {
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform-style: preserve-3d;
-  position: relative;
-  height: 100%;
-}
-
-.flashcard-card.flipped .flashcard-card-inner {
-  transform: rotateY(180deg);
-}
-
-.flashcard-front,
-.flashcard-back {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2em;
-  padding: 24px;
-  min-height: 140px;
-  border-radius: 16px;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  transition: background 0.3s;
-  user-select: none;
-}
-
-.flashcard-front {
-  background: #23263a;
-  color: var(--text-light);
-  z-index: 2;
-}
-
-.flashcard-back {
-  background: #3c3866;
-  color: #ffe688;
-  transform: rotateY(180deg);
-  box-shadow: 0 4px 28px #2223;
-}
-
-@keyframes cardFadeIn {
-  to { opacity: 1; }
-}
-/* ─── 13. Practice Tests + Review ───────────────────────────────────────────── */
-
-.test-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-  margin-top: 1.2rem;
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
-  padding: 20px;
-  color: var(--text-light);
-  transition: transform 0.3s ease;
-}
-
-.glass-card:hover {
-  transform: translateY(-3px) scale(1.01);
-}
-
-.btn-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-.btn.wide {
-  width: 100%;
-  font-weight: bold;
-  padding: 14px 18px;
-  border-radius: 12px;
-  font-size: 1.05em;
-}
-
-.badge {
-  font-size: 0.8em;
-  padding: 4px 10px;
-  margin-left: 8px;
-  border-radius: 999px;
-  font-weight: 600;
-  display: inline-block;
-}
-
-.badge-success {
-  background-color: #2ecc71;
-  color: #fff;
-}
-
-.badge-fail {
-  background-color: #e74c3c;
-  color: #fff;
-}
-
-.badge-neutral {
-  background-color: #666a;
-  color: #fff;
-}
-
-.test-review-page h2 {
-  font-size: 1.6em;
-  margin-bottom: 0.4em;
-}
-
-.test-review-page p {
-  margin: 8px 0 18px;
-} 
-/* ─── Fade-In On Scroll Animation ───────────────────────────────────────────── */
-.fade-in-on-scroll {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-.fade-in-on-scroll.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
+/* === 16. END =========================================================== */
