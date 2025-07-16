@@ -44,6 +44,69 @@ import {
   debounce
 } from "./ui-helpers.js";
 
+// ─── ENHANCED ELDT PROGRESS HELPER ──────────────────────────────────────────
+
+// Extra Firestore import for increment and server timestamp
+import {
+  setDoc,
+  updateDoc,
+  getDoc,
+  doc,
+  serverTimestamp,
+  increment
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+/**
+ * Updates or creates the eldtProgress document for any user (student/instructor/admin).
+ * @param {string} userId  - Email or UID (unique, used as doc id).
+ * @param {object} fields  - Progress fields to set/update (e.g. { profileComplete: true }).
+ * @param {object} [options] - { role: "student"|"instructor"|"admin", logHistory: bool }
+ */
+async function updateELDTProgress(userId, fields, options = {}) {
+  try {
+    const { role = "student", logHistory = false } = options;
+    const progressRef = doc(db, "eldtProgress", userId);
+    const snap = await getDoc(progressRef);
+
+    // Always attach lastUpdated and role for tracking
+    const updateObj = {
+      ...fields,
+      lastUpdated: serverTimestamp(),
+      role
+    };
+
+    // (Optional) Add a completion timestamp for any `...Complete` fields
+    Object.keys(fields).forEach(k => {
+      if (k.endsWith("Complete") && fields[k] === true) {
+        updateObj[`${k}dAt`] = serverTimestamp();
+      }
+    });
+
+    // Create or update doc
+    if (snap.exists()) {
+      await updateDoc(progressRef, updateObj);
+    } else {
+      await setDoc(progressRef, { userId, ...updateObj });
+    }
+
+    // Optionally, log progress history (as a subcollection)
+    if (logHistory) {
+      const historyRef = doc(collection(progressRef, "history"));
+      await setDoc(historyRef, {
+        ...fields,
+        updatedAt: serverTimestamp(),
+        updatedBy: userId,
+        role
+      });
+    }
+    return true; // Success
+  } catch (err) {
+    console.error("❌ Error updating eldtProgress:", err);
+    showToast?.("Failed to update progress: " + (err.message || err), 4000);
+    return false;
+  }
+}
+
 // ─── 2. FIREBASE CONFIG & INITIALIZATION ────────────────────────────────────────
 const firebaseConfig = {
   apiKey:            "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
