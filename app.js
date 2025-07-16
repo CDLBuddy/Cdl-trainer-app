@@ -813,15 +813,111 @@ async function renderDashboard(container = document.getElementById("app")) {
   </svg>
   <span class="label">My&nbsp;Checklist</span>
 </button>
-          <button class="rail-btn" data-nav="flashcards"><i>🃏</i><span>Flashcards</span></button>
-          <button class="rail-btn" data-nav="coach"><i>🎧</i><span>AI&nbsp;Coach</span></button>
+         
+         <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
+  <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="test-glow" cx="50%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#d6f6ff" stop-opacity="0.72"/>
+        <stop offset="60%" stop-color="#b9eaff" stop-opacity="0.13"/>
+        <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="test-main" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#c4dbe8"/>
+        <stop offset="100%" stop-color="#4e91ad"/>
+      </linearGradient>
+    </defs>
+    <circle cx="28" cy="28" r="26" fill="url(#test-glow)" />
+    <!-- Flask body -->
+    <rect x="22" y="14" width="12" height="26" rx="6" fill="url(#test-main)" opacity="0.92"/>
+    <!-- Flask neck -->
+    <rect x="26" y="10" width="4" height="10" rx="2" fill="#b9eaff" opacity="0.75"/>
+    <!-- Flask contents -->
+    <ellipse cx="28" cy="33" rx="4.5" ry="7" fill="#31e6b5" opacity="0.35"/>
+    <!-- Measurement lines -->
+    <rect x="26.7" y="19" width="2.6" height="1.2" rx="0.6" fill="#fff" opacity="0.7"/>
+    <rect x="26.7" y="22" width="2.6" height="1.2" rx="0.6" fill="#fff" opacity="0.6"/>
+    <rect x="26.7" y="25" width="2.6" height="1.2" rx="0.6" fill="#fff" opacity="0.6"/>
+  </svg>
+  <span class="label">Testing</span>
+</button>
+          <button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
+  <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="flash-glow" cx="50%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#d6f6ff" stop-opacity="0.72"/>
+        <stop offset="60%" stop-color="#b9eaff" stop-opacity="0.13"/>
+        <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="flash-main" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#c4dbe8"/>
+        <stop offset="100%" stop-color="#4e91ad"/>
+      </linearGradient>
+    </defs>
+    <circle cx="28" cy="28" r="26" fill="url(#flash-glow)" />
+    <!-- Back Card -->
+    <rect x="15" y="17" width="20" height="22" rx="4" fill="url(#flash-main)" opacity="0.40" transform="rotate(-7 25 28)" />
+    <!-- Front Card -->
+    <rect x="21" y="13" width="20" height="28" rx="5" fill="url(#flash-main)" opacity="0.92"/>
+    <!-- Question Mark -->
+    <text x="31" y="32" text-anchor="middle" font-size="16" font-family="Arial, Helvetica, sans-serif" fill="#fff" opacity="0.85" font-weight="bold">?</text>
+    <!-- Accent underline -->
+    <rect x="28" y="36" width="8" height="2" rx="1" fill="#31e6b5" opacity="0.62"/>
+  </svg>
+  <span class="label">Flashcards</span>
+</button>
+          <button class="rail-btn coach" data-nav="coach" aria-label="AI Coach">
+  <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="coach-glow" cx="50%" cy="30%" r="72%">
+        <stop offset="0%" stop-color="#d6f6ff" stop-opacity="0.70"/>
+        <stop offset="60%" stop-color="#b9eaff" stop-opacity="0.13"/>
+        <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="coach-main" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#c4dbe8"/>
+        <stop offset="100%" stop-color="#4e91ad"/>
+      </linearGradient>
+    </defs>
+    <circle cx="28" cy="28" r="26" fill="url(#coach-glow)" />
+    <!-- Headphone band -->
+    <path d="M16 33a12 12 0 0 1 24 0" stroke="url(#coach-main)" stroke-width="3" fill="none" opacity="0.88"/>
+    <!-- Left earpad -->
+    <rect x="13" y="32" width="6" height="10" rx="3" fill="url(#coach-main)" opacity="0.88"/>
+    <!-- Right earpad -->
+    <rect x="37" y="32" width="6" height="10" rx="3" fill="url(#coach-main)" opacity="0.88"/>
+    <!-- Waveform (AI) -->
+    <polyline points="21,42 24,38 28,44 32,36 35,42" fill="none" stroke="#31e6b5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.93"/>
+  </svg>
+  <span class="label">AI&nbsp;Coach</span>
+</button>
         </aside>
       </div>
 
-      <div style="text-align:center; margin-top:2rem;">
-        <button id="logout-btn" class="btn outline">🚪 Logout</button>
-      </div>
-    </div>
+      <button class="rail-btn logout" id="logout-btn" aria-label="Logout">
+  <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="logout-glow" cx="50%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#d6f6ff" stop-opacity="0.68"/>
+        <stop offset="60%" stop-color="#b9eaff" stop-opacity="0.13"/>
+        <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="logout-main" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#c4dbe8"/>
+        <stop offset="100%" stop-color="#4e91ad"/>
+      </linearGradient>
+    </defs>
+    <circle cx="28" cy="28" r="26" fill="url(#logout-glow)" />
+    <!-- Door body -->
+    <rect x="18" y="16" width="14" height="24" rx="4" fill="url(#logout-main)" opacity="0.95"/>
+    <!-- Door knob -->
+    <circle cx="20.7" cy="28" r="1.4" fill="#fff" opacity="0.58"/>
+    <!-- Arrow (exit) -->
+    <polyline points="34,28 41,28" stroke="#31e6b5" stroke-width="2.5" stroke-linecap="round" />
+    <polyline points="38,25 41,28 38,31" fill="none" stroke="#31e6b5" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span class="label">Logout</span>
+</button>
   `;
 
   // Update progress values (in case of re-render)
