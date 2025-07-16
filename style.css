@@ -282,13 +282,12 @@ input[type="submit"]:disabled {
     margin-bottom: 10px;
     gap: 0.7rem;
   }
-}
 .profile-btn, .rail-btn.profile {
   background: linear-gradient(135deg, rgba(196,219,232,0.16) 25%, rgba(78,145,173,0.28) 100%);
   border: 2.5px solid rgba(196,219,232,0.23);
   color: var(--text-light);
   box-shadow:
-    0 4px 24px 2px rgba(180,138,255,0.22),  /* soft purple glow */
+    0 4px 24px 2px rgba(78,145,173,0.22),  /* teal/blue glow */
     0 2px 12px rgba(78,145,173,0.18),
     0 0 0 6px rgba(196,219,232,0.10) inset,
     0 16px 36px rgba(0,0,0,0.15);
@@ -311,7 +310,7 @@ input[type="submit"]:disabled {
 .profile-btn:hover, .rail-btn.profile:hover {
   background: linear-gradient(135deg, rgba(196,219,232,0.29) 25%, rgba(78,145,173,0.38) 100%);
   box-shadow:
-    0 8px 48px 4px rgba(180,138,255,0.36),
+    0 8px 48px 4px rgba(78,145,173,0.36),
     0 2px 18px rgba(78,145,173,0.22),
     0 0 0 14px rgba(196,219,232,0.10) inset;
   transform: translateY(-5px) scale(1.045);
@@ -328,10 +327,10 @@ input[type="submit"]:disabled {
   font-size: 2.6em;
   display: block;
   margin-bottom: 10px;
-  color: #b48aff; /* or var(--accent) if it’s set to your neon */
+  color: #4e91ad; /* blue/teal accent for icon */
   filter:
-    drop-shadow(0 0 18px #b48aff77)
-    drop-shadow(0 0 32px #b48aff22);
+    drop-shadow(0 0 18px #4e91ad77)
+    drop-shadow(0 0 32px #4e91ad22);
   pointer-events: none;
 }
 
@@ -349,7 +348,7 @@ input[type="submit"]:disabled {
   position: absolute;
   inset: -10px;
   border-radius: 34px;
-  background: radial-gradient(circle at 58% 20%, rgba(180,138,255,0.13) 0%, transparent 82%);
+  background: radial-gradient(circle at 58% 20%, rgba(78,145,173,0.13) 0%, transparent 82%);
   pointer-events: none;
   z-index: 1;
   opacity: 0.97;
@@ -363,7 +362,7 @@ input[type="submit"]:disabled {
 .profile-icon {
   display: block;
   margin: 0 auto 10px auto;
-  filter: drop-shadow(0 0 18px #b48aff88);
+  filter: drop-shadow(0 0 18px #4e91ad88);
   border-radius: 50%;
 }
 /* === 7. METRICS, CHECKLIST, PROGRESS, BADGES, NOTIFICATIONS ============ */
