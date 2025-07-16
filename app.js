@@ -626,9 +626,68 @@ function renderSignup(container = document.getElementById("app")) {
   // Context-aware back to welcome button (just like login)
   document.getElementById("back-to-welcome-btn")?.addEventListener("click", () => {
     renderWelcome();
-  });
+  }); 
 
   // TODO: Add your signup handling logic here (validate, check code, create user, etc.)
+}
+function getNextChecklistAlert(user) {
+  // 1. Permit photo
+  if (!user.permitPhotoUrl) {
+    return '🔔 Permit photo not uploaded! <button data-nav="profile" class="alert-link">Upload now</button>';
+  }
+  // 2. Vehicle qualified and both plates
+  if (user.vehicleQualified === "yes" && (!user.truckPlateUrl || !user.trailerPlateUrl)) {
+    return '🔔 Vehicle data not submitted! <button data-nav="profile" class="alert-link">Add now</button>';
+  }
+  // 3. License class selected
+  if (!user.licenseClass) {
+    return '🔔 License class not selected! <button data-nav="profile" class="alert-link">Set now</button>';
+  }
+  // 4. Profile info (date of birth, picture)
+  if (!user.dob) {
+    return '🔔 Date of birth missing! <button data-nav="profile" class="alert-link">Update profile</button>';
+  }
+  if (!user.profilePictureUrl) {
+    return '🔔 Profile photo missing! <button data-nav="profile" class="alert-link">Add photo</button>';
+  }
+  // 5. Study streak (if using streaks)
+  if (user.studyStreak < 3) {
+    return `🔥 Keep it up! You're at a ${user.studyStreak}-day study streak. <button data-nav="coach" class="alert-link">Boost streak</button>`;
+  }
+  // 6. Walkthrough practiced (optional)
+  if (!user.walkthroughPracticed) {
+    return '🧭 Walkthrough not practiced! <button data-nav="walkthrough" class="alert-link">Practice now</button>';
+  }
+  // 7. Passing core CDL tests
+  if (!user.tests?.generalKnowledgePassed) {
+    return '📝 Complete General Knowledge with a passing grade! <button data-nav="practiceTests" class="alert-link">Take test</button>';
+  }
+  if (!user.tests?.airBrakesPassed) {
+    return '📝 Complete Air Brakes with a passing grade! <button data-nav="practiceTests" class="alert-link">Take test</button>';
+  }
+  if (!user.tests?.combinationPassed) {
+    return '📝 Complete Combination Vehicles with a passing grade! <button data-nav="practiceTests" class="alert-link">Take test</button>';
+  }
+
+  // 8. Endorsements required by license class/selections
+  if (user.endorsements && Array.isArray(user.endorsements)) {
+    const endorsementMap = {
+      T: "Doubles/Triples",
+      P: "Passenger",
+      S: "School Bus",
+      N: "Tank Vehicle",
+      H: "Hazardous Materials",
+      X: "Tanker + Hazmat Combo"
+    };
+    for (let e of user.endorsements) {
+      const passKey = `endorsement_${e}_Passed`; // e.g. endorsement_T_Passed
+      if (!user.tests?.[passKey]) {
+        return `📝 Complete ${endorsementMap[e] || e} with a passing grade! <button data-nav="practiceTests" class="alert-link">Take test</button>`;
+      }
+    }
+  }
+  // 9. All done!
+  return '✅ All checklist steps are complete!';
 }
 // ─── 9. STUDENT DASHBOARD ────────────────────────────────────────────────
 async function renderDashboard(container = document.getElementById("app")) {
