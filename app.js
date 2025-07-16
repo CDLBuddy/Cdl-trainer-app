@@ -7,7 +7,7 @@ let currentUserEmail = null;
 // Firebase App
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 
-// Firestore
+// Firestore (ONE block)
 import {
   getFirestore,
   collection,
@@ -17,7 +17,10 @@ import {
   addDoc,
   doc,
   updateDoc,
-  serverTimestamp
+  setDoc,
+  getDoc,
+  serverTimestamp,
+  increment
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 // Auth
@@ -32,8 +35,8 @@ import {
   signInWithPopup
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
-// UI Helpers
 import {
+  // UI and navigation
   showToast,
   setupNavigation,
   showPageTransitionLoader,
@@ -41,151 +44,31 @@ import {
   getRandomAITip,
   initFadeInOnScroll,
   startTypewriter,
-  debounce
+  debounce,
+
+  // Progress and milestone logic
+  updateELDTProgress,
+  getUserProgress,
+  markStudentProfileComplete,
+  markStudentPermitUploaded,
+  markStudentVehicleUploaded,
+  markStudentWalkthroughComplete,
+  markStudentTestPassed,
+  verifyStudentProfile,
+  verifyStudentPermit,
+  verifyStudentVehicle,
+  reviewStudentWalkthrough,
+  adminUnlockStudentModule,
+  adminFlagStudent,
+  adminResetStudentProgress,
+  incrementStudentStudyMinutes,
+  logStudySession,
+
+  // Checklist field arrays
+  studentChecklistFields,
+  instructorChecklistFields,
+  adminChecklistFields
 } from "./ui-helpers.js";
-
-// ─── ENHANCED ELDT PROGRESS HELPER ──────────────────────────────────────────
-
-// ─── MILESTONE MANAGEMENT FOR ALL ROLES ──────────────────────────────
-
-import {
-  setDoc,
-  getDoc,
-  increment,
-  collection
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-
-// MAIN PROGRESS UPDATER
-/**
- * Updates or creates the eldtProgress document for any user (student/instructor/admin).
- * @param {string} userId  - Email or UID (unique, used as doc id).
- * @param {object} fields  - Progress fields to set/update (e.g. { profileComplete: true }).
- * @param {object} [options] - { role: "student"|"instructor"|"admin", logHistory: bool }
- */
-async function updateELDTProgress(userId, fields, options = {}) {
-  try {
-    const { role = "student", logHistory = false } = options;
-    const progressRef = doc(db, "eldtProgress", userId);
-    const snap = await getDoc(progressRef);
-
-    // Always attach lastUpdated and role for tracking
-    const updateObj = {
-      ...fields,
-      lastUpdated: serverTimestamp(),
-      role
-    };
-
-    // (Optional) Add a completion timestamp for any ...Complete fields
-    Object.keys(fields).forEach(k => {
-      if (k.endsWith("Complete") && fields[k] === true) {
-        updateObj[`${k}dAt`] = serverTimestamp();
-      }
-    });
-
-    // Create or update doc
-    if (snap.exists()) {
-      await updateDoc(progressRef, updateObj);
-    } else {
-      await setDoc(progressRef, { userId, ...updateObj });
-    }
-
-    // Optionally, log progress history (as a subcollection)
-    if (logHistory) {
-      const historyRef = doc(collection(progressRef, "history"));
-      await setDoc(historyRef, {
-        ...fields,
-        updatedAt: serverTimestamp(),
-        updatedBy: userId,
-        role
-      });
-    }
-    return true; // Success
-  } catch (err) {
-    console.error("❌ Error updating eldtProgress:", err);
-    showToast?.("Failed to update progress: " + (err.message || err), 4000);
-    return false;
-  }
-}
-
-// GETTER FOR ANY USER'S PROGRESS DOC
-async function getUserProgress(userId) {
-  const progressRef = doc(db, "eldtProgress", userId);
-  const snap = await getDoc(progressRef);
-  return snap.exists() ? snap.data() : {};
-}
-
-// --- CHECKLIST FIELD DEFINITIONS (PER ROLE) ---
-const studentChecklistFields = [
-  { key: "profileComplete", label: "Profile Complete" },
-  { key: "permitUploaded", label: "Permit Uploaded" },
-  { key: "vehicleUploaded", label: "Vehicle Data Plates Uploaded" },
-  { key: "walkthroughComplete", label: "Walkthrough Practiced" },
-  { key: "practiceTestPassed", label: "Practice Test Passed" }
-];
-
-const instructorChecklistFields = [
-  { key: "profileVerified", label: "Profile Approved" },
-  { key: "permitVerified", label: "Permit Verified" },
-  { key: "vehicleVerified", label: "Vehicle Verified" },
-  { key: "walkthroughReviewed", label: "Walkthrough Reviewed" }
-];
-
-const adminChecklistFields = [
-  { key: "adminUnlocked", label: "Module Unlocked" },
-  { key: "adminFlagged", label: "Flagged for Review" }
-];
-
-// --- EXAMPLES OF UPDATING PROGRESS FOR EACH ROLE ---
-// STUDENT EXAMPLES
-async function markStudentProfileComplete(studentEmail) {
-  await updateELDTProgress(studentEmail, { profileComplete: true }, { role: "student" });
-}
-async function markStudentPermitUploaded(studentEmail) {
-  await updateELDTProgress(studentEmail, { permitUploaded: true }, { role: "student" });
-}
-async function markStudentVehicleUploaded(studentEmail) {
-  await updateELDTProgress(studentEmail, { vehicleUploaded: true }, { role: "student" });
-}
-async function markStudentWalkthroughComplete(studentEmail) {
-  await updateELDTProgress(studentEmail, { walkthroughComplete: true }, { role: "student" });
-}
-async function markStudentTestPassed(studentEmail) {
-  await updateELDTProgress(studentEmail, { practiceTestPassed: true }, { role: "student" });
-}
-async function incrementStudentStudyMinutes(studentEmail, minutes) {
-  await updateELDTProgress(studentEmail, { studyMinutes: increment(minutes) }, { role: "student" });
-}
-
-// INSTRUCTOR EXAMPLES
-async function verifyStudentProfile(studentEmail, instructorEmail) {
-  await updateELDTProgress(studentEmail, { profileVerified: true }, { role: "instructor", logHistory: true });
-}
-async function verifyStudentPermit(studentEmail, instructorEmail) {
-  await updateELDTProgress(studentEmail, { permitVerified: true }, { role: "instructor", logHistory: true });
-}
-async function verifyStudentVehicle(studentEmail, instructorEmail) {
-  await updateELDTProgress(studentEmail, { vehicleVerified: true }, { role: "instructor", logHistory: true });
-}
-async function reviewStudentWalkthrough(studentEmail, instructorEmail) {
-  await updateELDTProgress(studentEmail, { walkthroughReviewed: true }, { role: "instructor", logHistory: true });
-}
-
-// ADMIN EXAMPLES
-async function adminUnlockStudentModule(studentEmail, adminEmail) {
-  await updateELDTProgress(studentEmail, { adminUnlocked: true }, { role: "admin", logHistory: true });
-}
-async function adminFlagStudent(studentEmail, adminEmail, note = "") {
-  await updateELDTProgress(studentEmail, { adminFlagged: true, adminNote: note }, { role: "admin", logHistory: true });
-}
-async function adminResetStudentProgress(studentEmail, adminEmail) {
-  await updateELDTProgress(studentEmail, {
-    profileComplete: false,
-    permitUploaded: false,
-    vehicleUploaded: false,
-    walkthroughComplete: false,
-    practiceTestPassed: false
-  }, { role: "admin", logHistory: true });
-}
 
 // ─── 2. FIREBASE CONFIG & INITIALIZATION ────────────────────────────────────────
 const firebaseConfig = {
@@ -1277,6 +1160,8 @@ async function renderWalkthrough(container = document.getElementById("app")) {
       await markStudentWalkthroughComplete(auth.currentUser.email);
     }
   }
+  await incrementStudentStudyMinutes(auth.currentUser.email, 2); // or 1, 3, whatever is fair
+await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: ${type}`);
 
   function renderDrill(drillType, container) {
     let html = "";
@@ -1354,14 +1239,18 @@ async function renderWalkthrough(container = document.getElementById("app")) {
             }
           });
           if (correct) {
-            form.querySelector(".drill-result").innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
-            form.style.background = "#133c19";
-            await markDrillComplete("fill");
-          } else {
-            form.querySelector(".drill-result").innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite. ${hint}</span>`;
-            form.style.animation = "shake 0.25s";
-            setTimeout(() => { form.style.animation = ""; }, 300);
-          }
+  form.querySelector(".drill-result").innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
+  form.style.background = "#133c19";
+  await markDrillComplete("fill");
+} else {
+  form.querySelector(".drill-result").innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite. ${hint}</span>`;
+  form.style.animation = "shake 0.25s";
+  setTimeout(() => { form.style.animation = ""; }, 300);
+}
+
+// Always track study attempt:
+await incrementStudentStudyMinutes(auth.currentUser.email, 2); // or whatever minutes is fair
+await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: fill`);
         };
       });
     }
@@ -1385,14 +1274,18 @@ async function renderWalkthrough(container = document.getElementById("app")) {
         const ordered = Array.from(list.querySelectorAll(".order-step")).map(li => li.textContent.trim());
         const correct = JSON.stringify(ordered) === JSON.stringify(brakeCheckSteps);
         if (correct) {
-          list.nextElementSibling.innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
-          list.style.background = "#133c19";
-          await markDrillComplete("order");
-        } else {
-          list.nextElementSibling.innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite! Try again.</span>`;
-          list.style.animation = "shake 0.25s";
-          setTimeout(() => { list.style.animation = ""; }, 300);
-        }
+  list.nextElementSibling.innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
+  list.style.background = "#133c19";
+  await markDrillComplete("order");
+} else {
+  list.nextElementSibling.innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite! Try again.</span>`;
+  list.style.animation = "shake 0.25s";
+  setTimeout(() => { list.style.animation = ""; }, 300);
+}
+
+// Always log study minutes and session
+await incrementStudentStudyMinutes(auth.currentUser.email, 2); // or any fair value
+await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: order`);
       };
     }
     // Typing challenge
@@ -1418,13 +1311,17 @@ async function renderWalkthrough(container = document.getElementById("app")) {
         const val = drillsContainer.querySelector(".visual-answer").value.trim().toLowerCase();
         const ans = visualRecall[0].answer.toLowerCase();
         if (val.includes(ans)) {
-          drillsContainer.querySelector(".drill-result").innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
-          await markDrillComplete("visual");
-        } else {
-          drillsContainer.querySelector(".drill-result").innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite. Hint: Think PSI.</span>`;
-          drillsContainer.querySelector(".visual-answer").style.animation = "shake 0.25s";
-          setTimeout(() => { drillsContainer.querySelector(".visual-answer").style.animation = ""; }, 300);
-        }
+  drillsContainer.querySelector(".drill-result").innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
+  await markDrillComplete("visual");
+} else {
+  drillsContainer.querySelector(".drill-result").innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite. Hint: Think PSI.</span>`;
+  drillsContainer.querySelector(".visual-answer").style.animation = "shake 0.25s";
+  setTimeout(() => { drillsContainer.querySelector(".visual-answer").style.animation = ""; }, 300);
+}
+
+// Always track study minutes and log the session:
+await incrementStudentStudyMinutes(auth.currentUser.email, 2);
+await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: visual`); 
       };
     }
   }
@@ -1887,6 +1784,9 @@ async function renderTestReview(container, testName) {
         showToast("🎉 Practice Test milestone complete! Progress updated.");
       }
     }
+const minutes = latest?.durationMinutes || 5; // or your best guess/default
+await incrementStudentStudyMinutes(currentUserEmail, minutes);
+await logStudySession(currentUserEmail, minutes, `Practice Test: ${testName}`);
 
     container.innerHTML = `
       <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
@@ -1905,61 +1805,131 @@ async function renderTestReview(container, testName) {
     container.innerHTML = `<p>Failed to load review data.</p>`;
   }
 }
-//Render Flashcards
-function renderFlashcards(container = document.getElementById("app")) {
+
+async function renderFlashcards(container = document.getElementById("app")) {
+  if (!auth.currentUser || !auth.currentUser.email) {
+    container.innerHTML = "<p>You must be logged in to view this page.</p>";
+    return;
+  }
+
+  // --- Flashcards Data ---
   const flashcards = [
     { q: "What is the minimum tread depth for front tires?", a: "4/32 of an inch." },
     { q: "What do you check for on rims?", a: "Bent, damaged, or rust trails." },
     { q: "When must you use 3 points of contact?", a: "When entering and exiting the vehicle." },
     { q: "What triggers the spring brake pop-out?", a: "Low air pressure (between 20–45 PSI)." }
   ];
+
+  // --- Shuffle option (uncomment if you want random order) ---
+  // flashcards.sort(() => Math.random() - 0.5);
+
   let current = 0;
+  let startedAt = Date.now();
+  let completed = false;
 
   function renderCard() {
+    if (completed) {
+      // --- Session Complete UI ---
+      const minutes = Math.max(1, Math.round((Date.now() - startedAt) / 60000));
+      container.innerHTML = `
+        <div class="screen-wrapper fade-in" style="max-width:420px;margin:0 auto;">
+          <h2>🎉 Flashcard Session Complete!</h2>
+          <p>You reviewed <b>${flashcards.length}</b> cards.</p>
+          <p><b>${minutes}</b> study minute${minutes === 1 ? '' : 's'} logged!</p>
+          <button id="restart-flashcards" class="btn primary" style="margin-top:18px;">🔄 Restart</button>
+          <button id="back-to-dashboard-btn" class="btn outline" style="margin:26px 0 0 0;">⬅ Back to Dashboard</button>
+        </div>
+      `;
+
+      // --- Log study minutes (always, even on restarts) ---
+      await incrementStudentStudyMinutes(auth.currentUser.email, minutes);
+      await logStudySession(auth.currentUser.email, minutes, "Flashcards");
+
+      showToast("✅ Flashcard session logged!");
+
+      document.getElementById("restart-flashcards")?.addEventListener("click", () => {
+        current = 0;
+        startedAt = Date.now();
+        completed = false;
+        renderCard();
+      });
+
+      document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+        renderDashboard();
+      });
+
+      setupNavigation();
+      return;
+    }
+
+    // --- Main Flashcard UI ---
     container.innerHTML = `
       <div class="screen-wrapper fade-in" style="max-width:420px;margin:0 auto;">
         <h2>🃏 CDL Flashcards</h2>
-        <div class="flashcard-card" id="flashcard" tabindex="0">
+        <div style="margin-bottom:1rem;">
+          <progress value="${current + 1}" max="${flashcards.length}" style="width:100%;"></progress>
+          <div style="text-align:center;">Card ${current + 1} of ${flashcards.length}</div>
+        </div>
+        <div class="flashcard-card" id="flashcard" tabindex="0" aria-label="Flashcard: Press Enter or tap to flip">
           <div class="flashcard-card-inner">
             <div class="flashcard-front">Q: ${flashcards[current].q}</div>
             <div class="flashcard-back">A: ${flashcards[current].a}</div>
           </div>
         </div>
         <div style="display:flex;gap:1rem;justify-content:center;margin-top:10px;">
-          <button id="prev-flash" class="btn outline" ${current === 0 ? "disabled" : ""}>⬅ Prev</button>
-          <button id="next-flash" class="btn outline" ${current === flashcards.length - 1 ? "disabled" : ""}>Next ➡</button>
+          <button id="prev-flash" class="btn outline" ${current === 0 ? "disabled" : ""}>&#8592; Prev</button>
+          <button id="flip-flash" class="btn">🔄 Flip</button>
+          <button id="next-flash" class="btn outline" ${current === flashcards.length - 1 ? "disabled" : ""}>Next &#8594;</button>
         </div>
-        <button class="btn wide outline" id="back-to-dashboard-btn" style="margin:26px 0 0 0;">⬅ Back to Dashboard</button>
+        <button class="btn wide outline" id="end-session-btn" style="margin:24px 0 0 0;">✅ End Session</button>
+        <button class="btn wide outline" id="back-to-dashboard-btn" style="margin:9px 0 0 0;">⬅ Back to Dashboard</button>
       </div>
     `;
 
-    // Flip logic
+    // --- Flip Logic ---
     let flipped = false;
     const flashcard = document.getElementById("flashcard");
-    flashcard.onclick = () => {
+    flashcard.onclick = flipCard;
+    document.getElementById("flip-flash")?.addEventListener("click", flipCard);
+
+    function flipCard() {
       flipped = !flipped;
       flashcard.classList.toggle("flipped", flipped);
+      if (flipped) flashcard.focus();
+    }
+
+    // --- Keyboard Navigation (Enter to flip, arrows to nav) ---
+    flashcard.onkeydown = (e) => {
+      if (e.key === "Enter") flipCard();
+      if (e.key === "ArrowRight" && current < flashcards.length - 1) {
+        current++; flipped = false; renderCard();
+      }
+      if (e.key === "ArrowLeft" && current > 0) {
+        current--; flipped = false; renderCard();
+      }
     };
 
+    // --- Navigation ---
     document.getElementById("prev-flash")?.addEventListener("click", () => {
       if (current > 0) {
-        current--;
-        renderCard();
+        current--; flipped = false; renderCard();
+      }
+    });
+    document.getElementById("next-flash")?.addEventListener("click", () => {
+      if (current < flashcards.length - 1) {
+        current++; flipped = false; renderCard();
       }
     });
 
-    document.getElementById("next-flash")?.addEventListener("click", () => {
-      if (current < flashcards.length - 1) {
-        current++;
-        renderCard();
-      }
+    document.getElementById("end-session-btn")?.addEventListener("click", () => {
+      completed = true; renderCard();
     });
 
     document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
       renderDashboard();
     });
 
-    setupNavigation(); // Needed for data-nav buttons
+    setupNavigation();
   }
 
   renderCard();
@@ -2223,3 +2193,4 @@ async function showResults() {
 window.addEventListener("DOMContentLoaded", () => {
   if (!auth.currentUser) renderWelcome();
 });
+export { db, auth };
