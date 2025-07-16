@@ -722,11 +722,16 @@ async function renderDashboard(container = document.getElementById("app")) {
       <!-- metric cards ---------------------------- -->
       <section class="dash-metrics">
 
-        <div class="glass-card metric" id="metric-checklist">
-          <h3>✅ Checklist Progress</h3>
-          <progress value="${checklistPct}" max="100"></progress>
-          <p><span class="big-num" id="checklist-pct">${checklistPct}</span>% complete</p>
-        </div>
+        <div class="dashboard-card">
+  <h3>✅ Checklist Progress</h3>
+  <div class="progress-bar">
+    <div class="progress-fill" style="width: 0%;"></div>
+  </div>
+  <div class="progress-percent"><strong>0%</strong> complete</div>
+  <div class="checklist-alert warning">
+    <span>🔔 Permit photo not uploaded! <button data-nav="profile" class="alert-link">Upload now</button></span>
+  </div>
+</div>
 
         <div class="dashboard-card">
           <h3>🧭 Walkthrough</h3>
@@ -735,20 +740,15 @@ async function renderDashboard(container = document.getElementById("app")) {
         </div>
 
         <div class="glass-card metric">
-          <h3>🧪 Last Test</h3>
-          <p id="last-test">${lastTestStr}</p>
-        </div>
-
-        <div class="glass-card metric">
           <h3>🔥 Study Streak</h3>
           <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? "s" : ""} active this week</p>
         </div>
 
-        <div class="glass-card metric">
-          <h3>🚛 Profile</h3>
-          <p><strong>License:</strong> ${license}</p>
-          <p><strong>Experience:</strong> ${experience}</p>
-        </div>
+        <div class="dashboard-card">
+  <h3>🤖 AI Tip of the Day</h3>
+  <p>Remember to verbally state "three-point brake check" word-for-word during your walkthrough exam!</p>
+  <button data-nav="coach" class="btn ai-tip">Ask AI Coach</button>
+</div>
 
       </section>
 
