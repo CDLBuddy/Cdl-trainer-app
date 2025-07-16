@@ -261,6 +261,15 @@ input[type="submit"]:disabled {
   box-shadow: 0 2px 6px rgba(0,0,0,0.18) inset;
   transform: scale(0.98);
 }
+.rail-btn .profile-icon {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  display: block;
+  margin: 0 auto 7px auto;
+  border-radius: 50%;
+}
 
 /* ───── SVG Icon Consistency ───── */
 .rail-btn .profile-icon {
