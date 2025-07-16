@@ -808,7 +808,7 @@ async function renderDashboard(container = document.getElementById("app")) {
     <!-- Testing -->
     <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
       <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
+        <circle cx="28" cy="28" r="24" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
         <rect x="22" y="14" width="12" height="26" rx="6" fill="#b1d3e5" fill-opacity="0.81"/>
         <rect x="26" y="10" width="4" height="10" rx="2" fill="#c4dbe8" fill-opacity="0.77"/>
         <ellipse cx="28" cy="33" rx="4.5" ry="7" fill="#31e6b5" opacity="0.29"/>
