@@ -50,9 +50,7 @@ import {
 
 import {
   setDoc,
-  updateDoc,
   getDoc,
-  doc,
   serverTimestamp,
   increment,
   collection
@@ -1108,7 +1106,7 @@ async function renderWalkthrough(container = document.getElementById("app")) {
     return;
   }
 
-  // Get user profile from Firestore using modular API
+  // Get user profile from Firestore
   let userData;
   try {
     const usersRef = collection(db, "users");
@@ -1120,6 +1118,13 @@ async function renderWalkthrough(container = document.getElementById("app")) {
     return;
   }
   const cdlClass = userData?.cdlClass || null;
+
+  // Get current walkthrough progress (for this user)
+  let walkthroughDone = false;
+  try {
+    const progress = await getUserProgress(auth.currentUser.email);
+    walkthroughDone = !!progress.walkthroughComplete;
+  } catch (e) { /* ignore and assume false */ }
 
   let content = `
     <div class="screen-wrapper walkthrough-page fade-in">
@@ -1140,7 +1145,7 @@ async function renderWalkthrough(container = document.getElementById("app")) {
       <p>Study the following walkthrough to prepare for your in-person vehicle inspection test. Critical sections will be highlighted.</p>
 
       <div class="walkthrough-script">
-        <h3>🚨 Three-Point Brake Check (Must Memorize Word-for-Word)</h3>
+        <h3>🚨 Three-Point Brake Check <span style="color:var(--accent);">(Must Memorize Word-for-Word)</span></h3>
         <div class="highlight-section">
           <p>"With the engine off and key on, I will release the parking brake, hold the service brake pedal for 1 minute, and check for air loss no more than 3 PSI."</p>
           <p>"Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI."</p>
@@ -1156,6 +1161,10 @@ async function renderWalkthrough(container = document.getElementById("app")) {
         <h3>🔧 Engine Compartment (Sample)</h3>
         <p>Check oil level with dipstick. Look for leaks, cracks, or broken hoses...</p>
       </div>
+
+      <button id="walkthrough-complete-btn" class="btn primary" style="margin-top:2rem;" ${walkthroughDone ? "disabled" : ""}>
+        ${walkthroughDone ? "✅ Walkthrough Practiced" : "Mark Walkthrough as Practiced"}
+      </button>
     `;
   }
 
@@ -1165,12 +1174,28 @@ async function renderWalkthrough(container = document.getElementById("app")) {
   `;
   container.innerHTML = content;
 
-  // Directly wire back button for clarity and instant return
+  // Back navigation
   document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
     renderDashboard();
   });
 
-  setupNavigation(); // Still enable data-nav for profile etc
+  // Milestone trigger (only if button is present and not already done)
+  const completeBtn = document.getElementById("walkthrough-complete-btn");
+  if (completeBtn && !walkthroughDone) {
+    completeBtn.addEventListener("click", async () => {
+      completeBtn.disabled = true;
+      try {
+        await markStudentWalkthroughComplete(auth.currentUser.email);
+        showToast("Walkthrough milestone complete! Progress updated.");
+        completeBtn.innerHTML = "✅ Walkthrough Practiced";
+      } catch (e) {
+        completeBtn.disabled = false;
+        showToast("Failed to update walkthrough milestone.");
+      }
+    });
+  }
+
+  setupNavigation(); // Enables data-nav buttons
 }
 // Render Profile
 async function renderProfile(container = document.getElementById("app")) {
