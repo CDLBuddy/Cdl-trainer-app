@@ -802,7 +802,7 @@ async function renderDashboard(container = document.getElementById("app")) {
           </filter>
         </defs>
       </svg>
-      <span class="label">My&nbsp;Checklist</span>
+      <span class="label">My<br>Checklist</span>
     </button>
 
     <!-- Testing -->
