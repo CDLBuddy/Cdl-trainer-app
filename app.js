@@ -2009,36 +2009,45 @@ function renderLicenseSelector(c=document.getElementById("app")){
 }
 
 // Test Results
-async function renderTestResults(container) {
-  // 1 Show a loading state
+async function renderTestResults(container = document.getElementById("app")) {
+  if (!container) return;
+
+  // 1. Show loading state
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
       <h2>📊 Test Results</h2>
       <p>Loading...</p>
-    </div>`;
+    </div>
+  `;
 
-  // 2 Fetch testResults for the current user
-  const snap = await getDocs(
-    query(
-      collection(db, "testResults"),
-      where("studentId", "==", currentUserEmail)
-    )
-  );
+  // 2. Fetch test results for current user
+  let results = [];
+  try {
+    const snap = await getDocs(
+      query(
+        collection(db, "testResults"),
+        where("studentId", "==", currentUserEmail)
+      )
+    );
 
-  // 3) Normalize timestamps (handle either Firestore Timestamp or ISO string
-  const results = snap.docs.map(d => {
-    const data = d.data();
-    const ts   = data.timestamp;
-    const date = ts?.toDate
-      ? ts.toDate()        // Firestore Timestamp case
-      : new Date(ts);      // ISO‐string fallback
-    return { ...data, timestamp: date };
-  });
+    // 3. Normalize timestamps (Firestore Timestamp or ISO string)
+    results = snap.docs.map(d => {
+      const data = d.data();
+      const ts = data.timestamp;
+      const date = ts?.toDate
+        ? ts.toDate()        // Firestore Timestamp
+        : new Date(ts);      // ISO string fallback
+      return { ...data, timestamp: date };
+    });
 
-  // 4 Sort descending by date
-  results.sort((a, b) => b.timestamp - a.timestamp);
+    // 4. Sort descending by date
+    results.sort((a, b) => b.timestamp - a.timestamp);
+  } catch (e) {
+    console.error("❌ Error loading test results:", e);
+    results = [];
+  }
 
-  // 5 Build the results HTML
+  // 5. Build results HTML
   let html = `
     <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
       <h2>📊 Test Results</h2>
@@ -2053,7 +2062,7 @@ async function renderTestResults(container) {
       const date = r.timestamp.toLocaleDateString();
       html  += `
         <li style="margin:8px 0;">
-          <strong>${r.testName}</strong> -- ${pct}% (${r.correct}/${r.total}) on ${date}
+          <strong>${r.testName}</strong> -- <b>${pct}%</b> <span style="color:#888;">(${r.correct}/${r.total}) on ${date}</span>
         </li>
       `;
     });
@@ -2062,20 +2071,22 @@ async function renderTestResults(container) {
   html += `
       </ul>
       <div style="text-align:center; margin-top:20px;">
-        <button data-nav="dashboard" style="padding:8px 16px; margin-right:8px;">⬅ Back to Dashboard</button>
-        <button data-nav="tests" style="padding:8px 16px;">🔄 Retake a Test</button>
+        <button class="btn outline" data-nav="dashboard" style="margin-right:8px;">⬅ Back to Dashboard</button>
+        <button class="btn" data-nav="practiceTests">🔄 Retake a Test</button>
       </div>
     </div>
   `;
 
-  // 6 Render and re-bind navigation
+  // 6. Render and re-bind navigation
   container.innerHTML = html;
   setupNavigation();
 }
 
-// ─── 11. REAL TEST ENGINE ──────────────────────────────────────────────────────
-async function renderTestEngine(container, testName) {
-  // 1 Define your question banks
+// ─── 11. REAL TEST ENGINE ───────────────────────────────────────────────
+async function renderTestEngine(container = document.getElementById("app"), testName) {
+  if (!container || !testName) return;
+
+  // 1. Question banks (expand as needed)
   const questionBanks = {
     "General Knowledge": [
       {
@@ -2136,12 +2147,11 @@ async function renderTestEngine(container, testName) {
     ]
   };
 
-  // 2 Grab the selected bank
   const questions = questionBanks[testName] || [];
   let currentIdx = 0;
   let correctCount = 0;
 
-  // Utility: Render a single question
+  // --- Render a single question ---
   function showQuestion() {
     const { q, choices } = questions[currentIdx];
     container.innerHTML = `
@@ -2151,7 +2161,7 @@ async function renderTestEngine(container, testName) {
         <ul style="list-style:none; padding:0;">
           ${choices
             .map((c, i) => `<li style="margin:8px 0;">
-              <button class="choice-btn" data-choice="${i}" style="width:100%; padding:10px;">
+              <button class="choice-btn btn outline wide" data-choice="${i}" style="width:100%; padding:10px;">
                 ${c}
               </button>
             </li>`)
@@ -2159,6 +2169,7 @@ async function renderTestEngine(container, testName) {
         </ul>
       </div>
     `;
+
     // Bind choice buttons
     container.querySelectorAll(".choice-btn").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -2174,46 +2185,45 @@ async function renderTestEngine(container, testName) {
     });
   }
 
-// ─── inside renderTestEngine ───
-async function showResults() {
-  const total = questions.length;
-  const pct   = total ? Math.round((correctCount / total) * 100) : 0;
+  // --- Render Results Page ---
+  async function showResults() {
+    const total = questions.length;
+    const pct   = total ? Math.round((correctCount / total) * 100) : 0;
 
-  // Save result with Firestore server timestamp
-  try {
-    await addDoc(collection(db, "testResults"), {
-      studentId: currentUserEmail,
-      testName:  testName,
-      correct:   correctCount,
-      total:     total,
-      timestamp: serverTimestamp()    // ← server-side timestamp
-    });
-  } catch (e) {
-    console.error("❌ Failed to save test result:", e);
-    showToast("Error saving test result");
+    // Save result to Firestore
+    try {
+      await addDoc(collection(db, "testResults"), {
+        studentId: currentUserEmail,
+        testName,
+        correct: correctCount,
+        total,
+        timestamp: serverTimestamp()
+      });
+    } catch (e) {
+      console.error("❌ Failed to save test result:", e);
+      showToast("Error saving test result");
+    }
+
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto; text-align:center;">
+        <h2>📊 ${testName} Results</h2>
+        <p style="font-size:1.2em; margin:16px 0;">
+          You scored <strong>${correctCount}/${total}</strong> (${pct}%)
+        </p>
+        <button class="btn outline wide" data-nav="dashboard" style="margin-top:20px;">
+          🏠 Back to Dashboard
+        </button>
+        <button class="btn wide" data-nav="practiceTests" style="margin-top:12px;">
+          🔄 Try Again
+        </button>
+      </div>
+    `;
+    setupNavigation();
   }
 
-  // Render results screen
-  container.innerHTML = `
-    <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto; text-align:center;">
-      <h2>📊 ${testName} Results</h2>
-      <p style="font-size:1.2em; margin:16px 0;">
-        You scored <strong>${correctCount}/${total}</strong> (${pct}%)
-      </p>
-      <button data-nav="dashboard" style="padding:10px 20px; margin-top:20px;">
-        🏠 Back to Dashboard
-      </button>
-      <button data-nav="tests" style="padding:10px 20px; margin-top:12px;">
-        🔄 Try Again
-      </button>
-    </div>
-  `;
-  setupNavigation();
-}
-
-  // Kick things off
+  // --- Start quiz or show empty-state message ---
   if (questions.length === 0) {
-    container.innerHTML = `<p>No questions found for "${testName}".</p>`;
+    container.innerHTML = `<div class="screen-wrapper fade-in"><p>No questions found for "${testName}".</p></div>`;
     setupNavigation();
   } else {
     showQuestion();
@@ -2246,6 +2256,7 @@ window.addEventListener("DOMContentLoaded", () => {
         renderDashboard(); // fallback
       }
     } else {
+      currentUserEmail = null; // ensure email state is cleared!
       renderWelcome();
     }
   });
