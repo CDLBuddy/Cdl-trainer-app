@@ -3,23 +3,11 @@ let currentUserEmail = null;
 
 // ─── 1. MODULE IMPORTS ─────────────────────────────────────────────────────────
 
-// Firebase App
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+// Firebase (auth, db, storage, etc.)
+import { db, auth, storage } from "./firebase.js";
 
-// Firestore (ONLY getFirestore needed here -- all other Firestore functions are in ui-helpers)
-import { getFirestore } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-
-// Auth
-import {
-  getAuth,
-  onAuthStateChanged,
-  signOut,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  GoogleAuthProvider,
-  signInWithPopup
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+// Firebase Storage methods (for file uploads/downloads)
+import { uploadBytes, getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 
 // UI Helpers
 import {
@@ -56,22 +44,6 @@ import {
   instructorChecklistFields,
   adminChecklistFields
 } from "./ui-helpers.js";
-
-// ─── 2. FIREBASE CONFIG & INITIALIZATION ────────────────────────────────────────
-const firebaseConfig = {
-  apiKey:            "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
-  authDomain:        "cdltrainerapp.firebaseapp.com",
-  projectId:         "cdltrainerapp",
-  storageBucket:     "cdltrainerapp.appspot.com",
-  messagingSenderId: "977549527480",
-  appId:             "1:977549527480:web:e959926bb02a4cef65674d",
-  measurementId:     "G-MJ22BD2J1J"
-};
-
-const app  = initializeApp(firebaseConfig);
-const db   = getFirestore(app);
-const auth = getAuth(app);
-
 // ─── 3. AUTH STATE LISTENER ────────────────────────────────────────────────────
 const loaderEl      = document.getElementById("app-loader"); // ⏳ full-screen loader
 const loaderShownAt = Date.now();                            // time it first appeared

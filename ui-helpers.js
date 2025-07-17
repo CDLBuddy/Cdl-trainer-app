@@ -1,20 +1,5 @@
 // ui-helpers.js
-
-// 1. FIREBASE FIRESTORE IMPORTS (put these at the top)
-import {
-  doc,
-  collection,
-  addDoc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  increment,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-
-// 2. GLOBAL DB REFERENCE (if not passed as argument)
-import { db } from "./app.js"; // OR define db here if preferred
-
+import { db, auth } from "./firebase.js";
 // 4. MILESTONE AND PROGRESS HELPERS
 
 export async function updateELDTProgress(userId, fields, options = {}) {
