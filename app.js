@@ -970,7 +970,6 @@ async function renderWalkthrough(container = document.getElementById("app")) {
     type: !!progress.drills?.type,
     visual: !!progress.drills?.visual
   };
-  let allDrillsComplete = Object.values(completedDrills).every(Boolean);
 
   // --- Drills Data
   const brakeCheckFull = [
@@ -1116,8 +1115,6 @@ async function renderWalkthrough(container = document.getElementById("app")) {
       await markStudentWalkthroughComplete(auth.currentUser.email);
     }
   }
-  await incrementStudentStudyMinutes(auth.currentUser.email, 2); // or 1, 3, whatever is fair
-await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: ${type}`);
 
   function renderDrill(drillType, container) {
     let html = "";
@@ -1195,18 +1192,17 @@ await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: ${type}`);
             }
           });
           if (correct) {
-  form.querySelector(".drill-result").innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
-  form.style.background = "#133c19";
-  await markDrillComplete("fill");
-} else {
-  form.querySelector(".drill-result").innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite. ${hint}</span>`;
-  form.style.animation = "shake 0.25s";
-  setTimeout(() => { form.style.animation = ""; }, 300);
-}
-
-// Always track study attempt:
-await incrementStudentStudyMinutes(auth.currentUser.email, 2); // or whatever minutes is fair
-await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: fill`);
+            form.querySelector(".drill-result").innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
+            form.style.background = "#133c19";
+            await markDrillComplete("fill");
+          } else {
+            form.querySelector(".drill-result").innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite. ${hint}</span>`;
+            form.style.animation = "shake 0.25s";
+            setTimeout(() => { form.style.animation = ""; }, 300);
+          }
+          // Always track study attempt:
+          await incrementStudentStudyMinutes(auth.currentUser.email, 2);
+          await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: fill`);
         };
       });
     }
@@ -1230,18 +1226,17 @@ await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: fill`);
         const ordered = Array.from(list.querySelectorAll(".order-step")).map(li => li.textContent.trim());
         const correct = JSON.stringify(ordered) === JSON.stringify(brakeCheckSteps);
         if (correct) {
-  list.nextElementSibling.innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
-  list.style.background = "#133c19";
-  await markDrillComplete("order");
-} else {
-  list.nextElementSibling.innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite! Try again.</span>`;
-  list.style.animation = "shake 0.25s";
-  setTimeout(() => { list.style.animation = ""; }, 300);
-}
-
-// Always log study minutes and session
-await incrementStudentStudyMinutes(auth.currentUser.email, 2); // or any fair value
-await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: order`);
+          list.nextElementSibling.innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
+          list.style.background = "#133c19";
+          await markDrillComplete("order");
+        } else {
+          list.nextElementSibling.innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite! Try again.</span>`;
+          list.style.animation = "shake 0.25s";
+          setTimeout(() => { list.style.animation = ""; }, 300);
+        }
+        // Always log study minutes and session
+        await incrementStudentStudyMinutes(auth.currentUser.email, 2);
+        await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: order`);
       };
     }
     // Typing challenge
@@ -1259,6 +1254,9 @@ await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: order`);
           drillsContainer.querySelector("textarea").style.animation = "shake 0.25s";
           setTimeout(() => { drillsContainer.querySelector("textarea").style.animation = ""; }, 300);
         }
+        // Always log study minutes and session
+        await incrementStudentStudyMinutes(auth.currentUser.email, 2);
+        await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: type`);
       };
     }
     // Visual recall
@@ -1267,23 +1265,22 @@ await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: order`);
         const val = drillsContainer.querySelector(".visual-answer").value.trim().toLowerCase();
         const ans = visualRecall[0].answer.toLowerCase();
         if (val.includes(ans)) {
-  drillsContainer.querySelector(".drill-result").innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
-  await markDrillComplete("visual");
-} else {
-  drillsContainer.querySelector(".drill-result").innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite. Hint: Think PSI.</span>`;
-  drillsContainer.querySelector(".visual-answer").style.animation = "shake 0.25s";
-  setTimeout(() => { drillsContainer.querySelector(".visual-answer").style.animation = ""; }, 300);
-}
-
-// Always track study minutes and log the session:
-await incrementStudentStudyMinutes(auth.currentUser.email, 2);
-await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: visual`); 
+          drillsContainer.querySelector(".drill-result").innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
+                    await markDrillComplete("visual");
+        } else {
+          drillsContainer.querySelector(".drill-result").innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite. Hint: Think PSI.</span>`;
+          drillsContainer.querySelector(".visual-answer").style.animation = "shake 0.25s";
+          setTimeout(() => { drillsContainer.querySelector(".visual-answer").style.animation = ""; }, 300);
+        }
+        // Always log study minutes and session
+        await incrementStudentStudyMinutes(auth.currentUser.email, 2);
+        await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: visual`);
       };
     }
   }
 
   // Init drills on load (default to first drill)
-    if (drillsContainer && drillsNav) {
+  if (drillsContainer && drillsNav) {
     renderDrill(currentDrill, drillsContainer);
     setupDrillsNav(drillsNav, drillsContainer);
     setupDrillEvents(currentDrill, drillsContainer);
@@ -1291,11 +1288,12 @@ await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: visual`);
 
   setupNavigation();
 }
+
 // Render Profile
 async function renderProfile(container = document.getElementById("app")) {
   if (!container) return;
 
-  // Fetch user data from Firestore (as before)
+  // Fetch user data from Firestore
   let userData = {};
   try {
     const usersRef = collection(db, "users");
@@ -1406,19 +1404,18 @@ async function renderProfile(container = document.getElementById("app")) {
     document.getElementById('vehicle-photos-section').style.display = this.value === "yes" ? "" : "none";
   });
 
-  // Context-aware back navigation (direct, always works)
+  // Context-aware back navigation
   document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
     renderDashboard();
   });
 
   setupNavigation();
 
-  // PERMIT UPLOAD HANDLER -- milestone trigger
+  // PERMIT UPLOAD HANDLER
   container.querySelector('input[name="permitPhoto"]')?.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      // Upload to Firebase Storage
       const storageRef = ref(storage, `permits/${currentUserEmail}`);
       await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(storageRef);
@@ -1430,18 +1427,15 @@ async function renderProfile(container = document.getElementById("app")) {
       if (!snap.empty) {
         await updateDoc(doc(db, "users", snap.docs[0].id), { permitPhotoUrl: downloadURL });
       }
-
-      // 🚨 Milestone trigger!
       await markStudentPermitUploaded(currentUserEmail);
-
       showToast("Permit uploaded and progress updated!");
     } catch (err) {
       showToast("Failed to upload permit: " + err.message);
     }
   });
 
-  // VEHICLE DATA PLATE UPLOAD HANDLER -- milestone trigger
-  let truckUploaded = false, trailerUploaded = false;
+  // VEHICLE DATA PLATE UPLOAD HANDLER
+  let truckUploaded = !!truckPlateUrl, trailerUploaded = !!trailerPlateUrl;
 
   container.querySelector('input[name="truckPlate"]')?.addEventListener("change", async (e) => {
     const file = e.target.files[0];
@@ -1491,67 +1485,65 @@ async function renderProfile(container = document.getElementById("app")) {
     }
   });
 
-// PROFILE SAVE HANDLER (already includes milestone)
-container.querySelector("#profile-form").onsubmit = async e => {
-  e.preventDefault();
-  const form = e.target;
-  const fd = new FormData(form);
+  // PROFILE SAVE HANDLER
+  container.querySelector("#profile-form").onsubmit = async e => {
+    e.preventDefault();
+    const form = e.target;
+    const fd = new FormData(form);
 
-  // 1. Pull out simple fields
-  const name              = fd.get("name").trim();
-  const dob               = fd.get("dob");
-  const cdlClass          = fd.get("cdlClass");
-  const cdlPermit         = fd.get("cdlPermit");
-  const vehicleQualified  = fd.get("vehicleQualified");
-  const experience        = fd.get("experience");
+    // Simple fields
+    const name             = fd.get("name").trim();
+    const dob              = fd.get("dob");
+    const cdlClass         = fd.get("cdlClass");
+    const cdlPermit        = fd.get("cdlPermit");
+    const vehicleQualified = fd.get("vehicleQualified");
+    const experience       = fd.get("experience");
 
-  // 2. (Optional) Upload a new profile picture if one was chosen
-  let profilePicUrl = userData.profilePicUrl || "";
-  const profilePicFile = fd.get("profilePic");
-  if (profilePicFile && profilePicFile.size) {
+    // Upload profile picture if chosen
+    let updatedProfilePicUrl = profilePicUrl;
+    const profilePicFile = fd.get("profilePic");
+    if (profilePicFile && profilePicFile.size) {
+      try {
+        const storageRef = ref(storage, `profilePics/${currentUserEmail}`);
+        await uploadBytes(storageRef, profilePicFile);
+        updatedProfilePicUrl = await getDownloadURL(storageRef);
+      } catch (err) {
+        showToast("⚠️ Profile picture upload failed: " + err.message);
+      }
+    }
+
+    // Update Firestore user doc
     try {
-      const storageRef = ref(storage, `profilePics/${currentUserEmail}`);
-      await uploadBytes(storageRef, profilePicFile);
-      profilePicUrl = await getDownloadURL(storageRef);
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", currentUserEmail));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const userDocRef = snap.docs[0].ref;
+        await updateDoc(userDocRef, {
+          name,
+          dob,
+          cdlClass,
+          cdlPermit,
+          vehicleQualified,
+          experience,
+          profilePicUrl: updatedProfilePicUrl
+        });
+        await markStudentProfileComplete(currentUserEmail);
+        showToast("✅ Profile saved and progress updated!");
+      } else {
+        throw new Error("User document not found");
+      }
     } catch (err) {
-      console.error("Failed to upload profile picture:", err);
-      showToast("⚠️ Profile picture upload failed: " + err.message);
+      showToast("❌ Error saving profile: " + err.message);
     }
-  }
-
-  // 3. Update Firestore user doc
-  try {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", currentUserEmail));
-    const snap = await getDocs(q);
-    if (!snap.empty) {
-      const userDocRef = snap.docs[0].ref;
-      await updateDoc(userDocRef, {
-        name,
-        dob,
-        cdlClass,
-        cdlPermit,
-        vehicleQualified,
-        experience,
-        profilePicUrl
-      });
-
-      // 4. Mark the profile‐complete milestone
-      await markStudentProfileComplete(currentUserEmail);
-
-      showToast("✅ Profile saved and progress updated!");
-    } else {
-      throw new Error("User document not found");
-    }
-  } catch (err) {
-    console.error("Error saving profile:", err);
-    showToast("❌ Error saving profile: " + err.message);
-  }
-};
+  };
+}
 
 // Render Checklist
 async function renderChecklists(container = document.getElementById("app")) {
-  if (!auth.currentUser) {
+  if (!container) return;
+
+  if (!auth.currentUser || !auth.currentUser.email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
     return;
   }
@@ -1567,45 +1559,44 @@ async function renderChecklists(container = document.getElementById("app")) {
     userData = {};
   }
 
-  // Simulate system-detected progress
+  // Extract progress-related fields safely
   const {
-    cdlClass,
-    cdlPermit,
-    permitPhotoUrl,
-    vehicleQualified,
-    truckPlateUrl,
-    trailerPlateUrl,
-    experience,
-    lastTestScore,
-    walkthroughProgress,
-    studyMinutes,
+    cdlClass = "",
+    cdlPermit = "",
+    permitPhotoUrl = "",
+    vehicleQualified = "",
+    truckPlateUrl = "",
+    trailerPlateUrl = "",
+    experience = "",
+    lastTestScore = 0,
+    walkthroughProgress = 0,
+    studyMinutes = 0,
   } = userData;
 
-  // Calculate completion percent and which sections are incomplete
-  let complete = 0, total = 5;
+  // Build checklist state
   const checklist = [
     {
       label: "Profile Complete",
-      done: cdlClass && cdlPermit && experience,
+      done: !!(cdlClass && cdlPermit && experience),
       link: "profile",
       notify: !(cdlClass && cdlPermit && experience),
     },
     {
       label: "Permit Uploaded",
-      done: cdlPermit === "yes" && permitPhotoUrl,
+      done: cdlPermit === "yes" && !!permitPhotoUrl,
       link: "profile",
       notify: cdlPermit === "yes" && !permitPhotoUrl,
     },
     {
       label: "Vehicle Data Plates Uploaded",
-      done: vehicleQualified === "yes" && truckPlateUrl && trailerPlateUrl,
+      done: vehicleQualified === "yes" && !!truckPlateUrl && !!trailerPlateUrl,
       link: "profile",
       notify: vehicleQualified === "yes" && (!truckPlateUrl || !trailerPlateUrl),
     },
     {
       label: "Practice Test Passed",
       done: lastTestScore >= 80,
-      link: "tests",
+      link: "practiceTests",
       notify: lastTestScore < 80,
     },
     {
@@ -1615,10 +1606,10 @@ async function renderChecklists(container = document.getElementById("app")) {
       notify: walkthroughProgress < 1,
     },
   ];
-  complete = checklist.filter(x => x.done).length;
+  const complete = checklist.filter(x => x.done).length;
   const percent = Math.round((complete / checklist.length) * 100);
 
-  // Page HTML
+  // Render page
   container.innerHTML = `
     <div class="screen-wrapper fade-in checklist-page" style="max-width:480px;margin:0 auto;">
       <h2>📋 Student Checklist</h2>
@@ -1642,17 +1633,35 @@ async function renderChecklists(container = document.getElementById("app")) {
     </div>
   `;
 
-  // Explicit back button (always works, even if navigation logic changes)
+  // Checklist completion nav (for 'Complete' buttons)
+  container.querySelectorAll('.btn[data-nav]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const target = btn.getAttribute('data-nav');
+      if (target === "profile") return renderProfile();
+      if (target === "walkthrough") return renderWalkthrough();
+      if (target === "practiceTests") return renderPracticeTests();
+      // fallback for custom navs
+      setupNavigation();
+    });
+  });
+
+  // Explicit back button (always works)
   document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
     renderDashboard();
   });
 
   setupNavigation();
 }
-// Practice Tests
+
+// Render Practice Tests
 async function renderPracticeTests(container = document.getElementById("app")) {
   const appEl = container || document.getElementById("app");
   if (!appEl) return;
+
+  if (!auth.currentUser || !currentUserEmail) {
+    appEl.innerHTML = "<p>You must be logged in to view this page.</p>";
+    return;
+  }
 
   const tests = ["General Knowledge", "Air Brakes", "Combination Vehicles"];
   const testScores = {};
@@ -1687,7 +1696,6 @@ async function renderPracticeTests(container = document.getElementById("app")) {
     <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
       <h2 class="dash-head">🧪 CDL Practice Tests</h2>
       <p style="margin-bottom: 1.4rem;">Select a practice test to begin:</p>
-
       <div class="test-list">
         ${tests.map(name => {
           const data = testScores[name];
@@ -1707,7 +1715,6 @@ async function renderPracticeTests(container = document.getElementById("app")) {
           `;
         }).join("")}
       </div>
-
       <div style="text-align:center; margin-top:2rem;">
         <button id="back-to-dashboard-btn" class="btn outline wide">⬅ Back to Dashboard</button>
       </div>
@@ -1720,6 +1727,7 @@ async function renderPracticeTests(container = document.getElementById("app")) {
     renderDashboard();
   });
 
+  // Add listeners after DOM is rendered
   setTimeout(() => {
     appEl.querySelectorAll(".retake-btn").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -1728,7 +1736,6 @@ async function renderPracticeTests(container = document.getElementById("app")) {
         renderTestEngine(appEl, test);
       });
     });
-
     appEl.querySelectorAll(".review-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const test = btn.dataset.test;
@@ -1738,7 +1745,10 @@ async function renderPracticeTests(container = document.getElementById("app")) {
     });
   }, 0);
 }
+
+// Review a specific test result
 async function renderTestReview(container, testName) {
+  container = container || document.getElementById("app");
   container.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧾 ${testName} Review</h2><p>Loading...</p></div>`;
 
   try {
@@ -1771,9 +1781,11 @@ async function renderTestReview(container, testName) {
         showToast("🎉 Practice Test milestone complete! Progress updated.");
       }
     }
-const minutes = latest?.durationMinutes || 5; // or your best guess/default
-await incrementStudentStudyMinutes(currentUserEmail, minutes);
-await logStudySession(currentUserEmail, minutes, `Practice Test: ${testName}`);
+
+    // Always log study minutes and session
+    const minutes = latest?.durationMinutes || 5; // sensible default
+    await incrementStudentStudyMinutes(currentUserEmail, minutes);
+    await logStudySession(currentUserEmail, minutes, `Practice Test: ${testName}`);
 
     container.innerHTML = `
       <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
@@ -1787,12 +1799,18 @@ await logStudySession(currentUserEmail, minutes, `Practice Test: ${testName}`);
     `;
 
     setupNavigation();
+
+    container.querySelector('[data-nav="practiceTests"]')?.addEventListener("click", () => {
+      renderPracticeTests(container);
+    });
+
   } catch (e) {
     console.error("❌ Review fetch error:", e);
     container.innerHTML = `<p>Failed to load review data.</p>`;
   }
 }
 
+// Render Flashcards
 async function renderFlashcards(container = document.getElementById("app")) {
   if (!auth.currentUser || !auth.currentUser.email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
@@ -1807,14 +1825,11 @@ async function renderFlashcards(container = document.getElementById("app")) {
     { q: "What triggers the spring brake pop-out?", a: "Low air pressure (between 20–45 PSI)." }
   ];
 
-  // --- Shuffle option (uncomment if you want random order) ---
-  // flashcards.sort(() => Math.random() - 0.5);
-
   let current = 0;
   let startedAt = Date.now();
   let completed = false;
 
-  function renderCard() {
+  async function renderCard() {
     if (completed) {
       // --- Session Complete UI ---
       const minutes = Math.max(1, Math.round((Date.now() - startedAt) / 60000));
@@ -1919,22 +1934,24 @@ async function renderFlashcards(container = document.getElementById("app")) {
     setupNavigation();
   }
 
-  renderCard();
+  await renderCard();
 }
 
 // AI Coach (Student Dashboard Only)
 function renderAICoach(container = document.getElementById("app")) {
+  if (!container) return;
+
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
       <h2>🎧 Talk to Your AI Coach</h2>
-      <div id="ai-chat-log" style="border:1px solid #ccc; height:300px; overflow-y:auto; padding:10px; margin-bottom:10px;"></div>
-      <textarea id="ai-input" placeholder="Ask a question..." style="width:100%; height:60px; padding:8px;"></textarea>
-      <button id="ai-send-btn" style="width:100%; padding:10px; margin-top:6px;">Send</button>
+      <div id="ai-chat-log" style="border:1px solid #ccc; height:300px; overflow-y:auto; padding:10px; margin-bottom:10px; background:#191b2a; border-radius:10px;"></div>
+      <textarea id="ai-input" placeholder="Ask a question..." style="width:100%; height:60px; padding:8px; border-radius:8px; background:#23244a; color:#fff;"></textarea>
+      <button id="ai-send-btn" class="btn primary wide" style="margin-top:6px;">Send</button>
       <button id="back-to-dashboard-btn" class="btn outline wide" style="display:block; margin:20px auto;">⬅ Back to Dashboard</button>
     </div>
   `;
 
-  // Back to student dashboard (explicit for clarity)
+  // Explicit back button for context-aware navigation
   document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
     renderDashboard();
   });
@@ -1942,14 +1959,41 @@ function renderAICoach(container = document.getElementById("app")) {
   setupNavigation();
 
   const logEl = document.getElementById("ai-chat-log");
-  document.getElementById("ai-send-btn").addEventListener("click", async () => {
-    const q = document.getElementById("ai-input").value.trim();
+  const inputEl = document.getElementById("ai-input");
+  const sendBtn = document.getElementById("ai-send-btn");
+
+  // Always scroll log to bottom
+  function scrollLog() {
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  // Send handler (works on button or Ctrl+Enter)
+  async function handleSend() {
+    const q = inputEl.value.trim();
     if (!q) return;
     logEl.innerHTML += `<div style="margin:8px 0;"><strong>You:</strong> ${q}</div>`;
-    document.getElementById("ai-input").value = "";
-    const reply = await getAITipOfTheDay(); // Replace with your real AI logic if needed!
-    logEl.innerHTML += `<div style="margin:8px 0; color:#0066cc;"><strong>AI Coach:</strong> ${reply}</div>`;
-    logEl.scrollTop = logEl.scrollHeight;
+    inputEl.value = "";
+    scrollLog();
+    sendBtn.disabled = true;
+    // Real AI logic goes here! For now, just get a random tip
+    let reply;
+    try {
+      reply = await getRandomAITip(); // swap to your AI endpoint if needed
+    } catch (e) {
+      reply = "Sorry, there was a problem getting an answer. Try again!";
+    }
+    logEl.innerHTML += `<div style="margin:8px 0; color:#59f;"><strong>AI Coach:</strong> ${reply}</div>`;
+    scrollLog();
+    sendBtn.disabled = false;
+  }
+
+  sendBtn.addEventListener("click", handleSend);
+
+  // Allow Ctrl+Enter or Cmd+Enter to send
+  inputEl.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      handleSend();
+    }
   });
 }
 
