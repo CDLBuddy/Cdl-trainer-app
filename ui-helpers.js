@@ -1,3 +1,4 @@
+let ;
 // ui-helpers.js
 import { db, auth } from "./firebase.js";
 import {
