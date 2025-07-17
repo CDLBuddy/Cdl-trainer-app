@@ -50,7 +50,7 @@ import {
   markStudentProfileComplete,
   markStudentPermitUploaded,
   markStudentVehicleUploaded,
-  markStudentWalkthroughComplete,
+markStudentWalkthroughComplete,
   markStudentTestPassed,
   verifyStudentProfile,
   verifyStudentPermit,
