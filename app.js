@@ -7,7 +7,7 @@ let currentUserEmail = null;
 // Firebase App
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 
-// Firestore (ONE block)
+// Firestore (all in ONE block)
 import {
   getFirestore,
   collection,
@@ -23,7 +23,7 @@ import {
   increment
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// Auth
+// Auth (all in ONE block)
 import {
   getAuth,
   onAuthStateChanged,
@@ -35,8 +35,8 @@ import {
   signInWithPopup
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
+// UI Helpers (single block)
 import {
-  // UI and navigation
   showToast,
   setupNavigation,
   showPageTransitionLoader,
@@ -45,8 +45,6 @@ import {
   initFadeInOnScroll,
   startTypewriter,
   debounce,
-
-  // Progress and milestone logic
   updateELDTProgress,
   getUserProgress,
   markStudentProfileComplete,
@@ -63,8 +61,6 @@ import {
   adminResetStudentProgress,
   incrementStudentStudyMinutes,
   logStudySession,
-
-  // Checklist field arrays
   studentChecklistFields,
   instructorChecklistFields,
   adminChecklistFields
