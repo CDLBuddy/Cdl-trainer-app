@@ -1529,33 +1529,64 @@ async function renderProfile(container = document.getElementById("app")) {
     }
   });
 
-  // PROFILE SAVE HANDLER (already includes milestone)
-  container.querySelector("#profile-form").onsubmit = async e => {
-    e.preventDefault();
-    const fd = new FormData(e.target);
+// PROFILE SAVE HANDLER (already includes milestone)
+container.querySelector("#profile-form").onsubmit = async e => {
+  e.preventDefault();
+  const form = e.target;
+  const fd = new FormData(form);
 
-    const data = {
-      name: fd.get("name"),
-      dob: fd.get("dob"),
-      cdlClass: fd.get("cdlClass"),
-      cdlPermit: fd.get("cdlPermit"),
-      vehicleQualified: fd.get("vehicleQualified"),
-      experience: fd.get("experience")
-    };
+  // 1. Pull out simple fields
+  const name              = fd.get("name").trim();
+  const dob               = fd.get("dob");
+  const cdlClass          = fd.get("cdlClass");
+  const cdlPermit         = fd.get("cdlPermit");
+  const vehicleQualified  = fd.get("vehicleQualified");
+  const experience        = fd.get("experience");
+
+  // 2. (Optional) Upload a new profile picture if one was chosen
+  let profilePicUrl = userData.profilePicUrl || "";
+  const profilePicFile = fd.get("profilePic");
+  if (profilePicFile && profilePicFile.size) {
     try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("email", "==", currentUserEmail));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        await updateDoc(doc(db, "users", snap.docs[0].id), data);
-        await markStudentProfileComplete(currentUserEmail); // 🚨 Already correct
-      }
-      showToast("✅ Profile saved!");
-    } catch (e) {
-      showToast("Profile update failed.");
+      const storageRef = ref(storage, `profilePics/${currentUserEmail}`);
+      await uploadBytes(storageRef, profilePicFile);
+      profilePicUrl = await getDownloadURL(storageRef);
+    } catch (err) {
+      console.error("Failed to upload profile picture:", err);
+      showToast("⚠️ Profile picture upload failed: " + err.message);
     }
-  };
-}
+  }
+
+  // 3. Update Firestore user doc
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", currentUserEmail));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const userDocRef = snap.docs[0].ref;
+      await updateDoc(userDocRef, {
+        name,
+        dob,
+        cdlClass,
+        cdlPermit,
+        vehicleQualified,
+        experience,
+        profilePicUrl
+      });
+
+      // 4. Mark the profile‐complete milestone
+      await markStudentProfileComplete(currentUserEmail);
+
+      showToast("✅ Profile saved and progress updated!");
+    } else {
+      throw new Error("User document not found");
+    }
+  } catch (err) {
+    console.error("Error saving profile:", err);
+    showToast("❌ Error saving profile: " + err.message);
+  }
+};
+
 // Render Checklist
 async function renderChecklists(container = document.getElementById("app")) {
   if (!auth.currentUser) {
