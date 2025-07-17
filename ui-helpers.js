@@ -10,6 +10,7 @@ import {
   serverTimestamp,
   increment
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
 // 4. MILESTONE AND PROGRESS HELPERS
 
 export async function updateELDTProgress(userId, fields, options = {}) {
@@ -24,7 +25,7 @@ export async function updateELDTProgress(userId, fields, options = {}) {
       role
     };
 
-  Object.keys(fields).forEach(k => {
+    Object.keys(fields).forEach(k => {
       if (k.endsWith("Complete") && fields[k] === true) {
         updateObj[`${k}dAt`] = serverTimestamp();
       }
@@ -143,6 +144,7 @@ export async function logStudySession(studentEmail, minutes, context = "") {
     at: new Date().toISOString()
   });
 }
+
 // ─── UI TOAST MESSAGE ────────────────────────────────
 export function showToast(message, duration = 3000) {
   const toast = document.createElement("div");
@@ -211,6 +213,41 @@ export function getRandomAITip() {
   ];
   const day = new Date().getDay();
   return tips[day % tips.length];
+}
+
+// ─── CHECKLIST ALERT HELPER ────────────────────────────────
+export function getNextChecklistAlert(user = {}) {
+  // Defensive for missing fields
+  // Profile info missing?
+  if (!user.cdlClass || !user.cdlPermit || !user.experience) {
+    const missing = [];
+    if (!user.cdlClass) missing.push("CDL class");
+    if (!user.cdlPermit) missing.push("CDL permit status");
+    if (!user.experience) missing.push("experience level");
+    return `Complete your profile: ${missing.join(", ")}.`;
+  }
+  // Permit photo
+  if (user.cdlPermit === "yes" && !user.permitPhotoUrl) {
+    return "Upload a photo of your CDL permit.";
+  }
+  // Vehicle data plates
+  if (user.vehicleQualified === "yes" && (!user.truckPlateUrl || !user.trailerPlateUrl)) {
+    const which = [
+      !user.truckPlateUrl ? "truck" : null,
+      !user.trailerPlateUrl ? "trailer" : null
+    ].filter(Boolean).join(" & ");
+    return `Upload your ${which} data plate photo${which.includes("&") ? "s" : ""}.`;
+  }
+  // Practice test score
+  if (typeof user.lastTestScore === "number" && user.lastTestScore < 80) {
+    return "Pass a practice test (80%+ required).";
+  }
+  // Walkthrough
+  if (!user.walkthroughProgress || user.walkthroughProgress < 1) {
+    return "Complete at least one walkthrough drill.";
+  }
+  // All done!
+  return "All required steps complete! 🎉";
 }
 
 // ─── FADE-IN ON SCROLL ────────────────────────────────

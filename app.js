@@ -41,7 +41,10 @@ import {
   // Checklist field arrays
   studentChecklistFields,
   instructorChecklistFields,
-  adminChecklistFields
+  adminChecklistFields,
+
+  // CHECKLIST ALERTS
+  getNextChecklistAlert          // ← add this!
 } from "./ui-helpers.js";
 // ─── 3. AUTH STATE LISTENER ────────────────────────────────────────────────────
 const loaderEl      = document.getElementById("app-loader"); // ⏳ full-screen loader
@@ -147,22 +150,31 @@ onAuthStateChanged(auth, async user => {
   const minShown = 400; // ms
     setTimeout(() => loaderEl?.classList.add("hide"), Math.max(0, minShown - elapsed));
 });  
+
 // ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
+
+// Show a modal overlay with HTML content
 function showModal(html) {
   const overlay = document.createElement("div");
   overlay.className = "modal-overlay";
   overlay.innerHTML = html;
   document.body.appendChild(overlay);
 }
+
+// Close any open modal overlay
 function closeModal() {
   document.querySelector(".modal-overlay")?.remove();
 }
+
+// Return a styled badge for user role (based on email)
 function getRoleBadge(email) {
   if (!email) return "";
-  if (email.includes("admin@"))       return `<span class="role-badge admin">Admin</span>`;
+  if (email.includes("admin@"))        return `<span class="role-badge admin">Admin</span>`;
   else if (email.includes("instructor@")) return `<span class="role-badge instructor">Instructor</span>`;
-  else                                 return `<span class="role-badge student">Student</span>`;
+  else                                   return `<span class="role-badge student">Student</span>`;
 }
+
+// (Async for future: could pull from Firestore if needed)
 async function getAITipOfTheDay() {
   const tips = [
     "Review your ELDT checklist daily.",
@@ -177,19 +189,19 @@ async function getAITipOfTheDay() {
 // ── Infinite-carousel helper ───────────────────────────────────────── //
 function initInfiniteCarousel(trackSelector = ".features-inner") {
   const track = document.querySelector(trackSelector);
-  if (!track || track.dataset.looped) return;   // already initialised
+  if (!track || track.dataset.looped) return;   // already initialized
 
-  // 1 duplicate once so we can scroll forever //
+  // Duplicate for infinite scroll illusion
   track.innerHTML += track.innerHTML;
   track.dataset.looped = "true";
 
-  // 2 reset scroll when we hit either end //
+  // Seamlessly reset scroll position at loop ends
   track.addEventListener("scroll", () => {
-    const max = track.scrollWidth / 2;          // length of the original set
-    if (track.scrollLeft >= max) {              // passed the end
-      track.scrollLeft -= max;                  // jump back to start copy
-    } else if (track.scrollLeft <= 0) {         // before the start
-      track.scrollLeft += max;                  // jump to end copy
+    const max = track.scrollWidth / 2;
+    if (track.scrollLeft >= max) {
+      track.scrollLeft -= max;
+    } else if (track.scrollLeft <= 0) {
+      track.scrollLeft += max;
     }
   });
 }
@@ -198,25 +210,20 @@ function initInfiniteCarousel(trackSelector = ".features-inner") {
 function initCarousel() {
   const track = document.querySelector(".features-inner");
   if (!track) return;
-
-  // convenience getter -- half the total width (after duplication)
   const half = () => track.scrollWidth / 2;
-
   let isPaused = false;
-  const speed  = 1.0;            // px per frame  (≈36 px/s at 60 fps)
+  const speed  = 1.0; // px per frame
 
-  // Pause on user interaction //
-  ["mouseenter","touchstart"].forEach(evt =>
+  // Pause on interaction
+  ["mouseenter", "touchstart"].forEach(evt =>
     track.addEventListener(evt, () => isPaused = true)
   );
-  ["mouseleave","touchend"].forEach(evt =>
+  ["mouseleave", "touchend"].forEach(evt =>
     track.addEventListener(evt, () => isPaused = false)
   );
 
-  // Continuous drift loop //
   function drift() {
     if (!isPaused) {
-      // add, then wrap with modulus -- no visible jump
       track.scrollLeft = (track.scrollLeft + speed) % half();
     }
     requestAnimationFrame(drift);
@@ -224,6 +231,7 @@ function initCarousel() {
   requestAnimationFrame(drift);
 }
 
+// ── Welcome screen with infinite carousel, bokeh, typewriter, etc. ── //
 function renderWelcome() {
   const appEl = document.getElementById("app");
   if (!appEl) return;
@@ -257,14 +265,23 @@ function renderWelcome() {
     </div>
   `;
 
+  // Init effects
   initInfiniteCarousel?.();
   initCarousel?.();
   initFadeInOnScroll?.();
   startTypewriter();
+
+  // Login button handler
   document.getElementById("login-btn")?.addEventListener("click", () => {
     handleNavigation('login');
   });
+
+  // Optionally, add handler for floating AI Coach button
+  document.querySelector(".fab")?.addEventListener("click", () => {
+    handleNavigation('coach');
+  });
 }
+
 // ─── 4. SMART NAVIGATION ───────────────────────────────────────────────────────
 
 // Route and transition handler
@@ -273,24 +290,19 @@ function handleNavigation(page) {
   if (!appEl) return;
 
   const currentScreen = appEl.querySelector(".screen-wrapper");
-
-  // Only animate out if there's a screen to fade
   if (currentScreen) {
     currentScreen.classList.add("fade-out");
-
-    // Listen for fade-out transition end (best for smoothness)
     currentScreen.addEventListener("transitionend", function onFade() {
       currentScreen.removeEventListener("transitionend", onFade);
-
       doNavigation(page, appEl);
     }, { once: true });
-
-    showPageTransitionLoader(); // Show loader during transition
+    showPageTransitionLoader();
   } else {
     doNavigation(page, appEl);
   }
 }
 
+// Main switch for routing pages
 function doNavigation(page, appEl) {
   switch (page) {
     case "dashboard":
@@ -302,10 +314,10 @@ function doNavigation(page, appEl) {
     case "admin":
       renderAdminDashboard(appEl);
       break;
-    case "checklist":
+    case "checklists":
       renderChecklists(appEl);
       break;
-    case "tests":
+    case "practiceTests":
       renderPracticeTests(appEl);
       break;
     case "flashcards":
@@ -333,32 +345,31 @@ function doNavigation(page, appEl) {
       renderHome(appEl);
       break;
   }
-
+  // Only update URL hash if needed
   if (page !== location.hash.replace("#", "")) {
     history.pushState({}, "", "#" + page);
   }
-
   hidePageTransitionLoader();
-  }
-
-  // Handle button clicks
-  document.body.addEventListener("click", (e) => {
-    const target = e.target.closest("[data-nav]");
-    if (target) {
-      const page = target.getAttribute("data-nav");
-      if (page) {
-        handleNavigation(page);
-      }
-    }
-  });
-
-  // Handle browser back/forward buttons
-  window.addEventListener("popstate", () => {
-    const page = location.hash.replace("#", "") || "home";
-    handleNavigation(page);
-  });
 }
-//Render login
+
+// Global event handler for nav buttons (delegated)
+document.body.addEventListener("click", (e) => {
+  const target = e.target.closest("[data-nav]");
+  if (target) {
+    const page = target.getAttribute("data-nav");
+    if (page) {
+      handleNavigation(page);
+    }
+  }
+});
+
+// Browser back/forward support
+window.addEventListener("popstate", () => {
+  const page = location.hash.replace("#", "") || "home";
+  handleNavigation(page);
+});
+
+// Render login
 function renderLogin(container = document.getElementById("app")) {
   container.innerHTML = `
     <div class="login-card fade-in">
@@ -421,30 +432,16 @@ function renderLogin(container = document.getElementById("app")) {
       }
       try {
         await signInWithEmailAndPassword(auth, email, pwd);
-        handleNavigation("dashboard", true);
+        // UI will auto-redirect onAuthStateChanged
       } catch (err) {
         if (err.code === "auth/user-not-found") {
-          try {
-            const cred = await createUserWithEmailAndPassword(auth, email, pwd);
-            await addDoc(collection(db, "users"), {
-              uid: cred.user.uid,
-              email,
-              name: "CDL User",
-              role: "student",
-              verified: false,
-              createdAt: new Date().toISOString(),
-              lastLogin: new Date().toISOString()
-            });
-            showToast("🎉 Account created!");
-            handleNavigation("dashboard", true);
-          } catch (suErr) {
-            errD.textContent = suErr.message;
-            errD.style.display = "block";
-          }
+          errD.textContent = "No user found. Please sign up first!";
+        } else if (err.code === "auth/wrong-password") {
+          errD.textContent = "Incorrect password. Try again or reset.";
         } else {
-          errD.textContent = err.message;
-          errD.style.display = "block";
+          errD.textContent = err.message || "Login failed. Try again.";
         }
+        errD.style.display = "block";
       }
     };
   }
@@ -455,7 +452,7 @@ function renderLogin(container = document.getElementById("app")) {
     googleBtn.onclick = async () => {
       try {
         await signInWithPopup(auth, new GoogleAuthProvider());
-        handleNavigation("dashboard", true);
+        // UI will auto-redirect onAuthStateChanged
       } catch (err) {
         showToast("Google Sign-In failed: " + err.message);
       }
@@ -479,7 +476,7 @@ function renderLogin(container = document.getElementById("app")) {
         showToast("Error: " + err.message);
       }
     };
-  } 
+  }
 
   // Back to welcome page (context-aware and explicit)
   const backBtn = container.querySelector("#back-to-welcome-btn");
@@ -492,11 +489,12 @@ function renderLogin(container = document.getElementById("app")) {
           console.error("Sign-out failed:", err);
         }
       }
-      renderWelcome(); // Go directly to welcome screen; or use handleNavigation("home")
+      renderWelcome();
     });
   }
 }
 
+//Render Signup
 function renderSignup(container = document.getElementById("app")) {
   container.innerHTML = `
     <div class="signup-card fade-in">
@@ -548,7 +546,7 @@ function renderSignup(container = document.getElementById("app")) {
     </div>
   `;
 
-  // Role toggle: show code only for instructor/admin
+  // Role toggle: show access code only for instructor/admin
   const radioEls = container.querySelectorAll('input[name="role"]');
   const codeGroup = container.querySelector("#access-code-group");
   radioEls.forEach(radio => {
@@ -564,378 +562,285 @@ function renderSignup(container = document.getElementById("app")) {
   // Log In button in footer
   document.getElementById("go-login")?.addEventListener("click", () => renderLogin(container));
 
-  // Context-aware back to welcome button (just like login)
-  document.getElementById("back-to-welcome-btn")?.addEventListener("click", () => {
-    renderWelcome();
-  }); 
+  // Back to welcome
+  document.getElementById("back-to-welcome-btn")?.addEventListener("click", () => renderWelcome());
 
-  // TODO: Add your signup handling logic here (validate, check code, create user, etc.)
-}
-function getNextChecklistAlert(user) {
-  // 1. Permit photo
-  if (!user.permitPhotoUrl) {
-    return '🔔 Permit photo not uploaded! <button data-nav="profile" class="alert-link">Upload now</button>';
-  }
-  // 2. Vehicle qualified and both plates
-  if (user.vehicleQualified === "yes" && (!user.truckPlateUrl || !user.trailerPlateUrl)) {
-    return '🔔 Vehicle data not submitted! <button data-nav="profile" class="alert-link">Add now</button>';
-  }
-  // 3. License class selected
-  if (!user.licenseClass) {
-    return '🔔 License class not selected! <button data-nav="profile" class="alert-link">Set now</button>';
-  }
-  // 4. Profile info (date of birth, picture)
-  if (!user.dob) {
-    return '🔔 Date of birth missing! <button data-nav="profile" class="alert-link">Update profile</button>';
-  }
-  if (!user.profilePictureUrl) {
-    return '🔔 Profile photo missing! <button data-nav="profile" class="alert-link">Add photo</button>';
-  }
-  // 5. Study streak (if using streaks)
-  if (user.studyStreak < 3) {
-    return `🔥 Keep it up! You're at a ${user.studyStreak}-day study streak. <button data-nav="coach" class="alert-link">Boost streak</button>`;
-  }
-  // 6. Walkthrough practiced (optional)
-  if (!user.walkthroughPracticed) {
-    return '🧭 Walkthrough not practiced! <button data-nav="walkthrough" class="alert-link">Practice now</button>';
-  }
-  // 7. Passing core CDL tests
-  if (!user.tests?.generalKnowledgePassed) {
-    return '📝 Complete General Knowledge with a passing grade! <button data-nav="practiceTests" class="alert-link">Take test</button>';
-  }
-  if (!user.tests?.airBrakesPassed) {
-    return '📝 Complete Air Brakes with a passing grade! <button data-nav="practiceTests" class="alert-link">Take test</button>';
-  }
-  if (!user.tests?.combinationPassed) {
-    return '📝 Complete Combination Vehicles with a passing grade! <button data-nav="practiceTests" class="alert-link">Take test</button>';
-  }
+  // --- Signup form handler ---
+  container.querySelector("#signup-form").onsubmit = async (e) => {
+    e.preventDefault();
 
-  // 8. Endorsements required by license class/selections
-  if (user.endorsements && Array.isArray(user.endorsements)) {
-    const endorsementMap = {
-      T: "Doubles/Triples",
-      P: "Passenger",
-      S: "School Bus",
-      N: "Tank Vehicle",
-      H: "Hazardous Materials",
-      X: "Tanker + Hazmat Combo"
-    };
-    for (let e of user.endorsements) {
-      const passKey = `endorsement_${e}_Passed`; // e.g. endorsement_T_Passed
-      if (!user.tests?.[passKey]) {
-        return `📝 Complete ${endorsementMap[e] || e} with a passing grade! <button data-nav="practiceTests" class="alert-link">Take test</button>`;
+    const form      = e.target;
+    const name      = form.name.value.trim();
+    const email     = form.email.value.trim().toLowerCase();
+    const password  = form.password.value;
+    const confirm   = form.confirm.value;
+    const role      = form.role.value;
+    const accessCode = form.accessCode ? form.accessCode.value.trim() : "";
+
+    // Basic validation
+    if (!name || !email || !password || !confirm) {
+      showToast("Please fill out all fields.");
+      return;
+    }
+    if (password !== confirm) {
+      showToast("Passwords do not match.");
+      return;
+    }
+
+    // Role/Access Code logic
+    let allowed = true;
+    const validInstructorCode = "ELDT2024"; // CHANGE FOR PROD
+    const validAdminCode = "CDLADMIN"; // CHANGE FOR PROD
+    if (role === "instructor" && accessCode !== validInstructorCode) {
+      allowed = false;
+      showToast("Instructor access code invalid.");
+    }
+    if (role === "admin" && accessCode !== validAdminCode) {
+      allowed = false;
+      showToast("Admin access code invalid.");
+    }
+    if (!allowed) return;
+
+    // Create user with Firebase Auth
+    showToast("Creating your account...", 3000);
+    try {
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+
+      // Optional: set display name for the current session (Firebase Auth)
+      if (user && user.updateProfile) {
+        try {
+          await user.updateProfile({ displayName: name });
+        } catch (err) {
+          // Not fatal
+          console.warn("Could not update user displayName:", err);
+        }
+      }
+
+      // Firestore profile
+      await setDoc(doc(db, "users", user.email), {
+        name,
+        email,
+        createdAt: serverTimestamp(),
+        role
+      });
+
+      // UserRoles
+      await setDoc(doc(db, "userRoles", user.email), {
+        role,
+        assignedAt: serverTimestamp()
+      });
+
+      // LocalStorage for UI
+      localStorage.setItem("fullName", name);
+      localStorage.setItem("userRole", role);
+
+      showToast("Account created! Logging in…");
+      // Optionally, direct to dashboard, or rely on auth listener to route
+      setTimeout(() => renderDashboard(), 1000);
+
+    } catch (err) {
+      console.error("Signup error:", err);
+      if (err.code === "auth/email-already-in-use") {
+        showToast("Email already in use. Try logging in.");
+      } else {
+        showToast("Signup failed: " + (err.message || err));
       }
     }
-  }
-  // 9. All done!
-  return '✅ All checklist steps are complete!';
+  };
 }
+
 // ─── 9. STUDENT DASHBOARD ────────────────────────────────────────────────
 async function renderDashboard(container = document.getElementById("app")) {
   if (!container) return;
 
-  // 1  FETCH DATA ----------------------------------------------------- //
-  if (!container) return;
+  // 1. FETCH DATA -----------------------------------------------------
+  let userData = {};
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", currentUserEmail));
+    const snap = await getDocs(q);
+    if (!snap.empty) userData = snap.docs[0].data();
+  } catch (e) {
+    userData = {};
+  }
 
-// --- Fetch student Firestore profile (userData) ---
-let userData = {};
-try {
-  const usersRef = collection(db, "users");
-  const q = query(usersRef, where("email", "==", currentUserEmail));
-  const snap = await getDocs(q);
-  if (!snap.empty) userData = snap.docs[0].data();
-} catch (e) {
-  userData = {};
-}
-
-// --- Checklist Progress ---
-let checklistPct = 0;
-try {
-  const snap = await getDocs(
-    query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail))
-  );
-  let total = 0, done = 0;
-  snap.forEach((d) => {
-    const prog = d.data().progress;
-    Object.values(prog).forEach((sec) =>
-      Object.values(sec).forEach((val) => {
-        total++;
-        if (val) done++;
-      })
+  // --- Checklist Progress ---
+  let checklistPct = 0;
+  try {
+    const snap = await getDocs(
+      query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail))
     );
-  });
-  checklistPct = total ? Math.round((done / total) * 100) : 0;
-} catch (e) {
-  console.error("ELDT fetch error", e);
-}
-
-// --- Last-test summary (optional card/alert) ---
-let lastTestStr = "No tests taken yet.";
-try {
-  const snap = await getDocs(
-    query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
-  );
-  let latest = null;
-  snap.forEach((d) => {
-    const t = d.data();
-    if (!latest || t.timestamp.toDate() > latest.timestamp.toDate()) latest = t;
-  });
-  if (latest) {
-    const pct = Math.round((latest.correct / latest.total) * 100);
-    lastTestStr = `${latest.testName} – ${pct}% on ${latest.timestamp
-      .toDate()
-      .toLocaleDateString()}`;
+    let total = 0, done = 0;
+    snap.forEach((d) => {
+      const prog = d.data().progress || {};
+      Object.values(prog).forEach((sec) =>
+        Object.values(sec).forEach((val) => {
+          total++;
+          if (val) done++;
+        })
+      );
+    });
+    checklistPct = total ? Math.round((done / total) * 100) : 0;
+  } catch (e) {
+    console.error("ELDT fetch error", e);
   }
-} catch (e) {
-  console.error("TestResults fetch error", e);
-}
 
-// --- License & Experience ---
-let license = "Not selected", experience = "Unknown";
-try {
-  const licSnap = await getDocs(
-    query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail))
-  );
-  licSnap.forEach((d) => (license = d.data().licenseType || license));
-  const expSnap = await getDocs(
-    query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail))
-  );
-  expSnap.forEach((d) => (experience = d.data().experience || experience));
-} catch (e) {
-  console.error("Profile fetch error", e);
-}
-
-// --- 7-day Study Streak ---
-let streak = 0;
-try {
-  const today = new Date().toDateString();
-  let log = JSON.parse(localStorage.getItem("studyLog") || "[]");
-  if (!log.includes(today)) {
-    log.push(today);
-    localStorage.setItem("studyLog", JSON.stringify(log));
+  // --- Last-test summary (optional card/alert) ---
+  let lastTestStr = "No tests taken yet.";
+  try {
+    const snap = await getDocs(
+      query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
+    );
+    let latest = null;
+    snap.forEach((d) => {
+      const t = d.data();
+      // Use toDate() only if available, else fallback
+      if (!latest ||
+        (t.timestamp?.toDate
+          ? t.timestamp.toDate()
+          : new Date(t.timestamp)) >
+        (latest.timestamp?.toDate
+          ? latest.timestamp.toDate()
+          : new Date(latest.timestamp))) {
+        latest = t;
+      }
+    });
+    if (latest) {
+      const pct = Math.round((latest.correct / latest.total) * 100);
+      const dateStr = latest.timestamp?.toDate
+        ? latest.timestamp.toDate().toLocaleDateString()
+        : new Date(latest.timestamp).toLocaleDateString();
+      lastTestStr = `${latest.testName} – ${pct}% on ${dateStr}`;
+    }
+  } catch (e) {
+    console.error("TestResults fetch error", e);
   }
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 6);
-  streak = log.filter((d) => new Date(d) >= cutoff).length;
-} catch (e) {
-  console.error("Streak calc error", e);
-}
 
- // 2  RENDER DASHBOARD LAYOUT ---------------------------------------
-  const name = localStorage.getItem("fullName") || "CDL User";
-  const roleBadge = getRoleBadge(currentUserEmail);
+  // --- License & Experience ---
+  let license = "Not selected", experience = "Unknown";
+  try {
+    const licSnap = await getDocs(
+      query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail))
+    );
+    licSnap.forEach((d) => (license = d.data().licenseType || license));
+    const expSnap = await getDocs(
+      query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail))
+    );
+    expSnap.forEach((d) => (experience = d.data().experience || experience));
+  } catch (e) {
+    console.error("Profile fetch error", e);
+  }
 
-  container.innerHTML = `
-    <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
-
-    <div class="dash-layout">
-
-      <!-- metric cards ---------------------------- -->
-      <section class="dash-metrics">
-
-        <div class="dashboard-card">
-  <h3>✅ Checklist Progress</h3>
-  <div class="progress-bar">
-    <div class="progress-fill" style="width: ${checklistPct}%;"></div>
-  </div>
-  <div class="progress-percent">
-    <strong id="checklist-pct">${checklistPct}</strong>% complete
-  </div>
-  <div class="checklist-alert warning">
-    <span>${getNextChecklistAlert(userData)}</span>
-  </div>
-</div>
-
-        <div class="dashboard-card">
-          <h3>🧭 Walkthrough</h3>
-          <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
-          <button class="btn" data-nav="walkthrough">Open Walkthrough</button>
-        </div>
-
-        <div class="glass-card metric">
-          <h3>🔥 Study Streak</h3>
-          <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? "s" : ""} active this week</p>
-        </div>
-
-        <div class="dashboard-card">
-  <h3>🤖 AI Tip of the Day</h3>
-  <p>${getRandomAITip()}</p>
-  <button data-nav="coach" class="btn ai-tip">Ask AI Coach</button>
-</div>
-
-      </section>
-
-      <!-- compact scrollable nav ---------------------------- -->
-      <div class="dash-rail-wrapper">
-  <aside class="dash-rail">
-    <!-- My Profile -->
-    <button class="rail-btn profile" data-nav="profile">
-      <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
-        <ellipse cx="28" cy="23" rx="8" ry="8.5" fill="#c4dbe8" fill-opacity="0.96"/>
-        <ellipse cx="28" cy="38" rx="15" ry="8.2" fill="#b1d3e5" fill-opacity="0.75"/>
-        <ellipse cx="28" cy="28" rx="24" ry="24" fill="none" stroke="#a5c9d6" stroke-width="1.5" opacity="0.45" filter="url(#glow)"/>
-        <defs>
-          <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
-            <stop offset="1" stop-color="#0e1b1b" stop-opacity="0.32"/>
-          </radialGradient>
-          <filter id="glow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse">
-            <feGaussianBlur stdDeviation="2.2" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-      </svg>
-      <span class="label">My Profile</span>
-    </button>
-
-    <!-- My Checklist -->
-    <button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
-      <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
-        <rect x="13" y="17" width="30" height="22" rx="6" fill="#b1d3e5" fill-opacity="0.83"/>
-        <rect x="19" y="23" width="14" height="2.8" rx="1.3" fill="#fff" opacity="0.82"/>
-        <rect x="19" y="28" width="8" height="2.2" rx="1.1" fill="#fff" opacity="0.66"/>
-        <polyline points="15.5,29.5 19,33 25.5,25.5" fill="none" stroke="#31e6b5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.99" />
-        <ellipse cx="28" cy="28" rx="24" ry="24" fill="none" stroke="#a5c9d6" stroke-width="1.5" opacity="0.45" filter="url(#glow)"/>
-        <defs>
-          <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
-            <stop offset="1" stop-color="#0e1b1b" stop-opacity="0.32"/>
-          </radialGradient>
-          <filter id="glow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse">
-            <feGaussianBlur stdDeviation="2.2" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-      </svg>
-      <span class="label">My<br>Checklist</span>
-    </button>
-
-    <!-- Testing -->
-    <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
-      <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
-        <rect x="22" y="14" width="12" height="26" rx="6" fill="#b1d3e5" fill-opacity="0.81"/>
-        <rect x="26" y="10" width="4" height="10" rx="2" fill="#c4dbe8" fill-opacity="0.77"/>
-        <ellipse cx="28" cy="33" rx="4.5" ry="7" fill="#31e6b5" opacity="0.29"/>
-        <rect x="26.7" y="19" width="2.6" height="1.2" rx="0.6" fill="#fff" opacity="0.67"/>
-        <rect x="26.7" y="22" width="2.6" height="1.2" rx="0.6" fill="#fff" opacity="0.6"/>
-        <rect x="26.7" y="25" width="2.6" height="1.2" rx="0.6" fill="#fff" opacity="0.6"/>
-        <ellipse cx="28" cy="28" rx="24" ry="24" fill="none" stroke="#a5c9d6" stroke-width="1.5" opacity="0.45" filter="url(#glow)"/>
-        <defs>
-          <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
-            <stop offset="1" stop-color="#0e1b1b" stop-opacity="0.32"/>
-          </radialGradient>
-          <filter id="glow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse">
-            <feGaussianBlur stdDeviation="2.2" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-      </svg>
-      <span class="label">Testing<br>&nbsp;</span>
-    </button>
-
-    <!-- Flashcards -->
-    <button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
-      <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
-        <rect x="15" y="17" width="20" height="22" rx="4" fill="#b1d3e5" fill-opacity="0.37" transform="rotate(-7 25 28)" />
-        <rect x="21" y="13" width="20" height="28" rx="5" fill="#c4dbe8" fill-opacity="0.89"/>
-        <text x="31" y="32" text-anchor="middle" font-size="16" font-family="Arial, Helvetica, sans-serif" fill="#fff" opacity="0.85" font-weight="bold">?</text>
-        <rect x="28" y="36" width="8" height="2" rx="1" fill="#31e6b5" opacity="0.62"/>
-        <ellipse cx="28" cy="28" rx="24" ry="24" fill="none" stroke="#a5c9d6" stroke-width="1.5" opacity="0.45" filter="url(#glow)"/>
-        <defs>
-          <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
-            <stop offset="1" stop-color="#0e1b1b" stop-opacity="0.32"/>
-          </radialGradient>
-          <filter id="glow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse">
-            <feGaussianBlur stdDeviation="2.2" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-      </svg>
-      <span class="label">Flash<br>cards</span>
-    </button>
-
-    <!-- AI Coach -->
-    <button class="rail-btn coach" data-nav="coach" aria-label="AI Coach">
-      <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
-        <path d="M16 33a12 12 0 0 1 24 0" stroke="#b1d3e5" stroke-width="3" fill="none" opacity="0.92"/>
-        <rect x="13" y="32" width="6" height="10" rx="3" fill="#c4dbe8" fill-opacity="0.91"/>
-        <rect x="37" y="32" width="6" height="10" rx="3" fill="#c4dbe8" fill-opacity="0.91"/>
-        <polyline points="21,42 24,38 28,44 32,36 35,42" fill="none" stroke="#31e6b5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.97"/>
-        <ellipse cx="28" cy="28" rx="24" ry="24" fill="none" stroke="#a5c9d6" stroke-width="1.5" opacity="0.45" filter="url(#glow)"/>
-        <defs>
-          <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
-            <stop offset="1" stop-color="#0e1b1b" stop-opacity="0.32"/>
-          </radialGradient>
-          <filter id="glow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse">
-            <feGaussianBlur stdDeviation="2.2" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-      </svg>
-      <span class="label">AI<br>Coach</span>
-    </button>
-  </aside>
-</div>
-
-<!-- Logout Button - styled to be wider/rectangular and at bottom -->
-<button class="rail-btn logout" id="logout-btn" aria-label="Logout" style="display:block; margin:36px auto 18px auto; width:260px; min-height:68px;">
-  <svg class="profile-icon" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="28" cy="28" r="26" fill="url(#frostBg)" stroke="#a5c9d6" stroke-width="2.5"/>
-    <rect x="18" y="16" width="14" height="24" rx="4" fill="#b1d3e5" fill-opacity="0.91"/>
-    <circle cx="20.7" cy="28" r="1.4" fill="#fff" opacity="0.65"/>
-    <polyline points="34,28 41,28" stroke="#31e6b5" stroke-width="2.5" stroke-linecap="round" />
-    <polyline points="38,25 41,28 38,31" fill="none" stroke="#31e6b5" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-    <ellipse cx="28" cy="28" rx="24" ry="24" fill="none" stroke="#a5c9d6" stroke-width="1.5" opacity="0.45" filter="url(#glow)"/>
-    <defs>
-      <radialGradient id="frostBg" cx="0" cy="0" r="1" gradientTransform="rotate(65 28 28) scale(44)" gradientUnits="userSpaceOnUse">
-        <stop stop-color="#eaf6fa" stop-opacity="0.5"/>
-        <stop offset="1" stop-color="#0e1b1b" stop-opacity="0.32"/>
-      </radialGradient>
-      <filter id="glow" x="0" y="0" width="56" height="56" filterUnits="userSpaceOnUse">
-        <feGaussianBlur stdDeviation="2.2" result="coloredBlur"/>
-        <feMerge>
-          <feMergeNode in="coloredBlur"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
-      </filter>
-    </defs>
-  </svg>
-  <span class="label">Logout</span>
-</button>
-  `;
-
-  setupNavigation();
+  // --- 7-day Study Streak ---
+  let streak = 0;
+  try {
+    const today = new Date().toDateString();
+    let log = JSON.parse(localStorage.getItem("studyLog") || "[]");
+    if (!log.includes(today)) {
+      log.push(today);
+      localStorage.setItem("studyLog", JSON.stringify(log));
+    }
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 6);
+    streak = log.filter((d) => new Date(d) >= cutoff).length;
+  } catch (e) {
+    console.error("Streak calc error", e);
+  }
   
-document.getElementById("logout-btn")?.addEventListener("click", async () => {
-    await signOut(auth);
-    localStorage.removeItem("fullName");
-    localStorage.removeItem("userRole");
-    renderWelcome();
-  });
 }
+
+// 2  RENDER DASHBOARD LAYOUT ---------------------------------------
+const name = localStorage.getItem("fullName") || "CDL User";
+const roleBadge = getRoleBadge(currentUserEmail);
+
+container.innerHTML = `
+  <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
+
+  <div class="dash-layout">
+
+    <!-- metric cards ---------------------------- -->
+    <section class="dash-metrics">
+
+      <div class="dashboard-card">
+        <h3>✅ Checklist Progress</h3>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${checklistPct}%;"></div>
+        </div>
+        <div class="progress-percent">
+          <strong id="checklist-pct">${checklistPct}</strong>% complete
+        </div>
+        <div class="checklist-alert warning">
+          <span>${getNextChecklistAlert(userData)}</span>
+        </div>
+      </div>
+
+      <div class="dashboard-card">
+        <h3>🧭 Walkthrough</h3>
+        <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
+        <button class="btn" data-nav="walkthrough">Open Walkthrough</button>
+      </div>
+
+      <div class="glass-card metric">
+        <h3>🔥 Study Streak</h3>
+        <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? "s" : ""} active this week</p>
+      </div>
+
+      <div class="dashboard-card">
+        <h3>🤖 AI Tip of the Day</h3>
+        <p>${getRandomAITip()}</p>
+        <button data-nav="coach" class="btn ai-tip">Ask AI Coach</button>
+      </div>
+
+    </section>
+
+    <!-- compact scrollable nav ---------------------------- -->
+    <div class="dash-rail-wrapper">
+      <aside class="dash-rail">
+        <!-- My Profile -->
+        <button class="rail-btn profile" data-nav="profile" aria-label="My Profile">
+          <!-- SVG code for profile -->
+          <span class="label">My Profile</span>
+        </button>
+        <!-- My Checklist -->
+        <button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
+          <!-- SVG code for checklist -->
+          <span class="label">My<br>Checklist</span>
+        </button>
+        <!-- Testing -->
+        <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
+          <!-- SVG code for testing -->
+          <span class="label">Testing<br>&nbsp;</span>
+        </button>
+        <!-- Flashcards -->
+        <button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
+          <!-- SVG code for flashcards -->
+          <span class="label">Flash<br>cards</span>
+        </button>
+        <!-- AI Coach -->
+        <button class="rail-btn coach" data-nav="coach" aria-label="AI Coach">
+          <!-- SVG code for AI Coach -->
+          <span class="label">AI<br>Coach</span>
+        </button>
+      </aside>
+    </div>
+
+    <!-- Logout Button - styled to be wider/rectangular and at bottom -->
+    <button class="rail-btn logout" id="logout-btn" aria-label="Logout" style="display:block; margin:36px auto 18px auto; width:260px; min-height:68px;">
+      <!-- SVG code for logout -->
+      <span class="label">Logout</span>
+    </button>
+  </div>
+`;
+
+setupNavigation();
+
+document.getElementById("logout-btn")?.addEventListener("click", async () => {
+  await signOut(auth);
+  localStorage.removeItem("fullName");
+  localStorage.removeItem("userRole");
+  // Optionally clear other user-related localStorage keys if you add more later
+  renderWelcome();
+});
 
 // Render Walkthrough
 async function renderWalkthrough(container = document.getElementById("app")) {
