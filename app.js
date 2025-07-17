@@ -2206,7 +2206,29 @@ async function showResults() {
 }
 
 // ─── Kick everything off ────────────────────────────────────────────────
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
 window.addEventListener("DOMContentLoaded", () => {
-  if (!auth.currentUser) renderWelcome();
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUserEmail = user.email;
+      // Fetch role, then load correct dashboard
+      const roleDoc = await getDoc(doc(db, "userRoles", currentUserEmail));
+      const role = roleDoc.exists() ? roleDoc.data().role : "student";
+
+      switch (role) {
+        case "admin":
+          renderAdminDashboard();
+          break;
+        case "instructor":
+          renderInstructorDashboard();
+          break;
+        default:
+          renderDashboard();
+      }
+    } else {
+      renderWelcome();
+    }
+  });
 });
 export { db, auth };
