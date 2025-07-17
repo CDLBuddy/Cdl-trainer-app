@@ -2,8 +2,6 @@
 let currentUserEmail = null;
 
 // ─── 1. MODULE IMPORTS ─────────────────────────────────────────────────────────
-/* TEST ERROR - REMOVE ME */
-let ;
 // Firebase (auth, db, storage, etc.)
 import { db, auth, storage } from "./firebase.js";
 
