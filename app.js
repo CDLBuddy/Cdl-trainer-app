@@ -46,14 +46,16 @@ import {
   // CHECKLIST ALERTS
   getNextChecklistAlert          // ← add this!
 } from "./ui-helpers.js";
+
+// (future) school branding helpers, etc
+// import { getSchoolBranding, ... } from "./ui-helpers.js";
+  
 // ─── 3. AUTH STATE LISTENER ────────────────────────────────────────────────────
-const loaderEl      = document.getElementById("app-loader"); // ⏳ full-screen loader
-const loaderShownAt = Date.now();                            // time it first appeared
+const loaderEl = document.getElementById("app-loader");
+const loaderShownAt = Date.now();
 
 onAuthStateChanged(auth, async user => {
-  console.log("🔔 Firebase auth state changed:", user);
-
-  // Hide static loading overlays
+  // Hide loading overlays
   document.getElementById("js-error")?.classList.add("hidden");
   document.getElementById("loading-screen")?.classList.add("hidden");
 
@@ -68,75 +70,69 @@ onAuthStateChanged(auth, async user => {
   }
 
   if (user) {
-    // Signed in
     currentUserEmail = user.email;
+    let userRole = "student"; // default
+    let schoolId = null;
 
-    // 1) Fetch or create profile
-    let userData;
     try {
-      const usersRef  = collection(db, "users");
-      const userQuery = query(usersRef, where("email", "==", user.email));
-      const snap      = await getDocs(userQuery);
+      // Fetch role (future: add schoolId)
+      const roleDoc = await getDoc(doc(db, "userRoles", user.email));
+      if (roleDoc.exists()) {
+        userRole = roleDoc.data().role || "student";
+        schoolId = roleDoc.data().schoolId || null;
+      }
 
+      // Fetch profile (for name/display/branding/school)
+      let userData = {};
+      const usersRef = collection(db, "users");
+      const snap = await getDocs(query(usersRef, where("email", "==", user.email)));
       if (!snap.empty) {
         userData = snap.docs[0].data();
+        if (userData.schoolId) schoolId = userData.schoolId;
+        localStorage.setItem("fullName", userData.name || "CDL User");
       } else {
-        const newUser = {
-          uid:       user.uid,
-          email:     user.email,
-          name:      user.displayName || "CDL User",
-          role:      "student",
-          verified:  false,
+        // First login: create profile
+        userData = {
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || "CDL User",
+          role: userRole,
+          schoolId: schoolId,
           createdAt: new Date().toISOString(),
-          lastLogin: new Date().toISOString()
         };
-        await addDoc(usersRef, newUser);
-        userData = newUser;
+        await setDoc(doc(db, "users", user.email), userData);
+        localStorage.setItem("fullName", userData.name);
       }
 
-      // 2 Save to localStorage
-      localStorage.setItem("userRole", userData.role || "student");
-      localStorage.setItem("fullName", userData.name || "CDL User");
+      // Always set for local UI
+      localStorage.setItem("userRole", userRole);
+      if (schoolId) localStorage.setItem("schoolId", schoolId);
+
+      // Optional: load branding by schoolId here
+
+      // Route by role (expandable for future)
+      showPageTransitionLoader();
+      setTimeout(() => {
+        if (!schoolId) {
+          renderProfile(); // prompt to complete profile (add schoolId, etc)
+        } else if (userRole === "admin") {
+          renderAdminDashboard();
+        } else if (userRole === "instructor") {
+          renderInstructorDashboard();
+        } else {
+          renderDashboard();
+        }
+        hidePageTransitionLoader();
+      }, 350);
 
     } catch (err) {
-      console.error("❌ User profile error:", err);
+      console.error("❌ Auth/profile error:", err);
       showToast("Error loading profile: " + (err.message || err));
-      alert("🛑 Firestore error: " + (err.message || err));
-      return;
+      renderWelcome();
     }
 
-    // 3 Setup logout button
-    document.getElementById("logout-btn")?.addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-        showToast("You’ve been logged out.");
-        showPageTransitionLoader();
-        setTimeout(() => {
-          renderWelcome();
-          hidePageTransitionLoader();
-        }, 300);
-      } catch (err) {
-        console.error("Logout failed:", err);
-        showToast("Logout error");
-      }
-    });
-
-    // 4 Route to dashboard based on role
-    showPageTransitionLoader();
-    setTimeout(() => {
-      const role = localStorage.getItem("userRole");
-      if (role === "admin") {
-        renderAdminDashboard();
-      } else if (role === "instructor") {
-        renderInstructorDashboard();
-      } else {
-        renderDashboard();
-      }
-      hidePageTransitionLoader();
-    }, 300);
-
   } else {
-    // Signed out → welcome screen
+    // Signed out → welcome
     currentUserEmail = null;
     showPageTransitionLoader();
     setTimeout(() => {
@@ -145,11 +141,10 @@ onAuthStateChanged(auth, async user => {
     }, 300);
   }
 
-  // Fade the full-screen boot loader after a minimum duration
-  const elapsed  = Date.now() - loaderShownAt;
-  const minShown = 400; // ms
-    setTimeout(() => loaderEl?.classList.add("hide"), Math.max(0, minShown - elapsed));
-});  
+  // Always fade loader after min show
+  const elapsed = Date.now() - loaderShownAt;
+  setTimeout(() => loaderEl?.classList.add("hide"), Math.max(0, 400 - elapsed));
+});
 
 // ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
 
