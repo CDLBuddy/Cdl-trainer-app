@@ -2206,29 +2206,35 @@ async function showResults() {
 }
 
 // ─── Kick everything off ────────────────────────────────────────────────
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-
 window.addEventListener("DOMContentLoaded", () => {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUserEmail = user.email;
-      // Fetch role, then load correct dashboard
-      const roleDoc = await getDoc(doc(db, "userRoles", currentUserEmail));
-      const role = roleDoc.exists() ? roleDoc.data().role : "student";
 
-      switch (role) {
-        case "admin":
-          renderAdminDashboard();
-          break;
-        case "instructor":
-          renderInstructorDashboard();
-          break;
-        default:
-          renderDashboard();
+      try {
+        const roleDoc = await getDoc(doc(db, "userRoles", currentUserEmail));
+        const role = roleDoc.exists() ? roleDoc.data().role : "student";
+
+        switch (role) {
+          case "admin":
+            renderAdminDashboard();
+            break;
+          case "instructor":
+            renderInstructorDashboard();
+            break;
+          default:
+            renderDashboard();
+        }
+      } catch (err) {
+        console.error("Failed to fetch user role:", err);
+        showToast("Failed to load user role");
+        renderDashboard(); // fallback
       }
     } else {
       renderWelcome();
     }
   });
 });
+
+// ─── Module Exports ────────────────────────────────────────────────
 export { db, auth };
