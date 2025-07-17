@@ -1,29 +1,15 @@
-// app.js
-
 // ─── Global State ─────────────────────────────────────────────────────────────
 let currentUserEmail = null;
 
 // ─── 1. MODULE IMPORTS ─────────────────────────────────────────────────────────
+
 // Firebase App
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 
-// Firestore (all in ONE block)
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc,
-  doc,
-  updateDoc,
-  setDoc,
-  getDoc,
-  serverTimestamp,
-  increment
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+// Firestore (ONLY getFirestore needed here -- all other Firestore functions are in ui-helpers)
+import { getFirestore } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// Auth (all in ONE block)
+// Auth
 import {
   getAuth,
   onAuthStateChanged,
@@ -35,8 +21,9 @@ import {
   signInWithPopup
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
-// UI Helpers (single block)
+// UI Helpers
 import {
+  // UI and navigation
   showToast,
   setupNavigation,
   showPageTransitionLoader,
@@ -45,12 +32,14 @@ import {
   initFadeInOnScroll,
   startTypewriter,
   debounce,
+
+  // Progress and milestone logic
   updateELDTProgress,
   getUserProgress,
   markStudentProfileComplete,
   markStudentPermitUploaded,
   markStudentVehicleUploaded,
-markStudentWalkthroughComplete,
+  markStudentWalkthroughComplete,
   markStudentTestPassed,
   verifyStudentProfile,
   verifyStudentPermit,
@@ -61,6 +50,8 @@ markStudentWalkthroughComplete,
   adminResetStudentProgress,
   incrementStudentStudyMinutes,
   logStudySession,
+
+  // Checklist field arrays
   studentChecklistFields,
   instructorChecklistFields,
   adminChecklistFields
