@@ -1,5 +1,15 @@
 // ui-helpers.js
 import { db, auth } from "./firebase.js";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  setDoc,
+  collection,
+  addDoc,
+  serverTimestamp,
+  increment
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 // 4. MILESTONE AND PROGRESS HELPERS
 
 export async function updateELDTProgress(userId, fields, options = {}) {
