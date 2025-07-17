@@ -380,11 +380,9 @@ function doNavigation(page, appEl) {
     history.pushState({}, "", "#" + page);
   }
 
-  hidePageTransitionLoader(); // Hide loader when done
-}
+  hidePageTransitionLoader();
+  }
 
-// Click listener + browser history
-function setupNavigation() {
   // Handle button clicks
   document.body.addEventListener("click", (e) => {
     const target = e.target.closest("[data-nav]");
