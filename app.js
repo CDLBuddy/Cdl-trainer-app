@@ -2235,6 +2235,3 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-// ─── Module Exports ────────────────────────────────────────────────
-export { db, auth };
