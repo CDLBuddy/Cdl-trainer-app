@@ -2207,4 +2207,3 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-export { db, auth };
