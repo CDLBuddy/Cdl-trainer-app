@@ -29,7 +29,7 @@ export async function updateELDTProgress(userId, fields, options = {}) {
       role
     };
 
-    Object.keys(fields).forEach(k => {
+  Object.keys(fields).forEach(k => {
       if (k.endsWith("Complete") && fields[k] === true) {
         updateObj[`${k}dAt`] = serverTimestamp();
       }
