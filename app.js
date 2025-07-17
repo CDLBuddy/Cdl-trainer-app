@@ -4,6 +4,7 @@ let currentUserEmail = null;
 // ─── 1. MODULE IMPORTS ─────────────────────────────────────────────────────────
 // Firebase (auth, db, storage, etc.)
 import { db, auth, storage } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 // Firebase Storage methods (for file uploads/downloads)
 import { uploadBytes, getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
