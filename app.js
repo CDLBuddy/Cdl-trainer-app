@@ -9,40 +9,7 @@ import { db, auth, storage } from "./firebase.js";
 import { uploadBytes, getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 
 // UI Helpers
-import {
-  // UI and navigation
-  showToast,
-  setupNavigation,
-  showPageTransitionLoader,
-  hidePageTransitionLoader,
-  getRandomAITip,
-  initFadeInOnScroll,
-  startTypewriter,
-  debounce,
 
-  // Progress and milestone logic
-  updateELDTProgress,
-  getUserProgress,
-  markStudentProfileComplete,
-  markStudentPermitUploaded,
-  markStudentVehicleUploaded,
-  markStudentWalkthroughComplete,
-  markStudentTestPassed,
-  verifyStudentProfile,
-  verifyStudentPermit,
-  verifyStudentVehicle,
-  reviewStudentWalkthrough,
-  adminUnlockStudentModule,
-  adminFlagStudent,
-  adminResetStudentProgress,
-  incrementStudentStudyMinutes,
-  logStudySession,
-
-  // Checklist field arrays
-  studentChecklistFields,
-  instructorChecklistFields,
-  adminChecklistFields
-} from "./ui-helpers.js";
 // ─── 3. AUTH STATE LISTENER ────────────────────────────────────────────────────
 const loaderEl      = document.getElementById("app-loader"); // ⏳ full-screen loader
 const loaderShownAt = Date.now();                            // time it first appeared
