@@ -1330,6 +1330,7 @@ async function renderInstructorDashboard(container = document.getElementById("ap
   // ---- Render Instructor Dashboard Layout ----
   container.innerHTML = `
     <h2 class="dash-head">Welcome, Instructor! <span class="role-badge instructor">Instructor</span></h2>
+    <button class="btn" id="edit-instructor-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
     <div class="dash-layout">
       <section class="dash-metrics">
         <div class="dashboard-card">
@@ -1383,6 +1384,11 @@ async function renderInstructorDashboard(container = document.getElementById("ap
 
   setupNavigation();
 
+  // View/Edit My Profile button
+  document.getElementById("edit-instructor-profile-btn")?.addEventListener("click", () => {
+    renderInstructorProfile();
+  });
+
   // Handle logout
   document.getElementById("logout-btn")?.addEventListener("click", async () => {
     await signOut(auth);
@@ -1390,12 +1396,16 @@ async function renderInstructorDashboard(container = document.getElementById("ap
     renderWelcome();
   });
 
-  // Handle View Student Profile button (placeholder)
+  // Handle View Student Profile button
   container.querySelectorAll('button[data-nav="viewStudentProfile"]').forEach((btn) => {
     btn.addEventListener("click", () => {
       const studentEmail = btn.getAttribute("data-student");
-      
- // ─── RENDER STUDENT PROFILE FOR INSTRUCTOR ─────────────────────────────
+      renderStudentProfileForInstructor(studentEmail);
+    });
+  });
+}
+
+// ─── RENDER STUDENT PROFILE FOR INSTRUCTOR ─────────────────────────────
 async function renderStudentProfileForInstructor(studentEmail, container = document.getElementById("app")) {
   if (!studentEmail) {
     showToast("No student selected.");
@@ -1532,6 +1542,141 @@ async function renderStudentProfileForInstructor(studentEmail, container = docum
   });
 }
 
+// ─── RENDER INSTRUCTOR PROFILE ────────────────────────────────────────────────
+async function renderInstructorProfile(container = document.getElementById("app")) {
+  if (!container) return;
+
+  if (!currentUserEmail) {
+    showToast("No user found. Please log in again.");
+    renderWelcome();
+    return;
+  }
+
+  // Fetch instructor data
+  let userData = {};
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", currentUserEmail));
+    const snap = await getDocs(q);
+    if (!snap.empty) userData = snap.docs[0].data();
+  } catch (e) {
+    userData = {};
+  }
+  if ((userData.role || "student") !== "instructor") {
+    showToast("Access denied: Instructor profile only.");
+    renderDashboard();
+    return;
+  }
+
+  const {
+    name = "",
+    email = currentUserEmail,
+    profilePicUrl = "",
+    experience = "",
+    phone = ""
+    // Add other instructor fields as needed
+  } = userData;
+
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in profile-page" style="max-width: 480px; margin: 0 auto;">
+      <h2>👤 Instructor Profile <span class="role-badge instructor">Instructor</span></h2>
+      <form id="instructor-profile-form" style="display:flex;flex-direction:column;gap:1.3rem;">
+        <label>
+          Name:
+          <input type="text" name="name" value="${name}" required />
+        </label>
+        <label>
+          Email:
+          <span style="user-select:all;">${email}</span>
+        </label>
+        <label>
+          Profile Picture:
+          <input type="file" name="profilePic" accept="image/*" />
+          ${profilePicUrl ? `<img src="${profilePicUrl}" alt="Profile Picture" style="max-width:90px;border-radius:12px;display:block;margin-top:7px;" />` : ""}
+        </label>
+        <label>
+          Experience:
+          <select name="experience" required>
+            <option value="">Select</option>
+            <option value="none" ${experience==="none"?"selected":""}>No experience</option>
+            <option value="1-2" ${experience==="1-2"?"selected":""}>1–2 years</option>
+            <option value="3-5" ${experience==="3-5"?"selected":""}>3–5 years</option>
+            <option value="6-10" ${experience==="6-10"?"selected":""}>6–10 years</option>
+            <option value="10+" ${experience==="10+"?"selected":""}>10+ years</option>
+          </select>
+        </label>
+        <label>
+          Phone:
+          <input type="tel" name="phone" value="${phone}" placeholder="(Optional)" />
+        </label>
+        <button class="btn primary wide" type="submit">Save Profile</button>
+        <button class="btn outline" id="back-to-instructor-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅ Dashboard</button>
+      </form>
+    </div>
+  `;
+
+  // Back button handler
+  document.getElementById("back-to-instructor-dashboard-btn")?.addEventListener("click", () => {
+    renderInstructorDashboard();
+  });
+
+  setupNavigation();
+
+  // Profile picture upload
+  container.querySelector('input[name="profilePic"]')?.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const storageRef = ref(storage, `profilePics/${currentUserEmail}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // Save to Firestore
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", currentUserEmail));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        await updateDoc(doc(db, "users", snap.docs[0].id), { profilePicUrl: downloadURL });
+      }
+      showToast("Profile picture uploaded!");
+      renderInstructorProfile(container); // Refresh
+    } catch (err) {
+      showToast("Failed to upload profile picture: " + err.message);
+    }
+  });
+
+  // Save handler
+  container.querySelector("#instructor-profile-form").onsubmit = async e => {
+    e.preventDefault();
+    const form = e.target;
+    const fd = new FormData(form);
+
+    const name = fd.get("name").trim();
+    const experience = fd.get("experience");
+    const phone = fd.get("phone")?.trim() || "";
+
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", currentUserEmail));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const userDocRef = snap.docs[0].ref;
+        await updateDoc(userDocRef, {
+          name,
+          experience,
+          phone
+        });
+        localStorage.setItem("fullName", name);
+        showToast("✅ Profile saved!");
+      } else {
+        throw new Error("User document not found");
+      }
+    } catch (err) {
+      showToast("❌ Error saving profile: " + err.message);
+    }
+  };
+}
+
 // ─── ADMIN DASHBOARD ────────────────────────────────────────────────────
 async function renderAdminDashboard(container = document.getElementById("app")) {
   if (!container) return;
@@ -1587,6 +1732,7 @@ async function renderAdminDashboard(container = document.getElementById("app")) 
   // --- Render Admin Dashboard Layout ---
   container.innerHTML = `
     <h2 class="dash-head">Welcome, Admin! <span class="role-badge admin">Admin</span></h2>
+    <button class="btn" id="edit-admin-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
     <div class="dash-layout">
       <section class="dash-metrics">
 
@@ -1664,6 +1810,11 @@ async function renderAdminDashboard(container = document.getElementById("app")) 
 
   setupNavigation();
 
+  // --- View/Edit My Profile (Admin) ---
+  document.getElementById("edit-admin-profile-btn")?.addEventListener("click", () => {
+    renderAdminProfile();
+  });
+
   // --- Role Change Handler ---
   container.querySelectorAll(".role-select").forEach(select => {
     select.addEventListener("change", async (e) => {
@@ -1717,6 +1868,127 @@ async function renderAdminDashboard(container = document.getElementById("app")) 
     localStorage.clear();
     renderWelcome();
   });
+}
+
+// ─── RENDER ADMIN PROFILE ────────────────────────────────────────────────
+async function renderAdminProfile(container = document.getElementById("app")) {
+  if (!container) return;
+
+  if (!currentUserEmail) {
+    showToast("No user found. Please log in again.");
+    renderWelcome();
+    return;
+  }
+
+  // Fetch admin data
+  let userData = {};
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", currentUserEmail));
+    const snap = await getDocs(q);
+    if (!snap.empty) userData = snap.docs[0].data();
+  } catch (e) {
+    userData = {};
+  }
+  if ((userData.role || "student") !== "admin") {
+    showToast("Access denied: Admin profile only.");
+    renderDashboard();
+    return;
+  }
+
+  const {
+    name = "",
+    email = currentUserEmail,
+    profilePicUrl = "",
+    phone = ""
+    // Add other admin fields if needed
+  } = userData;
+
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in profile-page" style="max-width: 480px; margin: 0 auto;">
+      <h2>👤 Admin Profile <span class="role-badge admin">Admin</span></h2>
+      <form id="admin-profile-form" style="display:flex;flex-direction:column;gap:1.3rem;">
+        <label>
+          Name:
+          <input type="text" name="name" value="${name}" required />
+        </label>
+        <label>
+          Email:
+          <span style="user-select:all;">${email}</span>
+        </label>
+        <label>
+          Profile Picture:
+          <input type="file" name="profilePic" accept="image/*" />
+          ${profilePicUrl ? `<img src="${profilePicUrl}" alt="Profile Picture" style="max-width:90px;border-radius:12px;display:block;margin-top:7px;" />` : ""}
+        </label>
+        <label>
+          Phone:
+          <input type="tel" name="phone" value="${phone}" placeholder="(Optional)" />
+        </label>
+        <button class="btn primary wide" type="submit">Save Profile</button>
+        <button class="btn outline" id="back-to-admin-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅ Dashboard</button>
+      </form>
+    </div>
+  `;
+
+  // Back button handler
+  document.getElementById("back-to-admin-dashboard-btn")?.addEventListener("click", () => {
+    renderAdminDashboard();
+  });
+
+  setupNavigation();
+
+  // Profile picture upload
+  container.querySelector('input[name="profilePic"]')?.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const storageRef = ref(storage, `profilePics/${currentUserEmail}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // Save to Firestore
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", currentUserEmail));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        await updateDoc(doc(db, "users", snap.docs[0].id), { profilePicUrl: downloadURL });
+      }
+      showToast("Profile picture uploaded!");
+      renderAdminProfile(container); // Refresh
+    } catch (err) {
+      showToast("Failed to upload profile picture: " + err.message);
+    }
+  });
+
+  // Save handler
+  container.querySelector("#admin-profile-form").onsubmit = async e => {
+    e.preventDefault();
+    const form = e.target;
+    const fd = new FormData(form);
+
+    const name = fd.get("name").trim();
+    const phone = fd.get("phone")?.trim() || "";
+
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", currentUserEmail));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const userDocRef = snap.docs[0].ref;
+        await updateDoc(userDocRef, {
+          name,
+          phone
+        });
+        localStorage.setItem("fullName", name);
+        showToast("✅ Profile saved!");
+      } else {
+        throw new Error("User document not found");
+      }
+    } catch (err) {
+      showToast("❌ Error saving profile: " + err.message);
+    }
+  };
 }
 
 // Render Profile
