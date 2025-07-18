@@ -1719,6 +1719,7 @@ async function renderAdminDashboard(container = document.getElementById("app")) 
   });
 }
 
+// Render Profile
 async function renderProfile(container = document.getElementById("app")) {
   if (!container) return;
 
@@ -1767,7 +1768,7 @@ async function renderProfile(container = document.getElementById("app")) {
 
   container.innerHTML = `
     <div class="screen-wrapper fade-in profile-page" style="max-width: 480px; margin: 0 auto;">
-      <h2>👤 My Profile</h2>
+      <h2>👤 My Profile ${userRole ? `<span class="role-badge ${userRole}">${userRole.charAt(0).toUpperCase() + userRole.slice(1)}</span>` : ""}</h2>
       <form id="profile-form" autocomplete="off" style="display:flex; flex-direction:column; gap:1.3rem;">
         <label>
           Name:
