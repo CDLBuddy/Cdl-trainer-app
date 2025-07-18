@@ -660,7 +660,7 @@ async function renderDashboard(container = document.getElementById("app")) {
     return;
   }
 
-  // 1. FETCH DATA -----------------------------------------------------
+  // --- 1. FETCH DATA ---------------------------------------------------
   let userData = {};
   let userRole = localStorage.getItem("userRole") || "student"; // fallback
 
@@ -672,17 +672,17 @@ async function renderDashboard(container = document.getElementById("app")) {
       userData = snap.docs[0].data();
       // Prefer Firestore profile role if set
       userRole = userData.role || userRole || "student";
-      // Always sync to localStorage for UI consistency
       localStorage.setItem("userRole", userRole);
     }
   } catch (e) {
     userData = {};
   }
 
-  // Defensive: if somehow no role, force "student"
-  if (!userRole) {
-    userRole = "student";
-    localStorage.setItem("userRole", userRole);
+  // --- Defensive: only students allowed ---
+  if (userRole !== "student") {
+    showToast("Access denied: Student dashboard only.");
+    renderDashboard(); // Or send to role-based dashboard
+    return;
   }
 
   // --- Checklist Progress ---
@@ -769,12 +769,13 @@ async function renderDashboard(container = document.getElementById("app")) {
     console.error("Streak calc error", e);
   }
 
-  // 2. RENDER DASHBOARD LAYOUT ---------------------------------------
+  // --- RENDER DASHBOARD LAYOUT ---------------------------------------
   const name = localStorage.getItem("fullName") || "CDL User";
-  const roleBadge = getRoleBadge(currentUserEmail);
+  const roleBadge = `<span class="role-badge student">Student</span>`;
 
   container.innerHTML = `
     <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
+    <button class="btn" id="edit-student-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
     <div class="dash-layout">
       <!-- metric cards ---------------------------- -->
       <section class="dash-metrics">
@@ -813,105 +814,104 @@ async function renderDashboard(container = document.getElementById("app")) {
 
       <!-- compact scrollable nav ---------------------------- -->
       <div class="dash-rail-wrapper">
-  <aside class="dash-rail">
-
-    <!-- My Profile -->
-    <button class="rail-btn profile" data-nav="profile" aria-label="My Profile">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="8" r="4" stroke="#b48aff" stroke-width="2"/>
-        <path d="M4 20c0-2.8 3.6-4.2 8-4.2s8 1.4 8 4.2" stroke="#b48aff" stroke-width="2"/>
-      </svg>
-      <span class="label">My Profile</span>
-    </button>
-
-    <!-- My Checklist -->
-    <button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-        <rect x="4" y="4" width="16" height="16" rx="3" stroke="#a8e063" stroke-width="2"/>
-        <path d="M8 13l3 3 5-5" stroke="#a8e063" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span class="label">My<br>Checklist</span>
-    </button>
-
-    <!-- Testing -->
-    <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-        <rect x="4" y="4" width="16" height="16" rx="3" stroke="#61aeee" stroke-width="2"/>
-        <path d="M8 8h8M8 12h8M8 16h8" stroke="#61aeee" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <span class="label">Testing<br>&nbsp;</span>
-    </button>
-
-    <!-- Flashcards -->
-    <button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-        <rect x="5" y="7" width="14" height="10" rx="2" stroke="#ffdb70" stroke-width="2"/>
-        <rect x="7" y="9" width="10" height="6" rx="1" stroke="#ffdb70" stroke-width="2"/>
-      </svg>
-      <span class="label">Flash<br>cards</span>
-    </button>
-
-    <!-- AI Coach -->
-    <button class="rail-btn coach" data-nav="coach" aria-label="AI Coach">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="7" stroke="#68e3c4" stroke-width="2"/>
-        <circle cx="10" cy="10" r="1.2" stroke="#68e3c4" stroke-width="2" fill="none"/>
-        <circle cx="14" cy="10" r="1.2" stroke="#68e3c4" stroke-width="2" fill="none"/>
-        <path d="M10 15c1-.7 3-.7 4 0" stroke="#68e3c4" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <span class="label">AI<br>Coach</span>
-    </button>
-  </aside>
-</div>
-
-<!-- Logout (rectangle) -->
-<button class="rail-btn logout wide-logout" id="logout-btn" aria-label="Logout">
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-    <rect x="4" y="4" width="12" height="16" rx="2" stroke="#ff8080" stroke-width="2"/>
-    <path d="M17 15l4-3-4-3m4 3H10" stroke="#ff8080" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <span class="label">Logout</span>
-</button>
-`;
+        <aside class="dash-rail">
+          <!-- My Profile -->
+          <button class="rail-btn profile" data-nav="profile" aria-label="My Profile">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" stroke="#b48aff" stroke-width="2"/>
+              <path d="M4 20c0-2.8 3.6-4.2 8-4.2s8 1.4 8 4.2" stroke="#b48aff" stroke-width="2"/>
+            </svg>
+            <span class="label">My Profile</span>
+          </button>
+          <!-- My Checklist -->
+          <button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="4" width="16" height="16" rx="3" stroke="#a8e063" stroke-width="2"/>
+              <path d="M8 13l3 3 5-5" stroke="#a8e063" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="label">My<br>Checklist</span>
+          </button>
+          <!-- Testing -->
+          <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="4" width="16" height="16" rx="3" stroke="#61aeee" stroke-width="2"/>
+              <path d="M8 8h8M8 12h8M8 16h8" stroke="#61aeee" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="label">Testing<br>&nbsp;</span>
+          </button>
+          <!-- Flashcards -->
+          <button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <rect x="5" y="7" width="14" height="10" rx="2" stroke="#ffdb70" stroke-width="2"/>
+              <rect x="7" y="9" width="10" height="6" rx="1" stroke="#ffdb70" stroke-width="2"/>
+            </svg>
+            <span class="label">Flash<br>cards</span>
+          </button>
+          <!-- AI Coach -->
+          <button class="rail-btn coach" data-nav="coach" aria-label="AI Coach">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="7" stroke="#68e3c4" stroke-width="2"/>
+              <circle cx="10" cy="10" r="1.2" stroke="#68e3c4" stroke-width="2" fill="none"/>
+              <circle cx="14" cy="10" r="1.2" stroke="#68e3c4" stroke-width="2" fill="none"/>
+              <path d="M10 15c1-.7 3-.7 4 0" stroke="#68e3c4" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="label">AI<br>Coach</span>
+          </button>
+        </aside>
+      </div>
+      <!-- Logout (rectangle) -->
+      <button class="rail-btn logout wide-logout" id="logout-btn" aria-label="Logout">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+          <rect x="4" y="4" width="12" height="16" rx="2" stroke="#ff8080" stroke-width="2"/>
+          <path d="M17 15l4-3-4-3m4 3H10" stroke="#ff8080" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="label">Logout</span>
+      </button>
+    </div>
+  `;
 
   setupNavigation();
 
+  // --- View/Edit My Profile (Student) ---
+  document.getElementById("edit-student-profile-btn")?.addEventListener("click", () => {
+    renderProfile();
+  });
+
+  // --- Logout ---
   document.getElementById("logout-btn")?.addEventListener("click", async () => {
     await signOut(auth);
     localStorage.removeItem("fullName");
     localStorage.removeItem("userRole");
-    // Optionally clear other user-related localStorage keys if you add more later
     renderWelcome();
   });
 }
 
-// Render Walkthrough
+// ─── WALKTHROUGH PAGE ─────────────────────────────────────────────────────────
 async function renderWalkthrough(container = document.getElementById("app")) {
+  if (!container) return;
   if (!auth.currentUser || !auth.currentUser.email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
     return;
   }
 
-  // --- Fetch User Data
-  let userData;
+  // --- Fetch user profile (CDL class) ---
+  let userData = {};
   try {
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", auth.currentUser.email));
     const snap = await getDocs(q);
-    userData = snap.empty ? null : snap.docs[0].data();
+    userData = snap.empty ? {} : snap.docs[0].data();
   } catch (e) {
     container.innerHTML = "<p>Error loading user profile.</p>";
     return;
   }
   const cdlClass = userData?.cdlClass || null;
 
-  // --- Fetch Drill/Walkthrough Progress
+  // --- Fetch Drill Progress ---
   let progress = {};
   try {
     progress = await getUserProgress(auth.currentUser.email) || {};
   } catch (e) { progress = {}; }
-
-  // Drill status object (use Firestore progress if present, else empty)
   const completedDrills = {
     fill: !!progress.drills?.fill,
     order: !!progress.drills?.order,
@@ -919,7 +919,7 @@ async function renderWalkthrough(container = document.getElementById("app")) {
     visual: !!progress.drills?.visual
   };
 
-  // --- Drills Data
+  // --- Drill Data (for easy updates/expansion) ---
   const brakeCheckFull = [
     "With the engine off and key on, I will release the parking brake, hold the service brake pedal for 1 minute, and check for air loss no more than 3 PSI.",
     "Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI.",
@@ -947,15 +947,15 @@ async function renderWalkthrough(container = document.getElementById("app")) {
   ];
   const visualRecall = [
     {
-      img: "brake-gauge.png", // Add or update path
+      img: "brake-gauge.png", // update path as needed
       question: "At what PSI should the low air warning activate?",
       answer: "before 60"
     }
   ];
 
-  let currentDrill = "fill";
+  let currentDrill = "fill"; // default
 
-  // --- HTML: Main Walkthrough + Drills UI
+  // --- Walkthrough Main HTML ------------------------------------------
   let content = `
     <div class="screen-wrapper walkthrough-page fade-in">
       <h2>🧭 CDL Walkthrough Practice</h2>
@@ -972,7 +972,7 @@ async function renderWalkthrough(container = document.getElementById("app")) {
   } else {
     content += `
       <p><strong>CDL Class:</strong> ${cdlClass}</p>
-      <p>Study the following walkthrough to prepare for your in-person vehicle inspection test. Critical sections will be highlighted.</p>
+      <p>Study the following walkthrough to prepare for your in-person vehicle inspection test. <span style="color:var(--accent);font-weight:bold;">Critical sections will be highlighted.</span></p>
 
       <div class="walkthrough-script">
         <h3>🚨 Three-Point Brake Check <span style="color:var(--accent);">(Must Memorize Word-for-Word)</span></h3>
@@ -981,11 +981,10 @@ async function renderWalkthrough(container = document.getElementById("app")) {
           <p>"Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI."</p>
           <p>"Finally, I will fan the brakes to trigger the spring brake pop-out between 20–45 PSI."</p>
         </div>
-
         <h3>✅ Entering the Vehicle</h3>
-        <p>Say: "Getting in using three points of contact."</p>
+        <p>Say: <strong>"Getting in using three points of contact."</strong></p>
         <h3>✅ Exiting the Vehicle</h3>
-        <p>Say: "Getting out using three points of contact."</p>
+        <p>Say: <strong>"Getting out using three points of contact."</strong></p>
         <h3>🔧 Engine Compartment (Sample)</h3>
         <p>Check oil level with dipstick. Look for leaks, cracks, or broken hoses...</p>
       </div>
@@ -1004,10 +1003,8 @@ async function renderWalkthrough(container = document.getElementById("app")) {
         <button data-drill="visual" class="btn small${completedDrills.visual ? ' drill-done' : ''}">Visual Recall${completedDrills.visual ? ' ✅' : ''}</button>
       </nav>
       <div id="drills-container"></div>
+      <canvas id="drill-confetti" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:100;"></canvas>
     `;
-
-    // Confetti placeholder (hidden until all drills complete)
-    content += `<canvas id="drill-confetti" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:100;"></canvas>`;
   }
 
   content += `
@@ -1019,8 +1016,11 @@ async function renderWalkthrough(container = document.getElementById("app")) {
   document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
     renderDashboard();
   });
+  container.querySelector('[data-nav="profile"]')?.addEventListener("click", () => {
+    renderProfile();
+  });
 
-  // --- Drills Logic
+  // Drills
   const drillsContainer = document.getElementById("drills-container");
   const drillsNav = document.querySelector(".drills-nav");
   let updatedDrills = {...completedDrills};
@@ -1029,7 +1029,6 @@ async function renderWalkthrough(container = document.getElementById("app")) {
     const canvas = document.getElementById('drill-confetti');
     if (!canvas) return;
     canvas.style.display = "block";
-    // Simple confetti burst (replace with a better effect if you want)
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -1045,18 +1044,15 @@ async function renderWalkthrough(container = document.getElementById("app")) {
   async function markDrillComplete(type) {
     if (updatedDrills[type]) return;
     updatedDrills[type] = true;
-    // Save drill completion date to Firestore progress doc
     await updateELDTProgress(auth.currentUser.email, {
       [`drills.${type}`]: true,
       [`drills.${type}CompletedAt`]: new Date().toISOString()
     });
-    // Progress bar and nav badge update
     const completedCount = Object.values(updatedDrills).filter(Boolean).length;
     document.querySelector("progress").value = completedCount;
     document.querySelector("progress").nextElementSibling.textContent = `${completedCount}/4 drills completed`;
     drillsNav.querySelector(`[data-drill='${type}']`).innerHTML += " ✅";
     drillsNav.querySelector(`[data-drill='${type}']`).classList.add("drill-done");
-    // Check for all drills complete
     if (Object.values(updatedDrills).every(Boolean)) {
       showConfetti();
       showToast("🎉 All drills complete! Walkthrough milestone saved.");
@@ -1148,7 +1144,6 @@ async function renderWalkthrough(container = document.getElementById("app")) {
             form.style.animation = "shake 0.25s";
             setTimeout(() => { form.style.animation = ""; }, 300);
           }
-          // Always track study attempt:
           await incrementStudentStudyMinutes(auth.currentUser.email, 2);
           await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: fill`);
         };
@@ -1182,7 +1177,6 @@ async function renderWalkthrough(container = document.getElementById("app")) {
           list.style.animation = "shake 0.25s";
           setTimeout(() => { list.style.animation = ""; }, 300);
         }
-        // Always log study minutes and session
         await incrementStudentStudyMinutes(auth.currentUser.email, 2);
         await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: order`);
       };
@@ -1202,7 +1196,6 @@ async function renderWalkthrough(container = document.getElementById("app")) {
           drillsContainer.querySelector("textarea").style.animation = "shake 0.25s";
           setTimeout(() => { drillsContainer.querySelector("textarea").style.animation = ""; }, 300);
         }
-        // Always log study minutes and session
         await incrementStudentStudyMinutes(auth.currentUser.email, 2);
         await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: type`);
       };
@@ -1214,20 +1207,20 @@ async function renderWalkthrough(container = document.getElementById("app")) {
         const ans = visualRecall[0].answer.toLowerCase();
         if (val.includes(ans)) {
           drillsContainer.querySelector(".drill-result").innerHTML = `<span style="color:limegreen;font-weight:bold;">✅ Correct!</span>`;
-                    await markDrillComplete("visual");
+          await markDrillComplete("visual");
         } else {
           drillsContainer.querySelector(".drill-result").innerHTML = `<span style="color:#ffd700;font-weight:bold;">❌ Not quite. Hint: Think PSI.</span>`;
           drillsContainer.querySelector(".visual-answer").style.animation = "shake 0.25s";
-          setTimeout(() => { drillsContainer.querySelector(".visual-answer").style.animation = ""; }, 300);
+          setTimeout(() => { drillsContainer.querySelector(".visual-answer").style.animation
+           = ""; }, 300);
         }
-        // Always log study minutes and session
         await incrementStudentStudyMinutes(auth.currentUser.email, 2);
         await logStudySession(auth.currentUser.email, 2, `Walkthrough Drill: visual`);
       };
     }
   }
 
-  // Init drills on load (default to first drill)
+  // --- Init drills on load (default to first drill) ---
   if (drillsContainer && drillsNav) {
     renderDrill(currentDrill, drillsContainer);
     setupDrillsNav(drillsNav, drillsContainer);
@@ -1235,6 +1228,857 @@ async function renderWalkthrough(container = document.getElementById("app")) {
   }
 
   setupNavigation();
+}
+
+// ─── RENDER PROFILE (Student, Instructor, Admin) ─────────────────────────────
+async function renderProfile(container = document.getElementById("app")) {
+  if (!container) return;
+
+  if (!currentUserEmail) {
+    showToast("No user found. Please log in again.");
+    renderWelcome();
+    return;
+  }
+
+  // Defensive: only show for logged-in users (students, instructors, admin)
+  let userData = {};
+  let userRole = localStorage.getItem("userRole") || "student";
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", currentUserEmail));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      userData = snap.docs[0].data();
+      userRole = userData.role || userRole || "student";
+      localStorage.setItem("userRole", userRole);
+      if (userData.name) localStorage.setItem("fullName", userData.name);
+    } else {
+      showToast("Profile not found. Please contact support or re-register.");
+      renderWelcome();
+      return;
+    }
+  } catch (e) {
+    userData = {};
+  }
+
+  // Default fields
+  const {
+    name = "",
+    dob = "",
+    profilePicUrl = "",
+    cdlClass = "",
+    cdlPermit = "",
+    permitPhotoUrl = "",
+    vehicleQualified = "",
+    truckPlateUrl = "",
+    trailerPlateUrl = "",
+    experience = "",
+    assignedInstructor = "",
+    role = userRole
+  } = userData;
+
+  // Profile header for each role
+  let title = "👤 My Profile";
+  if (userRole === "instructor") title = "👤 Instructor Profile";
+  else if (userRole === "admin") title = "👤 Admin Profile";
+
+  // Only students get all CDL/permit fields
+  let cdlFields = "";
+  if (userRole === "student") {
+    cdlFields = `
+      <label>
+        CDL License Pursued:
+        <select name="cdlClass" required>
+          <option value="">Select</option>
+          <option value="A" ${cdlClass==="A"?"selected":""}>Class A</option>
+          <option value="B" ${cdlClass==="B"?"selected":""}>Class B</option>
+          <option value="C" ${cdlClass==="C"?"selected":""}>Class C</option>
+        </select>
+      </label>
+      <label>
+        Do you have your CDL permit?
+        <select name="cdlPermit" required>
+          <option value="">Select</option>
+          <option value="yes" ${cdlPermit==="yes"?"selected":""}>Yes</option>
+          <option value="no" ${cdlPermit==="no"?"selected":""}>No</option>
+        </select>
+      </label>
+      <div id="permit-photo-section" style="${cdlPermit==="yes"?"":"display:none"}">
+        <label>
+          Upload Permit Photo:
+          <input type="file" name="permitPhoto" accept="image/*" />
+          ${permitPhotoUrl ? `<img src="${permitPhotoUrl}" alt="Permit Photo" style="max-width:90px;border-radius:8px;display:block;margin-top:7px;" />` : ""}
+        </label>
+      </div>
+      <label>
+        Does the vehicle you plan to train/test in qualify for that CDL license?
+        <select name="vehicleQualified" required>
+          <option value="">Select</option>
+          <option value="yes" ${vehicleQualified==="yes"?"selected":""}>Yes</option>
+          <option value="no" ${vehicleQualified==="no"?"selected":""}>No</option>
+        </select>
+      </label>
+      <div id="vehicle-photos-section" style="${vehicleQualified==="yes"?"":"display:none"}">
+        <label>
+          Upload Truck Data Plate Photo:
+          <input type="file" name="truckPlate" accept="image/*" />
+          ${truckPlateUrl ? `<img src="${truckPlateUrl}" alt="Truck Data Plate" style="max-width:90px;border-radius:8px;display:block;margin-top:7px;" />` : ""}
+        </label>
+        <label>
+          Upload Trailer Data Plate Photo:
+          <input type="file" name="trailerPlate" accept="image/*" />
+          ${trailerPlateUrl ? `<img src="${trailerPlateUrl}" alt="Trailer Data Plate" style="max-width:90px;border-radius:8px;display:block;margin-top:7px;" />` : ""}
+        </label>
+      </div>
+    `;
+  }
+
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in profile-page" style="max-width: 480px; margin: 0 auto;">
+      <h2>${title} <span class="role-badge ${userRole}">${userRole.charAt(0).toUpperCase() + userRole.slice(1)}</span></h2>
+      <form id="profile-form" autocomplete="off" style="display:flex; flex-direction:column; gap:1.3rem;">
+        <label>
+          Name:
+          <input type="text" name="name" value="${name}" required />
+        </label>
+        <label>
+          Date of Birth:
+          <input type="date" name="dob" value="${dob}" required />
+        </label>
+        <label>
+          Profile Picture:
+          <input type="file" name="profilePic" accept="image/*" />
+          ${profilePicUrl ? `<img src="${profilePicUrl}" alt="Profile Picture" style="max-width:90px;border-radius:12px;display:block;margin-top:7px;" />` : ""}
+        </label>
+        ${cdlFields}
+        <label>
+          Experience:
+          <select name="experience" required>
+            <option value="">Select</option>
+            <option value="none" ${experience==="none"?"selected":""}>No experience</option>
+            <option value="1-2" ${experience==="1-2"?"selected":""}>1–2 years</option>
+            <option value="3-5" ${experience==="3-5"?"selected":""}>3–5 years</option>
+            <option value="6-10" ${experience==="6-10"?"selected":""}>6–10 years</option>
+            <option value="10+" ${experience==="10+"?"selected":""}>10+ years</option>
+          </select>
+        </label>
+        ${
+          userRole === "instructor" && assignedInstructor
+            ? `<div class="profile-info">Assigned by Admin: ${assignedInstructor}</div>`
+            : ""
+        }
+        <button class="btn primary wide" type="submit">Save Profile</button>
+        <button class="btn outline" id="back-to-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅ Dashboard</button>
+      </form>
+    </div>
+  `;
+
+  // Show/hide student-specific sections based on select fields
+  if (userRole === "student") {
+    container.querySelector('select[name="cdlPermit"]').addEventListener('change', function() {
+      document.getElementById('permit-photo-section').style.display = this.value === "yes" ? "" : "none";
+    });
+    container.querySelector('select[name="vehicleQualified"]').addEventListener('change', function() {
+      document.getElementById('vehicle-photos-section').style.display = this.value === "yes" ? "" : "none";
+    });
+  }
+
+  // Context-aware back navigation (role-sensitive)
+  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+    if (userRole === "admin") renderAdminDashboard();
+    else if (userRole === "instructor") renderInstructorDashboard();
+    else renderDashboard();
+  });
+
+  setupNavigation();
+
+  // PERMIT UPLOAD HANDLER (students only)
+  if (userRole === "student") {
+    container.querySelector('input[name="permitPhoto"]')?.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const storageRef = ref(storage, `permits/${currentUserEmail}`);
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", currentUserEmail));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          await updateDoc(doc(db, "users", snap.docs[0].id), { permitPhotoUrl: downloadURL });
+        }
+        await markStudentPermitUploaded(currentUserEmail);
+        showToast("Permit uploaded and progress updated!");
+      } catch (err) {
+        showToast("Failed to upload permit: " + err.message);
+      }
+    });
+
+    // VEHICLE DATA PLATE UPLOAD HANDLER (students only)
+    let truckUploaded = !!truckPlateUrl, trailerUploaded = !!trailerPlateUrl;
+
+    container.querySelector('input[name="truckPlate"]')?.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const storageRef = ref(storage, `vehicle-plates/${currentUserEmail}-truck`);
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", currentUserEmail));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          await updateDoc(doc(db, "users", snap.docs[0].id), { truckPlateUrl: downloadURL });
+          truckUploaded = true;
+          if (truckUploaded && trailerUploaded) {
+            await markStudentVehicleUploaded(currentUserEmail);
+          }
+        }
+        showToast("Truck data plate uploaded!");
+      } catch (err) {
+        showToast("Failed to upload truck plate: " + err.message);
+      }
+    });
+
+    container.querySelector('input[name="trailerPlate"]')?.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const storageRef = ref(storage, `vehicle-plates/${currentUserEmail}-trailer`);
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", currentUserEmail));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          await updateDoc(doc(db, "users", snap.docs[0].id), { trailerPlateUrl: downloadURL });
+          trailerUploaded = true;
+          if (truckUploaded && trailerUploaded) {
+            await markStudentVehicleUploaded(currentUserEmail);
+          }
+        }
+        showToast("Trailer data plate uploaded!");
+      } catch (err) {
+        showToast("Failed to upload trailer plate: " + err.message);
+      }
+    });
+  }
+
+  // PROFILE SAVE HANDLER (all roles)
+  container.querySelector("#profile-form").onsubmit = async e => {
+    e.preventDefault();
+    const form = e.target;
+    const fd = new FormData(form);
+
+    // Simple fields
+    const name             = fd.get("name").trim();
+    const dob              = fd.get("dob");
+    const experience       = fd.get("experience");
+    let updates = { name, dob, experience };
+
+    // Role-specific fields
+    if (userRole === "student") {
+      updates.cdlClass = fd.get("cdlClass");
+      updates.cdlPermit = fd.get("cdlPermit");
+      updates.vehicleQualified = fd.get("vehicleQualified");
+    }
+
+    // Upload profile picture if chosen
+    let updatedProfilePicUrl = profilePicUrl;
+    const profilePicFile = fd.get("profilePic");
+    if (profilePicFile && profilePicFile.size) {
+      try {
+        const storageRef = ref(storage, `profilePics/${currentUserEmail}`);
+        await uploadBytes(storageRef, profilePicFile);
+        updatedProfilePicUrl = await getDownloadURL(storageRef);
+        updates.profilePicUrl = updatedProfilePicUrl;
+      } catch (err) {
+        showToast("⚠️ Profile picture upload failed: " + err.message);
+      }
+    }
+
+    // Update Firestore user doc
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", currentUserEmail));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const userDocRef = snap.docs[0].ref;
+        await updateDoc(userDocRef, updates);
+        if (userRole === "student") await markStudentProfileComplete(currentUserEmail);
+        showToast("✅ Profile saved and progress updated!");
+      } else {
+        throw new Error("User document not found");
+      }
+    } catch (err) {
+      showToast("❌ Error saving profile: " + err.message);
+    }
+  };
+}
+
+// ─── RENDER CHECKLIST (Student) ──────────────────────────────────────────────
+async function renderChecklists(container = document.getElementById("app")) {
+  if (!container) return;
+
+  // Use consistent user context
+  const email = currentUserEmail || (auth.currentUser && auth.currentUser.email);
+  if (!email) {
+    container.innerHTML = "<p>You must be logged in to view this page.</p>";
+    return;
+  }
+
+  // --- Load student data (from Firestore) ---
+  let userData = {};
+  let userRole = localStorage.getItem("userRole") || "student";
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", email));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      userData = snap.docs[0].data();
+      userRole = userData.role || userRole || "student";
+      localStorage.setItem("userRole", userRole);
+    }
+  } catch (e) {
+    userData = {};
+  }
+
+  // Defensive: Only students see the student checklist
+  if (userRole !== "student") {
+    container.innerHTML = "<p>This checklist is only available for students.</p>";
+    return;
+  }
+
+  // Extract progress-related fields safely
+  const {
+    cdlClass = "",
+    cdlPermit = "",
+    permitPhotoUrl = "",
+    vehicleQualified = "",
+    truckPlateUrl = "",
+    trailerPlateUrl = "",
+    experience = "",
+    lastTestScore = 0,
+    walkthroughProgress = 0,
+    studyMinutes = 0,
+  } = userData;
+
+  // Build checklist state
+  const checklist = [
+    {
+      label: "Profile Complete",
+      done: !!(cdlClass && cdlPermit && experience),
+      link: "profile",
+      notify: !(cdlClass && cdlPermit && experience),
+    },
+    {
+      label: "Permit Uploaded",
+      done: cdlPermit === "yes" && !!permitPhotoUrl,
+      link: "profile",
+      notify: cdlPermit === "yes" && !permitPhotoUrl,
+    },
+    {
+      label: "Vehicle Data Plates Uploaded",
+      done: vehicleQualified === "yes" && !!truckPlateUrl && !!trailerPlateUrl,
+      link: "profile",
+      notify: vehicleQualified === "yes" && (!truckPlateUrl || !trailerPlateUrl),
+    },
+    {
+      label: "Practice Test Passed",
+      done: lastTestScore >= 80,
+      link: "practiceTests",
+      notify: lastTestScore < 80,
+    },
+    {
+      label: "Walkthrough Progress",
+      done: walkthroughProgress >= 1,
+      link: "walkthrough",
+      notify: walkthroughProgress < 1,
+    },
+  ];
+  const complete = checklist.filter(x => x.done).length;
+  const percent = Math.round((complete / checklist.length) * 100);
+
+  // Render page
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in checklist-page" style="max-width:480px;margin:0 auto;">
+      <h2>📋 Student Checklist</h2>
+      <div class="progress-track" style="margin-bottom:18px;">
+        <div class="progress-fill" style="width:${percent}%;"></div>
+        <span class="progress-label">${percent}% Complete</span>
+      </div>
+      <ul class="checklist-list">
+        ${checklist.map(item => `
+          <li class="${item.done ? 'done' : ''}">
+            <span>${item.label}</span>
+            ${item.done 
+              ? `<span class="badge badge-success">✔</span>` 
+              : `<button class="btn outline btn-sm" data-nav="${item.link}">Complete</button>
+                 ${item.notify ? `<span class="notify-bubble">!</span>` : ""}`
+            }
+          </li>
+        `).join("")}
+      </ul>
+      <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅ Back to Dashboard</button>
+    </div>
+  `;
+
+  // Checklist completion nav (for 'Complete' buttons)
+  container.querySelectorAll('.btn[data-nav]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const target = btn.getAttribute('data-nav');
+      if (target === "profile") return renderProfile();
+      if (target === "walkthrough") return renderWalkthrough();
+      if (target === "practiceTests") return renderPracticeTests();
+      setupNavigation();
+    });
+  });
+
+  // Explicit back button (always works)
+  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+    renderDashboard();
+  });
+
+  setupNavigation();
+}
+
+// ─── RENDER PRACTICE TESTS ──────────────────────────────────────────────
+async function renderPracticeTests(container = document.getElementById("app")) {
+  container = container || document.getElementById("app");
+  if (!container) return;
+
+  if (!currentUserEmail || !auth.currentUser) {
+    container.innerHTML = "<p>You must be logged in to view this page.</p>";
+    return;
+  }
+
+  // Defensive: Only students can access practice tests
+  let userRole = localStorage.getItem("userRole") || "student";
+  let userData = {};
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", currentUserEmail));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      userData = snap.docs[0].data();
+      userRole = userData.role || userRole || "student";
+      localStorage.setItem("userRole", userRole);
+    }
+  } catch (e) { userData = {}; }
+
+  if (userRole !== "student") {
+    container.innerHTML = "<p>This page is only available for students.</p>";
+    return;
+  }
+
+  // --- TEST DATA ---
+  const tests = ["General Knowledge", "Air Brakes", "Combination Vehicles"];
+  const testScores = {};
+
+  try {
+    const snap = await getDocs(
+      query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
+    );
+    tests.forEach(test => {
+      const testDocs = snap.docs
+        .map(doc => doc.data())
+        .filter(d => d.testName === test);
+      if (testDocs.length > 0) {
+        const latest = testDocs.sort((a, b) =>
+          (b.timestamp?.toDate?.() || new Date(b.timestamp)) -
+          (a.timestamp?.toDate?.() || new Date(a.timestamp))
+        )[0];
+        const pct = Math.round((latest.correct / latest.total) * 100);
+        testScores[test] = {
+          pct,
+          passed: pct >= 80,
+          lastResult: latest
+        };
+      }
+    });
+  } catch (e) {
+    console.error("❌ Error loading test results:", e);
+  }
+
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
+      <h2 class="dash-head">🧪 CDL Practice Tests</h2>
+      <p style="margin-bottom: 1.4rem;">Select a practice test to begin:</p>
+      <div class="test-list">
+        ${tests.map(name => {
+          const data = testScores[name];
+          const scoreBadge = data
+            ? data.passed
+              ? `<span class="badge badge-success">✅ ${data.pct}%</span>`
+              : `<span class="badge badge-fail">❌ ${data.pct}%</span>`
+            : `<span class="badge badge-neutral">⏳ Not attempted</span>`;
+          return `
+            <div class="glass-card" style="margin-bottom: 1.2rem; padding:18px;">
+              <h3 style="margin-bottom: 0.6rem;">${name} ${scoreBadge}</h3>
+              <div class="btn-grid">
+                <button class="btn wide retake-btn" data-test="${name}">🔁 Retake</button>
+                ${data ? `<button class="btn wide outline review-btn" data-test="${name}">🧾 Review</button>` : ""}
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+      <div style="text-align:center; margin-top:2rem;">
+        <button id="back-to-dashboard-btn" class="btn outline wide">⬅ Back to Dashboard</button>
+      </div>
+    </div>
+  `;
+
+  setupNavigation();
+
+  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+    renderDashboard();
+  });
+
+  // Add listeners after DOM is rendered
+  setTimeout(() => {
+    container.querySelectorAll(".retake-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const test = btn.dataset.test;
+        showToast(`Restarting "${test}" test…`);
+        renderTestEngine(container, test);
+      });
+    });
+    container.querySelectorAll(".review-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const test = btn.dataset.test;
+        showToast(`Loading your last "${test}" result…`);
+        renderTestReview(container, test);
+      });
+    });
+  }, 0);
+}
+
+// ─── REVIEW A SPECIFIC TEST RESULT ────────────────────────────────────────────
+async function renderTestReview(container, testName) {
+  container = container || document.getElementById("app");
+  container.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧾 ${testName} Review</h2><p>Loading...</p></div>`;
+
+  try {
+    const snap = await getDocs(
+      query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
+    );
+
+    const results = snap.docs
+      .map(doc => doc.data())
+      .filter(d => d.testName === testName)
+      .sort((a, b) =>
+        (b.timestamp?.toDate?.() || new Date(b.timestamp)) -
+        (a.timestamp?.toDate?.() || new Date(a.timestamp))
+      );
+
+    if (results.length === 0) {
+      container.innerHTML = `<p>No results found for this test.</p>`;
+      return;
+    }
+
+    const latest = results[0];
+    const pct = Math.round((latest.correct / latest.total) * 100);
+
+    // --- Milestone: Mark test as passed if pct >= 80 ---
+    if (pct >= 80) {
+      // Optional: only show toast the first time they pass
+      const progress = await getUserProgress(currentUserEmail);
+      if (!progress.practiceTestPassed) {
+        await markStudentTestPassed(currentUserEmail);
+        showToast("🎉 Practice Test milestone complete! Progress updated.");
+      }
+    }
+
+    // Always log study minutes and session
+    const minutes = latest?.durationMinutes || 5; // sensible default
+    await incrementStudentStudyMinutes(currentUserEmail, minutes);
+    await logStudySession(currentUserEmail, minutes, `Practice Test: ${testName}`);
+
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
+        <h2>🧾 ${testName} Review</h2>
+        <p>You scored <strong>${latest.correct}/${latest.total}</strong> (${pct}%)</p>
+        <p><em>Question-level review coming soon!</em></p>
+        <div style="margin-top:20px;">
+          <button class="btn outline" data-nav="practiceTests">⬅ Back to Practice Tests</button>
+        </div>
+      </div>
+    `;
+
+    setupNavigation();
+
+    container.querySelector('[data-nav="practiceTests"]')?.addEventListener("click", () => {
+      renderPracticeTests(container);
+    });
+
+  } catch (e) {
+    console.error("❌ Review fetch error:", e);
+    container.innerHTML = `<p>Failed to load review data.</p>`;
+  }
+}
+
+// ─── RENDER FLASHCARDS ──────────────────────────────────────────────────
+async function renderFlashcards(container = document.getElementById("app")) {
+  container = container || document.getElementById("app");
+  if (!container) return;
+
+  if (!auth.currentUser || !auth.currentUser.email) {
+    container.innerHTML = "<p>You must be logged in to view this page.</p>";
+    return;
+  }
+
+  // Optional: Only allow students (if you wish to restrict)
+  let userRole = localStorage.getItem("userRole") || "student";
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", auth.currentUser.email));
+    const snap = await getDocs(q);
+    if (!snap.empty) userRole = snap.docs[0].data().role || userRole;
+  } catch (e) {}
+  if (userRole !== "student") {
+    container.innerHTML = "<p>Flashcards are only available for students.</p>";
+    return;
+  }
+
+  // --- Flashcards Data ---
+  const flashcards = [
+    { q: "What is the minimum tread depth for front tires?", a: "4/32 of an inch." },
+    { q: "What do you check for on rims?", a: "Bent, damaged, or rust trails." },
+    { q: "When must you use 3 points of contact?", a: "When entering and exiting the vehicle." },
+    { q: "What triggers the spring brake pop-out?", a: "Low air pressure (between 20–45 PSI)." }
+  ];
+
+  let current = 0;
+  let startedAt = Date.now();
+  let completed = false;
+
+  async function renderCard() {
+    if (completed) {
+      // --- Session Complete UI ---
+      const minutes = Math.max(1, Math.round((Date.now() - startedAt) / 60000));
+      container.innerHTML = `
+        <div class="screen-wrapper fade-in" style="max-width:420px;margin:0 auto;">
+          <h2>🎉 Flashcard Session Complete!</h2>
+          <p>You reviewed <b>${flashcards.length}</b> cards.</p>
+          <p><b>${minutes}</b> study minute${minutes === 1 ? '' : 's'} logged!</p>
+          <button id="restart-flashcards" class="btn primary" style="margin-top:18px;">🔄 Restart</button>
+          <button id="back-to-dashboard-btn" class="btn outline" style="margin:26px 0 0 0;">⬅ Back to Dashboard</button>
+        </div>
+      `;
+      await incrementStudentStudyMinutes(auth.currentUser.email, minutes);
+      await logStudySession(auth.currentUser.email, minutes, "Flashcards");
+      showToast("✅ Flashcard session logged!");
+
+      document.getElementById("restart-flashcards")?.addEventListener("click", () => {
+        current = 0;
+        startedAt = Date.now();
+        completed = false;
+        renderCard();
+      });
+      document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+        renderDashboard();
+      });
+
+      setupNavigation();
+      return;
+    }
+
+    // --- Main Flashcard UI ---
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in" style="max-width:420px;margin:0 auto;">
+        <h2>🃏 CDL Flashcards</h2>
+        <div style="margin-bottom:1rem;">
+          <progress value="${current + 1}" max="${flashcards.length}" style="width:100%;"></progress>
+          <div style="text-align:center;">Card ${current + 1} of ${flashcards.length}</div>
+        </div>
+        <div class="flashcard-card" id="flashcard" tabindex="0" aria-label="Flashcard: Press Enter or tap to flip">
+          <div class="flashcard-card-inner">
+            <div class="flashcard-front">Q: ${flashcards[current].q}</div>
+            <div class="flashcard-back">A: ${flashcards[current].a}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:1rem;justify-content:center;margin-top:10px;">
+          <button id="prev-flash" class="btn outline" ${current === 0 ? "disabled" : ""}>&#8592; Prev</button>
+          <button id="flip-flash" class="btn">🔄 Flip</button>
+          <button id="next-flash" class="btn outline" ${current === flashcards.length - 1 ? "disabled" : ""}>Next &#8594;</button>
+        </div>
+        <button class="btn wide outline" id="end-session-btn" style="margin:24px 0 0 0;">✅ End Session</button>
+        <button class="btn wide outline" id="back-to-dashboard-btn" style="margin:9px 0 0 0;">⬅ Back to Dashboard</button>
+      </div>
+    `;
+
+    // --- Flip Logic ---
+    let flipped = false;
+    const flashcard = document.getElementById("flashcard");
+    flashcard.onclick = flipCard;
+    document.getElementById("flip-flash")?.addEventListener("click", flipCard);
+
+    function flipCard() {
+      flipped = !flipped;
+      flashcard.classList.toggle("flipped", flipped);
+      if (flipped) flashcard.focus();
+    }
+
+    // --- Keyboard Navigation (Enter to flip, arrows to nav) ---
+    flashcard.onkeydown = (e) => {
+      if (e.key === "Enter") flipCard();
+      if (e.key === "ArrowRight" && current < flashcards.length - 1) {
+        current++; flipped = false; renderCard();
+      }
+      if (e.key === "ArrowLeft" && current > 0) {
+        current--; flipped = false; renderCard();
+      }
+    };
+
+    // --- Navigation ---
+    document.getElementById("prev-flash")?.addEventListener("click", () => {
+      if (current > 0) {
+        current--; flipped = false; renderCard();
+      }
+    });
+    document.getElementById("next-flash")?.addEventListener("click", () => {
+      if (current < flashcards.length - 1) {
+        current++; flipped = false; renderCard();
+      }
+    });
+    document.getElementById("end-session-btn")?.addEventListener("click", () => {
+      completed = true; renderCard();
+    });
+    document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+      renderDashboard();
+    });
+
+    setupNavigation();
+  }
+
+  await renderCard();
+}
+
+// ─── AI COACH PAGE ─────────────────────────────────────────────────────────
+async function renderAICoach(container = document.getElementById("app")) {
+  if (!container) return;
+  container.innerHTML = `
+    <div class="screen-wrapper ai-coach-page fade-in" style="max-width: 480px; margin:0 auto; display:flex; flex-direction:column; height:100vh;">
+      <header style="text-align:center; margin-bottom:1rem;">
+        <h2 style="margin-bottom: 0.3em;">🤖 CDL AI Coach</h2>
+        <div class="subtitle" style="font-size:1.1em;color:var(--accent);margin-bottom:0.2em;">
+          Get quick CDL answers, anytime--based on real FMCSA guidelines.
+        </div>
+        <div style="font-size:0.93em;opacity:0.85;">
+          Try asking:<br>
+          <span class="sample-qs">"What are the air brake check steps?"</span> • 
+          <span class="sample-qs">"How many hours can I drive in a day?"</span> • 
+          <span class="sample-qs">"What is the three-point brake check?"</span>
+        </div>
+      </header>
+      <div id="ai-chat-history" class="ai-chat-history" style="flex:1; overflow-y:auto; background:rgba(30,27,54,0.15); border-radius:12px; padding:13px 11px; margin-bottom:1.1em;"></div>
+      <form id="ai-chat-form" class="ai-chat-form" style="display:flex;gap:7px;align-items:center;">
+        <input id="ai-input" autocomplete="off" type="text" placeholder="Type your CDL question..." class="ai-input" style="flex:1; padding:13px 12px; border-radius:9px; border:1px solid #333; font-size:1.07em;" />
+        <button class="btn" style="padding:10px 20px;">Send</button>
+      </form>
+      <button class="btn wide outline" id="back-to-dashboard-btn" style="margin:1.3rem 0 0 0;">⬅ Back to Dashboard</button>
+    </div>
+  `;
+
+  setupNavigation();
+
+  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+    renderDashboard();
+  });
+
+  // -- AI State
+  const chatHistoryEl = container.querySelector("#ai-chat-history");
+  let conversation = JSON.parse(sessionStorage.getItem("aiCoachHistory") || "[]");
+
+  function renderHistory() {
+    chatHistoryEl.innerHTML = conversation.map(
+      msg => `
+        <div class="ai-msg ai-msg--${msg.role}">
+          <div class="ai-msg-bubble">${msg.content}
+            ${msg.role === "assistant" && msg.fmcsatag ? `<div class="ai-source-tag">(${msg.fmcsatag})</div>` : ""}
+          </div>
+        </div>
+      `
+    ).join("") || `<div class="ai-msg ai-msg--assistant"><div class="ai-msg-bubble">Hi! I’m your CDL AI Coach. How can I help?</div></div>`;
+    chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
+  }
+  renderHistory();
+
+  // --- AI Chat Handler
+  container.querySelector("#ai-chat-form").onsubmit = async (e) => {
+    e.preventDefault();
+    const input = container.querySelector("#ai-input");
+    const question = input.value.trim();
+    if (!question) return;
+    // Add user Q
+    conversation.push({ role: "user", content: question });
+    renderHistory();
+    input.value = "";
+    chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
+
+    // Show loading
+    chatHistoryEl.innerHTML += `<div class="ai-msg ai-msg--assistant"><div class="ai-msg-bubble">Thinking...</div></div>`;
+    chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
+
+    // --- CALL AI (OpenAI API)
+    let reply = "";
+    try {
+      reply = await askCDLAI(question, conversation.slice(-10));
+    } catch (err) {
+      reply = "Sorry, I couldn't reach the AI right now.";
+    }
+
+    // FMCSA tag
+    let fmcsatag = "Based on FMCSA regulations, updated 2024";
+    if (reply.includes("ask your instructor") || reply.includes("official FMCSA manual"))
+      fmcsatag = "";
+
+    // Hand-off if AI can’t help
+    if (/i (don'?t|cannot|can't) know|i am not sure|as an ai/i.test(reply)) {
+      reply += `<br><span class="ai-handoff">[View the <a href="https://www.fmcsa.dot.gov/regulations/title49/section/393.1" target="_blank" rel="noopener">official FMCSA manual</a> or ask your instructor for help]</span>`;
+    }
+
+    conversation.push({ role: "assistant", content: reply, fmcsatag });
+    sessionStorage.setItem("aiCoachHistory", JSON.stringify(conversation));
+    renderHistory();
+  };
+}
+
+// --- OpenAI Chat Call (Free tier, no backend needed) ---
+async function askCDLAI(prompt, history = []) {
+  const apiKey = "YOUR_OPENAI_API_KEY"; // <-- Replace with your test key!
+  const systemMsg = {
+    role: "system",
+    content: "You are a CDL (commercial driver’s license) expert. Only answer CDL, truck driving, and FMCSA topics in clear, simple language for beginners. If a question is not about FMCSA/CDL, politely decline."
+  };
+  // Context: last 3 QAs + system prompt (OpenAI free tier is 4K tokens; don't overflow)
+  const msgs = [systemMsg]
+    .concat(history.slice(-3).map(msg => ({
+      role: msg.role,
+      content: msg.content.replace(/(<([^>]+)>)/gi, "") // strip tags for input
+    })))
+    .concat([{ role: "user", content: prompt }]);
+
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-3.5-turbo",
+      messages: msgs,
+      max_tokens: 220,
+      temperature: 0.45,
+    })
+  });
+  if (!res.ok) throw new Error("OpenAI API error");
+  const data = await res.json();
+  return (data.choices && data.choices[0] && data.choices[0].message.content) || "No answer available.";
 }
 
 // ─── INSTRUCTOR DASHBOARD ────────────────────────────────────────────────
@@ -1989,732 +2833,6 @@ async function renderAdminProfile(container = document.getElementById("app")) {
       showToast("❌ Error saving profile: " + err.message);
     }
   };
-}
-
-// Render Profile
-async function renderProfile(container = document.getElementById("app")) {
-  if (!container) return;
-
-  if (!currentUserEmail) {
-    showToast("No user found. Please log in again.");
-    renderWelcome();
-    return;
-  }
-
-  // Defensive: only show for logged-in users (students, instructors, admin)
-  let userData = {};
-  let userRole = localStorage.getItem("userRole") || "student";
-  try {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", currentUserEmail));
-    const snap = await getDocs(q);
-    if (!snap.empty) {
-      userData = snap.docs[0].data();
-      userRole = userData.role || userRole || "student";
-      localStorage.setItem("userRole", userRole);
-      // Always update local name for greeting
-      if (userData.name) localStorage.setItem("fullName", userData.name);
-    } else {
-      // User doc missing (maybe deleted by admin)
-      showToast("Profile not found. Please contact support or re-register.");
-      renderWelcome();
-      return;
-    }
-  } catch (e) {
-    userData = {};
-  }
-
-  // Default values (same as your original)
-  const {
-    name = "",
-    dob = "",
-    profilePicUrl = "",
-    cdlClass = "",
-    cdlPermit = "",
-    permitPhotoUrl = "",
-    vehicleQualified = "",
-    truckPlateUrl = "",
-    trailerPlateUrl = "",
-    experience = ""
-  } = userData;
-
-  container.innerHTML = `
-    <div class="screen-wrapper fade-in profile-page" style="max-width: 480px; margin: 0 auto;">
-      <h2>👤 My Profile ${userRole ? `<span class="role-badge ${userRole}">${userRole.charAt(0).toUpperCase() + userRole.slice(1)}</span>` : ""}</h2>
-      <form id="profile-form" autocomplete="off" style="display:flex; flex-direction:column; gap:1.3rem;">
-        <label>
-          Name:
-          <input type="text" name="name" value="${name}" required />
-        </label>
-        <label>
-          Date of Birth:
-          <input type="date" name="dob" value="${dob}" required />
-        </label>
-        <label>
-          Profile Picture:
-          <input type="file" name="profilePic" accept="image/*" />
-          ${profilePicUrl ? `<img src="${profilePicUrl}" alt="Profile Picture" style="max-width:90px;border-radius:12px;display:block;margin-top:7px;" />` : ""}
-        </label>
-        <label>
-          CDL License Pursued:
-          <select name="cdlClass" required>
-            <option value="">Select</option>
-            <option value="A" ${cdlClass==="A"?"selected":""}>Class A</option>
-            <option value="B" ${cdlClass==="B"?"selected":""}>Class B</option>
-            <option value="C" ${cdlClass==="C"?"selected":""}>Class C</option>
-          </select>
-        </label>
-        <label>
-          Do you have your CDL permit?
-          <select name="cdlPermit" required>
-            <option value="">Select</option>
-            <option value="yes" ${cdlPermit==="yes"?"selected":""}>Yes</option>
-            <option value="no" ${cdlPermit==="no"?"selected":""}>No</option>
-          </select>
-        </label>
-        <div id="permit-photo-section" style="${cdlPermit==="yes"?"":"display:none"}">
-          <label>
-            Upload Permit Photo:
-            <input type="file" name="permitPhoto" accept="image/*" />
-            ${permitPhotoUrl ? `<img src="${permitPhotoUrl}" alt="Permit Photo" style="max-width:90px;border-radius:8px;display:block;margin-top:7px;" />` : ""}
-          </label>
-        </div>
-        <label>
-          Does the vehicle you plan to train/test in qualify for that CDL license?
-          <select name="vehicleQualified" required>
-            <option value="">Select</option>
-            <option value="yes" ${vehicleQualified==="yes"?"selected":""}>Yes</option>
-            <option value="no" ${vehicleQualified==="no"?"selected":""}>No</option>
-          </select>
-        </label>
-        <div id="vehicle-photos-section" style="${vehicleQualified==="yes"?"":"display:none"}">
-          <label>
-            Upload Truck Data Plate Photo:
-            <input type="file" name="truckPlate" accept="image/*" />
-            ${truckPlateUrl ? `<img src="${truckPlateUrl}" alt="Truck Data Plate" style="max-width:90px;border-radius:8px;display:block;margin-top:7px;" />` : ""}
-          </label>
-          <label>
-            Upload Trailer Data Plate Photo:
-            <input type="file" name="trailerPlate" accept="image/*" />
-            ${trailerPlateUrl ? `<img src="${trailerPlateUrl}" alt="Trailer Data Plate" style="max-width:90px;border-radius:8px;display:block;margin-top:7px;" />` : ""}
-          </label>
-        </div>
-        <label>
-          Experience:
-          <select name="experience" required>
-            <option value="">Select</option>
-            <option value="none" ${experience==="none"?"selected":""}>No experience</option>
-            <option value="1-2" ${experience==="1-2"?"selected":""}>1–2 years</option>
-            <option value="3-5" ${experience==="3-5"?"selected":""}>3–5 years</option>
-            <option value="6-10" ${experience==="6-10"?"selected":""}>6–10 years</option>
-            <option value="10+" ${experience==="10+"?"selected":""}>10+ years</option>
-          </select>
-        </label>
-        <button class="btn primary wide" type="submit">Save Profile</button>
-        <button class="btn outline" id="back-to-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅ Dashboard</button>
-      </form>
-    </div>
-  `;
-
-  // Show/hide sections based on select fields
-  container.querySelector('select[name="cdlPermit"]').addEventListener('change', function() {
-    document.getElementById('permit-photo-section').style.display = this.value === "yes" ? "" : "none";
-  });
-  container.querySelector('select[name="vehicleQualified"]').addEventListener('change', function() {
-    document.getElementById('vehicle-photos-section').style.display = this.value === "yes" ? "" : "none";
-  });
-
-  // Context-aware back navigation
-  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    renderDashboard();
-  });
-
-  setupNavigation();
-
-  // PERMIT UPLOAD HANDLER
-  container.querySelector('input[name="permitPhoto"]')?.addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      const storageRef = ref(storage, `permits/${currentUserEmail}`);
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
-
-      // Save to Firestore
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("email", "==", currentUserEmail));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        await updateDoc(doc(db, "users", snap.docs[0].id), { permitPhotoUrl: downloadURL });
-      }
-      await markStudentPermitUploaded(currentUserEmail);
-      showToast("Permit uploaded and progress updated!");
-    } catch (err) {
-      showToast("Failed to upload permit: " + err.message);
-    }
-  });
-
-  // VEHICLE DATA PLATE UPLOAD HANDLER
-  let truckUploaded = !!truckPlateUrl, trailerUploaded = !!trailerPlateUrl;
-
-  container.querySelector('input[name="truckPlate"]')?.addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      const storageRef = ref(storage, `vehicle-plates/${currentUserEmail}-truck`);
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
-
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("email", "==", currentUserEmail));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        await updateDoc(doc(db, "users", snap.docs[0].id), { truckPlateUrl: downloadURL });
-        truckUploaded = true;
-        if (truckUploaded && trailerUploaded) {
-          await markStudentVehicleUploaded(currentUserEmail);
-        }
-      }
-      showToast("Truck data plate uploaded!");
-    } catch (err) {
-      showToast("Failed to upload truck plate: " + err.message);
-    }
-  });
-
-  container.querySelector('input[name="trailerPlate"]')?.addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      const storageRef = ref(storage, `vehicle-plates/${currentUserEmail}-trailer`);
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
-
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("email", "==", currentUserEmail));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        await updateDoc(doc(db, "users", snap.docs[0].id), { trailerPlateUrl: downloadURL });
-        trailerUploaded = true;
-        if (truckUploaded && trailerUploaded) {
-          await markStudentVehicleUploaded(currentUserEmail);
-        }
-      }
-      showToast("Trailer data plate uploaded!");
-    } catch (err) {
-      showToast("Failed to upload trailer plate: " + err.message);
-    }
-  });
-
-  // PROFILE SAVE HANDLER
-  container.querySelector("#profile-form").onsubmit = async e => {
-    e.preventDefault();
-    const form = e.target;
-    const fd = new FormData(form);
-
-    // Simple fields
-    const name             = fd.get("name").trim();
-    const dob              = fd.get("dob");
-    const cdlClass         = fd.get("cdlClass");
-    const cdlPermit        = fd.get("cdlPermit");
-    const vehicleQualified = fd.get("vehicleQualified");
-    const experience       = fd.get("experience");
-
-    // Upload profile picture if chosen
-    let updatedProfilePicUrl = profilePicUrl;
-    const profilePicFile = fd.get("profilePic");
-    if (profilePicFile && profilePicFile.size) {
-      try {
-        const storageRef = ref(storage, `profilePics/${currentUserEmail}`);
-        await uploadBytes(storageRef, profilePicFile);
-        updatedProfilePicUrl = await getDownloadURL(storageRef);
-      } catch (err) {
-        showToast("⚠️ Profile picture upload failed: " + err.message);
-      }
-    }
-
-    // Update Firestore user doc
-    try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("email", "==", currentUserEmail));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        const userDocRef = snap.docs[0].ref;
-        await updateDoc(userDocRef, {
-          name,
-          dob,
-          cdlClass,
-          cdlPermit,
-          vehicleQualified,
-          experience,
-          profilePicUrl: updatedProfilePicUrl
-        });
-        await markStudentProfileComplete(currentUserEmail);
-        showToast("✅ Profile saved and progress updated!");
-      } else {
-        throw new Error("User document not found");
-      }
-    } catch (err) {
-      showToast("❌ Error saving profile: " + err.message);
-    }
-  };
-}
-
-// Render Checklist
-async function renderChecklists(container = document.getElementById("app")) {
-  if (!container) return;
-
-  if (!auth.currentUser || !auth.currentUser.email) {
-    container.innerHTML = "<p>You must be logged in to view this page.</p>";
-    return;
-  }
-
-  // --- Load student data (from Firestore) ---
-  let userData = {};
-  try {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", auth.currentUser.email));
-    const snap = await getDocs(q);
-    if (!snap.empty) userData = snap.docs[0].data();
-  } catch (e) {
-    userData = {};
-  }
-
-  // Extract progress-related fields safely
-  const {
-    cdlClass = "",
-    cdlPermit = "",
-    permitPhotoUrl = "",
-    vehicleQualified = "",
-    truckPlateUrl = "",
-    trailerPlateUrl = "",
-    experience = "",
-    lastTestScore = 0,
-    walkthroughProgress = 0,
-    studyMinutes = 0,
-  } = userData;
-
-  // Build checklist state
-  const checklist = [
-    {
-      label: "Profile Complete",
-      done: !!(cdlClass && cdlPermit && experience),
-      link: "profile",
-      notify: !(cdlClass && cdlPermit && experience),
-    },
-    {
-      label: "Permit Uploaded",
-      done: cdlPermit === "yes" && !!permitPhotoUrl,
-      link: "profile",
-      notify: cdlPermit === "yes" && !permitPhotoUrl,
-    },
-    {
-      label: "Vehicle Data Plates Uploaded",
-      done: vehicleQualified === "yes" && !!truckPlateUrl && !!trailerPlateUrl,
-      link: "profile",
-      notify: vehicleQualified === "yes" && (!truckPlateUrl || !trailerPlateUrl),
-    },
-    {
-      label: "Practice Test Passed",
-      done: lastTestScore >= 80,
-      link: "practiceTests",
-      notify: lastTestScore < 80,
-    },
-    {
-      label: "Walkthrough Progress",
-      done: walkthroughProgress >= 1,
-      link: "walkthrough",
-      notify: walkthroughProgress < 1,
-    },
-  ];
-  const complete = checklist.filter(x => x.done).length;
-  const percent = Math.round((complete / checklist.length) * 100);
-
-  // Render page
-  container.innerHTML = `
-    <div class="screen-wrapper fade-in checklist-page" style="max-width:480px;margin:0 auto;">
-      <h2>📋 Student Checklist</h2>
-      <div class="progress-track" style="margin-bottom:18px;">
-        <div class="progress-fill" style="width:${percent}%;"></div>
-        <span class="progress-label">${percent}% Complete</span>
-      </div>
-      <ul class="checklist-list">
-        ${checklist.map(item => `
-          <li class="${item.done ? 'done' : ''}">
-            <span>${item.label}</span>
-            ${item.done 
-              ? `<span class="badge badge-success">✔</span>` 
-              : `<button class="btn outline btn-sm" data-nav="${item.link}">Complete</button>
-                 ${item.notify ? `<span class="notify-bubble">!</span>` : ""}`
-            }
-          </li>
-        `).join("")}
-      </ul>
-      <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅ Back to Dashboard</button>
-    </div>
-  `;
-
-  // Checklist completion nav (for 'Complete' buttons)
-  container.querySelectorAll('.btn[data-nav]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      const target = btn.getAttribute('data-nav');
-      if (target === "profile") return renderProfile();
-      if (target === "walkthrough") return renderWalkthrough();
-      if (target === "practiceTests") return renderPracticeTests();
-      // fallback for custom navs
-      setupNavigation();
-    });
-  });
-
-  // Explicit back button (always works)
-  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    renderDashboard();
-  });
-
-  setupNavigation();
-}
-
-// Render Practice Tests
-async function renderPracticeTests(container = document.getElementById("app")) {
-  const appEl = container || document.getElementById("app");
-  if (!appEl) return;
-
-  if (!auth.currentUser || !currentUserEmail) {
-    appEl.innerHTML = "<p>You must be logged in to view this page.</p>";
-    return;
-  }
-
-  const tests = ["General Knowledge", "Air Brakes", "Combination Vehicles"];
-  const testScores = {};
-
-  try {
-    const snap = await getDocs(
-      query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
-    );
-
-    tests.forEach(test => {
-      const testDocs = snap.docs
-        .map(doc => doc.data())
-        .filter(d => d.testName === test);
-      if (testDocs.length > 0) {
-        const latest = testDocs.sort((a, b) =>
-          (b.timestamp?.toDate?.() || new Date(b.timestamp)) -
-          (a.timestamp?.toDate?.() || new Date(a.timestamp))
-        )[0];
-        const pct = Math.round((latest.correct / latest.total) * 100);
-        testScores[test] = {
-          pct,
-          passed: pct >= 80,
-          lastResult: latest
-        };
-      }
-    });
-  } catch (e) {
-    console.error("❌ Error loading test results:", e);
-  }
-
-  appEl.innerHTML = `
-    <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
-      <h2 class="dash-head">🧪 CDL Practice Tests</h2>
-      <p style="margin-bottom: 1.4rem;">Select a practice test to begin:</p>
-      <div class="test-list">
-        ${tests.map(name => {
-          const data = testScores[name];
-          const scoreBadge = data
-            ? data.passed
-              ? `<span class="badge badge-success">✅ ${data.pct}%</span>`
-              : `<span class="badge badge-fail">❌ ${data.pct}%</span>`
-            : `<span class="badge badge-neutral">⏳ Not attempted</span>`;
-          return `
-            <div class="glass-card" style="margin-bottom: 1.2rem; padding:18px;">
-              <h3 style="margin-bottom: 0.6rem;">${name} ${scoreBadge}</h3>
-              <div class="btn-grid">
-                <button class="btn wide retake-btn" data-test="${name}">🔁 Retake</button>
-                ${data ? `<button class="btn wide outline review-btn" data-test="${name}">🧾 Review</button>` : ""}
-              </div>
-            </div>
-          `;
-        }).join("")}
-      </div>
-      <div style="text-align:center; margin-top:2rem;">
-        <button id="back-to-dashboard-btn" class="btn outline wide">⬅ Back to Dashboard</button>
-      </div>
-    </div>
-  `;
-
-  setupNavigation();
-
-  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    renderDashboard();
-  });
-
-  // Add listeners after DOM is rendered
-  setTimeout(() => {
-    appEl.querySelectorAll(".retake-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const test = btn.dataset.test;
-        showToast(`Restarting "${test}" test…`);
-        renderTestEngine(appEl, test);
-      });
-    });
-    appEl.querySelectorAll(".review-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const test = btn.dataset.test;
-        showToast(`Loading your last "${test}" result…`);
-        renderTestReview(appEl, test);
-      });
-    });
-  }, 0);
-}
-
-// Review a specific test result
-async function renderTestReview(container, testName) {
-  container = container || document.getElementById("app");
-  container.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧾 ${testName} Review</h2><p>Loading...</p></div>`;
-
-  try {
-    const snap = await getDocs(
-      query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
-    );
-
-    const results = snap.docs
-      .map(doc => doc.data())
-      .filter(d => d.testName === testName)
-      .sort((a, b) =>
-        (b.timestamp?.toDate?.() || new Date(b.timestamp)) -
-        (a.timestamp?.toDate?.() || new Date(a.timestamp))
-      );
-
-    if (results.length === 0) {
-      container.innerHTML = `<p>No results found for this test.</p>`;
-      return;
-    }
-
-    const latest = results[0];
-    const pct = Math.round((latest.correct / latest.total) * 100);
-
-    // --- Milestone: Mark test as passed if pct >= 80 ---
-    if (pct >= 80) {
-      // Optional: only show toast the first time they pass
-      const progress = await getUserProgress(currentUserEmail);
-      if (!progress.practiceTestPassed) {
-        await markStudentTestPassed(currentUserEmail);
-        showToast("🎉 Practice Test milestone complete! Progress updated.");
-      }
-    }
-
-    // Always log study minutes and session
-    const minutes = latest?.durationMinutes || 5; // sensible default
-    await incrementStudentStudyMinutes(currentUserEmail, minutes);
-    await logStudySession(currentUserEmail, minutes, `Practice Test: ${testName}`);
-
-    container.innerHTML = `
-      <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
-        <h2>🧾 ${testName} Review</h2>
-        <p>You scored <strong>${latest.correct}/${latest.total}</strong> (${pct}%)</p>
-        <p><em>Question-level review coming soon!</em></p>
-        <div style="margin-top:20px;">
-          <button class="btn outline" data-nav="practiceTests">⬅ Back to Practice Tests</button>
-        </div>
-      </div>
-    `;
-
-    setupNavigation();
-
-    container.querySelector('[data-nav="practiceTests"]')?.addEventListener("click", () => {
-      renderPracticeTests(container);
-    });
-
-  } catch (e) {
-    console.error("❌ Review fetch error:", e);
-    container.innerHTML = `<p>Failed to load review data.</p>`;
-  }
-}
-
-// Render Flashcards
-async function renderFlashcards(container = document.getElementById("app")) {
-  if (!auth.currentUser || !auth.currentUser.email) {
-    container.innerHTML = "<p>You must be logged in to view this page.</p>";
-    return;
-  }
-
-  // --- Flashcards Data ---
-  const flashcards = [
-    { q: "What is the minimum tread depth for front tires?", a: "4/32 of an inch." },
-    { q: "What do you check for on rims?", a: "Bent, damaged, or rust trails." },
-    { q: "When must you use 3 points of contact?", a: "When entering and exiting the vehicle." },
-    { q: "What triggers the spring brake pop-out?", a: "Low air pressure (between 20–45 PSI)." }
-  ];
-
-  let current = 0;
-  let startedAt = Date.now();
-  let completed = false;
-
-  async function renderCard() {
-    if (completed) {
-      // --- Session Complete UI ---
-      const minutes = Math.max(1, Math.round((Date.now() - startedAt) / 60000));
-      container.innerHTML = `
-        <div class="screen-wrapper fade-in" style="max-width:420px;margin:0 auto;">
-          <h2>🎉 Flashcard Session Complete!</h2>
-          <p>You reviewed <b>${flashcards.length}</b> cards.</p>
-          <p><b>${minutes}</b> study minute${minutes === 1 ? '' : 's'} logged!</p>
-          <button id="restart-flashcards" class="btn primary" style="margin-top:18px;">🔄 Restart</button>
-          <button id="back-to-dashboard-btn" class="btn outline" style="margin:26px 0 0 0;">⬅ Back to Dashboard</button>
-        </div>
-      `;
-
-      // --- Log study minutes (always, even on restarts) ---
-      await incrementStudentStudyMinutes(auth.currentUser.email, minutes);
-      await logStudySession(auth.currentUser.email, minutes, "Flashcards");
-
-      showToast("✅ Flashcard session logged!");
-
-      document.getElementById("restart-flashcards")?.addEventListener("click", () => {
-        current = 0;
-        startedAt = Date.now();
-        completed = false;
-        renderCard();
-      });
-
-      document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-        renderDashboard();
-      });
-
-      setupNavigation();
-      return;
-    }
-
-    // --- Main Flashcard UI ---
-    container.innerHTML = `
-      <div class="screen-wrapper fade-in" style="max-width:420px;margin:0 auto;">
-        <h2>🃏 CDL Flashcards</h2>
-        <div style="margin-bottom:1rem;">
-          <progress value="${current + 1}" max="${flashcards.length}" style="width:100%;"></progress>
-          <div style="text-align:center;">Card ${current + 1} of ${flashcards.length}</div>
-        </div>
-        <div class="flashcard-card" id="flashcard" tabindex="0" aria-label="Flashcard: Press Enter or tap to flip">
-          <div class="flashcard-card-inner">
-            <div class="flashcard-front">Q: ${flashcards[current].q}</div>
-            <div class="flashcard-back">A: ${flashcards[current].a}</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:1rem;justify-content:center;margin-top:10px;">
-          <button id="prev-flash" class="btn outline" ${current === 0 ? "disabled" : ""}>&#8592; Prev</button>
-          <button id="flip-flash" class="btn">🔄 Flip</button>
-          <button id="next-flash" class="btn outline" ${current === flashcards.length - 1 ? "disabled" : ""}>Next &#8594;</button>
-        </div>
-        <button class="btn wide outline" id="end-session-btn" style="margin:24px 0 0 0;">✅ End Session</button>
-        <button class="btn wide outline" id="back-to-dashboard-btn" style="margin:9px 0 0 0;">⬅ Back to Dashboard</button>
-      </div>
-    `;
-
-    // --- Flip Logic ---
-    let flipped = false;
-    const flashcard = document.getElementById("flashcard");
-    flashcard.onclick = flipCard;
-    document.getElementById("flip-flash")?.addEventListener("click", flipCard);
-
-    function flipCard() {
-      flipped = !flipped;
-      flashcard.classList.toggle("flipped", flipped);
-      if (flipped) flashcard.focus();
-    }
-
-    // --- Keyboard Navigation (Enter to flip, arrows to nav) ---
-    flashcard.onkeydown = (e) => {
-      if (e.key === "Enter") flipCard();
-      if (e.key === "ArrowRight" && current < flashcards.length - 1) {
-        current++; flipped = false; renderCard();
-      }
-      if (e.key === "ArrowLeft" && current > 0) {
-        current--; flipped = false; renderCard();
-      }
-    };
-
-    // --- Navigation ---
-    document.getElementById("prev-flash")?.addEventListener("click", () => {
-      if (current > 0) {
-        current--; flipped = false; renderCard();
-      }
-    });
-    document.getElementById("next-flash")?.addEventListener("click", () => {
-      if (current < flashcards.length - 1) {
-        current++; flipped = false; renderCard();
-      }
-    });
-
-    document.getElementById("end-session-btn")?.addEventListener("click", () => {
-      completed = true; renderCard();
-    });
-
-    document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-      renderDashboard();
-    });
-
-    setupNavigation();
-  }
-
-  await renderCard();
-}
-
-// AI Coach (Student Dashboard Only)
-function renderAICoach(container = document.getElementById("app")) {
-  if (!container) return;
-
-  container.innerHTML = `
-    <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
-      <h2>🎧 Talk to Your AI Coach</h2>
-      <div id="ai-chat-log" style="border:1px solid #ccc; height:300px; overflow-y:auto; padding:10px; margin-bottom:10px; background:#191b2a; border-radius:10px;"></div>
-      <textarea id="ai-input" placeholder="Ask a question..." style="width:100%; height:60px; padding:8px; border-radius:8px; background:#23244a; color:#fff;"></textarea>
-      <button id="ai-send-btn" class="btn primary wide" style="margin-top:6px;">Send</button>
-      <button id="back-to-dashboard-btn" class="btn outline wide" style="display:block; margin:20px auto;">⬅ Back to Dashboard</button>
-    </div>
-  `;
-
-  // Explicit back button for context-aware navigation
-  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    renderDashboard();
-  });
-
-  setupNavigation();
-
-  const logEl = document.getElementById("ai-chat-log");
-  const inputEl = document.getElementById("ai-input");
-  const sendBtn = document.getElementById("ai-send-btn");
-
-  // Always scroll log to bottom
-  function scrollLog() {
-    logEl.scrollTop = logEl.scrollHeight;
-  }
-
-  // Send handler (works on button or Ctrl+Enter)
-  async function handleSend() {
-    const q = inputEl.value.trim();
-    if (!q) return;
-    logEl.innerHTML += `<div style="margin:8px 0;"><strong>You:</strong> ${q}</div>`;
-    inputEl.value = "";
-    scrollLog();
-    sendBtn.disabled = true;
-    // Real AI logic goes here! For now, just get a random tip
-    let reply;
-    try {
-      reply = await getRandomAITip(); // swap to your AI endpoint if needed
-    } catch (e) {
-      reply = "Sorry, there was a problem getting an answer. Try again!";
-    }
-    logEl.innerHTML += `<div style="margin:8px 0; color:#59f;"><strong>AI Coach:</strong> ${reply}</div>`;
-    scrollLog();
-    sendBtn.disabled = false;
-  }
-
-  sendBtn.addEventListener("click", handleSend);
-
-  // Allow Ctrl+Enter or Cmd+Enter to send
-  inputEl.addEventListener("keydown", e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-      handleSend();
-    }
-  });
 }
 
 // ─── 10. MISSING PAGE RENDERERS ────────────────────────────────────────────────

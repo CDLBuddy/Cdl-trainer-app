@@ -1163,3 +1163,64 @@ body::before {
   padding: 0.22em 0.5em;
   margin: 0 2px;
 }
+/* === Render Admin === */
+.ai-chat-history {
+  min-height: 160px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.ai-msg { margin-bottom: 11px; display: flex; }
+.ai-msg--user        { justify-content: flex-end; }
+.ai-msg--assistant   { justify-content: flex-start; }
+.ai-msg-bubble {
+  border-radius: 13px;
+  padding: 10px 14px;
+  background: var(--brand-mid, #271753);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(50,30,120,0.10);
+  max-width: 89vw;
+  word-break: break-word;
+}
+.ai-msg--user .ai-msg-bubble      { background: #2a0b65; color:#f3e6ff; border-bottom-right-radius: 3px; }
+.ai-msg--assistant .ai-msg-bubble { background: #1d2035; color:#d9e4ff; border-bottom-left-radius: 3px; }
+.ai-source-tag {
+  font-size: 0.92em;
+  color: #8ae0d5;
+  opacity: 0.8;
+  margin-top: 5px;
+}
+.ai-handoff { font-size:0.95em; opacity:0.9; margin-top:5px; display:block; }
+.ai-input { border:1px solid #444; }
+
+/* AI Chatbot */
+.ai-chat-history {
+  min-height: 160px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.ai-msg { margin-bottom: 11px; display: flex; }
+.ai-msg--user        { justify-content: flex-end; }
+.ai-msg--assistant   { justify-content: flex-start; }
+.ai-msg-bubble {
+  border-radius: 13px;
+  padding: 10px 14px;
+  background: var(--brand-mid, #271753);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(50,30,120,0.10);
+  max-width: 89vw;
+  word-break: break-word;
+}
+.ai-msg--user .ai-msg-bubble      { background: #2a0b65; color:#f3e6ff; border-bottom-right-radius: 3px; }
+.ai-msg--assistant .ai-msg-bubble { background: #1d2035; color:#d9e4ff; border-bottom-left-radius: 3px; }
+.ai-source-tag {
+  font-size: 0.92em;
+  color: #8ae0d5;
+  opacity: 0.8;
+  margin-top: 5px;
+}
+.ai-handoff { font-size:0.95em; opacity:0.9; margin-top:5px; display:block; }
+.ai-input { border:1px solid #444; }
+@media (max-width: 600px) {
+  .screen-wrapper.ai-coach-page { height:100dvh; min-height:100dvh; }
+  .ai-chat-history { min-height:110px; max-height:33vh; }
+}
