@@ -690,14 +690,15 @@ async function renderDashboard(container = document.getElementById("app")) {
     let latest = null;
     snap.forEach((d) => {
       const t = d.data();
-      // Use toDate() only if available, else fallback
-      if (!latest ||
+      if (
+        !latest ||
         (t.timestamp?.toDate
           ? t.timestamp.toDate()
           : new Date(t.timestamp)) >
-        (latest.timestamp?.toDate
-          ? latest.timestamp.toDate()
-          : new Date(latest.timestamp))) {
+          (latest?.timestamp?.toDate
+            ? latest.timestamp.toDate()
+            : new Date(latest?.timestamp))
+      ) {
         latest = t;
       }
     });
@@ -742,101 +743,98 @@ async function renderDashboard(container = document.getElementById("app")) {
   } catch (e) {
     console.error("Streak calc error", e);
   }
-  
-}
 
-// 2  RENDER DASHBOARD LAYOUT ---------------------------------------
-const name = localStorage.getItem("fullName") || "CDL User";
-const roleBadge = getRoleBadge(currentUserEmail);
+  // 2. RENDER DASHBOARD LAYOUT ---------------------------------------
+  const name = localStorage.getItem("fullName") || "CDL User";
+  const roleBadge = getRoleBadge(currentUserEmail);
 
-container.innerHTML = `
-  <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
+  container.innerHTML = `
+    <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
+    <div class="dash-layout">
+      <!-- metric cards ---------------------------- -->
+      <section class="dash-metrics">
 
-  <div class="dash-layout">
-
-    <!-- metric cards ---------------------------- -->
-    <section class="dash-metrics">
-
-      <div class="dashboard-card">
-        <h3>✅ Checklist Progress</h3>
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: ${checklistPct}%;"></div>
+        <div class="dashboard-card">
+          <h3>✅ Checklist Progress</h3>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${checklistPct}%;"></div>
+          </div>
+          <div class="progress-percent">
+            <strong id="checklist-pct">${checklistPct}</strong>% complete
+          </div>
+          <div class="checklist-alert warning">
+            <span>${getNextChecklistAlert(userData)}</span>
+          </div>
         </div>
-        <div class="progress-percent">
-          <strong id="checklist-pct">${checklistPct}</strong>% complete
+
+        <div class="dashboard-card">
+          <h3>🧭 Walkthrough</h3>
+          <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
+          <button class="btn" data-nav="walkthrough">Open Walkthrough</button>
         </div>
-        <div class="checklist-alert warning">
-          <span>${getNextChecklistAlert(userData)}</span>
+
+        <div class="glass-card metric">
+          <h3>🔥 Study Streak</h3>
+          <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? "s" : ""} active this week</p>
         </div>
+
+        <div class="dashboard-card">
+          <h3>🤖 AI Tip of the Day</h3>
+          <p>${getRandomAITip()}</p>
+          <button data-nav="coach" class="btn ai-tip">Ask AI Coach</button>
+        </div>
+
+      </section>
+
+      <!-- compact scrollable nav ---------------------------- -->
+      <div class="dash-rail-wrapper">
+        <aside class="dash-rail">
+          <!-- My Profile -->
+          <button class="rail-btn profile" data-nav="profile" aria-label="My Profile">
+            <!-- SVG code for profile -->
+            <span class="label">My Profile</span>
+          </button>
+          <!-- My Checklist -->
+          <button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
+            <!-- SVG code for checklist -->
+            <span class="label">My<br>Checklist</span>
+          </button>
+          <!-- Testing -->
+          <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
+            <!-- SVG code for testing -->
+            <span class="label">Testing<br>&nbsp;</span>
+          </button>
+          <!-- Flashcards -->
+          <button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
+            <!-- SVG code for flashcards -->
+            <span class="label">Flash<br>cards</span>
+          </button>
+          <!-- AI Coach -->
+          <button class="rail-btn coach" data-nav="coach" aria-label="AI Coach">
+            <!-- SVG code for AI Coach -->
+            <span class="label">AI<br>Coach</span>
+          </button>
+        </aside>
       </div>
 
-      <div class="dashboard-card">
-        <h3>🧭 Walkthrough</h3>
-        <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
-        <button class="btn" data-nav="walkthrough">Open Walkthrough</button>
-      </div>
-
-      <div class="glass-card metric">
-        <h3>🔥 Study Streak</h3>
-        <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? "s" : ""} active this week</p>
-      </div>
-
-      <div class="dashboard-card">
-        <h3>🤖 AI Tip of the Day</h3>
-        <p>${getRandomAITip()}</p>
-        <button data-nav="coach" class="btn ai-tip">Ask AI Coach</button>
-      </div>
-
-    </section>
-
-    <!-- compact scrollable nav ---------------------------- -->
-    <div class="dash-rail-wrapper">
-      <aside class="dash-rail">
-        <!-- My Profile -->
-        <button class="rail-btn profile" data-nav="profile" aria-label="My Profile">
-          <!-- SVG code for profile -->
-          <span class="label">My Profile</span>
-        </button>
-        <!-- My Checklist -->
-        <button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
-          <!-- SVG code for checklist -->
-          <span class="label">My<br>Checklist</span>
-        </button>
-        <!-- Testing -->
-        <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
-          <!-- SVG code for testing -->
-          <span class="label">Testing<br>&nbsp;</span>
-        </button>
-        <!-- Flashcards -->
-        <button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
-          <!-- SVG code for flashcards -->
-          <span class="label">Flash<br>cards</span>
-        </button>
-        <!-- AI Coach -->
-        <button class="rail-btn coach" data-nav="coach" aria-label="AI Coach">
-          <!-- SVG code for AI Coach -->
-          <span class="label">AI<br>Coach</span>
-        </button>
-      </aside>
+      <!-- Logout Button - styled to be wider/rectangular and at bottom -->
+      <button class="rail-btn logout" id="logout-btn" aria-label="Logout" style="display:block; margin:36px auto 18px auto; width:260px; min-height:68px;">
+        <!-- SVG code for logout -->
+        <span class="label">Logout</span>
+      </button>
     </div>
+  `;
 
-    <!-- Logout Button - styled to be wider/rectangular and at bottom -->
-    <button class="rail-btn logout" id="logout-btn" aria-label="Logout" style="display:block; margin:36px auto 18px auto; width:260px; min-height:68px;">
-      <!-- SVG code for logout -->
-      <span class="label">Logout</span>
-    </button>
-  </div>
-`;
+  setupNavigation();
 
-setupNavigation();
-
-document.getElementById("logout-btn")?.addEventListener("click", async () => {
-  await signOut(auth);
-  localStorage.removeItem("fullName");
-  localStorage.removeItem("userRole");
-  // Optionally clear other user-related localStorage keys if you add more later
-  renderWelcome();
-});
+  document.getElementById("logout-btn")?.addEventListener("click", async () => {
+    await signOut(auth);
+    localStorage.removeItem("fullName");
+    localStorage.removeItem("userRole");
+    // Optionally clear other user-related localStorage keys if you add more later
+    renderWelcome();
+  });
+}
 
 // Render Walkthrough
 async function renderWalkthrough(container = document.getElementById("app")) {
