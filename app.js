@@ -1,6 +1,6 @@
 // ─── Global State ─────────────────────────────────────────────────────────────
 let currentUserEmail = null;
-
+let loaderShownAt = Date.now();
 // ─── 1. MODULE IMPORTS ─────────────────────────────────────────────────────────
 // Firebase (auth, db, storage, etc.)
 import { db, auth, storage } from "./firebase.js";
