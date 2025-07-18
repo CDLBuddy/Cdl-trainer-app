@@ -654,16 +654,35 @@ function renderSignup(container = document.getElementById("app")) {
 // ─── 9. STUDENT DASHBOARD ────────────────────────────────────────────────
 async function renderDashboard(container = document.getElementById("app")) {
   if (!container) return;
+  if (!currentUserEmail) {
+    showToast("No user found. Please log in again.");
+    renderWelcome();
+    return;
+  }
 
   // 1. FETCH DATA -----------------------------------------------------
   let userData = {};
+  let userRole = localStorage.getItem("userRole") || "student"; // fallback
+
   try {
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", currentUserEmail));
     const snap = await getDocs(q);
-    if (!snap.empty) userData = snap.docs[0].data();
+    if (!snap.empty) {
+      userData = snap.docs[0].data();
+      // Prefer Firestore profile role if set
+      userRole = userData.role || userRole || "student";
+      // Always sync to localStorage for UI consistency
+      localStorage.setItem("userRole", userRole);
+    }
   } catch (e) {
     userData = {};
+  }
+
+  // Defensive: if somehow no role, force "student"
+  if (!userRole) {
+    userRole = "student";
+    localStorage.setItem("userRole", userRole);
   }
 
   // --- Checklist Progress ---
