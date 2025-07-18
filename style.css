@@ -1128,3 +1128,38 @@ body::before {
 .profile-row {
   display: flex; justify-content: space-between; margin: 0.5em 0; padding-bottom: 0.4em; border-bottom: 1px solid #272757;
 }
+/* === Render Admin =========================================================== */
+.user-table-scroll {
+  max-height: 370px;
+  overflow-y: auto;
+  margin: 0 -10px;
+}
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1em;
+  background: none;
+}
+.user-table th, .user-table td {
+  padding: 0.38em 0.6em;
+  border-bottom: 1px solid #262646;
+}
+.user-table th {
+  background: rgba(120,120,220,0.07);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.btn-remove-user {
+  color: #f84c4c;
+  border-color: #f84c4c;
+}
+.role-select, .instructor-select {
+  font-size: 1em;
+  background: #181845;
+  color: #fff;
+  border: 1px solid #404065;
+  border-radius: 7px;
+  padding: 0.22em 0.5em;
+  margin: 0 2px;
+}
