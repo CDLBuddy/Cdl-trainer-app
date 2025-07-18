@@ -59,12 +59,7 @@ import {
 // (future) school branding helpers, etc
 // import { getSchoolBranding, ... } from "./ui-helpers.js";
   
-// ─── 3. AUTH STATE LISTENER ────────────────────────────────────────────────────
-const loaderEl = document.getElementById("app-loader");
-const loaderShownAt = Date.now();
-
 onAuthStateChanged(auth, async user => {
-  // Hide loading overlays
   document.getElementById("js-error")?.classList.add("hidden");
   document.getElementById("loading-screen")?.classList.add("hidden");
 
@@ -80,27 +75,32 @@ onAuthStateChanged(auth, async user => {
 
   if (user) {
     currentUserEmail = user.email;
-    let userRole = "student"; // default
+    let userRole = "student"; // Default role
     let schoolId = null;
+    let userData = {};
 
     try {
-      // Fetch role (future: add schoolId)
+      // Fetch role from userRoles
       const roleDoc = await getDoc(doc(db, "userRoles", user.email));
-      if (roleDoc.exists()) {
-        userRole = roleDoc.data().role || "student";
+      if (roleDoc.exists() && roleDoc.data()?.role) {
+        userRole = roleDoc.data().role;
         schoolId = roleDoc.data().schoolId || null;
       }
 
-      // Fetch profile (for name/display/branding/school)
-      let userData = {};
+      // Fetch user profile from users collection
       const usersRef = collection(db, "users");
       const snap = await getDocs(query(usersRef, where("email", "==", user.email)));
       if (!snap.empty) {
         userData = snap.docs[0].data();
+        // Overwrite role if missing or different
+        if (!userData.role || userData.role !== userRole) {
+          userData.role = userRole;
+          await setDoc(doc(db, "users", user.email), { ...userData }, { merge: true });
+        }
         if (userData.schoolId) schoolId = userData.schoolId;
         localStorage.setItem("fullName", userData.name || "CDL User");
       } else {
-        // First login: create profile
+        // First login: create profile with consistent role
         userData = {
           uid: user.uid,
           email: user.email,
@@ -113,17 +113,15 @@ onAuthStateChanged(auth, async user => {
         localStorage.setItem("fullName", userData.name);
       }
 
-      // Always set for local UI
+      // Write localStorage for UI and fallback
       localStorage.setItem("userRole", userRole);
       if (schoolId) localStorage.setItem("schoolId", schoolId);
-
-      // Optional: load branding by schoolId here
 
       // Route by role (expandable for future)
       showPageTransitionLoader();
       setTimeout(() => {
         if (!schoolId) {
-          renderProfile(); // prompt to complete profile (add schoolId, etc)
+          renderProfile();
         } else if (userRole === "admin") {
           renderAdminDashboard();
         } else if (userRole === "instructor") {
@@ -150,7 +148,7 @@ onAuthStateChanged(auth, async user => {
     }, 300);
   }
 
-  // Always fade loader after min show
+  // Hide loader after minimum time
   const elapsed = Date.now() - loaderShownAt;
   setTimeout(() => loaderEl?.classList.add("hide"), Math.max(0, 400 - elapsed));
 });
