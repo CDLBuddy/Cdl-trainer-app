@@ -855,6 +855,7 @@ async function renderDashboard(container = document.getElementById("app")) {
   </svg>
   <span class="label">Logout</span>
 </button>
+`;
 
   setupNavigation();
 
