@@ -822,11 +822,7 @@ async function renderDashboard(container = document.getElementById("app")) {
   <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7" stroke="#68e3c4" stroke-width="2"/><circle cx="10" cy="10" r="1.5" fill="#68e3c4"/><circle cx="14" cy="10" r="1.5" fill="#68e3c4"/><path d="M9 15c.8-1.1 4.2-1.1 5 0" stroke="#68e3c4" stroke-width="2" stroke-linecap="round"/></svg>
   <span class="label">AI<br>Coach</span>
 </button>
-<!-- Logout -->
-<button class="rail-btn logout" id="logout-btn" aria-label="Logout" style="display:block; margin:36px auto 18px auto; width:260px; min-height:68px;">
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M17 16l4-4m0 0l-4-4m4 4H9" stroke="#ff8080" stroke-width="2"/><rect x="3" y="3" width="12" height="18" rx="2" stroke="#ff8080" stroke-width="2"/></svg>
-  <span class="label">Logout</span>
-</button>
+
         </aside>
       </div>
 
