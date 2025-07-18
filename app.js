@@ -1719,22 +1719,39 @@ async function renderAdminDashboard(container = document.getElementById("app")) 
   });
 }
 
-// Render Profile
 async function renderProfile(container = document.getElementById("app")) {
   if (!container) return;
 
-  // Fetch user data from Firestore
+  if (!currentUserEmail) {
+    showToast("No user found. Please log in again.");
+    renderWelcome();
+    return;
+  }
+
+  // Defensive: only show for logged-in users (students, instructors, admin)
   let userData = {};
+  let userRole = localStorage.getItem("userRole") || "student";
   try {
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", currentUserEmail));
     const snap = await getDocs(q);
-    if (!snap.empty) userData = snap.docs[0].data();
+    if (!snap.empty) {
+      userData = snap.docs[0].data();
+      userRole = userData.role || userRole || "student";
+      localStorage.setItem("userRole", userRole);
+      // Always update local name for greeting
+      if (userData.name) localStorage.setItem("fullName", userData.name);
+    } else {
+      // User doc missing (maybe deleted by admin)
+      showToast("Profile not found. Please contact support or re-register.");
+      renderWelcome();
+      return;
+    }
   } catch (e) {
     userData = {};
   }
 
-  // Default values
+  // Default values (same as your original)
   const {
     name = "",
     dob = "",
