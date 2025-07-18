@@ -1,6 +1,7 @@
 // ─── Global State ─────────────────────────────────────────────────────────────
 let currentUserEmail = null;
 let loaderShownAt = Date.now();
+let loaderEl = document.getElementById("app-loader");
 // ─── 1. MODULE IMPORTS ─────────────────────────────────────────────────────────
 // Firebase (auth, db, storage, etc.)
 import { db, auth, storage } from "./firebase.js";
