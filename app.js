@@ -301,46 +301,46 @@ function handleNavigation(page) {
 // Main switch for routing pages
 function doNavigation(page, appEl) {
   switch (page) {
-    case "dashboard":
-      renderDashboard(appEl);
-      break;
-    case "instructor":
-      renderInstructorDashboard(appEl);
-      break;
-    case "admin":
-      renderAdminDashboard(appEl);
-      break;
-    case "checklists":
-      renderChecklists(appEl);
-      break;
-    case "practiceTests":
-      renderPracticeTests(appEl);
-      break;
-    case "flashcards":
-      renderFlashcards(appEl);
-      break;
-    case "results":
-      renderTestResults(appEl);
-      break;
-    case "coach":
-      renderAICoach(appEl);
-      break;
-    case "profile":
-      renderProfile(appEl);
-      break;
-    case "walkthrough":
-      renderWalkthrough(appEl);
-      break;
-    case "login":
-      renderLogin(appEl);
-      break;
-    case "home":
-      renderHome(appEl);
-      break;
-    default:
-      renderHome(appEl);
-      break;
-  }
+  case "dashboard":
+    renderDashboard(appEl);
+    break;
+  case "instructor":
+    renderInstructorDashboard(appEl);
+    break;
+  case "admin":
+    renderAdminDashboard(appEl);
+    break;
+  case "checklists":
+    renderChecklists(appEl);
+    break;
+  case "practiceTests":
+    renderPracticeTests(appEl);
+    break;
+  case "flashcards":
+    renderFlashcards(appEl);
+    break;
+  case "results":
+    renderTestResults(appEl);
+    break;
+  case "coach":
+    renderAICoach(appEl);
+    break;
+  case "profile":
+    renderProfile(appEl);
+    break;
+  case "walkthrough":
+    renderWalkthrough(appEl);
+    break;
+  case "login":
+    renderLogin(appEl);
+    break;
+  case "home":
+    renderHome(appEl);
+    break;
+  default:
+    renderHome(appEl);
+    break;
+}
   // Only update URL hash if needed
   if (page !== location.hash.replace("#", "")) {
     history.pushState({}, "", "#" + page);
