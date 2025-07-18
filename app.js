@@ -1237,6 +1237,301 @@ async function renderWalkthrough(container = document.getElementById("app")) {
   setupNavigation();
 }
 
+// ─── INSTRUCTOR DASHBOARD ────────────────────────────────────────────────
+async function renderInstructorDashboard(container = document.getElementById("app")) {
+  if (!container) return;
+  if (!currentUserEmail) {
+    showToast("No user found. Please log in again.");
+    renderWelcome();
+    return;
+  }
+
+  // Defensive role fallback
+  let userData = {};
+  let userRole = localStorage.getItem("userRole") || "instructor";
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", currentUserEmail));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      userData = snap.docs[0].data();
+      userRole = userData.role || userRole || "instructor";
+      localStorage.setItem("userRole", userRole);
+    }
+  } catch (e) {
+    userData = {};
+  }
+  if (userRole !== "instructor") {
+    showToast("Access denied: Instructor role required.");
+    renderDashboard();
+    return;
+  }
+
+  // ---- Fetch Assigned Students (admin-appoints these) ----
+  let assignedStudents = [];
+  try {
+    const assignSnap = await getDocs(
+      query(collection(db, "users"), where("assignedInstructor", "==", currentUserEmail))
+    );
+    assignSnap.forEach(doc => {
+      const d = doc.data();
+      assignedStudents.push({
+        name: d.name || "Student",
+        email: d.email,
+        license: d.licenseType || "Not set",
+        experience: d.experience || "Unknown",
+        permit: d.permit || false,
+        checklistComplete: d.checklistComplete || false,
+        id: doc.id,
+      });
+    });
+  } catch (e) {
+    assignedStudents = [];
+    console.error("Assigned students fetch error", e);
+  }
+
+  // ---- Fetch Latest Test Results for Assigned Students ----
+  let testResultsByStudent = {};
+  try {
+    for (const student of assignedStudents) {
+      const testsSnap = await getDocs(
+        query(collection(db, "testResults"), where("studentId", "==", student.email))
+      );
+      let latest = null;
+      testsSnap.forEach(doc => {
+        const t = doc.data();
+        if (
+          !latest ||
+          (t.timestamp?.toDate
+            ? t.timestamp.toDate()
+            : new Date(t.timestamp)) >
+            (latest?.timestamp?.toDate
+              ? latest.timestamp.toDate()
+              : new Date(latest?.timestamp))
+        ) {
+          latest = t;
+        }
+      });
+      if (latest) {
+        testResultsByStudent[student.email] = {
+          testName: latest.testName,
+          pct: Math.round((latest.correct / latest.total) * 100),
+          date: latest.timestamp?.toDate
+            ? latest.timestamp.toDate().toLocaleDateString()
+            : new Date(latest.timestamp).toLocaleDateString(),
+        };
+      }
+    }
+  } catch (e) {
+    testResultsByStudent = {};
+    console.error("Instructor test results error", e);
+  }
+
+  // ---- Render Instructor Dashboard Layout ----
+  container.innerHTML = `
+    <h2 class="dash-head">Welcome, Instructor! <span class="role-badge instructor">Instructor</span></h2>
+    <div class="dash-layout">
+      <section class="dash-metrics">
+        <div class="dashboard-card">
+          <h3>📋 Assigned Students</h3>
+          ${
+            assignedStudents.length === 0
+              ? `<p>No students assigned to you yet.</p>`
+              : `<div class="assigned-students-list">
+                  ${assignedStudents
+                    .map(
+                      (student) => `
+                      <div class="student-list-card">
+                        <strong>${student.name}</strong>
+                        <div>Email: ${student.email}</div>
+                        <div>License: ${student.license}</div>
+                        <div>Experience: ${student.experience}</div>
+                        <div>Permit: ${student.permit ? "✔️" : "❌"}</div>
+                        <div>Checklist: ${student.checklistComplete ? "✅ Complete" : "In Progress"}</div>
+                        <div>Last Test: ${
+                          testResultsByStudent[student.email]
+                            ? `${testResultsByStudent[student.email].testName} – ${testResultsByStudent[student.email].pct}% on ${testResultsByStudent[student.email].date}`
+                            : "No recent test"
+                        }</div>
+                        <button class="btn" data-student="${student.email}" data-nav="viewStudentProfile">View Profile</button>
+                      </div>
+                    `
+                    )
+                    .join("")}
+                </div>`
+          }
+        </div>
+        <div class="dashboard-card">
+          <h3>✅ Review Checklists</h3>
+          <p>Sign off on student milestones and walk-throughs.</p>
+          <!-- Optionally, add checklist review tools here -->
+        </div>
+        <div class="dashboard-card">
+          <h3>🧾 Student Test Results</h3>
+          <p>See latest practice and official test results for your assigned students above.</p>
+        </div>
+      </section>
+      <button class="rail-btn logout wide-logout" id="logout-btn" aria-label="Logout">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+          <rect x="4" y="4" width="12" height="16" rx="2" stroke="#ff8080" stroke-width="2"/>
+          <path d="M17 15l4-3-4-3m4 3H10" stroke="#ff8080" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="label">Logout</span>
+      </button>
+    </div>
+  `;
+
+  setupNavigation();
+
+  // Handle logout
+  document.getElementById("logout-btn")?.addEventListener("click", async () => {
+    await signOut(auth);
+    localStorage.clear();
+    renderWelcome();
+  });
+
+  // Handle View Student Profile button (placeholder)
+  container.querySelectorAll('button[data-nav="viewStudentProfile"]').forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const studentEmail = btn.getAttribute("data-student");
+      
+ // ─── RENDER STUDENT PROFILE FOR INSTRUCTOR ─────────────────────────────
+async function renderStudentProfileForInstructor(studentEmail, container = document.getElementById("app")) {
+  if (!studentEmail) {
+    showToast("No student selected.");
+    return;
+  }
+
+  // 1. Fetch student user profile
+  let studentData = {};
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", studentEmail));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      studentData = snap.docs[0].data();
+    }
+  } catch (e) {
+    showToast("Failed to load student profile.");
+    return;
+  }
+
+  // 2. Fetch license & experience info
+  let license = "Not selected", experience = "Unknown";
+  try {
+    const licSnap = await getDocs(query(collection(db, "licenseSelection"), where("studentId", "==", studentEmail)));
+    licSnap.forEach((d) => (license = d.data().licenseType || license));
+    const expSnap = await getDocs(query(collection(db, "experienceResponses"), where("studentId", "==", studentEmail)));
+    expSnap.forEach((d) => (experience = d.data().experience || experience));
+  } catch (e) {}
+
+  // 3. Fetch permit, checklist, and test info (optional - show if available)
+  let permitStatus = "Not uploaded";
+  try {
+    permitStatus = studentData.permit ? "Uploaded" : "Not uploaded";
+  } catch (e) {}
+
+  // Checklist percent (use your existing ELDT logic)
+  let checklistPct = 0;
+  try {
+    const snap = await getDocs(
+      query(collection(db, "eldtProgress"), where("studentId", "==", studentEmail))
+    );
+    let total = 0, done = 0;
+    snap.forEach((d) => {
+      const prog = d.data().progress || {};
+      Object.values(prog).forEach((sec) =>
+        Object.values(sec).forEach((val) => {
+          total++;
+          if (val) done++;
+        })
+      );
+    });
+    checklistPct = total ? Math.round((done / total) * 100) : 0;
+  } catch (e) {}
+
+  // Last test
+  let lastTestStr = "No tests taken yet.";
+  try {
+    const snap = await getDocs(
+      query(collection(db, "testResults"), where("studentId", "==", studentEmail))
+    );
+    let latest = null;
+    snap.forEach((d) => {
+      const t = d.data();
+      if (
+        !latest ||
+        (t.timestamp?.toDate
+          ? t.timestamp.toDate()
+          : new Date(t.timestamp)) >
+          (latest?.timestamp?.toDate
+            ? latest.timestamp.toDate()
+            : new Date(latest?.timestamp))
+      ) {
+        latest = t;
+      }
+    });
+    if (latest) {
+      const pct = Math.round((latest.correct / latest.total) * 100);
+      const dateStr = latest.timestamp?.toDate
+        ? latest.timestamp.toDate().toLocaleDateString()
+        : new Date(latest.timestamp).toLocaleDateString();
+      lastTestStr = `${latest.testName} – ${pct}% on ${dateStr}`;
+    }
+  } catch (e) {}
+
+  // 4. Render modal or inline profile (modal recommended)
+  let modal = document.createElement("div");
+  modal.className = "modal-overlay fade-in";
+  modal.innerHTML = `
+    <div class="modal-card student-profile-modal">
+      <button class="modal-close" aria-label="Close">&times;</button>
+      <h2>Student Profile</h2>
+      <div class="profile-row">
+        <strong>Name:</strong> <span>${studentData.name || "Unknown"}</span>
+      </div>
+      <div class="profile-row">
+        <strong>Email:</strong> <span>${studentData.email}</span>
+      </div>
+      <div class="profile-row">
+        <strong>License:</strong> <span>${license}</span>
+      </div>
+      <div class="profile-row">
+        <strong>Experience:</strong> <span>${experience}</span>
+      </div>
+      <div class="profile-row">
+        <strong>Permit:</strong> <span>${permitStatus}</span>
+      </div>
+      <div class="profile-row">
+        <strong>Checklist:</strong> 
+        <span><div class="progress-bar" style="display:inline-block;width:120px;">
+          <div class="progress-fill" style="width:${checklistPct}%;"></div>
+        </div> ${checklistPct}%</span>
+      </div>
+      <div class="profile-row">
+        <strong>Last Test:</strong> <span>${lastTestStr}</span>
+      </div>
+      <button class="btn outline" id="close-profile-modal" style="margin-top:1.2em;width:100%;">Close</button>
+    </div>
+  `;
+
+  // Remove old modals first
+  document.querySelectorAll(".modal-overlay").forEach(el => el.remove());
+  document.body.appendChild(modal);
+
+  // Close handlers
+  modal.querySelector(".modal-close")?.addEventListener("click", () => modal.remove());
+  modal.querySelector("#close-profile-modal")?.addEventListener("click", () => modal.remove());
+
+  // Optional: block background scroll while modal open
+  document.body.style.overflow = "hidden";
+  modal.addEventListener("transitionend", () => {
+    if (!document.body.contains(modal)) {
+      document.body.style.overflow = "";
+    }
+  });
+}
+
 // Render Profile
 async function renderProfile(container = document.getElementById("app")) {
   if (!container) return;

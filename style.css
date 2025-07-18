@@ -1101,4 +1101,30 @@ body::before {
   }
 }
 
-/* === 16. END =========================================================== */
+/* === Render Instructor =========================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,20,0.72);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.18s;
+}
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+.modal-card.student-profile-modal {
+  background: var(--card-bg, #191942e6);
+  border-radius: 18px;
+  padding: 2.1em 1.7em 1.6em 1.7em;
+  box-shadow: 0 8px 42px #0009;
+  width: 340px;
+  max-width: 97vw;
+  font-size: 1.1em;
+}
+.modal-card .modal-close {
+  position: absolute; right: 18px; top: 16px; background: none; border: none; font-size: 1.8em; color: #bbb; cursor: pointer;
+}
+.profile-row {
+  display: flex; justify-content: space-between; margin: 0.5em 0; padding-bottom: 0.4em; border-bottom: 1px solid #272757;
+}
