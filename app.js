@@ -796,42 +796,65 @@ async function renderDashboard(container = document.getElementById("app")) {
 
       <!-- compact scrollable nav ---------------------------- -->
       <div class="dash-rail-wrapper">
-        <aside class="dash-rail">
-          <!-- My Profile -->
-<button class="rail-btn profile" data-nav="profile" aria-label="My Profile">
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#b48aff" stroke-width="2"/><path d="M4 20c0-2.7 3.6-4 8-4s8 1.3 8 4" stroke="#b48aff" stroke-width="2"/></svg>
-  <span class="label">My Profile</span>
-</button>
-<!-- My Checklist -->
-<button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="#a8e063" stroke-width="2"/><path d="M8 12l2 2 4-4" stroke="#a8e063" stroke-width="2"/></svg>
-  <span class="label">My<br>Checklist</span>
-</button>
-<!-- Testing -->
-<button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="#61aeee" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h8" stroke="#61aeee" stroke-width="2"/></svg>
-  <span class="label">Testing<br>&nbsp;</span>
-</button>
-<!-- Flashcards -->
-<button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect x="5" y="7" width="14" height="10" rx="2" stroke="#ffdb70" stroke-width="2"/><rect x="7" y="9" width="10" height="6" rx="1" stroke="#ffdb70" stroke-width="2"/></svg>
-  <span class="label">Flash<br>cards</span>
-</button>
-<!-- AI Coach -->
-<button class="rail-btn coach" data-nav="coach" aria-label="AI Coach">
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7" stroke="#68e3c4" stroke-width="2"/><circle cx="10" cy="10" r="1.5" fill="#68e3c4"/><circle cx="14" cy="10" r="1.5" fill="#68e3c4"/><path d="M9 15c.8-1.1 4.2-1.1 5 0" stroke="#68e3c4" stroke-width="2" stroke-linecap="round"/></svg>
-  <span class="label">AI<br>Coach</span>
-</button>
+  <aside class="dash-rail">
 
-        </aside>
-      </div>
+    <!-- My Profile -->
+    <button class="rail-btn profile" data-nav="profile" aria-label="My Profile">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="8" r="4" stroke="#b48aff" stroke-width="2"/>
+        <path d="M4 20c0-2.8 3.6-4.2 8-4.2s8 1.4 8 4.2" stroke="#b48aff" stroke-width="2"/>
+      </svg>
+      <span class="label">My Profile</span>
+    </button>
 
-      <!-- Logout -->
-<button class="rail-btn logout" id="logout-btn" aria-label="Logout" style="display:block; margin:36px auto 18px auto; width:260px; min-height:68px;">
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M17 16l4-4m0 0l-4-4m4 4H9" stroke="#ff8080" stroke-width="2"/><rect x="3" y="3" width="12" height="18" rx="2" stroke="#ff8080" stroke-width="2"/></svg>
+    <!-- My Checklist -->
+    <button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+        <rect x="4" y="4" width="16" height="16" rx="3" stroke="#a8e063" stroke-width="2"/>
+        <path d="M8 13l3 3 5-5" stroke="#a8e063" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="label">My<br>Checklist</span>
+    </button>
+
+    <!-- Testing -->
+    <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+        <rect x="4" y="4" width="16" height="16" rx="3" stroke="#61aeee" stroke-width="2"/>
+        <path d="M8 8h8M8 12h8M8 16h8" stroke="#61aeee" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="label">Testing<br>&nbsp;</span>
+    </button>
+
+    <!-- Flashcards -->
+    <button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+        <rect x="5" y="7" width="14" height="10" rx="2" stroke="#ffdb70" stroke-width="2"/>
+        <rect x="7" y="9" width="10" height="6" rx="1" stroke="#ffdb70" stroke-width="2"/>
+      </svg>
+      <span class="label">Flash<br>cards</span>
+    </button>
+
+    <!-- AI Coach -->
+    <button class="rail-btn coach" data-nav="coach" aria-label="AI Coach">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="7" stroke="#68e3c4" stroke-width="2"/>
+        <circle cx="10" cy="10" r="1.2" stroke="#68e3c4" stroke-width="2" fill="none"/>
+        <circle cx="14" cy="10" r="1.2" stroke="#68e3c4" stroke-width="2" fill="none"/>
+        <path d="M10 15c1-.7 3-.7 4 0" stroke="#68e3c4" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="label">AI<br>Coach</span>
+    </button>
+  </aside>
+</div>
+
+<!-- Logout (rectangle) -->
+<button class="rail-btn logout wide-logout" id="logout-btn" aria-label="Logout">
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+    <rect x="4" y="4" width="12" height="16" rx="2" stroke="#ff8080" stroke-width="2"/>
+    <path d="M17 15l4-3-4-3m4 3H10" stroke="#ff8080" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
   <span class="label">Logout</span>
 </button>
-  `;
 
   setupNavigation();
 
