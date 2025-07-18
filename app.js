@@ -1532,6 +1532,193 @@ async function renderStudentProfileForInstructor(studentEmail, container = docum
   });
 }
 
+// ─── ADMIN DASHBOARD ────────────────────────────────────────────────────
+async function renderAdminDashboard(container = document.getElementById("app")) {
+  if (!container) return;
+  if (!currentUserEmail) {
+    showToast("No user found. Please log in again.");
+    renderWelcome();
+    return;
+  }
+
+  // Defensive role fallback
+  let userData = {};
+  let userRole = localStorage.getItem("userRole") || "admin";
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", currentUserEmail));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      userData = snap.docs[0].data();
+      userRole = userData.role || userRole || "admin";
+      localStorage.setItem("userRole", userRole);
+    }
+  } catch (e) {
+    userData = {};
+  }
+  if (userRole !== "admin") {
+    showToast("Access denied: Admin role required.");
+    renderDashboard();
+    return;
+  }
+
+  // --- Fetch All Users ---
+  let allUsers = [];
+  try {
+    const usersSnap = await getDocs(collection(db, "users"));
+    usersSnap.forEach(doc => {
+      const d = doc.data();
+      allUsers.push({
+        name: d.name || "User",
+        email: d.email,
+        role: d.role || "student",
+        assignedInstructor: d.assignedInstructor || "",
+        id: doc.id,
+      });
+    });
+  } catch (e) {
+    allUsers = [];
+    console.error("Admin user fetch error", e);
+  }
+
+  // --- Fetch Instructor List (for assignments) ---
+  const instructorList = allUsers.filter(u => u.role === "instructor");
+
+  // --- Render Admin Dashboard Layout ---
+  container.innerHTML = `
+    <h2 class="dash-head">Welcome, Admin! <span class="role-badge admin">Admin</span></h2>
+    <div class="dash-layout">
+      <section class="dash-metrics">
+
+        <div class="dashboard-card">
+          <h3>👥 Manage Users</h3>
+          <div class="user-table-scroll">
+            <table class="user-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Assigned Instructor</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${
+                  allUsers
+                    .map(
+                      user => `
+                        <tr data-user="${user.email}">
+                          <td>${user.name}</td>
+                          <td>${user.email}</td>
+                          <td>
+                            <select class="role-select" data-user="${user.email}">
+                              <option value="student" ${user.role === "student" ? "selected" : ""}>Student</option>
+                              <option value="instructor" ${user.role === "instructor" ? "selected" : ""}>Instructor</option>
+                              <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+                            </select>
+                          </td>
+                          <td>
+                            <select class="instructor-select" data-user="${user.email}">
+                              <option value="">(None)</option>
+                              ${instructorList
+                                .map(
+                                  inst => `<option value="${inst.email}" ${
+                                    user.assignedInstructor === inst.email ? "selected" : ""
+                                  }>${inst.name}</option>`
+                                )
+                                .join("")}
+                            </select>
+                          </td>
+                          <td>
+                            <button class="btn outline btn-remove-user" data-user="${user.email}">Remove</button>
+                          </td>
+                        </tr>
+                      `
+                    )
+                    .join("")
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <h3>🏫 School & Branding</h3>
+          <p>Edit school info, manage branding, view analytics.<br><em>(Coming soon)</em></p>
+        </div>
+        <div class="dashboard-card">
+          <h3>📝 Reports</h3>
+          <p>Download activity and progress reports for all users.<br><em>(Coming soon)</em></p>
+        </div>
+      </section>
+      <button class="rail-btn logout wide-logout" id="logout-btn" aria-label="Logout">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+          <rect x="4" y="4" width="12" height="16" rx="2" stroke="#ff8080" stroke-width="2"/>
+          <path d="M17 15l4-3-4-3m4 3H10" stroke="#ff8080" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="label">Logout</span>
+      </button>
+    </div>
+  `;
+
+  setupNavigation();
+
+  // --- Role Change Handler ---
+  container.querySelectorAll(".role-select").forEach(select => {
+    select.addEventListener("change", async (e) => {
+      const userEmail = select.getAttribute("data-user");
+      const newRole = select.value;
+      try {
+        await setDoc(doc(db, "users", userEmail), { role: newRole }, { merge: true });
+        await setDoc(doc(db, "userRoles", userEmail), { role: newRole }, { merge: true });
+        showToast(`Role updated for ${userEmail}`);
+        renderAdminDashboard(container);
+      } catch (err) {
+        showToast("Failed to update role.");
+      }
+    });
+  });
+
+  // --- Instructor Assignment Handler ---
+  container.querySelectorAll(".instructor-select").forEach(select => {
+    select.addEventListener("change", async (e) => {
+      const userEmail = select.getAttribute("data-user");
+      const newInstructor = select.value;
+      try {
+        await setDoc(doc(db, "users", userEmail), { assignedInstructor: newInstructor }, { merge: true });
+        showToast(`Instructor assigned to ${userEmail}`);
+        renderAdminDashboard(container);
+      } catch (err) {
+        showToast("Failed to assign instructor.");
+      }
+    });
+  });
+
+  // --- Remove User Handler ---
+  container.querySelectorAll(".btn-remove-user").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      const userEmail = btn.getAttribute("data-user");
+      if (!confirm(`Remove user: ${userEmail}? This cannot be undone.`)) return;
+      try {
+        await deleteDoc(doc(db, "users", userEmail));
+        await deleteDoc(doc(db, "userRoles", userEmail));
+        showToast(`User ${userEmail} removed`);
+        renderAdminDashboard(container);
+      } catch (err) {
+        showToast("Failed to remove user.");
+      }
+    });
+  });
+
+  // --- Logout ---
+  document.getElementById("logout-btn")?.addEventListener("click", async () => {
+    await signOut(auth);
+    localStorage.clear();
+    renderWelcome();
+  });
+}
+
 // Render Profile
 async function renderProfile(container = document.getElementById("app")) {
   if (!container) return;
