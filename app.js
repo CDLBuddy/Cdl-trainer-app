@@ -47,6 +47,7 @@ import {
   adminResetStudentProgress,
   incrementStudentStudyMinutes,
   logStudySession,
+  console.log("TEST: typeof getDoc:", typeof getDoc);
 
   // Checklist field arrays
   studentChecklistFields,
