@@ -166,14 +166,17 @@ input[type="submit"]:disabled {
 .dashboard-card,
 .glass-card,
 .glass-card.metric {
-  background: var(--card-bg);
-  backdrop-filter: blur(12px) saturate(135%);
-  border-radius: 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: linear-gradient(120deg, var(--brand-mid), var(--brand-light));
   color: var(--text-light);
+  border-radius: 15px;
+  box-shadow: 0 4px 18px 0 rgba(0,0,0,0.18), 0 1.5px 10px 0 var(--brand-mid);
+  padding: 1.2rem 1.35rem 1.2rem 1.35rem;
+  margin-bottom: 1.4rem;
+  position: relative;
+  z-index: 2;
+  font-size: 1.13em;
+  border: 1.5px solid var(--accent);
+  backdrop-filter: blur(12px) saturate(135%);
   transition: background 0.3s, color 0.3s;
 }
 .dash-layout {
