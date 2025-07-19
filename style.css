@@ -84,73 +84,91 @@ body.dark-mode {
 }
 @keyframes blink { 50% { opacity: 0; } }
 
-/* === 4. BUTTONS (Universal) ============================================ */
+/* === 4. BUTTONS (Universal, Glass Card Style) ========================== */
 .btn,
 button,
 input[type="button"],
 input[type="submit"] {
-  background: var(--accent);
-  color: var(--brand-dark);
-  border: none;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: bold;
+  background: linear-gradient(120deg, var(--card-bg) 70%, var(--card-bg-dark) 100%);
+  color: var(--brand-light);
+  border: 1.5px solid var(--accent);
+  border-radius: 10px;
+  padding: 0.85rem 2.1rem;
+  font-size: 1.09rem;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(76, 134, 158, 0.07);
-  transition: background 0.25s, box-shadow 0.22s, transform 0.18s;
+  box-shadow: 0 4px 18px rgba(30, 60, 80, 0.12);
+  transition: background 0.20s, box-shadow 0.18s, color 0.17s, border 0.18s, transform 0.18s;
   outline: none;
   position: relative;
   z-index: 1;
   display: inline-block;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.025em;
+  backdrop-filter: blur(2.5px) saturate(120%);
 }
+
 .btn:hover,
 button:hover:not(:disabled),
 input[type="button"]:hover:not(:disabled),
 input[type="submit"]:hover:not(:disabled) {
-  background: #a5c9d6;
-  box-shadow: 0 4px 18px rgba(76, 134, 158, 0.18);
-  transform: translateY(-2px) scale(1.015);
+  background: linear-gradient(120deg, var(--brand-light) 25%, var(--brand-mid) 95%);
+  color: var(--text-light);
+  border-color: var(--brand-light);
+  box-shadow: 0 7px 28px rgba(35, 75, 110, 0.18);
+  transform: translateY(-2px) scale(1.017);
 }
+
 .btn:active,
 button:active:not(:disabled),
 input[type="button"]:active:not(:disabled),
 input[type="submit"]:active:not(:disabled) {
-  background: #90b3c3;
-  box-shadow: 0 2px 8px rgba(76, 134, 158, 0.11);
+  background: linear-gradient(120deg, var(--brand-mid) 70%, var(--brand-dark) 100%);
+  color: var(--accent);
+  box-shadow: 0 2px 7px rgba(35, 75, 110, 0.14);
   transform: scale(0.97);
 }
+
 .btn:disabled,
 button:disabled,
 input[type="button"]:disabled,
 input[type="submit"]:disabled {
-  opacity: 0.55;
+  opacity: 0.52;
   cursor: not-allowed;
 }
-.btn.wide          { width: 100%; }
+
+.btn.wide { width: 100%; }
+
 .btn.primary {
-  background: linear-gradient(135deg, #4e91ad 20%, #c4dbe8 100%);
+  background: linear-gradient(120deg, var(--brand-mid) 85%, var(--brand-dark) 100%);
+  color: var(--text-light);
+  border: 1.5px solid var(--accent);
+}
+.btn.primary:hover, .btn.primary:focus {
+  background: linear-gradient(120deg, var(--brand-light) 12%, var(--brand-mid) 90%);
   color: var(--brand-dark);
-  border: none;
+  border-color: var(--brand-light);
 }
-.btn.primary:hover {
-  background: linear-gradient(135deg, #3288a7 15%, #a5c9d6 100%);
-  box-shadow: 0 0 18px rgba(76,134,158,0.18);
-}
+
 .btn.outline {
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.35);
-  color: var(--text-light);
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
 }
-.btn.outline:hover { background: rgba(255,255,255,0.12); }
+.btn.outline:hover,
+.btn.outline:focus {
+  background: var(--card-bg);
+  color: var(--brand-light);
+  border-color: var(--brand-light);
+}
+
 .btn.on-dark {
   background: var(--accent);
   color: var(--brand-dark);
 }
+
 .btn-sm {
-  font-size: 0.93em;
-  padding: 6px 13px;
+  font-size: 0.95em;
+  padding: 7px 14px;
 }
 
 /* === 5. SCREEN WRAPPER, LAYOUT, CARDS, GLASS =========================== */
