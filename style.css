@@ -132,14 +132,10 @@ input[type="submit"]:disabled {
   padding-bottom: env(safe-area-inset-bottom, 0px);
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
-  background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-  padding: 2rem;
-  color: var(--text-light);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  transition: background 0.3s, color 0.3s;
+  /* No background, border-radius, shadow, or extra padding here! */
 }
+
+/* "Glass" cards float inside the wrapper, with glass style, shadow, and border */
 .dashboard-card,
 .glass-card,
 .glass-card.metric {
@@ -156,6 +152,7 @@ input[type="submit"]:disabled {
   backdrop-filter: blur(12px) saturate(135%);
   transition: background 0.3s, color 0.3s;
 }
+
 .dash-layout {
   display: flex;
   align-items: flex-start;
@@ -169,6 +166,7 @@ input[type="submit"]:disabled {
   gap: 1.3rem;
 }
 .big-num { font-size: 1.3rem; font-weight: 600; }
+
 /* Main scrollable content area: only this scrolls, not whole page */
 .chatbot-container {
   height: calc(100dvh - env(safe-area-inset-top, 24px) - env(safe-area-inset-bottom, 0px));
@@ -177,7 +175,6 @@ input[type="submit"]:disabled {
   -webkit-overflow-scrolling: touch;   /* Smooth iOS scrolling */
   box-sizing: border-box;
 }
-
 /* ───── Dashboard Rail Layout ───── */
 .dash-rail-wrapper {
   width: 100%;
