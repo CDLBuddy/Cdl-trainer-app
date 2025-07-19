@@ -1,4 +1,5 @@
 console.log("=== ui-helpers.js loaded! ===");
+window && window.showToast && window.showToast("ui-helpers loaded!", 2100);
 // ui-helpers.js
 import { db, auth } from "./firebase.js";
 import {
