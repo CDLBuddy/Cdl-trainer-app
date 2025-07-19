@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- Updated viewport for safe area support -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>CDL Trainer</title>
   <link rel="stylesheet" href="style.css" />
 
@@ -27,8 +28,11 @@
     <div class="loader-logo glow-shimmer">🚛 CDL&nbsp;Trainer</div>
   </div>
 
-  <!-- Main App Mount Point -->
-  <div id="app"></div>
+  <!-- NEW: Mobile-safe wrapper for all app content -->
+  <div class="screen-wrapper">
+    <!-- Main App Mount Point -->
+    <div class="chatbot-container" id="app"></div>
+  </div>
 
   <!-- Page Transition Loader -->
   <div id="page-loader" class="loader-overlay hidden">

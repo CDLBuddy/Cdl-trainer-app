@@ -22,27 +22,16 @@ body {
   padding-top: var(--safe-area-inset-top);
 }
 
-/* === 1. RESET & BASE STYLES ============================================ */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-html,
-body {
+/* === MOBILE SAFE AREA + LAYOUT FIXES (insert after :root) =============== */
+html, body {
+  height: 100%;
   margin: 0;
   padding: 0;
-  height: 100%;
+  overflow: hidden; /* Prevent scrolling on body */
+  overscroll-behavior-y: none; /* Prevent pull-to-refresh */
   font-family: "Helvetica Neue", Arial, sans-serif;
   color: var(--text-light);
-  overflow-x: hidden;
-  overscroll-behavior-x: none;
-}
-body, html {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
+  background: var(--brand-dark, #0b0a34); /* fallback, your gradients still apply below */
 }
 
 /* === 2. BACKGROUND, GRADIENTS & ANIMATIONS ============================= */
@@ -136,6 +125,13 @@ input[type="submit"]:disabled {
 
 /* === 5. SCREEN WRAPPER, LAYOUT, CARDS, GLASS =========================== */
 .screen-wrapper {
+  min-height: 100vh;
+  height: 100dvh; /* robust mobile full-height */
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 24px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   background: var(--card-bg);
   backdrop-filter: blur(12px);
   border-radius: 12px;
@@ -173,6 +169,14 @@ input[type="submit"]:disabled {
   gap: 1.3rem;
 }
 .big-num { font-size: 1.3rem; font-weight: 600; }
+/* Main scrollable content area: only this scrolls, not whole page */
+.chatbot-container {
+  height: calc(100dvh - env(safe-area-inset-top, 24px) - env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;        /* Prevents iOS pull-to-refresh in this container */
+  -webkit-overflow-scrolling: touch;   /* Smooth iOS scrolling */
+  box-sizing: border-box;
+}
 
 /* ───── Dashboard Rail Layout ───── */
 .dash-rail-wrapper {
