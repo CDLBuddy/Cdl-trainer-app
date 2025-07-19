@@ -67,7 +67,8 @@ import {
 
 // (future) school branding helpers, etc
 // import { getSchoolBranding, ... } from "./ui-helpers.js";
-  
+
+// AuthStateChanged
 onAuthStateChanged(auth, async user => {
   document.getElementById("js-error")?.classList.add("hidden");
   document.getElementById("loading-screen")?.classList.add("hidden");
