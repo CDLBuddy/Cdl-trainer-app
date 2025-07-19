@@ -1,5 +1,4 @@
 console.log("=== ui-helpers.js loaded! ===");
-window && window.showToast && window.showToast("ui-helpers loaded!", 2100);
 // ui-helpers.js
 import { db, auth } from "./firebase.js";
 import {
@@ -172,6 +171,7 @@ export function showToast(message, duration = 3000) {
   }, duration);
 }
 
+window && window.showToast && window.showToast("ui-helpers loaded!", 2100);
 // ─── SMART NAVIGATION ────────────────────────────────
 export function setupNavigation() {
   console.log("🧭 setupNavigation() called");
