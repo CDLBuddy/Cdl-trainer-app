@@ -90,11 +90,23 @@ onAuthStateChanged(auth, async user => {
     let userData = {};
 
     try {
-      // Fetch role from userRoles
-      const roleDoc = await getDoc(doc(db, "userRoles", user.email));
-      if (roleDoc.exists() && roleDoc.data()?.role) {
-        userRole = roleDoc.data().role;
-        schoolId = roleDoc.data().schoolId || null;
+      // Fetch role from userRoles with debug logging
+      const roleDocRef = doc(db, "userRoles", user.email);
+      const roleDoc = await getDoc(roleDocRef);
+
+      console.log("DEBUG: Fetching role for email:", user.email);
+      if (roleDoc.exists()) {
+        console.log("DEBUG: roleDoc data:", roleDoc.data());
+        if (roleDoc.data()?.role) {
+          userRole = roleDoc.data().role;
+          schoolId = roleDoc.data().schoolId || null;
+        } else {
+          showToast("Role field missing for user: " + user.email, 4000);
+          console.warn("Role field missing for user:", user.email);
+        }
+      } else {
+        showToast("Failed to load user role for: " + user.email, 4000);
+        console.warn("Role doc not found for:", user.email);
       }
 
       // Fetch user profile from users collection
