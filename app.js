@@ -68,8 +68,9 @@ import {
 // (future) school branding helpers, etc
 // import { getSchoolBranding, ... } from "./ui-helpers.js";
 
-// AuthStateChanged
+// ─── AUTH STATE LISTENER WITH DEFAULT ROLE ASSIGNMENT ───────────
 onAuthStateChanged(auth, async user => {
+  // Hide any error or static loading overlays
   document.getElementById("js-error")?.classList.add("hidden");
   document.getElementById("loading-screen")?.classList.add("hidden");
 
@@ -90,39 +91,42 @@ onAuthStateChanged(auth, async user => {
     let userData = {};
 
     try {
-      // Fetch role from userRoles with debug logging
+      // Fetch role from userRoles collection (by email)
       const roleDocRef = doc(db, "userRoles", user.email);
       const roleDoc = await getDoc(roleDocRef);
 
-      console.log("DEBUG: Fetching role for email:", user.email);
+      console.log("DEBUG: Checking userRoles for:", user.email);
+
       if (roleDoc.exists()) {
-        console.log("DEBUG: roleDoc data:", roleDoc.data());
-        if (roleDoc.data()?.role) {
-          userRole = roleDoc.data().role;
-          schoolId = roleDoc.data().schoolId || null;
-        } else {
-          showToast("Role field missing for user: " + user.email, 4000);
-          console.warn("Role field missing for user:", user.email);
+        const data = roleDoc.data();
+        console.log("DEBUG: userRoles data for", user.email, ":", data);
+        userRole = data.role || "student";
+        schoolId = data.schoolId || null;
+        if (!data.role) {
+          showToast("⚠️ No role set in userRoles for: " + user.email, 4000);
         }
       } else {
-        showToast("Failed to load user role for: " + user.email, 4000);
-        console.warn("Role doc not found for:", user.email);
+        // If role doc missing, default to student and notify admin
+        showToast("⚠️ No userRoles entry found for: " + user.email, 4000);
+        console.warn("No userRoles entry found for:", user.email);
       }
 
       // Fetch user profile from users collection
       const usersRef = collection(db, "users");
       const snap = await getDocs(query(usersRef, where("email", "==", user.email)));
+
       if (!snap.empty) {
         userData = snap.docs[0].data();
-        // Overwrite role if missing or different
+        // Always sync role field
         if (!userData.role || userData.role !== userRole) {
           userData.role = userRole;
           await setDoc(doc(db, "users", user.email), { ...userData }, { merge: true });
+          console.log("DEBUG: User profile role updated to", userRole);
         }
         if (userData.schoolId) schoolId = userData.schoolId;
         localStorage.setItem("fullName", userData.name || "CDL User");
       } else {
-        // First login: create profile with consistent role
+        // No user doc: create profile
         userData = {
           uid: user.uid,
           email: user.email,
@@ -133,11 +137,13 @@ onAuthStateChanged(auth, async user => {
         };
         await setDoc(doc(db, "users", user.email), userData);
         localStorage.setItem("fullName", userData.name);
+        console.log("DEBUG: Created new user profile for:", user.email);
       }
 
-      // Write localStorage for UI and fallback
+      // Write role and schoolId for UI logic
       localStorage.setItem("userRole", userRole);
       if (schoolId) localStorage.setItem("schoolId", schoolId);
+      else localStorage.removeItem("schoolId");
 
       // Route by role (expandable for future)
       showPageTransitionLoader();
@@ -156,7 +162,7 @@ onAuthStateChanged(auth, async user => {
 
     } catch (err) {
       console.error("❌ Auth/profile error:", err);
-      showToast("Error loading profile: " + (err.message || err));
+      showToast("Error loading profile: " + (err.message || err), 4800);
       renderWelcome();
     }
 
