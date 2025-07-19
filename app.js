@@ -7,7 +7,8 @@ let loaderEl = document.getElementById("app-loader");
 
 // Firebase core
 import { db, auth, storage } from "./firebase.js";
-/ Firestore methods (you need these!)
+
+// Firestore methods
 import {
   doc,
   getDoc,
@@ -38,7 +39,6 @@ import {
 
 // UI Helpers
 import {
-  // UI and navigation
   showToast,
   setupNavigation,
   showPageTransitionLoader,
@@ -47,8 +47,6 @@ import {
   initFadeInOnScroll,
   startTypewriter,
   debounce,
-
-  // Progress and milestone logic
   updateELDTProgress,
   getUserProgress,
   markStudentProfileComplete,
@@ -65,13 +63,9 @@ import {
   adminResetStudentProgress,
   incrementStudentStudyMinutes,
   logStudySession,
-
-  // Checklist field arrays
   studentChecklistFields,
   instructorChecklistFields,
   adminChecklistFields,
-
-  // Checklist alerts
   getNextChecklistAlert,
 } from "./ui-helpers.js";
 
