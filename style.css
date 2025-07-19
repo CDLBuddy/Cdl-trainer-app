@@ -175,6 +175,35 @@ input[type="submit"]:disabled {
   -webkit-overflow-scrolling: touch;   /* Smooth iOS scrolling */
   box-sizing: border-box;
 }
+.centered-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  width: 100vw;
+  box-sizing: border-box;
+  /* Optional: padding if you want space on sides */
+  padding: 0 1rem;
+}
+
+.main-card {
+  max-width: 430px;
+  width: 96vw;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 2rem 1.3rem 2rem 1.3rem;
+  .main-card {
+  overflow-y: auto;
+  max-height: 92vh;
+}
+  /* Add your glass/blur/radius/shadow here */
+}
 /* ───── Dashboard Rail Layout ───── */
 .dash-rail-wrapper {
   width: 100%;

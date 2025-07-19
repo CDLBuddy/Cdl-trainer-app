@@ -28,10 +28,21 @@
     <div class="loader-logo glow-shimmer">🚛 CDL&nbsp;Trainer</div>
   </div>
 
-  <!-- NEW: Mobile-safe wrapper for all app content -->
+  <!-- App Content Mount Point: all dynamic app pages render here -->
   <div class="screen-wrapper">
-    <!-- Main App Mount Point -->
-    <div class="chatbot-container" id="app"></div>
+    <div class="chatbot-container" id="app">
+      <!--
+        IMPORTANT: 
+        All your JS page renders (renderHome, renderLogin, renderDashboard, etc)
+        should now inject content wrapped like this:
+
+        <div class="centered-page">
+          <div class="main-card">
+            <!-- Your page content here (dashboard, login, profile, etc) -->
+          </div>
+        </div>
+      -->
+    </div>
   </div>
 
   <!-- Page Transition Loader -->
