@@ -63,7 +63,8 @@ import {
 
   // Checklist alerts
   getNextChecklistAlert,
-  
+} from "./ui-helpers.js";
+
 // (future) school branding helpers, etc
 // import { getSchoolBranding, ... } from "./ui-helpers.js";
   
