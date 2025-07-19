@@ -99,11 +99,8 @@ onAuthStateChanged(auth, async user => {
       const roleDocRef = doc(db, "userRoles", user.email);
       const roleDoc = await getDoc(roleDocRef);
 
-      console.log("DEBUG: Checking userRoles for:", user.email);
-
       if (roleDoc.exists()) {
         const data = roleDoc.data();
-        console.log("DEBUG: userRoles data for", user.email, ":", data);
         userRole = data.role || "student";
         schoolId = data.schoolId || null;
         if (!data.role) {
@@ -125,7 +122,6 @@ onAuthStateChanged(auth, async user => {
         if (!userData.role || userData.role !== userRole) {
           userData.role = userRole;
           await setDoc(doc(db, "users", user.email), { ...userData }, { merge: true });
-          console.log("DEBUG: User profile role updated to", userRole);
         }
         if (userData.schoolId) schoolId = userData.schoolId;
         localStorage.setItem("fullName", userData.name || "CDL User");
@@ -141,7 +137,6 @@ onAuthStateChanged(auth, async user => {
         };
         await setDoc(doc(db, "users", user.email), userData);
         localStorage.setItem("fullName", userData.name);
-        console.log("DEBUG: Created new user profile for:", user.email);
       }
 
       // Write role and schoolId for UI logic
@@ -149,17 +144,15 @@ onAuthStateChanged(auth, async user => {
       if (schoolId) localStorage.setItem("schoolId", schoolId);
       else localStorage.removeItem("schoolId");
 
-      // Route by role (expandable for future)
+      // Route strictly by role (no longer blocked by schoolId)
       showPageTransitionLoader();
       setTimeout(() => {
-        if (!schoolId) {
-          renderProfile();
-        } else if (userRole === "admin") {
+        if (userRole === "admin") {
           renderAdminDashboard();
         } else if (userRole === "instructor") {
           renderInstructorDashboard();
         } else {
-          renderDashboard();
+          renderDashboard(); // Always fallback to student dashboard
         }
         hidePageTransitionLoader();
       }, 350);
