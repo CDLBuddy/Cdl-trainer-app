@@ -1,7 +1,6 @@
 // ui-helpers.js
-console.log("=== ui-helpers.js loaded! ===");
 
-// Firestore/Firebase imports
+// ─── FIREBASE IMPORTS ────────────────────────────────
 import { db, auth } from "./firebase.js";
 import {
   doc,
@@ -14,10 +13,7 @@ import {
   increment
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// --- DEV DEBUGGING ---
-console.log("TEST: typeof getDoc:", typeof getDoc);
-
-// Optional: Debug toast (for dev, remove for production)
+// ─── UI TOAST MESSAGE ────────────────────────────────
 export function showToast(message, duration = 3000) {
   const toast = document.createElement("div");
   toast.className = "toast-message";
@@ -40,13 +36,8 @@ export function showToast(message, duration = 3000) {
   }, duration);
 }
 
-// For dev only: pop toast to confirm load
-if (typeof window !== "undefined") window.showToast = showToast;
-showToast("ui-helpers loaded!", 2100);
-
-// --- SMART NAVIGATION ---
+// ─── SMART NAVIGATION ────────────────────────────────
 export function setupNavigation() {
-  console.log("🧭 setupNavigation() called");
   const buttons = document.querySelectorAll("[data-nav]");
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -59,7 +50,7 @@ export function setupNavigation() {
   });
 }
 
-// --- PAGE TRANSITION LOADER ---
+// ─── PAGE TRANSITION LOADER ──────────────────────────
 export function showPageTransitionLoader() {
   const overlay = document.getElementById("loader-overlay");
   if (overlay) overlay.classList.remove("hidden");
@@ -69,7 +60,7 @@ export function hidePageTransitionLoader() {
   if (overlay) setTimeout(() => overlay.classList.add("hidden"), 400);
 }
 
-// --- AI TIP OF THE DAY ---
+// ─── AI TIP OF THE DAY ───────────────────────────────
 export function getRandomAITip() {
   const tips = [
     "Remember to verbally state 'three-point brake check' word-for-word during your walkthrough exam!",
@@ -85,7 +76,7 @@ export function getRandomAITip() {
   return tips[new Date().getDay() % tips.length];
 }
 
-// --- TYPEWRITER HEADLINE ---
+// ─── TYPEWRITER HEADLINE ─────────────────────────────
 const _headlines = [
   "CDL Buddy",
   "Your CDL Prep Coach",
@@ -108,7 +99,7 @@ export function startTypewriter() {
   }
 }
 
-// --- DEBOUNCE ---
+// ─── DEBOUNCE ────────────────────────────────────────
 export function debounce(func, wait) {
   let timeout;
   return function (...args) {
@@ -117,7 +108,7 @@ export function debounce(func, wait) {
   };
 }
 
-// --- CHECKLIST ALERTS ---
+// ─── CHECKLIST ALERTS ────────────────────────────────
 export function getNextChecklistAlert(user = {}) {
   if (!user.cdlClass || !user.cdlPermit || !user.experience) {
     const missing = [];
@@ -145,7 +136,7 @@ export function getNextChecklistAlert(user = {}) {
   return "All required steps complete! 🎉";
 }
 
-// --- FADE-IN ON SCROLL ---
+// ─── FADE-IN ON SCROLL ───────────────────────────────
 export function initFadeInOnScroll() {
   const observer = new window.IntersectionObserver(
     entries => {
@@ -160,8 +151,7 @@ export function initFadeInOnScroll() {
   document.querySelectorAll(".fade-in-on-scroll").forEach(el => observer.observe(el));
 }
 
-// --- FIRESTORE: PROGRESS HELPERS ---
-// These are unchanged; just copy as is!
+// ─── FIRESTORE: PROGRESS HELPERS ─────────────────────
 export async function updateELDTProgress(userId, fields, options = {}) {
   try {
     const { role = "student", logHistory = false } = options;
@@ -208,7 +198,7 @@ export async function getUserProgress(userId) {
   return snap.exists() ? snap.data() : {};
 }
 
-// Checklist fields
+// ─── CHECKLIST FIELDS ────────────────────────────────
 export const studentChecklistFields = [
   { key: "profileComplete", label: "Profile Complete" },
   { key: "permitUploaded", label: "Permit Uploaded" },
@@ -227,7 +217,7 @@ export const adminChecklistFields = [
   { key: "adminFlagged", label: "Flagged for Review" }
 ];
 
-// Milestone helpers (unchanged)
+// ─── MILESTONE HELPERS ───────────────────────────────
 export async function markStudentProfileComplete(studentEmail) {
   await updateELDTProgress(studentEmail, { profileComplete: true }, { role: "student" });
 }
@@ -281,8 +271,4 @@ export async function logStudySession(studentEmail, minutes, context = "") {
     context,
     at: new Date().toISOString()
   });
-}
-export function testHelpersConnection() {
-  showToast("ui-helpers export test works!", 2100);
-  return typeof getDoc;
 }
