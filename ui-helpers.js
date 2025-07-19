@@ -11,6 +11,8 @@ import {
   increment
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
+console.log("TEST: typeof getDoc:", typeof getDoc);
+
 // 4. MILESTONE AND PROGRESS HELPERS
 
 export async function updateELDTProgress(userId, fields, options = {}) {
