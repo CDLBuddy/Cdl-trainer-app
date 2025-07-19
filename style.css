@@ -167,14 +167,6 @@ input[type="submit"]:disabled {
 }
 .big-num { font-size: 1.3rem; font-weight: 600; }
 
-/* Main scrollable content area: only this scrolls, not whole page */
-.chatbot-container {
-  height: calc(100dvh - env(safe-area-inset-top, 24px) - env(safe-area-inset-bottom, 0px));
-  overflow-y: auto;
-  overscroll-behavior: contain;        /* Prevents iOS pull-to-refresh in this container */
-  -webkit-overflow-scrolling: touch;   /* Smooth iOS scrolling */
-  box-sizing: border-box;
-}
 .centered-page {
   min-height: 100vh;
   min-height: 100dvh;
@@ -183,13 +175,15 @@ input[type="submit"]:disabled {
   justify-content: center;
   align-items: center;
   overflow-x: hidden;
-  overscroll-behavior-x: contain;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  position: relative;
   width: 100vw;
   box-sizing: border-box;
-  /* Optional: padding if you want space on sides */
   padding: 0 1rem;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  position: relative;
 }
 
 .main-card {
@@ -198,11 +192,21 @@ input[type="submit"]:disabled {
   margin: 0 auto;
   box-sizing: border-box;
   padding: 2rem 1.3rem 2rem 1.3rem;
-  .main-card {
-  overflow-y: auto;
-  max-height: 92vh;
+  background: rgba(25, 32, 38, 0.19);
+  backdrop-filter: blur(14px) saturate(140%);
+  border-radius: 22px;
+  box-shadow: 0 8px 36px 0 rgba(40, 60, 90, 0.18), 0 1.5px 10px 0 #4e91ad44;
+  border: 1.2px solid rgba(255,255,255,0.11);
+  overflow: visible;
 }
-  /* Add your glass/blur/radius/shadow here */
+@media (max-width: 600px) {
+  .main-card {
+    max-width: 98vw;
+    padding: 1.2rem 0.6rem 1.2rem 0.6rem;
+  }
+  .centered-page {
+    padding: 0 2vw;
+  }
 }
 /* ───── Dashboard Rail Layout ───── */
 .dash-rail-wrapper {
@@ -1606,6 +1610,14 @@ body.ai-modal-open {
 @media (max-width: 360px) {
   .ai-coach-modal, .ai-coach-page { padding: 0 1px; }
   .ai-coach-header { padding-left: 38px; padding-right: 4px; }
+}
+/* Main scrollable content area: only this scrolls, not whole page */
+.chatbot-container {
+  height: calc(100dvh - env(safe-area-inset-top, 24px) - env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;        /* Prevents iOS pull-to-refresh in this container */
+  -webkit-overflow-scrolling: touch;   /* Smooth iOS scrolling */
+  box-sizing: border-box;
 }
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
