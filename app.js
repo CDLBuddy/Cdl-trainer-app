@@ -7,6 +7,16 @@ let loaderEl = document.getElementById("app-loader");
 
 // Firebase core
 import { db, auth, storage } from "./firebase.js";
+/ Firestore methods (you need these!)
+import {
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 // Auth
 import {
