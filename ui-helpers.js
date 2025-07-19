@@ -282,3 +282,7 @@ export async function logStudySession(studentEmail, minutes, context = "") {
     at: new Date().toISOString()
   });
 }
+export function testHelpersConnection() {
+  showToast("ui-helpers export test works!", 2100);
+  return typeof getDoc;
+}

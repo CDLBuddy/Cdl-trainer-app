@@ -47,6 +47,9 @@ import {
   adminResetStudentProgress,
   incrementStudentStudyMinutes,
   logStudySession,
+  import { testHelpersConnection } from './ui-helpers.js';
+
+console.log("TEST: ui-helpers connection =", testHelpersConnection());
 
   // Checklist field arrays
   studentChecklistFields,
