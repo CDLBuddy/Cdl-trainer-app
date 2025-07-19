@@ -316,74 +316,89 @@ function renderWelcome() {
   });
 }
 
-// ─── 4. SMART NAVIGATION ───────────────────────────────────────────────────────
+// ─── 4. SMART HYBRID NAVIGATION ───────────────────────────────────────────────
 
-// Route and transition handler
-function handleNavigation(page) {
+// Helper: Detect mobile (touch device)
+function isMobile() {
+  return ("ontouchstart" in window) || (window.innerWidth < 900);
+}
+
+// Route and transition handler (handles fade or slide)
+function handleNavigation(page, direction = "forward") {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
   const currentScreen = appEl.querySelector(".screen-wrapper");
+  const mobile = isMobile();
+  let outClass = mobile
+    ? (direction === "forward" ? "slide-out-left" : "slide-out-right")
+    : "fade-out";
+
   if (currentScreen) {
-    currentScreen.classList.add("fade-out");
+    currentScreen.classList.add(outClass);
+
     currentScreen.addEventListener("transitionend", function onFade() {
       currentScreen.removeEventListener("transitionend", onFade);
-      doNavigation(page, appEl);
+      doNavigation(page, appEl, direction);
     }, { once: true });
+
     showPageTransitionLoader();
   } else {
-    doNavigation(page, appEl);
+    doNavigation(page, appEl, direction);
   }
 }
 
-// Main switch for routing pages
-function doNavigation(page, appEl) {
+// Navigation switcher (with direction for mobile slide effect)
+function doNavigation(page, appEl, direction = "forward") {
+  // For browser history: set direction by hash
+  let lastHash = window.__lastPageHash || "home";
+  window.__lastPageHash = page;
+  let navDir = "forward";
+  if (window.__navHistory && window.__navHistory.length) {
+    const last = window.__navHistory[window.__navHistory.length - 1];
+    navDir = last === page ? "back" : "forward";
+  }
+  if (!window.__navHistory) window.__navHistory = [];
+  window.__navHistory.push(page);
+
+  // Render correct page
   switch (page) {
-  case "dashboard":
-    renderDashboard(appEl);
-    break;
-  case "instructor":
-    renderInstructorDashboard(appEl);
-    break;
-  case "admin":
-    renderAdminDashboard(appEl);
-    break;
-  case "checklists":
-    renderChecklists(appEl);
-    break;
-  case "practiceTests":
-    renderPracticeTests(appEl);
-    break;
-  case "flashcards":
-    renderFlashcards(appEl);
-    break;
-  case "results":
-    renderTestResults(appEl);
-    break;
-  case "coach":
-    renderAICoach(appEl);
-    break;
-  case "profile":
-    renderProfile(appEl);
-    break;
-  case "walkthrough":
-    renderWalkthrough(appEl);
-    break;
-  case "login":
-    renderLogin(appEl);
-    break;
-  case "home":
-    renderHome(appEl);
-    break;
-  default:
-    renderHome(appEl);
-    break;
-}
+    case "dashboard":      renderDashboard(appEl); break;
+    case "instructor":     renderInstructorDashboard(appEl); break;
+    case "admin":          renderAdminDashboard(appEl); break;
+    case "checklists":     renderChecklists(appEl); break;
+    case "practiceTests":  renderPracticeTests(appEl); break;
+    case "flashcards":     renderFlashcards(appEl); break;
+    case "results":        renderTestResults(appEl); break;
+    case "coach":          renderAICoach(appEl); break;
+    case "profile":        renderProfile(appEl); break;
+    case "walkthrough":    renderWalkthrough(appEl); break;
+    case "login":          renderLogin(appEl); break;
+    case "home": default:  renderHome(appEl); break;
+  }
+
+  // Add incoming animation for new screen
+  setTimeout(() => {
+    const newScreen = appEl.querySelector(".screen-wrapper");
+    if (!newScreen) return;
+    const mobile = isMobile();
+    newScreen.classList.remove("fade-out", "slide-out-left", "slide-out-right", "fade-in", "slide-in-right", "slide-in-left");
+    if (mobile) {
+      if (navDir === "back") {
+        newScreen.classList.add("slide-in-right");
+      } else {
+        newScreen.classList.add("slide-in-left");
+      }
+    } else {
+      newScreen.classList.add("fade-in");
+    }
+    hidePageTransitionLoader();
+  }, 10);
+
   // Only update URL hash if needed
   if (page !== location.hash.replace("#", "")) {
     history.pushState({}, "", "#" + page);
   }
-  hidePageTransitionLoader();
 }
 
 // Global event handler for nav buttons (delegated)
@@ -392,7 +407,10 @@ document.body.addEventListener("click", (e) => {
   if (target) {
     const page = target.getAttribute("data-nav");
     if (page) {
-      handleNavigation(page);
+      // Smart direction: always forward (unless back)
+      let dir = "forward";
+      if (window.location.hash.replace("#", "") === page) dir = "back";
+      handleNavigation(page, dir);
     }
   }
 });
@@ -400,7 +418,7 @@ document.body.addEventListener("click", (e) => {
 // Browser back/forward support
 window.addEventListener("popstate", () => {
   const page = location.hash.replace("#", "") || "home";
-  handleNavigation(page);
+  handleNavigation(page, "back");
 });
 
 // Render login
@@ -1262,129 +1280,117 @@ async function renderWalkthrough(container = document.getElementById("app")) {
   setupNavigation();
 }
 
-// ─── RENDER PROFILE (Student, Instructor, Admin) ─────────────────────────────
+// ─── RENDER PROFILE (STUDENT) ─────────────────────────────────────────────
 async function renderProfile(container = document.getElementById("app")) {
   if (!container) return;
-
   if (!currentUserEmail) {
-    showToast("No user found. Please log in again.");
-    renderWelcome();
-    return;
+    showToast("No user found. Please log in again."); renderWelcome(); return;
   }
 
-  // Defensive: only show for logged-in users (students, instructors, admin)
+  // Fetch user data
   let userData = {};
-  let userRole = localStorage.getItem("userRole") || "student";
   try {
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", currentUserEmail));
     const snap = await getDocs(q);
-    if (!snap.empty) {
-      userData = snap.docs[0].data();
-      userRole = userData.role || userRole || "student";
-      localStorage.setItem("userRole", userRole);
-      if (userData.name) localStorage.setItem("fullName", userData.name);
-    } else {
-      showToast("Profile not found. Please contact support or re-register.");
-      renderWelcome();
-      return;
-    }
-  } catch (e) {
-    userData = {};
-  }
+    if (!snap.empty) userData = snap.docs[0].data();
+    else { showToast("Profile not found."); renderWelcome(); return; }
+  } catch { userData = {}; }
 
-  // Default fields
+  // Fields & defaults
   const {
-    name = "",
-    dob = "",
-    profilePicUrl = "",
-    cdlClass = "",
-    cdlPermit = "",
-    permitPhotoUrl = "",
-    vehicleQualified = "",
-    truckPlateUrl = "",
-    trailerPlateUrl = "",
-    experience = "",
-    assignedInstructor = "",
-    role = userRole
+    name = "", dob = "", profilePicUrl = "",
+    cdlClass = "", endorsements = [], restrictions = [],
+    experience = "", prevEmployer = "", assignedCompany = "",
+    assignedInstructor = "", cdlPermit = "", permitPhotoUrl = "",
+    permitExpiry = "", driverLicenseUrl = "", licenseExpiry = "",
+    medicalCardUrl = "", medCardExpiry = "",
+    vehicleQualified = "", truckPlateUrl = "", trailerPlateUrl = "",
+    emergencyName = "", emergencyPhone = "", emergencyRelation = "",
+    waiverSigned = false, waiverSignature = "",
+    course = "", schedulePref = "", scheduleNotes = "",
+    paymentStatus = "", paymentProofUrl = "",
+    accommodation = "", studentNotes = "",
+    profileProgress = 0
   } = userData;
 
-  // Profile header for each role
-  let title = "👤 My Profile";
-  if (userRole === "instructor") title = "👤 Instructor Profile";
-  else if (userRole === "admin") title = "👤 Admin Profile";
+  // Endorsement & restriction options
+  const endorsementOptions = [
+    { val: "H", label: "Hazmat (H)" },
+    { val: "N", label: "Tanker (N)" },
+    { val: "T", label: "Double/Triple Trailers (T)" },
+    { val: "P", label: "Passenger (P)" },
+    { val: "S", label: "School Bus (S)" },
+    { val: "AirBrakes", label: "Air Brakes" },
+    { val: "Other", label: "Other" }
+  ];
+  const restrictionOptions = [
+    { val: "auto", label: "Remove Automatic Restriction" },
+    { val: "airbrake", label: "Remove Air Brake Restriction" },
+    { val: "refresher", label: "One-day Refresher" },
+    { val: "roadtest", label: "Road Test Prep" }
+  ];
 
-  // Only students get all CDL/permit fields
-  let cdlFields = "";
-  if (userRole === "student") {
-    cdlFields = `
-      <label>
-        CDL License Pursued:
-        <select name="cdlClass" required>
-          <option value="">Select</option>
-          <option value="A" ${cdlClass==="A"?"selected":""}>Class A</option>
-          <option value="B" ${cdlClass==="B"?"selected":""}>Class B</option>
-          <option value="C" ${cdlClass==="C"?"selected":""}>Class C</option>
-        </select>
-      </label>
-      <label>
-        Do you have your CDL permit?
-        <select name="cdlPermit" required>
-          <option value="">Select</option>
-          <option value="yes" ${cdlPermit==="yes"?"selected":""}>Yes</option>
-          <option value="no" ${cdlPermit==="no"?"selected":""}>No</option>
-        </select>
-      </label>
-      <div id="permit-photo-section" style="${cdlPermit==="yes"?"":"display:none"}">
-        <label>
-          Upload Permit Photo:
-          <input type="file" name="permitPhoto" accept="image/*" />
-          ${permitPhotoUrl ? `<img src="${permitPhotoUrl}" alt="Permit Photo" style="max-width:90px;border-radius:8px;display:block;margin-top:7px;" />` : ""}
-        </label>
-      </div>
-      <label>
-        Does the vehicle you plan to train/test in qualify for that CDL license?
-        <select name="vehicleQualified" required>
-          <option value="">Select</option>
-          <option value="yes" ${vehicleQualified==="yes"?"selected":""}>Yes</option>
-          <option value="no" ${vehicleQualified==="no"?"selected":""}>No</option>
-        </select>
-      </label>
-      <div id="vehicle-photos-section" style="${vehicleQualified==="yes"?"":"display:none"}">
-        <label>
-          Upload Truck Data Plate Photo:
-          <input type="file" name="truckPlate" accept="image/*" />
-          ${truckPlateUrl ? `<img src="${truckPlateUrl}" alt="Truck Data Plate" style="max-width:90px;border-radius:8px;display:block;margin-top:7px;" />` : ""}
-        </label>
-        <label>
-          Upload Trailer Data Plate Photo:
-          <input type="file" name="trailerPlate" accept="image/*" />
-          ${trailerPlateUrl ? `<img src="${trailerPlateUrl}" alt="Trailer Data Plate" style="max-width:90px;border-radius:8px;display:block;margin-top:7px;" />` : ""}
-        </label>
-      </div>
-    `;
+  // Profile completion progress (same logic as your checklist)
+  function calcProgress(fd) {
+    let total = 15, filled = 0;
+    if (fd.get("name")) filled++;
+    if (fd.get("dob")) filled++;
+    if (profilePicUrl || fd.get("profilePic")?.size) filled++;
+    if (fd.get("cdlClass")) filled++;
+    if (fd.getAll("endorsements[]").length) filled++;
+    if (fd.getAll("restrictions[]").length) filled++;
+    if (fd.get("experience")) filled++;
+    if (fd.get("cdlPermit")) filled++;
+    if (permitPhotoUrl || fd.get("permitPhoto")?.size) filled++;
+    if (driverLicenseUrl || fd.get("driverLicense")?.size) filled++;
+    if (medicalCardUrl || fd.get("medicalCard")?.size) filled++;
+    if (vehicleQualified) filled++;
+    if (truckPlateUrl || fd.get("truckPlate")?.size) filled++;
+    if (emergencyName && emergencyPhone) filled++;
+    if (fd.get("waiver")) filled++;
+    return Math.round((filled / total) * 100);
   }
 
+  // HTML
   container.innerHTML = `
-    <div class="screen-wrapper fade-in profile-page" style="max-width: 480px; margin: 0 auto;">
-      <h2>${title} <span class="role-badge ${userRole}">${userRole.charAt(0).toUpperCase() + userRole.slice(1)}</span></h2>
-      <form id="profile-form" autocomplete="off" style="display:flex; flex-direction:column; gap:1.3rem;">
-        <label>
-          Name:
-          <input type="text" name="name" value="${name}" required />
+    <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
+      <h2>👤 Student Profile <span class="role-badge student">Student</span></h2>
+      <div class="progress-bar" style="margin-bottom:1.4rem;">
+        <div class="progress" style="width:${profileProgress||0}%;"></div>
+        <span class="progress-label">${profileProgress||0}% Complete</span>
+      </div>
+      <form id="profile-form" autocomplete="off" style="display:flex;flex-direction:column;gap:1.1rem;">
+        <label>Name: <input type="text" name="name" value="${name}" required /></label>
+        <label>Date of Birth: <input type="date" name="dob" value="${dob}" required /></label>
+        <label>Profile Picture: <input type="file" name="profilePic" accept="image/*" />${profilePicUrl ? `<img src="${profilePicUrl}" style="max-width:90px;border-radius:10px;display:block;margin:7px 0;">` : ""}</label>
+        <label>CDL Class:
+          <select name="cdlClass" required>
+            <option value="">Select</option>
+            <option value="A" ${cdlClass==="A"?"selected":""}>Class A</option>
+            <option value="B" ${cdlClass==="B"?"selected":""}>Class B</option>
+            <option value="C" ${cdlClass==="C"?"selected":""}>Class C</option>
+          </select>
         </label>
-        <label>
-          Date of Birth:
-          <input type="date" name="dob" value="${dob}" required />
+        <label>Endorsements:
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            ${endorsementOptions.map(opt => `
+              <label style="font-weight:400;">
+                <input type="checkbox" name="endorsements[]" value="${opt.val}" ${endorsements.includes(opt.val) ? "checked" : ""}/> ${opt.label}
+              </label>
+            `).join("")}
+          </div>
         </label>
-        <label>
-          Profile Picture:
-          <input type="file" name="profilePic" accept="image/*" />
-          ${profilePicUrl ? `<img src="${profilePicUrl}" alt="Profile Picture" style="max-width:90px;border-radius:12px;display:block;margin-top:7px;" />` : ""}
+        <label>Restrictions/Upgrades:
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            ${restrictionOptions.map(opt => `
+              <label style="font-weight:400;">
+                <input type="checkbox" name="restrictions[]" value="${opt.val}" ${restrictions.includes(opt.val) ? "checked" : ""}/> ${opt.label}
+              </label>
+            `).join("")}
+          </div>
         </label>
-        ${cdlFields}
-        <label>
-          Experience:
+        <label>Experience:
           <select name="experience" required>
             <option value="">Select</option>
             <option value="none" ${experience==="none"?"selected":""}>No experience</option>
@@ -1394,161 +1400,157 @@ async function renderProfile(container = document.getElementById("app")) {
             <option value="10+" ${experience==="10+"?"selected":""}>10+ years</option>
           </select>
         </label>
-        ${
-          userRole === "instructor" && assignedInstructor
-            ? `<div class="profile-info">Assigned by Admin: ${assignedInstructor}</div>`
-            : ""
-        }
+        <label>Previous Employer: <input type="text" name="prevEmployer" value="${prevEmployer}" /></label>
+        <label>Assigned Company: <input type="text" name="assignedCompany" value="${assignedCompany}" /></label>
+        <label>Assigned Instructor: <input type="text" name="assignedInstructor" value="${assignedInstructor}" /></label>
+        <label>CDL Permit?
+          <select name="cdlPermit" required>
+            <option value="">Select</option>
+            <option value="yes" ${cdlPermit==="yes"?"selected":""}>Yes</option>
+            <option value="no" ${cdlPermit==="no"?"selected":""}>No</option>
+          </select>
+        </label>
+        <div id="permit-photo-section" style="${cdlPermit==="yes"?"":"display:none"}">
+          <label>Permit Expiry: <input type="date" name="permitExpiry" value="${permitExpiry||""}" /></label>
+          <label>Permit Photo: <input type="file" name="permitPhoto" accept="image/*" />${permitPhotoUrl ? `<img src="${permitPhotoUrl}" style="max-width:70px;margin:7px 0;">` : ""}</label>
+        </div>
+        <label>Driver License: <input type="file" name="driverLicense" accept="image/*,application/pdf" />${driverLicenseUrl ? `<a href="${driverLicenseUrl}" target="_blank">View</a>` : ""}</label>
+        <label>License Expiry: <input type="date" name="licenseExpiry" value="${licenseExpiry||""}" /></label>
+        <label>Medical Card: <input type="file" name="medicalCard" accept="image/*,application/pdf" />${medicalCardUrl ? `<a href="${medicalCardUrl}" target="_blank">View</a>` : ""}</label>
+        <label>Medical Card Expiry: <input type="date" name="medCardExpiry" value="${medCardExpiry||""}" /></label>
+        <label>Does your training/testing vehicle qualify?
+          <select name="vehicleQualified" required>
+            <option value="">Select</option>
+            <option value="yes" ${vehicleQualified==="yes"?"selected":""}>Yes</option>
+            <option value="no" ${vehicleQualified==="no"?"selected":""}>No</option>
+          </select>
+        </label>
+        <div id="vehicle-photos-section" style="${vehicleQualified==="yes"?"":"display:none"}">
+          <label>Truck Data Plate: <input type="file" name="truckPlate" accept="image/*" />${truckPlateUrl ? `<img src="${truckPlateUrl}" style="max-width:70px;margin:7px 0;">` : ""}</label>
+          <label>Trailer Data Plate: <input type="file" name="trailerPlate" accept="image/*" />${trailerPlateUrl ? `<img src="${trailerPlateUrl}" style="max-width:70px;margin:7px 0;">` : ""}</label>
+        </div>
+        <label>Emergency Contact Name: <input type="text" name="emergencyName" value="${emergencyName}" /></label>
+        <label>Emergency Contact Phone: <input type="tel" name="emergencyPhone" value="${emergencyPhone}" /></label>
+        <label>Relationship: <input type="text" name="emergencyRelation" value="${emergencyRelation}" /></label>
+        <label>Course Selected: <input type="text" name="course" value="${course}" /></label>
+        <label>Schedule Preference: <input type="text" name="schedulePref" value="${schedulePref}" /></label>
+        <label>Scheduling Notes: <textarea name="scheduleNotes">${scheduleNotes||""}</textarea></label>
+        <label>Payment Status:
+          <select name="paymentStatus">
+            <option value="">Select</option>
+            <option value="paid" ${paymentStatus==="paid"?"selected":""}>Paid in Full</option>
+            <option value="deposit" ${paymentStatus==="deposit"?"selected":""}>Deposit Paid</option>
+            <option value="balance" ${paymentStatus==="balance"?"selected":""}>Balance Due</option>
+          </select>
+        </label>
+        <label>Payment Proof: <input type="file" name="paymentProof" accept="image/*,application/pdf" />${paymentProofUrl ? `<a href="${paymentProofUrl}" target="_blank">View</a>` : ""}</label>
+        <label>Accommodation Requests: <textarea name="accommodation">${accommodation||""}</textarea></label>
+        <label>Student Notes: <textarea name="studentNotes">${studentNotes||""}</textarea></label>
+        <label><input type="checkbox" name="waiver" ${waiverSigned ? "checked" : ""} required /> I have read and agree to the liability waiver.</label>
+        <label>Digital Signature: <input type="text" name="waiverSignature" value="${waiverSignature||""}" /></label>
         <button class="btn primary wide" type="submit">Save Profile</button>
-        <button class="btn outline" id="back-to-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅ Dashboard</button>
+        <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Dashboard</button>
       </form>
     </div>
   `;
 
-  // Show/hide student-specific sections based on select fields
-  if (userRole === "student") {
-    container.querySelector('select[name="cdlPermit"]').addEventListener('change', function() {
-      document.getElementById('permit-photo-section').style.display = this.value === "yes" ? "" : "none";
-    });
-    container.querySelector('select[name="vehicleQualified"]').addEventListener('change', function() {
-      document.getElementById('vehicle-photos-section').style.display = this.value === "yes" ? "" : "none";
-    });
-  }
-
-  // Context-aware back navigation (role-sensitive)
-  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    if (userRole === "admin") renderAdminDashboard();
-    else if (userRole === "instructor") renderInstructorDashboard();
-    else renderDashboard();
+  // Show/hide dynamic sections
+  container.querySelector('select[name="cdlPermit"]').addEventListener('change', function() {
+    document.getElementById('permit-photo-section').style.display = this.value === "yes" ? "" : "none";
+  });
+  container.querySelector('select[name="vehicleQualified"]').addEventListener('change', function() {
+    document.getElementById('vehicle-photos-section').style.display = this.value === "yes" ? "" : "none";
   });
 
-  setupNavigation();
+  // Back to dashboard
+  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+    renderDashboard();
+  });
 
-  // PERMIT UPLOAD HANDLER (students only)
-  if (userRole === "student") {
-    container.querySelector('input[name="permitPhoto"]')?.addEventListener("change", async (e) => {
+  // --- FILE UPLOAD HELPERS (with checklist marking) ---
+  async function handleFileInput(inputName, storagePath, updateField, checklistFn = null) {
+    const input = container.querySelector(`input[name="${inputName}"]`);
+    if (!input) return;
+    input.addEventListener("change", async e => {
       const file = e.target.files[0];
       if (!file) return;
       try {
-        const storageRef = ref(storage, `permits/${currentUserEmail}`);
+        const storageRef = ref(storage, `${storagePath}/${currentUserEmail}-${Date.now()}`);
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
-
+        // Update Firestore
         const usersRef = collection(db, "users");
         const q = query(usersRef, where("email", "==", currentUserEmail));
         const snap = await getDocs(q);
         if (!snap.empty) {
-          await updateDoc(doc(db, "users", snap.docs[0].id), { permitPhotoUrl: downloadURL });
+          await updateDoc(doc(db, "users", snap.docs[0].id), { [updateField]: downloadURL });
+          showToast(`${updateField.replace(/Url$/,"")} uploaded!`);
+          if (typeof checklistFn === "function") await checklistFn(currentUserEmail);
+          renderProfile(container); // refresh to show
         }
-        await markStudentPermitUploaded(currentUserEmail);
-        showToast("Permit uploaded and progress updated!");
       } catch (err) {
-        showToast("Failed to upload permit: " + err.message);
-      }
-    });
-
-    // VEHICLE DATA PLATE UPLOAD HANDLER (students only)
-    let truckUploaded = !!truckPlateUrl, trailerUploaded = !!trailerPlateUrl;
-
-    container.querySelector('input[name="truckPlate"]')?.addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      try {
-        const storageRef = ref(storage, `vehicle-plates/${currentUserEmail}-truck`);
-        await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(storageRef);
-
-        const usersRef = collection(db, "users");
-        const q = query(usersRef, where("email", "==", currentUserEmail));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          await updateDoc(doc(db, "users", snap.docs[0].id), { truckPlateUrl: downloadURL });
-          truckUploaded = true;
-          if (truckUploaded && trailerUploaded) {
-            await markStudentVehicleUploaded(currentUserEmail);
-          }
-        }
-        showToast("Truck data plate uploaded!");
-      } catch (err) {
-        showToast("Failed to upload truck plate: " + err.message);
-      }
-    });
-
-    container.querySelector('input[name="trailerPlate"]')?.addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      try {
-        const storageRef = ref(storage, `vehicle-plates/${currentUserEmail}-trailer`);
-        await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(storageRef);
-
-        const usersRef = collection(db, "users");
-        const q = query(usersRef, where("email", "==", currentUserEmail));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          await updateDoc(doc(db, "users", snap.docs[0].id), { trailerPlateUrl: downloadURL });
-          trailerUploaded = true;
-          if (truckUploaded && trailerUploaded) {
-            await markStudentVehicleUploaded(currentUserEmail);
-          }
-        }
-        showToast("Trailer data plate uploaded!");
-      } catch (err) {
-        showToast("Failed to upload trailer plate: " + err.message);
+        showToast(`Failed to upload ${updateField}: ` + err.message);
       }
     });
   }
+  // All uploads with checklist logic
+  handleFileInput("profilePic", "profilePics", "profilePicUrl"); // Profile pic
+  handleFileInput("permitPhoto", "permits", "permitPhotoUrl", markStudentPermitUploaded); // Permit
+  handleFileInput("driverLicense", "licenses", "driverLicenseUrl"); // DL
+  handleFileInput("medicalCard", "medCards", "medicalCardUrl"); // Medical Card
+  // Data plates (when both uploaded, mark vehicle uploaded)
+  let truckUploaded = !!truckPlateUrl, trailerUploaded = !!trailerPlateUrl;
+  handleFileInput("truckPlate", "vehicle-plates", "truckPlateUrl", async (email) => {
+    truckUploaded = true;
+    if (truckUploaded && trailerUploaded) await markStudentVehicleUploaded(email);
+  });
+  handleFileInput("trailerPlate", "vehicle-plates", "trailerPlateUrl", async (email) => {
+    trailerUploaded = true;
+    if (truckUploaded && trailerUploaded) await markStudentVehicleUploaded(email);
+  });
+  handleFileInput("paymentProof", "payments", "paymentProofUrl"); // Payment proof
 
-  // PROFILE SAVE HANDLER (all roles)
+  // --- SAVE PROFILE HANDLER (also marks profile complete) ---
   container.querySelector("#profile-form").onsubmit = async e => {
     e.preventDefault();
-    const form = e.target;
-    const fd = new FormData(form);
+    const fd = new FormData(e.target);
 
-    // Simple fields
-    const name             = fd.get("name").trim();
-    const dob              = fd.get("dob");
-    const experience       = fd.get("experience");
-    let updates = { name, dob, experience };
+    // Build profile update object
+    const updateObj = {
+      name: fd.get("name"), dob: fd.get("dob"), cdlClass: fd.get("cdlClass"),
+      endorsements: fd.getAll("endorsements[]"),
+      restrictions: fd.getAll("restrictions[]"),
+      experience: fd.get("experience"),
+      prevEmployer: fd.get("prevEmployer"), assignedCompany: fd.get("assignedCompany"),
+      assignedInstructor: fd.get("assignedInstructor"),
+      cdlPermit: fd.get("cdlPermit"), permitExpiry: fd.get("permitExpiry"),
+      licenseExpiry: fd.get("licenseExpiry"), medCardExpiry: fd.get("medCardExpiry"),
+      vehicleQualified: fd.get("vehicleQualified"),
+      emergencyName: fd.get("emergencyName"), emergencyPhone: fd.get("emergencyPhone"),
+      emergencyRelation: fd.get("emergencyRelation"),
+      course: fd.get("course"), schedulePref: fd.get("schedulePref"),
+      scheduleNotes: fd.get("scheduleNotes"), paymentStatus: fd.get("paymentStatus"),
+      accommodation: fd.get("accommodation"), studentNotes: fd.get("studentNotes"),
+      waiverSigned: !!fd.get("waiver"), waiverSignature: fd.get("waiverSignature"),
+      profileProgress: calcProgress(fd)
+    };
 
-    // Role-specific fields
-    if (userRole === "student") {
-      updates.cdlClass = fd.get("cdlClass");
-      updates.cdlPermit = fd.get("cdlPermit");
-      updates.vehicleQualified = fd.get("vehicleQualified");
-    }
-
-    // Upload profile picture if chosen
-    let updatedProfilePicUrl = profilePicUrl;
-    const profilePicFile = fd.get("profilePic");
-    if (profilePicFile && profilePicFile.size) {
-      try {
-        const storageRef = ref(storage, `profilePics/${currentUserEmail}`);
-        await uploadBytes(storageRef, profilePicFile);
-        updatedProfilePicUrl = await getDownloadURL(storageRef);
-        updates.profilePicUrl = updatedProfilePicUrl;
-      } catch (err) {
-        showToast("⚠️ Profile picture upload failed: " + err.message);
-      }
-    }
-
-    // Update Firestore user doc
     try {
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("email", "==", currentUserEmail));
       const snap = await getDocs(q);
       if (!snap.empty) {
-        const userDocRef = snap.docs[0].ref;
-        await updateDoc(userDocRef, updates);
-        if (userRole === "student") await markStudentProfileComplete(currentUserEmail);
-        showToast("✅ Profile saved and progress updated!");
-      } else {
-        throw new Error("User document not found");
-      }
+        await updateDoc(snap.docs[0].ref, updateObj);
+        await markStudentProfileComplete(currentUserEmail); // <-- CHECKLIST
+        showToast("✅ Profile saved!");
+        renderProfile(container); // re-render for progress update
+      } else throw new Error("User document not found.");
     } catch (err) {
-      showToast("❌ Error saving profile: " + err.message);
+      showToast("❌ Error saving: " + err.message);
     }
   };
+
+  setupNavigation();
 }
 
 // ─── RENDER CHECKLIST (Student) ──────────────────────────────────────────────
@@ -2154,10 +2156,13 @@ async function renderInstructorDashboard(container = document.getElementById("ap
       assignedStudents.push({
         name: d.name || "Student",
         email: d.email,
-        license: d.licenseType || "Not set",
+        cdlClass: d.cdlClass || "Not set",
         experience: d.experience || "Unknown",
-        permit: d.permit || false,
-        checklistComplete: d.checklistComplete || false,
+        cdlPermit: d.cdlPermit || "no",
+        permitPhotoUrl: d.permitPhotoUrl || "",
+        medicalCardUrl: d.medicalCardUrl || "",
+        profileProgress: d.profileProgress || 0,
+        checklistAlerts: getNextChecklistAlert(d),
         id: doc.id,
       });
     });
@@ -2221,16 +2226,31 @@ async function renderInstructorDashboard(container = document.getElementById("ap
                       <div class="student-list-card">
                         <strong>${student.name}</strong>
                         <div>Email: ${student.email}</div>
-                        <div>License: ${student.license}</div>
+                        <div>CDL Class: ${student.cdlClass}</div>
                         <div>Experience: ${student.experience}</div>
-                        <div>Permit: ${student.permit ? "✔️" : "❌"}</div>
-                        <div>Checklist: ${student.checklistComplete ? "✅ Complete" : "In Progress"}</div>
-                        <div>Last Test: ${
-                          testResultsByStudent[student.email]
-                            ? `${testResultsByStudent[student.email].testName} – ${testResultsByStudent[student.email].pct}% on ${testResultsByStudent[student.email].date}`
-                            : "No recent test"
-                        }</div>
+                        <div>Permit: ${student.cdlPermit === "yes" && student.permitPhotoUrl ? "✔️ Uploaded" : "❌ Not Uploaded"}</div>
+                        <div>Med Card: ${student.medicalCardUrl ? "✔️ Uploaded" : "❌ Not Uploaded"}</div>
+                        <div>
+                          Profile Completion:
+                          <div class="progress-bar" style="width:120px;display:inline-block;">
+                            <div class="progress" style="width:${student.profileProgress}%;"></div>
+                          </div>
+                          <span style="font-size:.95em;">${student.profileProgress}%</span>
+                        </div>
+                        <div style="color:#f47373;min-height:20px;">
+                          ${student.checklistAlerts !== "All required steps complete! 🎉"
+                            ? `⚠️ ${student.checklistAlerts}`
+                            : `<span style="color:#56b870">✔️ All requirements met</span>`}
+                        </div>
+                        <div>
+                          Last Test: ${
+                            testResultsByStudent[student.email]
+                              ? `${testResultsByStudent[student.email].testName} – ${testResultsByStudent[student.email].pct}% on ${testResultsByStudent[student.email].date}`
+                              : "No recent test"
+                          }
+                        </div>
                         <button class="btn" data-student="${student.email}" data-nav="viewStudentProfile">View Profile</button>
+                        <button class="btn outline" data-student="${student.email}" data-nav="reviewChecklist">Review Checklist</button>
                       </div>
                     `
                     )
@@ -2240,8 +2260,8 @@ async function renderInstructorDashboard(container = document.getElementById("ap
         </div>
         <div class="dashboard-card">
           <h3>✅ Review Checklists</h3>
-          <p>Sign off on student milestones and walk-throughs.</p>
-          <!-- Optionally, add checklist review tools here -->
+          <p>Sign off on student milestones (permit, walkthrough, etc).</p>
+          <p>Select a student above and click "Review Checklist".</p>
         </div>
         <div class="dashboard-card">
           <h3>🧾 Student Test Results</h3>
@@ -2272,144 +2292,100 @@ async function renderInstructorDashboard(container = document.getElementById("ap
     renderWelcome();
   });
 
-  // Handle View Student Profile button
+  // View Student Profile modal
   container.querySelectorAll('button[data-nav="viewStudentProfile"]').forEach((btn) => {
     btn.addEventListener("click", () => {
       const studentEmail = btn.getAttribute("data-student");
       renderStudentProfileForInstructor(studentEmail);
     });
   });
+
+  // Checklist Review modal
+  container.querySelectorAll('button[data-nav="reviewChecklist"]').forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const studentEmail = btn.getAttribute("data-student");
+      renderChecklistReviewForInstructor(studentEmail);
+    });
+  });
 }
 
-// ─── RENDER STUDENT PROFILE FOR INSTRUCTOR ─────────────────────────────
-async function renderStudentProfileForInstructor(studentEmail, container = document.getElementById("app")) {
-  if (!studentEmail) {
-    showToast("No student selected.");
-    return;
-  }
+// ─── REVIEW CHECKLIST FOR INSTRUCTOR ─────────────────────────────────────
+// Instructor can verify key milestones for student, sign off, add notes
+async function renderChecklistReviewForInstructor(studentEmail, container = document.body) {
+  if (!studentEmail) return showToast("No student selected.");
 
-  // 1. Fetch student user profile
-  let studentData = {};
+  // Fetch student profile and progress
+  let studentData = {}, eldtData = {};
   try {
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", studentEmail));
     const snap = await getDocs(q);
-    if (!snap.empty) {
-      studentData = snap.docs[0].data();
-    }
-  } catch (e) {
-    showToast("Failed to load student profile.");
-    return;
-  }
+    if (!snap.empty) studentData = snap.docs[0].data();
+    const progressRef = doc(db, "eldtProgress", studentEmail);
+    const progressSnap = await getDoc(progressRef);
+    if (progressSnap.exists()) eldtData = progressSnap.data();
+  } catch (e) { showToast("Checklist fetch error."); }
 
-  // 2. Fetch license & experience info
-  let license = "Not selected", experience = "Unknown";
-  try {
-    const licSnap = await getDocs(query(collection(db, "licenseSelection"), where("studentId", "==", studentEmail)));
-    licSnap.forEach((d) => (license = d.data().licenseType || license));
-    const expSnap = await getDocs(query(collection(db, "experienceResponses"), where("studentId", "==", studentEmail)));
-    expSnap.forEach((d) => (experience = d.data().experience || experience));
-  } catch (e) {}
-
-  // 3. Fetch permit, checklist, and test info (optional - show if available)
-  let permitStatus = "Not uploaded";
-  try {
-    permitStatus = studentData.permit ? "Uploaded" : "Not uploaded";
-  } catch (e) {}
-
-  // Checklist percent (use your existing ELDT logic)
-  let checklistPct = 0;
-  try {
-    const snap = await getDocs(
-      query(collection(db, "eldtProgress"), where("studentId", "==", studentEmail))
-    );
-    let total = 0, done = 0;
-    snap.forEach((d) => {
-      const prog = d.data().progress || {};
-      Object.values(prog).forEach((sec) =>
-        Object.values(sec).forEach((val) => {
-          total++;
-          if (val) done++;
-        })
-      );
-    });
-    checklistPct = total ? Math.round((done / total) * 100) : 0;
-  } catch (e) {}
-
-  // Last test
-  let lastTestStr = "No tests taken yet.";
-  try {
-    const snap = await getDocs(
-      query(collection(db, "testResults"), where("studentId", "==", studentEmail))
-    );
-    let latest = null;
-    snap.forEach((d) => {
-      const t = d.data();
-      if (
-        !latest ||
-        (t.timestamp?.toDate
-          ? t.timestamp.toDate()
-          : new Date(t.timestamp)) >
-          (latest?.timestamp?.toDate
-            ? latest.timestamp.toDate()
-            : new Date(latest?.timestamp))
-      ) {
-        latest = t;
-      }
-    });
-    if (latest) {
-      const pct = Math.round((latest.correct / latest.total) * 100);
-      const dateStr = latest.timestamp?.toDate
-        ? latest.timestamp.toDate().toLocaleDateString()
-        : new Date(latest.timestamp).toLocaleDateString();
-      lastTestStr = `${latest.testName} – ${pct}% on ${dateStr}`;
-    }
-  } catch (e) {}
-
-  // 4. Render modal or inline profile (modal recommended)
+  // Render modal with checkboxes for instructor sign-off
   let modal = document.createElement("div");
   modal.className = "modal-overlay fade-in";
   modal.innerHTML = `
-    <div class="modal-card student-profile-modal">
+    <div class="modal-card checklist-modal">
       <button class="modal-close" aria-label="Close">&times;</button>
-      <h2>Student Profile</h2>
-      <div class="profile-row">
-        <strong>Name:</strong> <span>${studentData.name || "Unknown"}</span>
-      </div>
-      <div class="profile-row">
-        <strong>Email:</strong> <span>${studentData.email}</span>
-      </div>
-      <div class="profile-row">
-        <strong>License:</strong> <span>${license}</span>
-      </div>
-      <div class="profile-row">
-        <strong>Experience:</strong> <span>${experience}</span>
-      </div>
-      <div class="profile-row">
-        <strong>Permit:</strong> <span>${permitStatus}</span>
-      </div>
-      <div class="profile-row">
-        <strong>Checklist:</strong> 
-        <span><div class="progress-bar" style="display:inline-block;width:120px;">
-          <div class="progress-fill" style="width:${checklistPct}%;"></div>
-        </div> ${checklistPct}%</span>
-      </div>
-      <div class="profile-row">
-        <strong>Last Test:</strong> <span>${lastTestStr}</span>
-      </div>
-      <button class="btn outline" id="close-profile-modal" style="margin-top:1.2em;width:100%;">Close</button>
+      <h2>Review Student Checklist</h2>
+      <div class="profile-row"><strong>Name:</strong> ${studentData.name || "Unknown"}</div>
+      <div class="profile-row"><strong>Email:</strong> ${studentData.email}</div>
+      <form id="checklist-review-form" style="display:flex;flex-direction:column;gap:1em;">
+        <label>
+          <input type="checkbox" name="profileVerified" ${eldtData.profileVerified ? "checked" : ""} />
+          Profile Approved
+        </label>
+        <label>
+          <input type="checkbox" name="permitVerified" ${eldtData.permitVerified ? "checked" : ""} />
+          Permit Verified
+        </label>
+        <label>
+          <input type="checkbox" name="vehicleVerified" ${eldtData.vehicleVerified ? "checked" : ""} />
+          Vehicle Verified
+        </label>
+        <label>
+          <input type="checkbox" name="walkthroughReviewed" ${eldtData.walkthroughReviewed ? "checked" : ""} />
+          Walkthrough Reviewed
+        </label>
+        <label>
+          Instructor Notes:
+          <textarea name="instructorNotes" rows="2">${eldtData.instructorNotes || ""}</textarea>
+        </label>
+        <button type="submit" class="btn primary wide">Save Checklist Review</button>
+        <button type="button" class="btn outline" id="close-checklist-modal">Close</button>
+      </form>
     </div>
   `;
-
-  // Remove old modals first
   document.querySelectorAll(".modal-overlay").forEach(el => el.remove());
   document.body.appendChild(modal);
 
-  // Close handlers
-  modal.querySelector(".modal-close")?.addEventListener("click", () => modal.remove());
-  modal.querySelector("#close-profile-modal")?.addEventListener("click", () => modal.remove());
+  // Save checklist
+  modal.querySelector("#checklist-review-form").onsubmit = async e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    try {
+      await updateDoc(doc(db, "eldtProgress", studentEmail), {
+        profileVerified: !!fd.get("profileVerified"),
+        permitVerified: !!fd.get("permitVerified"),
+        vehicleVerified: !!fd.get("vehicleVerified"),
+        walkthroughReviewed: !!fd.get("walkthroughReviewed"),
+        instructorNotes: fd.get("instructorNotes") || ""
+      });
+      showToast("Checklist review saved.");
+      modal.remove();
+    } catch (err) {
+      showToast("Failed to save checklist.");
+    }
+  };
 
-  // Optional: block background scroll while modal open
+  modal.querySelector(".modal-close")?.addEventListener("click", () => modal.remove());
+  modal.querySelector("#close-checklist-modal")?.addEventListener("click", () => modal.remove());
+
   document.body.style.overflow = "hidden";
   modal.addEventListener("transitionend", () => {
     if (!document.body.contains(modal)) {
@@ -2444,34 +2420,50 @@ async function renderInstructorProfile(container = document.getElementById("app"
     return;
   }
 
+  // Fields
   const {
     name = "",
     email = currentUserEmail,
     profilePicUrl = "",
     experience = "",
-    phone = ""
-    // Add other instructor fields as needed
+    phone = "",
+    availability = "",
+    licenseClass = "",
+    licenseNumber = "",
+    licenseExp = "",
+    preferredContact = "",
+    sessionLog = [],
+    feedback = "",
+    complianceChecked = false,
+    adminNotes = "",
+    active = true,
+    assignedStudents = []
   } = userData;
 
+  // Compliance alert
+  const complianceMissing = (!licenseClass || !licenseNumber || !licenseExp);
+  let complianceAlert = complianceMissing
+    ? `<div class="alert warning" style="margin-bottom:1em;">⚠️ Please complete your instructor license info below.</div>`
+    : `<div class="alert success" style="margin-bottom:1em;">✅ All required compliance info current!</div>`;
+
+  // Assigned students display (read only)
+  const assignedStudentsHtml = Array.isArray(assignedStudents) && assignedStudents.length
+    ? assignedStudents.map((s, i) => `<div>#${i+1}: ${s.name || s.email}</div>`).join("")
+    : "<i>No students assigned yet.</i>";
+
   container.innerHTML = `
-    <div class="screen-wrapper fade-in profile-page" style="max-width: 480px; margin: 0 auto;">
+    <div class="screen-wrapper fade-in profile-page" style="max-width: 540px; margin: 0 auto;">
       <h2>👤 Instructor Profile <span class="role-badge instructor">Instructor</span></h2>
+      ${complianceAlert}
       <form id="instructor-profile-form" style="display:flex;flex-direction:column;gap:1.3rem;">
-        <label>
-          Name:
-          <input type="text" name="name" value="${name}" required />
-        </label>
-        <label>
-          Email:
-          <span style="user-select:all;">${email}</span>
-        </label>
-        <label>
-          Profile Picture:
+        <label>Name:<input type="text" name="name" value="${name}" required /></label>
+        <label>Email:<span style="user-select:all;">${email}</span></label>
+        <label>Profile Picture:
           <input type="file" name="profilePic" accept="image/*" />
           ${profilePicUrl ? `<img src="${profilePicUrl}" alt="Profile Picture" style="max-width:90px;border-radius:12px;display:block;margin-top:7px;" />` : ""}
         </label>
-        <label>
-          Experience:
+        <label>Phone:<input type="tel" name="phone" value="${phone}" placeholder="(Optional)" /></label>
+        <label>Experience:
           <select name="experience" required>
             <option value="">Select</option>
             <option value="none" ${experience==="none"?"selected":""}>No experience</option>
@@ -2481,9 +2473,60 @@ async function renderInstructorProfile(container = document.getElementById("app"
             <option value="10+" ${experience==="10+"?"selected":""}>10+ years</option>
           </select>
         </label>
+        <details>
+          <summary><strong>Availability & Schedule</strong></summary>
+          <label>Days/Times Available:<br>
+            <input type="text" name="availability" value="${availability}" placeholder="e.g. Mon-Fri, 8am-4pm" />
+          </label>
+        </details>
+        <details>
+          <summary><strong>Instructor License Info</strong> ${complianceMissing ? '<span style="color:#e67c7c;">(Required)</span>' : ''}</summary>
+          <label>CDL Class:
+            <select name="licenseClass">
+              <option value="">Select</option>
+              <option value="A" ${licenseClass==="A"?"selected":""}>A</option>
+              <option value="B" ${licenseClass==="B"?"selected":""}>B</option>
+              <option value="C" ${licenseClass==="C"?"selected":""}>C</option>
+            </select>
+          </label>
+          <label>CDL License #:
+            <input type="text" name="licenseNumber" value="${licenseNumber}" />
+          </label>
+          <label>License Expiration:
+            <input type="date" name="licenseExp" value="${licenseExp}" />
+          </label>
+        </details>
+        <label>Preferred Contact Method:
+          <select name="preferredContact">
+            <option value="">Select</option>
+            <option value="email" ${preferredContact==="email"?"selected":""}>Email</option>
+            <option value="phone" ${preferredContact==="phone"?"selected":""}>Phone</option>
+            <option value="sms" ${preferredContact==="sms"?"selected":""}>SMS/Text</option>
+          </select>
+        </label>
+        <details>
+          <summary><strong>Session Log</strong> (Auto-generated, read-only)</summary>
+          <div style="font-size:0.96em;">
+            ${Array.isArray(sessionLog) && sessionLog.length
+              ? sessionLog.map((s, i) => `<div>#${i+1}: ${s.date || "--"} &mdash; ${s.type || "Session"} &mdash; ${s.student || ""}</div>`).join("")
+              : "<i>No sessions logged yet.</i>"}
+          </div>
+        </details>
+        <details>
+          <summary><strong>Feedback (optional)</strong></summary>
+          <textarea name="feedback" rows="3" placeholder="Feedback, notes, or suggestions...">${feedback}</textarea>
+        </details>
+        <details>
+          <summary><strong>Assigned Students</strong> (readonly)</summary>
+          <div style="font-size:0.96em;">${assignedStudentsHtml}</div>
+        </details>
+        <details>
+          <summary><strong>Admin Notes</strong> (staff only)</summary>
+          <textarea name="adminNotes" rows="2" disabled placeholder="Visible to staff/admin only">${adminNotes}</textarea>
+        </details>
         <label>
-          Phone:
-          <input type="tel" name="phone" value="${phone}" placeholder="(Optional)" />
+          <input type="checkbox" name="active" ${active ? "checked" : ""} disabled />
+          Active Instructor <span style="font-size:0.98em;color:#888;">(Set by admin)</span>
         </label>
         <button class="btn primary wide" type="submit">Save Profile</button>
         <button class="btn outline" id="back-to-instructor-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅ Dashboard</button>
@@ -2506,7 +2549,6 @@ async function renderInstructorProfile(container = document.getElementById("app"
       const storageRef = ref(storage, `profilePics/${currentUserEmail}`);
       await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(storageRef);
-
       // Save to Firestore
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("email", "==", currentUserEmail));
@@ -2530,6 +2572,12 @@ async function renderInstructorProfile(container = document.getElementById("app"
     const name = fd.get("name").trim();
     const experience = fd.get("experience");
     const phone = fd.get("phone")?.trim() || "";
+    const availability = fd.get("availability")?.trim() || "";
+    const licenseClass = fd.get("licenseClass") || "";
+    const licenseNumber = fd.get("licenseNumber")?.trim() || "";
+    const licenseExp = fd.get("licenseExp") || "";
+    const preferredContact = fd.get("preferredContact") || "";
+    const feedback = fd.get("feedback")?.trim() || "";
 
     try {
       const usersRef = collection(db, "users");
@@ -2540,10 +2588,18 @@ async function renderInstructorProfile(container = document.getElementById("app"
         await updateDoc(userDocRef, {
           name,
           experience,
-          phone
+          phone,
+          availability,
+          licenseClass,
+          licenseNumber,
+          licenseExp,
+          preferredContact,
+          feedback
         });
         localStorage.setItem("fullName", name);
+        
         showToast("✅ Profile saved!");
+        renderInstructorProfile(container); // Refresh for compliance check
       } else {
         throw new Error("User document not found");
       }
@@ -2553,7 +2609,7 @@ async function renderInstructorProfile(container = document.getElementById("app"
   };
 }
 
-// ─── ADMIN DASHBOARD ────────────────────────────────────────────────────
+// ─── RENDER ADMIN DASHBOARD ────────────────────────────────────────────────
 async function renderAdminDashboard(container = document.getElementById("app")) {
   if (!container) return;
   if (!currentUserEmail) {
@@ -2594,7 +2650,13 @@ async function renderAdminDashboard(container = document.getElementById("app")) 
         email: d.email,
         role: d.role || "student",
         assignedInstructor: d.assignedInstructor || "",
+        assignedCompany: d.assignedCompany || "",
         id: doc.id,
+        profileProgress: d.profileProgress || 0,
+        permitExpiry: d.permitExpiry || "",
+        medCardExpiry: d.medCardExpiry || "",
+        paymentStatus: d.paymentStatus || "",
+        compliance: d.compliance || "",
       });
     });
   } catch (e) {
@@ -2604,6 +2666,8 @@ async function renderAdminDashboard(container = document.getElementById("app")) 
 
   // --- Fetch Instructor List (for assignments) ---
   const instructorList = allUsers.filter(u => u.role === "instructor");
+  // --- Fetch Company List (future feature, supports client companies) ---
+  const companyList = Array.from(new Set(allUsers.map(u => u.assignedCompany).filter(Boolean)));
 
   // --- Render Admin Dashboard Layout ---
   container.innerHTML = `
@@ -2614,6 +2678,22 @@ async function renderAdminDashboard(container = document.getElementById("app")) 
 
         <div class="dashboard-card">
           <h3>👥 Manage Users</h3>
+          <div style="margin-bottom:1em;">
+            <label>Filter by Role:
+              <select id="user-role-filter">
+                <option value="">All</option>
+                <option value="student">Students</option>
+                <option value="instructor">Instructors</option>
+                <option value="admin">Admins</option>
+              </select>
+            </label>
+            <label style="margin-left:1em;">Company:
+              <select id="user-company-filter">
+                <option value="">All</option>
+                ${companyList.map(c => `<option value="${c}">${c}</option>`).join("")}
+              </select>
+            </label>
+          </div>
           <div class="user-table-scroll">
             <table class="user-table">
               <thead>
@@ -2621,57 +2701,64 @@ async function renderAdminDashboard(container = document.getElementById("app")) 
                   <th>Name</th>
                   <th>Email</th>
                   <th>Role</th>
+                  <th>Company</th>
                   <th>Assigned Instructor</th>
+                  <th>Profile %</th>
+                  <th>Permit Exp.</th>
+                  <th>MedCard Exp.</th>
+                  <th>Payment</th>
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                ${
-                  allUsers
-                    .map(
-                      user => `
-                        <tr data-user="${user.email}">
-                          <td>${user.name}</td>
-                          <td>${user.email}</td>
-                          <td>
-                            <select class="role-select" data-user="${user.email}">
-                              <option value="student" ${user.role === "student" ? "selected" : ""}>Student</option>
-                              <option value="instructor" ${user.role === "instructor" ? "selected" : ""}>Instructor</option>
-                              <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
-                            </select>
-                          </td>
-                          <td>
-                            <select class="instructor-select" data-user="${user.email}">
-                              <option value="">(None)</option>
-                              ${instructorList
-                                .map(
-                                  inst => `<option value="${inst.email}" ${
-                                    user.assignedInstructor === inst.email ? "selected" : ""
-                                  }>${inst.name}</option>`
-                                )
-                                .join("")}
-                            </select>
-                          </td>
-                          <td>
-                            <button class="btn outline btn-remove-user" data-user="${user.email}">Remove</button>
-                          </td>
-                        </tr>
-                      `
-                    )
-                    .join("")
-                }
+              <tbody id="user-table-body">
+                ${allUsers.map(user => `
+                  <tr data-user="${user.email}">
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>
+                      <select class="role-select" data-user="${user.email}">
+                        <option value="student" ${user.role === "student" ? "selected" : ""}>Student</option>
+                        <option value="instructor" ${user.role === "instructor" ? "selected" : ""}>Instructor</option>
+                        <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input type="text" class="company-input" data-user="${user.email}" value="${user.assignedCompany || ""}" placeholder="(Company)" style="width:100px;"/>
+                    </td>
+                    <td>
+                      <select class="instructor-select" data-user="${user.email}">
+                        <option value="">(None)</option>
+                        ${instructorList.map(inst => `
+                          <option value="${inst.email}" ${user.assignedInstructor === inst.email ? "selected" : ""}>${inst.name}</option>
+                        `).join("")}
+                      </select>
+                    </td>
+                    <td>${user.profileProgress || 0}%</td>
+                    <td>${user.permitExpiry || ""}</td>
+                    <td>${user.medCardExpiry || ""}</td>
+                    <td>${user.paymentStatus || ""}</td>
+                    <td>
+                      <button class="btn outline btn-remove-user" data-user="${user.email}">Remove</button>
+                    </td>
+                  </tr>
+                `).join("")}
               </tbody>
             </table>
           </div>
         </div>
 
         <div class="dashboard-card">
-          <h3>🏫 School & Branding</h3>
-          <p>Edit school info, manage branding, view analytics.<br><em>(Coming soon)</em></p>
+          <h3>🏢 Manage Companies</h3>
+          <p>Create, edit, and view all companies who send students to your school. (Coming soon)</p>
+          <button class="btn" id="add-company-btn" style="margin-top:10px;">+ Add Company</button>
         </div>
+
         <div class="dashboard-card">
-          <h3>📝 Reports</h3>
-          <p>Download activity and progress reports for all users.<br><em>(Coming soon)</em></p>
+          <h3>📝 Reports & Batch Messaging</h3>
+          <p>
+            Download user data, filter for missing docs, and message all students or instructors with one click.<br>
+            <em>(Coming soon: Download/export, batch reminders, activity logs...)</em>
+          </p>
         </div>
       </section>
       <button class="rail-btn logout wide-logout" id="logout-btn" aria-label="Logout">
@@ -2691,6 +2778,26 @@ async function renderAdminDashboard(container = document.getElementById("app")) 
     renderAdminProfile();
   });
 
+  // --- Filter Logic (role/company) ---
+  const roleFilter = container.querySelector("#user-role-filter");
+  const companyFilter = container.querySelector("#user-company-filter");
+  roleFilter?.addEventListener("change", filterUserTable);
+  companyFilter?.addEventListener("change", filterUserTable);
+
+  function filterUserTable() {
+    const roleVal = roleFilter.value;
+    const companyVal = companyFilter.value;
+    const rows = container.querySelectorAll("#user-table-body tr");
+    rows.forEach(row => {
+      const roleCell = row.querySelector(".role-select")?.value || "";
+      const companyCell = row.querySelector(".company-input")?.value || "";
+      let show = true;
+      if (roleVal && roleCell !== roleVal) show = false;
+      if (companyVal && companyCell !== companyVal) show = false;
+      row.style.display = show ? "" : "none";
+    });
+  }
+
   // --- Role Change Handler ---
   container.querySelectorAll(".role-select").forEach(select => {
     select.addEventListener("change", async (e) => {
@@ -2703,6 +2810,20 @@ async function renderAdminDashboard(container = document.getElementById("app")) 
         renderAdminDashboard(container);
       } catch (err) {
         showToast("Failed to update role.");
+      }
+    });
+  });
+
+  // --- Company Assignment Handler ---
+  container.querySelectorAll(".company-input").forEach(input => {
+    input.addEventListener("blur", async () => {
+      const userEmail = input.getAttribute("data-user");
+      const newCompany = input.value.trim();
+      try {
+        await setDoc(doc(db, "users", userEmail), { assignedCompany: newCompany }, { merge: true });
+        showToast(`Company assigned to ${userEmail}`);
+      } catch (err) {
+        showToast("Failed to assign company.");
       }
     });
   });
@@ -2736,6 +2857,12 @@ async function renderAdminDashboard(container = document.getElementById("app")) 
         showToast("Failed to remove user.");
       }
     });
+  });
+
+  // --- Add Company Button (future) ---
+  document.getElementById("add-company-btn")?.addEventListener("click", () => {
+    showToast("Add company: Coming soon!");
+    // TODO: Open company creation modal/form
   });
 
   // --- Logout ---
@@ -2772,18 +2899,29 @@ async function renderAdminProfile(container = document.getElementById("app")) {
     return;
   }
 
+  // --- Fields and Defaults ---
   const {
     name = "",
     email = currentUserEmail,
     profilePicUrl = "",
-    phone = ""
-    // Add other admin fields if needed
+    phone = "",
+    companyName = "",
+    companyAddress = "",
+    companyLogoUrl = "",
+    adminNotes = "",
+    emergencyContactName = "",
+    emergencyContactPhone = "",
+    emergencyContactRelation = "",
+    complianceDocsUrl = "",
+    adminWaiverSigned = false,
+    adminSignature = ""
   } = userData;
 
+  // MAIN ADMIN PROFILE FORM
   container.innerHTML = `
-    <div class="screen-wrapper fade-in profile-page" style="max-width: 480px; margin: 0 auto;">
+    <div class="screen-wrapper fade-in profile-page" style="max-width:520px;margin:0 auto;">
       <h2>👤 Admin Profile <span class="role-badge admin">Admin</span></h2>
-      <form id="admin-profile-form" style="display:flex;flex-direction:column;gap:1.3rem;">
+      <form id="admin-profile-form" style="display:flex;flex-direction:column;gap:1.1rem;">
         <label>
           Name:
           <input type="text" name="name" value="${name}" required />
@@ -2801,68 +2939,117 @@ async function renderAdminProfile(container = document.getElementById("app")) {
           Phone:
           <input type="tel" name="phone" value="${phone}" placeholder="(Optional)" />
         </label>
+        <label>
+          School / Company Name:
+          <input type="text" name="companyName" value="${companyName}" />
+        </label>
+        <label>
+          School Address:
+          <input type="text" name="companyAddress" value="${companyAddress}" />
+        </label>
+        <label>
+          Company Logo:
+          <input type="file" name="companyLogo" accept="image/*" />
+          ${companyLogoUrl ? `<img src="${companyLogoUrl}" alt="Logo" style="max-width:80px;display:block;margin-top:7px;" />` : ""}
+        </label>
+        <label>
+          Admin Notes / Memo:
+          <textarea name="adminNotes" rows="2">${adminNotes || ""}</textarea>
+        </label>
+        <details>
+          <summary><strong>Emergency Contact</strong></summary>
+          <label>Name: <input type="text" name="emergencyContactName" value="${emergencyContactName}" /></label>
+          <label>Phone: <input type="tel" name="emergencyContactPhone" value="${emergencyContactPhone}" /></label>
+          <label>Relation: <input type="text" name="emergencyContactRelation" value="${emergencyContactRelation}" /></label>
+        </details>
+        <details>
+          <summary><strong>Compliance Documents</strong> (Insurance, Bonding, etc.)</summary>
+          <label>Upload Document(s):
+            <input type="file" name="complianceDocs" accept="image/*,application/pdf" />
+            ${complianceDocsUrl ? `<a href="${complianceDocsUrl}" target="_blank">View</a>` : ""}
+          </label>
+        </details>
+        <label>
+          <input type="checkbox" name="adminWaiverSigned" ${adminWaiverSigned ? "checked" : ""} />
+          I acknowledge the code of conduct and compliance requirements.
+        </label>
+        <label>
+          Digital Signature: <input type="text" name="adminSignature" value="${adminSignature || ""}" placeholder="Type or sign your name" />
+        </label>
         <button class="btn primary wide" type="submit">Save Profile</button>
         <button class="btn outline" id="back-to-admin-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅ Dashboard</button>
       </form>
     </div>
   `;
 
-  // Back button handler
+  // --- NAVIGATION ---
   document.getElementById("back-to-admin-dashboard-btn")?.addEventListener("click", () => {
     renderAdminDashboard();
   });
 
   setupNavigation();
 
-  // Profile picture upload
-  container.querySelector('input[name="profilePic"]')?.addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      const storageRef = ref(storage, `profilePics/${currentUserEmail}`);
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
-
-      // Save to Firestore
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("email", "==", currentUserEmail));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        await updateDoc(doc(db, "users", snap.docs[0].id), { profilePicUrl: downloadURL });
+  // --- FILE UPLOAD HELPERS (inline for clarity, could be moved to helpers.js) ---
+  async function handleFileInput(inputName, storagePath, updateField) {
+    const input = container.querySelector(`input[name="${inputName}"]`);
+    if (!input) return;
+    input.addEventListener("change", async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const storageRef = ref(storage, `${storagePath}/${currentUserEmail}-${Date.now()}`);
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+        // Update field in Firestore
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", currentUserEmail));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          await updateDoc(doc(db, "users", snap.docs[0].id), { [updateField]: downloadURL });
+          showToast(`${updateField.replace(/Url$/,"")} uploaded!`);
+        }
+      } catch (err) {
+        showToast(`Failed to upload ${updateField}: ` + err.message);
       }
-      showToast("Profile picture uploaded!");
-      renderAdminProfile(container); // Refresh
-    } catch (err) {
-      showToast("Failed to upload profile picture: " + err.message);
-    }
-  });
+    });
+  }
+  // Wire up all upload fields
+  handleFileInput("profilePic", "profilePics", "profilePicUrl");
+  handleFileInput("companyLogo", "schoolLogos", "companyLogoUrl");
+  handleFileInput("complianceDocs", "complianceDocs", "complianceDocsUrl");
 
-  // Save handler
+  // --- SAVE PROFILE HANDLER ---
   container.querySelector("#admin-profile-form").onsubmit = async e => {
     e.preventDefault();
-    const form = e.target;
-    const fd = new FormData(form);
+    const fd = new FormData(e.target);
 
-    const name = fd.get("name").trim();
-    const phone = fd.get("phone")?.trim() || "";
+    // Build profile update object
+    const updateObj = {
+      name: fd.get("name"),
+      phone: fd.get("phone"),
+      companyName: fd.get("companyName"),
+      companyAddress: fd.get("companyAddress"),
+      adminNotes: fd.get("adminNotes"),
+      emergencyContactName: fd.get("emergencyContactName"),
+      emergencyContactPhone: fd.get("emergencyContactPhone"),
+      emergencyContactRelation: fd.get("emergencyContactRelation"),
+      adminWaiverSigned: !!fd.get("adminWaiverSigned"),
+      adminSignature: fd.get("adminSignature"),
+    };
 
+    // Save to Firestore
     try {
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("email", "==", currentUserEmail));
       const snap = await getDocs(q);
       if (!snap.empty) {
-        const userDocRef = snap.docs[0].ref;
-        await updateDoc(userDocRef, {
-          name,
-          phone
-        });
-        localStorage.setItem("fullName", name);
+        await updateDoc(snap.docs[0].ref, updateObj);
+        localStorage.setItem("fullName", updateObj.name);
         showToast("✅ Profile saved!");
-      } else {
-        throw new Error("User document not found");
-      }
+        renderAdminProfile(container); // re-render for changes
+      } else throw new Error("User document not found.");
     } catch (err) {
-      showToast("❌ Error saving profile: " + err.message);
+      showToast("❌ Error saving: " + err.message);
     }
   };
 }

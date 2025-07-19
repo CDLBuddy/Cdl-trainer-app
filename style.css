@@ -1224,3 +1224,25 @@ body::before {
   .screen-wrapper.ai-coach-page { height:100dvh; min-height:100dvh; }
   .ai-chat-history { min-height:110px; max-height:33vh; }
 }
+/* ─── Page Transitions ─────────────────────────────── */
+.screen-wrapper {
+  opacity: 1;
+  transition: opacity 0.34s cubic-bezier(.56,.1,.47,1), transform 0.34s cubic-bezier(.56,.1,.47,1);
+}
+
+/* Fade for desktop (default) */
+.fade-in     { opacity: 1; pointer-events: all; }
+.fade-out    { opacity: 0; pointer-events: none; }
+
+/* Slide for mobile (added by JS below) */
+.slide-in-right  { opacity: 1; transform: translateX(0);    }
+.slide-out-left  { opacity: 0; transform: translateX(-60vw);}
+.slide-in-left   { opacity: 1; transform: translateX(0);    }
+.slide-out-right { opacity: 0; transform: translateX(60vw); }
+
+@media (max-width: 900px) {
+  .screen-wrapper {
+    will-change: transform, opacity;
+    transition: opacity 0.34s cubic-bezier(.56,.1,.47,1), transform 0.34s cubic-bezier(.56,.1,.47,1);
+  }
+}
