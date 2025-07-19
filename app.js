@@ -2,21 +2,29 @@
 let currentUserEmail = null;
 let loaderShownAt = Date.now();
 let loaderEl = document.getElementById("app-loader");
+
 // ─── 1. MODULE IMPORTS ─────────────────────────────────────────────────────────
-// Firebase (auth, db, storage, etc.)
+
+// Firebase core
 import { db, auth, storage } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+// Auth
 import {
+  onAuthStateChanged,
   signInWithEmailAndPassword,
-createUserWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   GoogleAuthProvider,
   signInWithPopup,
   signOut
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
-// Firebase Storage methods (for file uploads/downloads)
-import { uploadBytes, getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
+// Storage
+import {
+  uploadBytes,
+  getDownloadURL,
+  ref
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 
 // UI Helpers
 import {
@@ -47,19 +55,21 @@ import {
   adminResetStudentProgress,
   incrementStudentStudyMinutes,
   logStudySession,
-  import { testHelpersConnection } from './ui-helpers.js';
-
-console.log("TEST: ui-helpers connection =", testHelpersConnection());
 
   // Checklist field arrays
   studentChecklistFields,
   instructorChecklistFields,
   adminChecklistFields,
 
-  // CHECKLIST ALERTS
-  getNextChecklistAlert          // ← add this!
+  // Checklist alerts
+  getNextChecklistAlert,
+
+  // DEV: test connection
+  testHelpersConnection
 } from "./ui-helpers.js";
 
+// DEV: Confirm helpers load (remove or comment out for production)
+console.log("TEST: ui-helpers connection =", testHelpersConnection());
 // (future) school branding helpers, etc
 // import { getSchoolBranding, ... } from "./ui-helpers.js";
   
