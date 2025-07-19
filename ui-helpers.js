@@ -1,3 +1,4 @@
+console.log("=== ui-helpers.js loaded! ===");
 // ui-helpers.js
 import { db, auth } from "./firebase.js";
 import {
