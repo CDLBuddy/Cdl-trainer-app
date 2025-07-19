@@ -63,13 +63,7 @@ import {
 
   // Checklist alerts
   getNextChecklistAlert,
-
-  // DEV: test connection
-  testHelpersConnection
-} from "./ui-helpers.js";
-
-// DEV: Confirm helpers load (remove or comment out for production)
-console.log("TEST: ui-helpers connection =", testHelpersConnection());
+  
 // (future) school branding helpers, etc
 // import { getSchoolBranding, ... } from "./ui-helpers.js";
   
