@@ -288,8 +288,54 @@ function renderWelcome() {
           </div>
         </div>
       </div>
-      <button class="fab" title="AI Coach" aria-label="Open AI Coach">🎧</button>
-    </div>
+      <button class="fab" title="AI Coach" aria-label="Open AI Coach">
+  <svg viewBox="0 0 64 64" width="54" height="54" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="face-glass" cx="50%" cy="45%" r="65%">
+        <stop offset="0%" stop-color="#b6f0f7" />
+        <stop offset="70%" stop-color="#4e91ad" />
+        <stop offset="100%" stop-color="#23343e" />
+      </radialGradient>
+      <radialGradient id="glow" cx="50%" cy="50%" r="60%">
+        <stop offset="0%" stop-color="#82eefd" stop-opacity="0.65" />
+        <stop offset="90%" stop-color="#4e91ad" stop-opacity="0.11" />
+        <stop offset="100%" stop-color="#0e1b1b" stop-opacity="0" />
+      </radialGradient>
+      <linearGradient id="mouth" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#c4dbe8"/>
+        <stop offset="100%" stop-color="#487587"/>
+      </linearGradient>
+      <filter id="f1" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="1.1"/>
+      </filter>
+    </defs>
+    <circle cx="32" cy="32" r="28" fill="url(#face-glass)" filter="url(#f1)" />
+    <ellipse cx="32" cy="36.2" rx="21" ry="18" fill="url(#glow)" />
+    <ellipse cx="22.5" cy="29" rx="5" ry="6.5" fill="#fff" fill-opacity="0.18"/>
+    <ellipse cx="41.5" cy="29" rx="5" ry="6.5" fill="#fff" fill-opacity="0.18"/>
+    <!-- Eyes -->
+    <ellipse cx="23.5" cy="28" rx="4" ry="5.2" fill="#fff" fill-opacity="0.96" />
+    <ellipse cx="40.5" cy="28" rx="4" ry="5.2" fill="#fff" fill-opacity="0.96" />
+    <ellipse cx="23.5" cy="28.7" rx="1.5" ry="2.1" fill="#4e91ad"/>
+    <ellipse cx="40.5" cy="28.7" rx="1.5" ry="2.1" fill="#4e91ad"/>
+    <ellipse cx="23.5" cy="27" rx="0.8" ry="1.1" fill="#fff" fill-opacity="0.7"/>
+    <ellipse cx="40.5" cy="27" rx="0.8" ry="1.1" fill="#fff" fill-opacity="0.7"/>
+    <!-- Smile/mouth -->
+    <rect x="25" y="38" width="14" height="4.2" rx="2" fill="url(#mouth)" opacity="0.82"/>
+    <rect x="29.2" y="38.8" width="1.4" height="2.5" rx="0.7" fill="#4e91ad" opacity="0.55"/>
+    <rect x="33.4" y="38.8" width="1.4" height="2.5" rx="0.7" fill="#4e91ad" opacity="0.55"/>
+    <!-- Cheek "LEDs" -->
+    <ellipse cx="17.5" cy="38" rx="1.2" ry="1.8" fill="#b48aff" filter="url(#f1)" />
+    <ellipse cx="46.5" cy="38" rx="1.2" ry="1.8" fill="#b48aff" filter="url(#f1)" />
+    <!-- Headset band -->
+    <path d="M16,17 Q32,7 48,17" stroke="#b48aff" stroke-width="2.6" stroke-linecap="round" fill="none" opacity="0.34"/>
+    <!-- Antenna -->
+    <rect x="30" y="8.5" width="4" height="14" rx="2" fill="#a8e063" filter="url(#f1)" />
+    <ellipse cx="32" cy="8.5" rx="2.4" ry="2.4" fill="#ffe688" filter="url(#f1)" />
+    <!-- Shadow -->
+    <ellipse cx="32" cy="57" rx="18" ry="3.2" fill="#222" fill-opacity="0.20"/>
+  </svg>
+</button>
   `;
 
   // Init effects
