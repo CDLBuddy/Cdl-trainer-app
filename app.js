@@ -854,10 +854,22 @@ async function renderDashboard(container = document.getElementById("app")) {
           <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? "s" : ""} active this week</p>
         </div>
 
-        <div class="dashboard-card">
-          <h3>🤖 AI Tip of the Day</h3>
-          <p>${getRandomAITip()}</p>
-          <button data-nav="coach" class="btn ai-tip">Ask AI Coach</button>
+        <div class="dashboard-card ai-tip-card">
+  <div class="ai-tip-title" style="font-weight:600; font-size:1.12em; color:var(--accent); margin-bottom:0.5em;">
+    🤖 AI Tip of the Day
+  </div>
+  <div class="ai-tip-content" style="margin-bottom:0.8em; font-size:1.03em;">
+    ${getRandomAITip()}
+  </div>
+  <button class="btn ai-tip" id="ai-tip-btn" aria-label="Open AI Coach">
+    <span style="font-size:1.1em;">💬</span> Ask AI Coach
+  </button>
+</div>
+
+        <div class="dashboard-card last-test-card">
+          <h3>🧪 Last Test Score</h3>
+          <p>${lastTestStr}</p>
+          <button class="btn" data-nav="practiceTests">Take a Test</button>
         </div>
 
       </section>
@@ -897,16 +909,6 @@ async function renderDashboard(container = document.getElementById("app")) {
             </svg>
             <span class="label">Flash<br>cards</span>
           </button>
-          <!-- AI Coach -->
-          <button class="rail-btn coach" data-nav="coach" aria-label="AI Coach">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="7" stroke="#68e3c4" stroke-width="2"/>
-              <circle cx="10" cy="10" r="1.2" stroke="#68e3c4" stroke-width="2" fill="none"/>
-              <circle cx="14" cy="10" r="1.2" stroke="#68e3c4" stroke-width="2" fill="none"/>
-              <path d="M10 15c1-.7 3-.7 4 0" stroke="#68e3c4" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <span class="label">AI<br>Coach</span>
-          </button>
         </aside>
       </div>
       <!-- Logout (rectangle) -->
@@ -918,6 +920,9 @@ async function renderDashboard(container = document.getElementById("app")) {
         <span class="label">Logout</span>
       </button>
     </div>
+    <button id="ai-coach-fab" class="ai-fab" aria-label="Ask AI Coach" style="position:fixed;right:18px;bottom:23px;z-index:1030;display:flex;align-items:center;justify-content:center;border:none;background:linear-gradient(135deg,#61e6c4,#8e77ec);color:#fff;border-radius:50%;width:62px;height:62px;box-shadow:0 6px 24px 0 rgba(97,230,196,0.22);font-size:2rem;outline:none;cursor:pointer;">
+      <span style="font-size:2.2em;line-height:1;">🤖</span>
+    </button>
   `;
 
   setupNavigation();
@@ -926,6 +931,10 @@ async function renderDashboard(container = document.getElementById("app")) {
   document.getElementById("edit-student-profile-btn")?.addEventListener("click", () => {
     renderProfile();
   });
+  
+  document.getElementById("ai-tip-btn")?.addEventListener("click", () => {
+  renderAICoach();
+});
 
   // --- Logout ---
   document.getElementById("logout-btn")?.addEventListener("click", async () => {
@@ -933,6 +942,16 @@ async function renderDashboard(container = document.getElementById("app")) {
     localStorage.removeItem("fullName");
     localStorage.removeItem("userRole");
     renderWelcome();
+  });
+
+  // --- AI Coach Card Button Handler ---
+  document.getElementById("ai-tip-btn")?.addEventListener("click", () => {
+    renderAICoach();
+  });
+
+  // --- Floating FAB Handler (Ask AI Coach) ---
+  document.getElementById("ai-coach-fab")?.addEventListener("click", () => {
+    renderAICoach();
   });
 }
 
@@ -1992,63 +2011,121 @@ async function renderFlashcards(container = document.getElementById("app")) {
   await renderCard();
 }
 
-// ─── AI COACH PAGE ─────────────────────────────────────────────────────────
-async function renderAICoach(container = document.getElementById("app")) {
-  if (!container) return;
-  container.innerHTML = `
-    <div class="screen-wrapper ai-coach-page fade-in" style="max-width: 480px; margin:0 auto; display:flex; flex-direction:column; height:100vh;">
-      <header style="text-align:center; margin-bottom:1rem;">
-        <h2 style="margin-bottom: 0.3em;">🤖 CDL AI Coach</h2>
-        <div class="subtitle" style="font-size:1.1em;color:var(--accent);margin-bottom:0.2em;">
-          Get quick CDL answers, anytime--based on real FMCSA guidelines.
-        </div>
-        <div style="font-size:0.93em;opacity:0.85;">
-          Try asking:<br>
-          <span class="sample-qs">"What are the air brake check steps?"</span> • 
-          <span class="sample-qs">"How many hours can I drive in a day?"</span> • 
-          <span class="sample-qs">"What is the three-point brake check?"</span>
-        </div>
-      </header>
-      <div id="ai-chat-history" class="ai-chat-history" style="flex:1; overflow-y:auto; background:rgba(30,27,54,0.15); border-radius:12px; padding:13px 11px; margin-bottom:1.1em;"></div>
-      <form id="ai-chat-form" class="ai-chat-form" style="display:flex;gap:7px;align-items:center;">
-        <input id="ai-input" autocomplete="off" type="text" placeholder="Type your CDL question..." class="ai-input" style="flex:1; padding:13px 12px; border-radius:9px; border:1px solid #333; font-size:1.07em;" />
-        <button class="btn" style="padding:10px 20px;">Send</button>
+// ─── AI COACH PAGE (Context-Aware, Modern, Fully Functional) ─────────────────
+function renderAICoach(container = document.getElementById("app")) {
+  // Use modal overlay so AI is always accessible (use FAB or dashboard card to launch)
+  // Remove existing overlays to prevent duplicates
+  document.querySelectorAll(".ai-coach-modal").forEach(el => el.remove());
+
+  // Detect context for starter suggestions (e.g., checklist, profile, dashboard, etc.)
+  const context = (window.location.hash || "dashboard").replace("#", "");
+  const name = localStorage.getItem("fullName") || "Driver";
+  const isFirstTime = !localStorage.getItem("aiCoachWelcomed");
+
+  // Suggestions by context
+  const starterPrompts = {
+    dashboard: [
+      "What should I work on next?",
+      "How do I finish my checklist?",
+      "Explain ELDT in simple terms.",
+      "Give me a CDL study tip."
+    ],
+    profile: [
+      "How do I complete my profile?",
+      "How do I upload my permit?",
+      "What is a DOT medical card?",
+      "What are endorsements?"
+    ],
+    checklists: [
+      "What does this checklist step mean?",
+      "How do I know if my checklist is done?",
+      "Why is this checklist important?"
+    ],
+    walkthrough: [
+      "Help me memorize the walkthrough.",
+      "How do I do the three-point brake check?",
+      "Show me a memory drill for air brakes."
+    ],
+    practiceTests: [
+      "How do I prepare for the general knowledge test?",
+      "Give me a practice question.",
+      "Tips for passing air brakes."
+    ]
+  };
+  const suggestions = starterPrompts[context] || starterPrompts.dashboard;
+
+  // Modal structure
+  const modal = document.createElement("div");
+  modal.className = "ai-coach-modal modal-overlay fade-in";
+  modal.innerHTML = `
+    <div class="modal-card ai-coach-card">
+      <button class="modal-close" aria-label="Close">&times;</button>
+      <div class="ai-coach-header">
+        <img src="ai-coach-avatar.png" class="ai-coach-avatar" alt="AI Coach" />
+        <h3 class="ai-coach-title">AI Coach</h3>
+      </div>
+      <div class="ai-coach-chat" id="ai-coach-chat"></div>
+      <div class="ai-coach-suggestions">
+        ${suggestions.map(txt => `<button class="ai-suggestion">${txt}</button>`).join("")}
+      </div>
+      <form class="ai-coach-input-row" id="ai-coach-form" autocomplete="off">
+        <input type="text" class="ai-coach-input" id="ai-coach-input" placeholder="Type your CDL question..." autofocus />
+        <button type="submit" class="btn ai-coach-send">Send</button>
       </form>
-      <button class="btn wide outline" id="back-to-dashboard-btn" style="margin:1.3rem 0 0 0;">⬅ Back to Dashboard</button>
     </div>
   `;
 
-  setupNavigation();
+  // Remove scroll lock and modals if open
+  document.body.style.overflow = "";
+  document.body.appendChild(modal);
+  document.body.style.overflow = "hidden"; // prevent background scroll
 
-  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    renderDashboard();
-  });
-
-  // -- AI State
-  const chatHistoryEl = container.querySelector("#ai-chat-history");
+  // --- Conversation State
+  const chatHistoryEl = modal.querySelector("#ai-coach-chat");
   let conversation = JSON.parse(sessionStorage.getItem("aiCoachHistory") || "[]");
+
+  // Welcome message on first open
+  if (!conversation.length) {
+    conversation.push({
+      role: "assistant",
+      content: `
+        👋 Hi${name ? `, ${name}` : ""}! I’m your AI CDL Coach.
+        <br>
+        ${isFirstTime ? `<b>Let’s get started! I can answer your CDL questions, help with profile steps, explain checklists, and guide you through the walkthrough. Try a suggestion below, or ask anything related to your CDL training.</b>` : `Ask me anything about your CDL process!`}
+      `
+    });
+    localStorage.setItem("aiCoachWelcomed", "yes");
+  }
 
   function renderHistory() {
     chatHistoryEl.innerHTML = conversation.map(
       msg => `
         <div class="ai-msg ai-msg--${msg.role}">
           <div class="ai-msg-bubble">${msg.content}
-            ${msg.role === "assistant" && msg.fmcsatag ? `<div class="ai-source-tag">(${msg.fmcsatag})</div>` : ""}
+            ${msg.role === "assistant" && msg.fmcsatag ? `<div class="ai-source-tag">${msg.fmcsatag}</div>` : ""}
           </div>
         </div>
       `
-    ).join("") || `<div class="ai-msg ai-msg--assistant"><div class="ai-msg-bubble">Hi! I’m your CDL AI Coach. How can I help?</div></div>`;
+    ).join("");
     chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
   }
   renderHistory();
 
+  // --- Suggestion buttons autofill input
+  modal.querySelectorAll(".ai-suggestion").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const input = modal.querySelector("#ai-coach-input");
+      input.value = btn.textContent;
+      input.focus();
+    });
+  });
+
   // --- AI Chat Handler
-  container.querySelector("#ai-chat-form").onsubmit = async (e) => {
+  modal.querySelector("#ai-coach-form").onsubmit = async (e) => {
     e.preventDefault();
-    const input = container.querySelector("#ai-input");
+    const input = modal.querySelector("#ai-coach-input");
     const question = input.value.trim();
     if (!question) return;
-    // Add user Q
     conversation.push({ role: "user", content: question });
     renderHistory();
     input.value = "";
@@ -2058,7 +2135,7 @@ async function renderAICoach(container = document.getElementById("app")) {
     chatHistoryEl.innerHTML += `<div class="ai-msg ai-msg--assistant"><div class="ai-msg-bubble">Thinking...</div></div>`;
     chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
 
-    // --- CALL AI (OpenAI API)
+    // --- CALL AI (OpenAI API, replace with your backend if needed)
     let reply = "";
     try {
       reply = await askCDLAI(question, conversation.slice(-10));
@@ -2068,10 +2145,9 @@ async function renderAICoach(container = document.getElementById("app")) {
 
     // FMCSA tag
     let fmcsatag = "Based on FMCSA regulations, updated 2024";
-    if (reply.includes("ask your instructor") || reply.includes("official FMCSA manual"))
+    if (reply.match(/ask your instructor|official FMCSA manual|not allowed|outside of CDL/i))
       fmcsatag = "";
 
-    // Hand-off if AI can’t help
     if (/i (don'?t|cannot|can't) know|i am not sure|as an ai/i.test(reply)) {
       reply += `<br><span class="ai-handoff">[View the <a href="https://www.fmcsa.dot.gov/regulations/title49/section/393.1" target="_blank" rel="noopener">official FMCSA manual</a> or ask your instructor for help]</span>`;
     }
@@ -2080,20 +2156,35 @@ async function renderAICoach(container = document.getElementById("app")) {
     sessionStorage.setItem("aiCoachHistory", JSON.stringify(conversation));
     renderHistory();
   };
+
+  // --- Close Modal Handler
+  modal.querySelector(".modal-close")?.addEventListener("click", () => {
+    modal.remove();
+    document.body.style.overflow = "";
+  });
+
+  // Optional: esc key closes modal
+  window.addEventListener("keydown", function escClose(e) {
+    if (e.key === "Escape") {
+      modal.remove();
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", escClose);
+    }
+  });
 }
 
-// --- OpenAI Chat Call (Free tier, no backend needed) ---
+// --- OpenAI Chat Call (keep as is, add your key) ---
 async function askCDLAI(prompt, history = []) {
-  const apiKey = "YOUR_OPENAI_API_KEY"; // <-- Replace with your test key!
+  const apiKey = "YOUR_OPENAI_API_KEY"; // <-- Replace with your key!
   const systemMsg = {
     role: "system",
     content: "You are a CDL (commercial driver’s license) expert. Only answer CDL, truck driving, and FMCSA topics in clear, simple language for beginners. If a question is not about FMCSA/CDL, politely decline."
   };
-  // Context: last 3 QAs + system prompt (OpenAI free tier is 4K tokens; don't overflow)
+  // Only send a short context for free-tier
   const msgs = [systemMsg]
     .concat(history.slice(-3).map(msg => ({
       role: msg.role,
-      content: msg.content.replace(/(<([^>]+)>)/gi, "") // strip tags for input
+      content: msg.content.replace(/(<([^>]+)>)/gi, "")
     })))
     .concat([{ role: "user", content: prompt }]);
 
