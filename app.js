@@ -2004,18 +2004,15 @@ async function renderFlashcards(container = document.getElementById("app")) {
   await renderCard();
 }
 
-// ─── AI COACH PAGE (Context-Aware, Modern, Fully Functional) ─────────────────
+// ─── AI COACH PAGE (Polished Glass Modal, Fully Responsive, Theme-Matched) ────
 function renderAICoach(container = document.getElementById("app")) {
-  // Use modal overlay so AI is always accessible (use FAB or dashboard card to launch)
-  // Remove existing overlays to prevent duplicates
+  // Remove any existing modal overlays
   document.querySelectorAll(".ai-coach-modal").forEach(el => el.remove());
 
-  // Detect context for starter suggestions (e.g., checklist, profile, dashboard, etc.)
   const context = (window.location.hash || "dashboard").replace("#", "");
   const name = localStorage.getItem("fullName") || "Driver";
   const isFirstTime = !localStorage.getItem("aiCoachWelcomed");
 
-  // Suggestions by context
   const starterPrompts = {
     dashboard: [
       "What should I work on next?",
@@ -2051,33 +2048,40 @@ function renderAICoach(container = document.getElementById("app")) {
   const modal = document.createElement("div");
   modal.className = "ai-coach-modal modal-overlay fade-in";
   modal.innerHTML = `
-    <div class="modal-card ai-coach-card">
-      <button class="modal-close" aria-label="Close">&times;</button>
-      <div class="ai-coach-header">
-        <img src="ai-coach-avatar.png" class="ai-coach-avatar" alt="AI Coach" />
-        <h3 class="ai-coach-title">AI Coach</h3>
+    <div class="modal-card ai-coach-card glass">
+      <div class="ai-coach-modal-header">
+        <span class="ai-coach-title">🤖 AI Coach</span>
+        <button class="modal-close" aria-label="Close">&times;</button>
       </div>
-      <div class="ai-coach-chat" id="ai-coach-chat"></div>
-      <div class="ai-coach-suggestions">
-        ${suggestions.map(txt => `<button class="ai-suggestion">${txt}</button>`).join("")}
+      <div class="ai-coach-modal-body">
+        <div class="ai-coach-intro">
+          👋 Hi${name ? `, ${name}` : ""}! I’m your AI CDL Coach.<br>
+          <span class="ai-coach-intro-small">
+            ${isFirstTime
+              ? `<b>Let’s get started! I can answer your CDL questions, help with profile steps, explain checklists, and guide you through the walkthrough. Try a suggestion below, or ask anything related to your CDL training.</b>`
+              : `Ask me anything about your CDL process!`}
+          </span>
+        </div>
+        <div class="ai-coach-suggestions">
+          ${suggestions.map(txt => `<button type="button" class="ai-suggestion">${txt}</button>`).join("")}
+        </div>
+        <div id="ai-chat-history" class="ai-chat-history"></div>
       </div>
       <form class="ai-coach-input-row" id="ai-coach-form" autocomplete="off">
-        <input type="text" class="ai-coach-input" id="ai-coach-input" placeholder="Type your CDL question..." autofocus />
+        <input type="text" class="ai-coach-input" id="ai-coach-input"
+          placeholder="Type your CDL question..." autofocus />
         <button type="submit" class="btn ai-coach-send">Send</button>
       </form>
     </div>
   `;
 
-  // Remove scroll lock and modals if open
-  document.body.style.overflow = "";
+  // Modal display
   document.body.appendChild(modal);
-  document.body.style.overflow = "hidden"; // prevent background scroll
+  document.body.style.overflow = "hidden";
 
   // --- Conversation State
-  const chatHistoryEl = modal.querySelector("#ai-coach-chat");
+  const chatHistoryEl = modal.querySelector("#ai-chat-history");
   let conversation = JSON.parse(sessionStorage.getItem("aiCoachHistory") || "[]");
-
-  // Welcome message on first open
   if (!conversation.length) {
     conversation.push({
       role: "assistant",
@@ -2104,7 +2108,7 @@ function renderAICoach(container = document.getElementById("app")) {
   }
   renderHistory();
 
-  // --- Suggestion buttons autofill input
+  // Suggestion buttons autofill input
   modal.querySelectorAll(".ai-suggestion").forEach(btn => {
     btn.addEventListener("click", () => {
       const input = modal.querySelector("#ai-coach-input");
@@ -2113,7 +2117,7 @@ function renderAICoach(container = document.getElementById("app")) {
     });
   });
 
-  // --- AI Chat Handler
+  // AI Chat Handler
   modal.querySelector("#ai-coach-form").onsubmit = async (e) => {
     e.preventDefault();
     const input = modal.querySelector("#ai-coach-input");
@@ -2136,7 +2140,6 @@ function renderAICoach(container = document.getElementById("app")) {
       reply = "Sorry, I couldn't reach the AI right now.";
     }
 
-    // FMCSA tag
     let fmcsatag = "Based on FMCSA regulations, updated 2024";
     if (reply.match(/ask your instructor|official FMCSA manual|not allowed|outside of CDL/i))
       fmcsatag = "";
@@ -2149,6 +2152,7 @@ function renderAICoach(container = document.getElementById("app")) {
     sessionStorage.setItem("aiCoachHistory", JSON.stringify(conversation));
     renderHistory();
   };
+  
 
   // --- Close Modal Handler
   modal.querySelector(".modal-close")?.addEventListener("click", () => {
@@ -2164,39 +2168,6 @@ function renderAICoach(container = document.getElementById("app")) {
       window.removeEventListener("keydown", escClose);
     }
   });
-}
-
-// --- OpenAI Chat Call (keep as is, add your key) ---
-async function askCDLAI(prompt, history = []) {
-  const apiKey = "YOUR_OPENAI_API_KEY"; // <-- Replace with your key!
-  const systemMsg = {
-    role: "system",
-    content: "You are a CDL (commercial driver’s license) expert. Only answer CDL, truck driving, and FMCSA topics in clear, simple language for beginners. If a question is not about FMCSA/CDL, politely decline."
-  };
-  // Only send a short context for free-tier
-  const msgs = [systemMsg]
-    .concat(history.slice(-3).map(msg => ({
-      role: msg.role,
-      content: msg.content.replace(/(<([^>]+)>)/gi, "")
-    })))
-    .concat([{ role: "user", content: prompt }]);
-
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-3.5-turbo",
-      messages: msgs,
-      max_tokens: 220,
-      temperature: 0.45,
-    })
-  });
-  if (!res.ok) throw new Error("OpenAI API error");
-  const data = await res.json();
-  return (data.choices && data.choices[0] && data.choices[0].message.content) || "No answer available.";
 }
 
 // ─── INSTRUCTOR DASHBOARD ────────────────────────────────────────────────

@@ -1233,7 +1233,7 @@ body::before {
   color: var(--text-light);
 }
 
-/* === AI COACH UI - POLISHED FOR CDL BUDDY THEME ============================= */
+/* === AI COACH UI – PREMIUM CDL BUDDY POLISH ============================ */
 
 /* --- AI Floating Action Button (FAB) --- */
 #ai-fab {
@@ -1275,7 +1275,7 @@ body::before {
   }
 }
 
-/* --- AI Coach Modal/Card (for chat) --- */
+/* --- AI Coach Modal (main chat window) --- */
 .ai-coach-modal, .ai-coach-page {
   max-width: 410px;
   width: 96vw;
@@ -1290,56 +1290,96 @@ body::before {
   overflow: hidden;
   animation: fadeInUp 0.44s cubic-bezier(.33,1.15,.55,1);
 }
+
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(44px) scale(0.98);}
   to   { opacity: 1; transform: translateY(0) scale(1);}
 }
 
-/* --- AI Coach Header --- */
-.ai-coach-header {
+/* --- Modal Card Inner Content --- */
+.modal-card.ai-coach-card {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 26px 11px 26px;
-  background: linear-gradient(110deg, var(--brand-mid) 75%, var(--brand-dark) 100%);
-  color: var(--text-light);
-  font-weight: 700;
-  font-size: 1.22em;
-  border-top-left-radius: 21px;
-  border-top-right-radius: 21px;
-  border-bottom: 1.7px solid rgba(255,255,255,0.11);
-  letter-spacing: 0.01em;
+  flex-direction: column;
+  width: 100%;
+  background: transparent;
+  border-radius: 21px;
+  overflow: hidden;
 }
-.ai-coach-close {
-  background: rgba(255,255,255,0.13);
+
+/* --- Close Button (top left) --- */
+.modal-close, .ai-coach-close {
+  background: rgba(255,255,255,0.16);
   border: none;
   width: 38px;
   height: 38px;
-  border-radius: 50%;
-  font-size: 1.38em;
-  color: var(--text-light);
+  border-radius: 11px;
+  font-size: 1.41em;
+  color: var(--brand-mid);
   cursor: pointer;
   transition: background 0.19s;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: absolute;
+  top: 13px;
+  left: 13px;
+  z-index: 100;
+  font-weight: bold;
 }
-.ai-coach-close:hover { background: rgba(255,255,255,0.23); }
+.modal-close:hover,
+.ai-coach-close:hover {
+  background: rgba(196,219,232,0.34);
+  color: var(--brand-dark);
+}
 
-/* --- Chat Bubbles --- */
-.ai-coach-body, .ai-chat-history {
-  padding: 15px 17px 9px 17px;
+/* --- Header --- */
+.ai-coach-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 13px;
+  padding: 18px 26px 11px 53px;  /* leave room for close btn */
+  background: linear-gradient(110deg, var(--brand-mid) 80%, var(--brand-dark) 100%);
+  color: var(--text-light);
+  font-weight: 700;
+  font-size: 1.20em;
+  border-top-left-radius: 21px;
+  border-top-right-radius: 21px;
+  border-bottom: 1.7px solid rgba(255,255,255,0.11);
+  letter-spacing: 0.01em;
+  min-height: 60px;
+}
+.ai-coach-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--accent); object-fit: cover;
+  border: 1.2px solid var(--brand-dark);
+  box-shadow: 0 1.5px 6px 0 rgba(0,0,0,0.12);
+}
+.ai-coach-title {
+  margin: 0;
+  font-size: 1.12em;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+}
+
+/* --- Chat History (bubbles) --- */
+.ai-coach-chat, .ai-chat-history {
+  padding: 17px 19px 9px 19px;
   background: transparent;
-  min-height: 150px;
-  max-height: 320px;
+  min-height: 120px;
+  max-height: 295px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 10px;
+  font-size: 1.07em;
+  scroll-behavior: smooth;
 }
+
+/* --- Message Bubbles --- */
 .ai-msg { display: flex; }
 .ai-msg.ai-msg--assistant .ai-msg-bubble {
-  background: linear-gradient(115deg, rgba(78,145,173,0.21), var(--card-bg) 90%);
+  background: linear-gradient(115deg, rgba(78,145,173,0.17), var(--card-bg) 92%);
   color: var(--text-light);
   align-self: flex-start;
   border-bottom-left-radius: 24px;
@@ -1347,7 +1387,7 @@ body::before {
   border-top-right-radius: 16px;
 }
 .ai-msg.ai-msg--user .ai-msg-bubble {
-  background: linear-gradient(115deg, var(--accent) 55%, var(--card-bg));
+  background: linear-gradient(115deg, var(--accent) 60%, var(--card-bg) 92%);
   color: var(--brand-dark);
   align-self: flex-end;
   border-bottom-right-radius: 22px;
@@ -1355,44 +1395,59 @@ body::before {
   border-top-left-radius: 14px;
 }
 .ai-msg-bubble {
-  padding: 12px 15px;
+  padding: 13px 16px;
   border-radius: 18px;
   margin-bottom: 2.5px;
   max-width: 84%;
   font-size: 1.08em;
   box-shadow: 0 1.5px 8px rgba(0,0,0,0.07);
   word-break: break-word;
-  line-height: 1.43;
+  line-height: 1.46;
+  border: 1px solid rgba(196,219,232,0.13);
 }
 
-/* --- AI Coach Suggestions --- */
+/* --- FMCSA Source Tag --- */
+.ai-source-tag {
+  margin-top: 4px;
+  font-size: 0.93em;
+  color: var(--accent);
+  opacity: 0.76;
+  font-style: italic;
+}
+
+/* --- Suggestions (Quick Prompts) --- */
 .ai-coach-suggestions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 0 17px 7px 17px;
+  padding: 0 17px 9px 17px;
   justify-content: flex-start;
+  margin-bottom: 1px;
 }
-.ai-coach-suggestions button {
-  background: rgba(196,219,232,0.15);
+.ai-coach-suggestions button,
+.ai-suggestion {
+  background: linear-gradient(135deg, rgba(196,219,232,0.21) 55%, rgba(78,145,173,0.17) 100%);
   border: none;
   border-radius: 17px;
-  padding: 8px 17px;
+  padding: 9px 17px;
   color: var(--brand-dark);
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 3px;
   cursor: pointer;
-  transition: background 0.15s, color 0.13s;
-  font-size: 1.04em;
+  transition: background 0.16s, color 0.13s, transform 0.13s;
+  font-size: 1.03em;
   letter-spacing: 0.01em;
   box-shadow: 0 1.5px 7px 0 rgba(0,0,0,0.10);
+  outline: none;
 }
-.ai-coach-suggestions button:hover {
-  background: rgba(196,219,232,0.27);
+.ai-coach-suggestions button:hover,
+.ai-suggestion:hover {
+  background: linear-gradient(135deg, rgba(196,219,232,0.33) 65%, rgba(78,145,173,0.26) 100%);
   color: var(--brand-mid);
+  transform: translateY(-2px) scale(1.045);
 }
 
-/* --- Input Bar --- */
+/* --- Input Row (Bottom Chatbar) --- */
 .ai-coach-input-row, .ai-chat-form {
   display: flex;
   align-items: center;
@@ -1405,24 +1460,29 @@ body::before {
 .ai-coach-input-row input[type="text"], .ai-chat-form input[type="text"] {
   flex: 1;
   border-radius: 12px;
-  padding: 12px 13px;
-  font-size: 1.07em;
-  border: 1.6px solid var(--accent);
-  background: rgba(255,255,255,0.14);
+  padding: 13px 14px;
+  font-size: 1.08em;
+  border: 1.5px solid var(--accent);
+  background: rgba(255,255,255,0.17);
   color: var(--brand-dark);
-  font-weight: 500;
+  font-weight: 600;
+  transition: border 0.18s;
+  outline: none;
+}
+.ai-coach-input-row input[type="text"]:focus, .ai-chat-form input[type="text"]:focus {
+  border-color: var(--brand-light);
 }
 .ai-coach-input-row button[type="submit"], .ai-chat-form button[type="submit"] {
-  border-radius: 10px;
+  border-radius: 11px;
   background: var(--accent);
   color: var(--brand-dark);
   border: none;
   font-weight: 700;
-  padding: 12px 23px;
+  padding: 12px 25px;
   font-size: 1.07em;
   box-shadow: 0 2px 8px rgba(78,145,173,0.10);
   cursor: pointer;
-  transition: background 0.17s, color 0.13s;
+  transition: background 0.15s, color 0.11s;
 }
 .ai-coach-input-row button[type="submit"]:hover,
 .ai-chat-form button[type="submit"]:hover {
@@ -1430,23 +1490,28 @@ body::before {
   color: var(--text-light);
 }
 
-/* --- Mobile tweaks --- */
-@media (max-width: 480px) {
+/* --- Modal scroll lock for mobile --- */
+body.ai-modal-open {
+  overflow: hidden !important;
+}
+
+/* --- Mobile & Small Device Tweaks --- */
+@media (max-width: 540px) {
   .ai-coach-modal, .ai-coach-page {
-    margin: 7vw auto 0 auto;
+    margin: 5vw auto 0 auto;
     max-width: 99vw;
     border-radius: 13px;
   }
-  .ai-coach-header {
-    font-size: 1em;
-    padding: 12px 10px 6px 10px;
-  }
-  .ai-coach-body, .ai-chat-history,
-  .ai-coach-suggestions,
-  .ai-coach-input-row, .ai-chat-form {
-    padding-left: 6px;
-    padding-right: 6px;
-  }
+  .modal-card.ai-coach-card { border-radius: 13px; }
+  .ai-coach-header { font-size: 0.99em; padding: 10px 7vw 7px 50px; }
+  .ai-coach-avatar { width: 32px; height: 32px; }
+  .ai-coach-chat, .ai-chat-history { padding: 11px 6px 6px 6px; }
+  .ai-coach-suggestions, .ai-coach-input-row, .ai-chat-form { padding-left: 5px; padding-right: 5px; }
+}
+
+@media (max-width: 360px) {
+  .ai-coach-modal, .ai-coach-page { padding: 0 1px; }
+  .ai-coach-header { padding-left: 38px; padding-right: 4px; }
 }
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
