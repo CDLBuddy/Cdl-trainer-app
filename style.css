@@ -1505,7 +1505,7 @@ body::before {
   position: relative;
 }
 .coach-avatar {
-  width: 82px; height: 82px;
+  width: 100px; height: 100px;
   border-radius: 50%;
   background: transparent;
   margin-bottom: 2px;
@@ -1520,8 +1520,8 @@ body::before {
   50% { transform: translateY(-8px);}
 }
 .coach-avatar svg {
-  width: 82px;
-  height: 82px;
+  width: 100px;
+  height: 100px;
   display: block;
 }
 .ai-coach-title {
