@@ -25,14 +25,13 @@ body {
 /* === MOBILE SAFE AREA + LAYOUT FIXES (insert after :root) =============== */
 html, body {
   height: 100%;
-  min-height: 100vh;
   margin: 0;
   padding: 0;
+  overflow: hidden; /* Prevent scrolling on body */
+  overscroll-behavior-y: none; /* Prevent pull-to-refresh */
   font-family: "Helvetica Neue", Arial, sans-serif;
   color: var(--text-light);
   background: var(--brand-dark, #0b0a34); /* fallback, your gradients still apply below */
-  overscroll-behavior: none;  /* Prevents navigation bounce, but allows content bounce */
-  overflow-x: hidden !important;  /* Prevent horizontal scroll */
 }
 /* === 2. BACKGROUND, GRADIENTS & ANIMATIONS ============================= */
 body {
