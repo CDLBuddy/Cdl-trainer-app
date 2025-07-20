@@ -1457,9 +1457,9 @@ body::before {
   position: relative;
   max-width: 435px;
   width: 95vw;
-  margin: 0 auto;
+  margin: 5vw auto;                  /* Add space all sides, esp. mobile */
   border-radius: 22px;
-  background: rgba(29, 55, 75, 0.19);      /* More transparent (was 0.37) */
+  background: rgba(29, 55, 75, 0.19);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
   box-shadow: 0 24px 64px 0 rgba(0,0,0,0.28),
@@ -1471,6 +1471,19 @@ body::before {
   max-height: 98dvh;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;             /* Ensures padding/margin are respected */
+}
+
+@media (max-width: 650px) {
+  .ai-coach-modal .modal-card.ai-coach-card,
+  .ai-coach-modal,
+  .ai-coach-page {
+    margin: 4vw 2vw;                  /* Even more space on smallest screens */
+    width: 96vw;
+    max-width: 99vw;
+    border-radius: 15px;
+    min-width: unset;
+  }
 }
 
 /* Header: glassier, no border */
