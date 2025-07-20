@@ -912,9 +912,43 @@ async function renderDashboard(container = document.getElementById("app")) {
         <span class="label">Logout</span>
       </button>
     </div>
-    <button id="ai-coach-fab" class="ai-fab" aria-label="Ask AI Coach" style="position:fixed;right:18px;bottom:23px;z-index:1030;display:flex;align-items:center;justify-content:center;border:none;background:linear-gradient(135deg,#61e6c4,#8e77ec);color:#fff;border-radius:50%;width:62px;height:62px;box-shadow:0 6px 24px 0 rgba(97,230,196,0.22);font-size:2rem;outline:none;cursor:pointer;">
-      <span style="font-size:2.2em;line-height:1;">🤖</span>
-    </button>
+    <button id="ai-coach-fab" class="ai-fab" aria-label="Ask AI Coach">
+  <span class="ai-coach-mascot-wrapper">
+    <!-- Pristine AI Coach Mascot SVG START -->
+    <svg id="ai-coach-mascot" viewBox="0 0 88 88" width="46" height="46" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="face-bg" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#b8ecff" />
+          <stop offset="100%" stop-color="#4e91ad" />
+        </radialGradient>
+        <linearGradient id="screen-glass" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#e6f6ff" stop-opacity="0.72" />
+          <stop offset="100%" stop-color="#4e91ad" stop-opacity="0.17" />
+        </linearGradient>
+      </defs>
+      <!-- Computer base -->
+      <rect x="8" y="16" width="72" height="54" rx="16" fill="url(#face-bg)" stroke="#242c42" stroke-width="3"/>
+      <!-- Screen glass reflection -->
+      <rect x="12" y="22" width="64" height="42" rx="12" fill="url(#screen-glass)" />
+      <!-- Face -->
+      <ellipse cx="44" cy="44" rx="22" ry="18" fill="#eaf9ff" fill-opacity="0.92"/>
+      <!-- Eyes -->
+      <ellipse cx="34" cy="44" rx="3.5" ry="4" fill="#232345"/>
+      <ellipse cx="54" cy="44" rx="3.5" ry="4" fill="#232345"/>
+      <!-- Smile -->
+      <path d="M38,52 Q44,56 50,52" stroke="#3db278" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <!-- Headband -->
+      <rect x="24" y="11" width="40" height="14" rx="7" fill="#3db278" stroke="#242c42" stroke-width="2"/>
+      <text x="44" y="22.5" text-anchor="middle" font-family="Arial Rounded MT Bold, Arial, sans-serif" font-size="9" fill="#fff" font-weight="bold" letter-spacing="1.2">COACH</text>
+      <!-- Ears -->
+      <ellipse cx="8" cy="43" rx="3" ry="7" fill="#ea5d5d" stroke="#232345" stroke-width="1.5"/>
+      <ellipse cx="80" cy="43" rx="3" ry="7" fill="#ea5d5d" stroke="#232345" stroke-width="1.5"/>
+      <!-- Glow shadow -->
+      <ellipse cx="44" cy="75" rx="22" ry="4" fill="#4e91ad" fill-opacity="0.21"/>
+    </svg>
+    <!-- Pristine AI Coach Mascot SVG END -->
+  </span>
+</button>
   `;
 
   setupNavigation();
@@ -2061,25 +2095,37 @@ function renderAICoach(container = document.getElementById("app")) {
       <div class="ai-coach-modal-header">
         <div class="coach-avatar" style="display:flex; align-items:center; justify-content:center; margin-bottom: 12px; animation: floatMascot 2.6s ease-in-out infinite;">
           <!-- Retro Monitor Coach SVG -->
-          <svg viewBox="0 0 120 120" width="80" height="80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="15" y="25" width="90" height="60" rx="15" fill="#3f1784" stroke="#b6f0f7" stroke-width="4" />
-            <rect x="22" y="32" width="76" height="46" rx="10" fill="#4e91ad" fill-opacity="0.93" stroke="#c4dbe8" stroke-width="2"/>
-            <ellipse cx="60" cy="57" rx="10" ry="10" fill="#fff" fill-opacity="0.12"/>
-            <ellipse cx="49" cy="56" rx="2.3" ry="2.7" fill="#fff" />
-            <ellipse cx="71" cy="56" rx="2.3" ry="2.7" fill="#fff" />
-            <path d="M53,64 Q60,69 67,64" stroke="#fff" stroke-width="2.1" fill="none" stroke-linecap="round"/>
-            <ellipse cx="44" cy="61" rx="1.3" ry="1" fill="#b48aff" opacity="0.47"/>
-            <ellipse cx="76" cy="61" rx="1.3" ry="1" fill="#b48aff" opacity="0.47"/>
-            <rect x="36" y="13" width="48" height="18" rx="9" fill="#23343e" />
-            <ellipse cx="60" cy="16" rx="24" ry="6" fill="#b6f0f7" fill-opacity="0.4"/>
-            <text x="60" y="27" text-anchor="middle" font-size="8" fill="#ffe688" font-family="Arial" font-weight="bold">COACH</text>
-            <ellipse cx="89" cy="60" rx="3" ry="3" fill="#b6f0f7"/>
-            <rect x="87.5" y="61.5" width="9" height="2.5" rx="1.1" fill="#a8e063"/>
-            <ellipse cx="99" cy="63" rx="1.7" ry="1.7" fill="#ffe688"/>
-            <path d="M61 77 Q60 90 71 90" stroke="#b48aff" stroke-width="2"/>
-            <rect x="69" y="87" width="6" height="6" rx="2" fill="#ffe688" stroke="#b6f0f7" stroke-width="1"/>
-            <ellipse cx="60" cy="110" rx="32" ry="6" fill="#3f1784" opacity="0.21"/>
-          </svg>
+          <svg id="ai-coach-mascot" viewBox="0 0 88 88" width="60" height="60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="face-bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#b8ecff" />
+      <stop offset="100%" stop-color="#4e91ad" />
+    </radialGradient>
+    <linearGradient id="screen-glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e6f6ff" stop-opacity="0.72" />
+      <stop offset="100%" stop-color="#4e91ad" stop-opacity="0.17" />
+    </linearGradient>
+  </defs>
+  <!-- Computer base -->
+  <rect x="8" y="16" width="72" height="54" rx="16" fill="url(#face-bg)" stroke="#242c42" stroke-width="3"/>
+  <!-- Screen glass reflection -->
+  <rect x="12" y="22" width="64" height="42" rx="12" fill="url(#screen-glass)" />
+  <!-- Face -->
+  <ellipse cx="44" cy="44" rx="22" ry="18" fill="#eaf9ff" fill-opacity="0.92"/>
+  <!-- Eyes -->
+  <ellipse cx="34" cy="44" rx="3.5" ry="4" fill="#232345"/>
+  <ellipse cx="54" cy="44" rx="3.5" ry="4" fill="#232345"/>
+  <!-- Smile -->
+  <path d="M38,52 Q44,56 50,52" stroke="#3db278" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <!-- Headband -->
+  <rect x="24" y="11" width="40" height="14" rx="7" fill="#3db278" stroke="#242c42" stroke-width="2"/>
+  <text x="44" y="22.5" text-anchor="middle" font-family="Arial Rounded MT Bold, Arial, sans-serif" font-size="9" fill="#fff" font-weight="bold" letter-spacing="1.2">COACH</text>
+  <!-- Ears -->
+  <ellipse cx="8" cy="43" rx="3" ry="7" fill="#ea5d5d" stroke="#232345" stroke-width="1.5"/>
+  <ellipse cx="80" cy="43" rx="3" ry="7" fill="#ea5d5d" stroke="#232345" stroke-width="1.5"/>
+  <!-- Glow shadow -->
+  <ellipse cx="44" cy="75" rx="22" ry="4" fill="#4e91ad" fill-opacity="0.21"/>
+</svg>
         </div>
         <span class="ai-coach-title" style="font-size: 1.25rem; font-weight: 700; color: var(--accent, #b6f0f7); margin-bottom: 4px;">AI Coach</span>
         <button class="modal-close" aria-label="Close" style="margin-left:auto;">&times;</button>
