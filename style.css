@@ -1342,7 +1342,58 @@ body::before {
   }
 }
 /* === AI COACH UI – PREMIUM CDL BUDDY POLISH ============================ */
+/* --- AI Floating Action Button (FAB) --- */
+#ai-coach-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 32px;
+  z-index: 1500;
+  background: linear-gradient(135deg, var(--brand-light) 55%, var(--accent) 100%);
+  color: var(--brand-dark);
+  border: none;
+  border-radius: 50%;
+  width: 66px;
+  height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 22px 0 rgba(0,0,0,0.23), 0 2px 10px 0 var(--brand-mid);
+  transition: box-shadow 0.18s, background 0.18s, transform 0.1s;
+  font-size: 2.1rem;
+  outline: none;
+  cursor: pointer;
+}
+#ai-coach-fab:hover, #ai-coach-fab:focus {
+  background: linear-gradient(135deg, var(--accent) 60%, var(--brand-mid) 100%);
+  box-shadow: 0 8px 36px 0 rgba(0,0,0,0.29), 0 6px 24px 0 var(--brand-mid);
+  color: var(--brand-dark);
+  transform: scale(1.08);
+}
+#ai-coach-fab[hidden] { display: none !important; }
 
+/* Mascot SVG in FAB */
+.ai-coach-mascot-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#ai-coach-mascot {
+  width: 46px;
+  height: 46px;
+  display: block;
+  animation: mascot-fab-float 2.8s ease-in-out infinite;
+}
+@keyframes mascot-fab-float {
+  0%,100% { transform: translateY(0);}
+  50% { transform: translateY(-9px);}
+}
+
+/* Modal Mascot Avatar */
+.coach-avatar svg {
+  width: 82px;
+  height: 82px;
+  display: block;
+}
 /* --- AI Floating Action Button (FAB) --- */
 #ai-fab {
   position: fixed;
