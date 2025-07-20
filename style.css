@@ -1477,11 +1477,11 @@ body::before {
   width: 95vw;
   margin: 5vw auto;
   border-radius: 22px;
-  background: rgba(29, 55, 75, 0.19);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  box-shadow: 0 24px 64px 0 rgba(0,0,0,0.28),
-              0 2.5px 11px 0 var(--brand-mid);
+  background: rgba(29, 55, 75, 0.12);          /* Much lighter, more see-thru */
+  backdrop-filter: blur(10px) saturate(120%);  /* Lower blur for frosted glass */
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  box-shadow: 0 16px 36px 0 rgba(0,0,0,0.13),
+              0 2.5px 8px 0 var(--brand-mid);
   color: var(--text-light);
   border: none;
   overflow: hidden;
