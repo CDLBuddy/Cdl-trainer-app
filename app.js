@@ -2002,8 +2002,18 @@ async function renderFlashcards(container = document.getElementById("app")) {
 
   await renderCard();
 }
-
-// ─── AI COACH PAGE (Polished Glass Modal, Fully Responsive, Theme-Matched) ────
+// Returns user initials for avatar bubble
+function getUserInitials() {
+  const fullName = localStorage.getItem("fullName") || "";
+  if (!fullName) return "U";
+  return fullName
+    .split(" ")
+    .map(n => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+// ─── AI COACH PAGE (Premium Modal, Avatar, Typing Dots, Fun, Responsive) ────
 function renderAICoach(container = document.getElementById("app")) {
   // Remove any existing modal overlays
   document.querySelectorAll(".ai-coach-modal").forEach(el => el.remove());
@@ -2049,8 +2059,30 @@ function renderAICoach(container = document.getElementById("app")) {
   modal.innerHTML = `
     <div class="modal-card ai-coach-card glass">
       <div class="ai-coach-modal-header">
-        <span class="ai-coach-title">🤖 AI Coach</span>
-        <button class="modal-close" aria-label="Close">&times;</button>
+        <div class="coach-avatar" style="display:flex; align-items:center; justify-content:center; margin-bottom: 12px; animation: floatMascot 2.6s ease-in-out infinite;">
+          <!-- Retro Monitor Coach SVG -->
+          <svg viewBox="0 0 120 120" width="80" height="80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="15" y="25" width="90" height="60" rx="15" fill="#3f1784" stroke="#b6f0f7" stroke-width="4" />
+            <rect x="22" y="32" width="76" height="46" rx="10" fill="#4e91ad" fill-opacity="0.93" stroke="#c4dbe8" stroke-width="2"/>
+            <ellipse cx="60" cy="57" rx="10" ry="10" fill="#fff" fill-opacity="0.12"/>
+            <ellipse cx="49" cy="56" rx="2.3" ry="2.7" fill="#fff" />
+            <ellipse cx="71" cy="56" rx="2.3" ry="2.7" fill="#fff" />
+            <path d="M53,64 Q60,69 67,64" stroke="#fff" stroke-width="2.1" fill="none" stroke-linecap="round"/>
+            <ellipse cx="44" cy="61" rx="1.3" ry="1" fill="#b48aff" opacity="0.47"/>
+            <ellipse cx="76" cy="61" rx="1.3" ry="1" fill="#b48aff" opacity="0.47"/>
+            <rect x="36" y="13" width="48" height="18" rx="9" fill="#23343e" />
+            <ellipse cx="60" cy="16" rx="24" ry="6" fill="#b6f0f7" fill-opacity="0.4"/>
+            <text x="60" y="27" text-anchor="middle" font-size="8" fill="#ffe688" font-family="Arial" font-weight="bold">COACH</text>
+            <ellipse cx="89" cy="60" rx="3" ry="3" fill="#b6f0f7"/>
+            <rect x="87.5" y="61.5" width="9" height="2.5" rx="1.1" fill="#a8e063"/>
+            <ellipse cx="99" cy="63" rx="1.7" ry="1.7" fill="#ffe688"/>
+            <path d="M61 77 Q60 90 71 90" stroke="#b48aff" stroke-width="2"/>
+            <rect x="69" y="87" width="6" height="6" rx="2" fill="#ffe688" stroke="#b6f0f7" stroke-width="1"/>
+            <ellipse cx="60" cy="110" rx="32" ry="6" fill="#3f1784" opacity="0.21"/>
+          </svg>
+        </div>
+        <span class="ai-coach-title" style="font-size: 1.25rem; font-weight: 700; color: var(--accent, #b6f0f7); margin-bottom: 4px;">AI Coach</span>
+        <button class="modal-close" aria-label="Close" style="margin-left:auto;">&times;</button>
       </div>
       <div class="ai-coach-modal-body">
         <div class="ai-coach-intro">
@@ -2093,10 +2125,24 @@ function renderAICoach(container = document.getElementById("app")) {
     localStorage.setItem("aiCoachWelcomed", "yes");
   }
 
+  // --- Helper to render history with avatars, source tags, and FMCSA handoff style
   function renderHistory() {
     chatHistoryEl.innerHTML = conversation.map(
       msg => `
         <div class="ai-msg ai-msg--${msg.role}">
+          ${
+            msg.role === "user"
+              ? `<div class="ai-user-avatar">${getUserInitials()}</div>`
+              : `<div class="ai-coach-avatar-mini">
+                  <svg viewBox="0 0 32 32" width="28" height="28">
+                    <rect x="2" y="5" width="28" height="18" rx="5" fill="#3f1784" stroke="#b6f0f7" stroke-width="2" />
+                    <rect x="5" y="8" width="22" height="12" rx="3" fill="#4e91ad" fill-opacity="0.93" stroke="#c4dbe8" stroke-width="1"/>
+                    <ellipse cx="11" cy="14" rx="1.3" ry="1.5" fill="#fff" />
+                    <ellipse cx="21" cy="14" rx="1.3" ry="1.5" fill="#fff" />
+                    <path d="M13,18 Q16,21 19,18" stroke="#fff" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+                  </svg>
+                </div>`
+          }
           <div class="ai-msg-bubble">${msg.content}
             ${msg.role === "assistant" && msg.fmcsatag ? `<div class="ai-source-tag">${msg.fmcsatag}</div>` : ""}
           </div>
@@ -2127,8 +2173,11 @@ function renderAICoach(container = document.getElementById("app")) {
     input.value = "";
     chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
 
-    // Show loading
-    chatHistoryEl.innerHTML += `<div class="ai-msg ai-msg--assistant"><div class="ai-msg-bubble">Thinking...</div></div>`;
+    // --- Typing Loading Dots
+    const loadingBubble = document.createElement("div");
+    loadingBubble.className = "ai-msg ai-msg--assistant";
+    loadingBubble.innerHTML = `<div class="ai-msg-bubble"><span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></div>`;
+    chatHistoryEl.appendChild(loadingBubble);
     chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
 
     // --- CALL AI (OpenAI API, replace with your backend if needed)
@@ -2147,11 +2196,31 @@ function renderAICoach(container = document.getElementById("app")) {
       reply += `<br><span class="ai-handoff">[View the <a href="https://www.fmcsa.dot.gov/regulations/title49/section/393.1" target="_blank" rel="noopener">official FMCSA manual</a> or ask your instructor for help]</span>`;
     }
 
+    // Remove loading dots before showing reply
+    const loadingMsg = chatHistoryEl.querySelector(".typing-dots")?.closest(".ai-msg");
+    if (loadingMsg) loadingMsg.remove();
+
     conversation.push({ role: "assistant", content: reply, fmcsatag });
     sessionStorage.setItem("aiCoachHistory", JSON.stringify(conversation));
     renderHistory();
+
+    // Easter Egg after every 10 user questions!
+    if (conversation.filter(m => m.role === "user").length % 10 === 0) {
+      setTimeout(() => {
+        const funFacts = [
+          "🚛 Did you know? The average 18-wheeler travels over 100,000 miles per year!",
+          "💡 Tip: Reviewing checklists before every drive helps you pass real-world inspections.",
+          "🎉 Keep going! Every question you ask gets you closer to that CDL.",
+          "🛣️ CDL Fact: Federal law requires drivers to pass a skills test for each class of vehicle.",
+          "👀 Coach’s wisdom: Don't forget your three-point brake check--it's a must-pass step!"
+        ];
+        const fun = funFacts[Math.floor(Math.random() * funFacts.length)];
+        conversation.push({ role: "assistant", content: fun });
+        sessionStorage.setItem("aiCoachHistory", JSON.stringify(conversation));
+        renderHistory();
+      }, 700);
+    }
   };
-  
 
   // --- Close Modal Handler
   modal.querySelector(".modal-close")?.addEventListener("click", () => {
