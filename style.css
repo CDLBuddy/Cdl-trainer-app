@@ -1760,6 +1760,66 @@ body.ai-modal-open {
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
 }
+/* === CHECKLIST MODAL & CARDS GLASS STYLE (ADD THIS SECTION) === */
+.modal-card.checklist-modal {
+  background: var(--card-bg, #191942e6);
+  border-radius: 18px;
+  padding: 2.1em 1.7em 1.6em 1.7em;
+  box-shadow: 0 8px 42px #0009;
+  width: 370px;
+  max-width: 98vw;
+  font-size: 1.11em;
+  color: var(--text-light);
+  position: relative;
+  z-index: 12;
+  /* For glass blur: */
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+@media (max-width: 600px) {
+  .modal-card.checklist-modal {
+    width: 98vw;
+    padding: 1.2em 0.7em 1em 0.7em;
+  }
+}
+
+.checklist-modal label {
+  background: rgba(255,255,255,0.09);
+  border-radius: 9px;
+  padding: 0.6em 0.9em;
+  margin-bottom: 0.45em;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 1.06em;
+  color: var(--text-light);
+  font-weight: 500;
+  box-shadow: 0 1.5px 7px rgba(0,0,0,0.08);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.checklist-modal textarea {
+  width: 100%;
+  border-radius: 9px;
+  padding: 0.6em 0.8em;
+  background: rgba(255,255,255,0.13);
+  color: var(--text-light);
+  border: none;
+  font-size: 1em;
+  resize: vertical;
+}
+
+.checklist-modal input[type="checkbox"] {
+  accent-color: var(--accent, #b48aff);
+  width: 1.15em;
+  height: 1.15em;
+  margin-right: 0.7em;
+}
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+.modal-overlay {
+  animation: fadeIn 0.2s;
+}
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
   opacity: 1;
