@@ -16,7 +16,8 @@ import {
   collection,
   query,
   where,
-  getDocs
+  getDocs,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 // Auth
