@@ -1794,18 +1794,19 @@ body.ai-modal-open {
   margin: 0;
 }
 
+/* MAIN UPDATE: extra left padding, and min-height increased for vertical space */
 .checklist-item {
   display: flex;
   align-items: center;
   background: rgba(255,255,255,0.08);
   border-radius: 15px;
-  padding: 15px 14px 15px 56px; /* <-- was 44px */
+  padding: 15px 14px 15px 56px; /* extra left for bubble */
   box-shadow: 0 2px 14px 0 rgba(20, 20, 60, 0.09);
   border: none;
   margin-bottom: 0.92em;
   position: relative;
   transition: box-shadow 0.21s, background 0.17s;
-  min-height: 55px;
+  min-height: 60px; /* slightly increased for safety */
 }
 .checklist-item.done {
   background: linear-gradient(93deg, #36d19b 0%, #b3ffe7 100%);
@@ -1818,17 +1819,17 @@ body.ai-modal-open {
   display: none !important;
 }
 
-/* Alert bubble is smaller and always clear of text */
+/* MAIN UPDATE: Bubble is smaller, better centered, doesn't overlap label */
 .notify-bubble {
   position: absolute;
   left: 18px;
   top: 50%;
-  transform: translateY(-50%);
-  width: 20px;     /* was 26px */
-  height: 20px;    /* was 26px */
+  transform: translateY(-54%);  /* fine-tuned vertical */
+  width: 19px;
+  height: 19px;
   background: #ff4957;
   color: #fff;
-  font-size: 1.11em;
+  font-size: 1.09em;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1838,9 +1839,9 @@ body.ai-modal-open {
   border: 1.5px solid #fff;
   z-index: 2;
   margin: 0;
+  pointer-events: none;
 }
 
-/* Label flexes fully, never overlaps */
 .checklist-item-main {
   display: flex;
   align-items: center;
@@ -1864,7 +1865,6 @@ body.ai-modal-open {
   color: #93d3be;
 }
 
-/* Button stays right, not wrapping label */
 .btn.outline.btn-sm {
   flex-shrink: 0;
   font-size: 1.08em;
@@ -1890,7 +1890,6 @@ body.ai-modal-open {
   border-color: #b48aff;
 }
 
-/* Check & lock badges */
 .badge-success, .badge-waiting {
   flex-shrink: 0;
   margin-left: 10px;
@@ -1917,7 +1916,6 @@ body.ai-modal-open {
   border: 1.1px solid #aaa;
 }
 
-/* Details/substeps, still full width */
 .checklist-details {
   display: block;
   color: #d2ecfd;
@@ -1968,7 +1966,6 @@ body.ai-modal-open {
   .completion-badge { font-size: 1.04em; padding: 10px 8vw; }
 }
 
-/* Animation for popping check badge */
 @keyframes popCheck {
   0% { transform: scale(0.5) translateX(-50%); opacity: 0;}
   80%{ transform: scale(1.14) translateX(-50%);}
