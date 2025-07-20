@@ -1342,6 +1342,7 @@ body::before {
   }
 }
 /* === AI COACH UI – PREMIUM CDL BUDDY POLISH ============================ */
+
 /* --- AI Floating Action Button (FAB) --- */
 #ai-coach-fab {
   position: fixed;
@@ -1362,6 +1363,8 @@ body::before {
   font-size: 2.1rem;
   outline: none;
   cursor: pointer;
+  padding: 0;
+  overflow: visible;
 }
 #ai-coach-fab:hover, #ai-coach-fab:focus {
   background: linear-gradient(135deg, var(--accent) 60%, var(--brand-mid) 100%);
@@ -1376,6 +1379,9 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 46px;
+  height: 46px;
+  position: relative;
 }
 #ai-coach-mascot {
   width: 46px;
@@ -1387,50 +1393,35 @@ body::before {
   0%,100% { transform: translateY(0);}
   50% { transform: translateY(-9px);}
 }
-
-/* Modal Mascot Avatar */
-.coach-avatar svg {
-  width: 82px;
-  height: 82px;
-  display: block;
-}
-/* --- AI Floating Action Button (FAB) --- */
-#ai-fab {
-  position: fixed;
-  right: 24px;
-  bottom: 32px;
-  z-index: 1500;
-  background: linear-gradient(135deg, var(--brand-light) 55%, var(--accent) 100%);
-  color: var(--brand-dark);
-  border: none;
+/* Optional: glassy glow behind mascot */
+.mascot-glow {
+  position: absolute;
+  width: 62px; height: 62px;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
   border-radius: 50%;
-  width: 66px;
-  height: 66px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 22px 0 rgba(0,0,0,0.23), 0 2px 10px 0 var(--brand-mid);
-  transition: box-shadow 0.18s, background 0.18s, transform 0.1s;
-  font-size: 2.1rem;
-  outline: none;
-  cursor: pointer;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 65%, #b6f0f7 40%, transparent 70%);
+  filter: blur(5px);
+  opacity: 0.38;
+  z-index: 0;
 }
-#ai-fab:hover, #ai-fab:focus {
-  background: linear-gradient(135deg, var(--accent) 60%, var(--brand-mid) 100%);
-  box-shadow: 0 8px 36px 0 rgba(0,0,0,0.29), 0 6px 24px 0 var(--brand-mid);
-  color: var(--brand-dark);
-  transform: scale(1.08);
-}
-#ai-fab[hidden] { display: none !important; }
 
 /* --- Mobile scaling for FAB --- */
 @media (max-width: 650px) {
-  #ai-fab {
+  #ai-coach-fab {
     width: 50px;
     height: 50px;
     font-size: 1.35rem;
     right: 11px;
     bottom: 14px;
+  }
+  .ai-coach-mascot-wrapper, #ai-coach-mascot {
+    width: 36px;
+    height: 36px;
+  }
+  .mascot-glow {
+    width: 50px; height: 50px;
   }
 }
 
@@ -1527,6 +1518,11 @@ body::before {
 @keyframes floatMascot {
   0%,100% { transform: translateY(0);}
   50% { transform: translateY(-8px);}
+}
+.coach-avatar svg {
+  width: 82px;
+  height: 82px;
+  display: block;
 }
 .ai-coach-title {
   margin: 0 0 3px 0;
@@ -1731,6 +1727,7 @@ body.ai-modal-open {
   .modal-card.ai-coach-card { border-radius: 14px; }
   .ai-coach-modal-header { font-size: 0.99em; padding: 15px 6vw 9px 6vw; min-height: 75px;}
   .coach-avatar { width: 58px; height: 58px; }
+  .coach-avatar svg { width: 58px; height: 58px; }
   .ai-coach-chat, .ai-chat-history { padding: 10px 4px 4px 4px; }
   .ai-coach-suggestions, .ai-coach-input-row, .ai-chat-form { padding-left: 4px; padding-right: 4px; }
 }
