@@ -34,19 +34,6 @@ html, body {
   overscroll-behavior: none;  /* Prevents navigation bounce, but allows content bounce */
   overflow-x: hidden !important;  /* Prevent horizontal scroll */
 }
-.screen-wrapper {
-  min-height: 100vh;
-  height: 100dvh;
-  width: 100vw;
-  overflow: hidden; /* Don't scroll wrapper itself */
-  display: flex;
-  align-items: center;        /* vertical center */
-  justify-content: center;    /* horizontal center */
-  position: relative;
-  padding: 0;
-  background: none;           /* let animated bg show through */
-}
-
 /* === 2. BACKGROUND, GRADIENTS & ANIMATIONS ============================= */
 body {
   background: linear-gradient(
@@ -137,7 +124,16 @@ input[type="submit"]:disabled {
 .btn-sm { font-size: 0.94em; padding: 7px 16px; }
 
 /* === 5. SCREEN WRAPPER, LAYOUT, CARDS, GLASS =========================== */
-
+.screen-wrapper {
+  min-height: 100vh;
+  height: 100dvh; /* robust mobile full-height */
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 24px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  /* No background, border-radius, shadow, or extra padding here! */
+}
 /* "Glass" cards float inside the wrapper, with glass style, shadow, and border */
 .dashboard-card,
 .glass-card,
