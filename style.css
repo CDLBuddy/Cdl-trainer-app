@@ -623,35 +623,12 @@ input[type="submit"]:disabled {
 }
 
 /* === 9. WELCOME, FEATURES, CAROUSEL, FAB, PARALLAX ===================== */
-.welcome-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  width: 98vw;
-  max-width: 420px;
-  min-height: 90vh;
-  margin: 0 auto;
-  background: var(--card-bg, rgba(255,255,255,0.07));
-  box-shadow: 0 10px 40px 0 rgba(36,64,80,0.18), 0 2px 20px 0 rgba(0,0,0,0.16);
-  border-radius: 24px;
-  padding: 2.5rem 1.6rem 2.6rem 1.6rem;
-  backdrop-filter: blur(12px) saturate(120%);
-  transition: box-shadow 0.28s cubic-bezier(0.3,0.5,0.5,1);
-  z-index: 2;
-  /* Mobile safe area for iOS/Android notch screens */
-  padding-top: max(env(safe-area-inset-top, 24px), 1.2rem);
-  padding-bottom: max(env(safe-area-inset-bottom, 20px), 1.3rem);
-  padding-left: max(env(safe-area-inset-left, 12px), 1.1rem);
-  padding-right: max(env(safe-area-inset-right, 12px), 1.1rem);
-}
-@media (max-width: 500px) {
-  .welcome-screen {
-    width: 99vw;
-    max-width: 99vw;
-    min-height: 92vh;
-    padding: 1.6rem 0.3rem 2.2rem 0.3rem;
-  }
+•welcome-screen { min-height: 100vh; display: flex;
+flex-direction: column; justify-content: center;
+padding: 2rem; overflow-y: auto;
+scroll-behavior: smooth; position: relative;
+z-index: 1;
+isolation: isolate;
 }
 .welcome-content {
   background: var(--card-bg);
