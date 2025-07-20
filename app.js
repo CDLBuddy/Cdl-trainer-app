@@ -1695,30 +1695,29 @@ async function renderChecklists(container = document.getElementById("app")) {
     }, 600);
   }
 
-// Render
+// Render the student checklist page
 container.innerHTML = `
   <div class="screen-wrapper fade-in checklist-page" style="max-width:480px;margin:0 auto;">
     <h2 style="display:flex;align-items:center;gap:9px;">📋 Student Checklist</h2>
-    <div class="progress-track" style="margin-bottom:18px;">
-      <div class="progress-fill" style="width:${percent}%;transition:width 0.6s cubic-bezier(.45,1.4,.5,1.02);"></div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width:${percent}%;"></div>
       <span class="progress-label">${percent}% Complete</span>
     </div>
     ${checklistSections.map(section => `
       <div class="checklist-section">
         <h3 class="checklist-section-header">${section.header}</h3>
         <ul class="checklist-list">
-          ${section.items.map((item, idx) => `
-            <li class="checklist-item ${item.done ? "done" : ""} ${item.readonly ? "readonly" : ""}">
+          ${section.items.map(item => `
+            <li class="checklist-item${item.done ? " done" : ""}${item.readonly ? " readonly" : ""}">
               <div class="checklist-item-main">
                 <span style="font-weight:500;${item.done ? 'text-decoration:line-through;color:#9fdcb7;' : ''}">
                   ${item.label}
                 </span>
                 ${item.notify && !item.done && !item.readonly
                   ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
-                  : ""
-                }
+                  : ""}
                 ${item.done 
-                  ? `<span class="badge badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>` 
+                  ? `<span class="badge badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>`
                   : item.readonly
                     ? `<span class="badge badge-waiting" title="Instructor must complete" aria-label="Instructor Only">🔒</span>`
                     : `<button class="btn outline btn-sm" data-nav="${item.link}">Complete</button>`
@@ -1745,7 +1744,8 @@ container.innerHTML = `
   </div>
 `;
 
-// ------- Event Listeners and logic -------
+
+// ------- Event Listeners and Logic -------
 
 // Animate progress bar on mount
 setTimeout(() => {
@@ -1778,7 +1778,7 @@ document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () =
   renderDashboard();
 });
 
-setupNavigation();  
+setupNavigation();
 
 // ─── RENDER PRACTICE TESTS ──────────────────────────────────────────────
 async function renderPracticeTests(container = document.getElementById("app")) {
