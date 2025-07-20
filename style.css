@@ -1379,13 +1379,13 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
+  width: 66px;
+  height: 66px;
   position: relative;
 }
 #ai-coach-mascot {
-  width: 46px;
-  height: 46px;
+  width: 66px;
+  height: 66px;
   display: block;
   animation: mascot-fab-float 2.8s ease-in-out infinite;
 }
