@@ -1718,9 +1718,9 @@ container.innerHTML = `
                   ${item.label}
                 </span>
                 ${item.done 
-                  ? `<span class="badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>` 
+                  ? `<span class="badge badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>` 
                   : item.readonly
-                    ? `<span class="badge-waiting" title="Instructor must complete" aria-label="Instructor Only">🔒</span>`
+                    ? `<span class="badge badge-waiting" title="Instructor must complete" aria-label="Instructor Only">🔒</span>`
                     : `<button class="btn outline btn-sm" data-nav="${item.link}">Complete</button>`
                 }
               </div>
