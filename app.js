@@ -1695,7 +1695,7 @@ async function renderChecklists(container = document.getElementById("app")) {
     }, 600);
   }
 
-// Render Checklist
+// Render Checklist Page
 container.innerHTML = `
   <div class="screen-wrapper fade-in checklist-page" style="max-width:480px;margin:0 auto;">
     <h2 style="display:flex;align-items:center;gap:9px;">📋 Student Checklist</h2>
@@ -1707,18 +1707,19 @@ container.innerHTML = `
       <div class="checklist-section">
         <h3 class="checklist-section-header">${section.header}</h3>
         <ul class="checklist-list">
-          ${section.items.map((item, idx) => `
+          ${section.items.map(item => `
             <li class="checklist-item ${item.done ? "done" : ""} ${item.readonly ? "readonly" : ""}">
-              ${item.notify && !item.done && !item.readonly
-                ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
-                : ""
-              }
               <div class="checklist-item-main">
+                ${item.notify && !item.done && !item.readonly
+                  ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
+                  : ""
+                }
                 <span class="checklist-label" style="${item.done ? 'text-decoration:line-through;color:#9fdcb7;' : ''}">
                   ${item.label}
                 </span>
-                ${item.done 
-                  ? `<span class="badge badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>` 
+                ${
+                  item.done
+                  ? `<span class="badge badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>`
                   : item.readonly
                     ? `<span class="badge badge-waiting" title="Instructor must complete" aria-label="Instructor Only">🔒</span>`
                     : `<button class="btn outline btn-sm" data-nav="${item.link}">Complete</button>`

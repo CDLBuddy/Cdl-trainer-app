@@ -1760,7 +1760,7 @@ body.ai-modal-open {
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
 }
-/* === UPGRADED CHECKLIST PAGE POLISH (2024, SYMMETRY + LABEL FIX) === */
+/* === UPGRADED CHECKLIST PAGE POLISH (2024, FINAL HORIZONTAL LAYOUT) === */
 
 .checklist-page {
   padding: 18px 0 40px 0;
@@ -1794,19 +1794,17 @@ body.ai-modal-open {
   margin: 0;
 }
 
-/* MAIN UPDATE: extra left padding, and min-height increased for vertical space */
 .checklist-item {
-  display: flex;
-  align-items: center;
   background: rgba(255,255,255,0.08);
   border-radius: 15px;
-  padding: 15px 14px 15px 56px; /* extra left for bubble */
+  padding: 15px 14px;
   box-shadow: 0 2px 14px 0 rgba(20, 20, 60, 0.09);
   border: none;
   margin-bottom: 0.92em;
   position: relative;
+  min-height: 55px;
   transition: box-shadow 0.21s, background 0.17s;
-  min-height: 60px; /* slightly increased for safety */
+  display: block;
 }
 .checklist-item.done {
   background: linear-gradient(93deg, #36d19b 0%, #b3ffe7 100%);
@@ -1819,17 +1817,29 @@ body.ai-modal-open {
   display: none !important;
 }
 
-/* MAIN UPDATE: Bubble is smaller, better centered, doesn't overlap label */
+/* Flex row, bubble left, label middle, button right */
+.checklist-item-main {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  width: 100%;
+  min-width: 0;
+  gap: 12px;
+}
+
+/* Alert bubble is small, margin-right to separate */
 .notify-bubble {
-  position: absolute;
-  left: 18px;
-  top: 50%;
-  transform: translateY(-54%);  /* fine-tuned vertical */
-  width: 19px;
-  height: 19px;
+  flex-shrink: 0;
+  margin-right: 10px;
+  position: static;
+  left: auto;
+  top: auto;
+  transform: none;
+  width: 20px;
+  height: 20px;
   background: #ff4957;
   color: #fff;
-  font-size: 1.09em;
+  font-size: 1.13em;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1837,34 +1847,28 @@ body.ai-modal-open {
   font-weight: 700;
   box-shadow: 0 2px 8px 0 rgba(255,60,30,0.11);
   border: 1.5px solid #fff;
-  z-index: 2;
-  margin: 0;
-  pointer-events: none;
+  z-index: 1;
 }
 
-.checklist-item-main {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-width: 0;
-  gap: 14px;
-}
+/* Label fills space, wraps if needed */
 .checklist-label {
   flex: 1 1 0%;
   min-width: 0;
   font-weight: 500;
   font-size: 1.03em;
   color: #fff;
-  white-space: pre-line;    /* Allow multi-line */
-  overflow-wrap: anywhere;  /* Allows breaking words anywhere */
+  white-space: normal;
+  overflow-wrap: break-word;
   text-overflow: ellipsis;
   transition: color 0.16s;
+  margin-right: 12px;
 }
 .checklist-item.done .checklist-label {
   text-decoration: line-through;
   color: #93d3be;
 }
 
+/* Button stays right, not wrapping label */
 .btn.outline.btn-sm {
   flex-shrink: 0;
   font-size: 1.08em;
@@ -1880,7 +1884,7 @@ body.ai-modal-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 12px;
+  margin-left: 0;
   margin-right: 0;
 }
 .btn.outline.btn-sm:hover,
@@ -1890,6 +1894,7 @@ body.ai-modal-open {
   border-color: #b48aff;
 }
 
+/* Check & lock badges */
 .badge-success, .badge-waiting {
   flex-shrink: 0;
   margin-left: 10px;
@@ -1916,6 +1921,7 @@ body.ai-modal-open {
   border: 1.1px solid #aaa;
 }
 
+/* Details/substeps, still full width */
 .checklist-details {
   display: block;
   color: #d2ecfd;
@@ -1961,11 +1967,12 @@ body.ai-modal-open {
   animation: popCheck 0.65s cubic-bezier(.55,1.8,.38,1.06);
 }
 @media (max-width: 540px) {
-  .checklist-item { padding: 13px 3vw 13px 48px; }
+  .checklist-item { padding: 13px 3vw; }
   .checklist-label { font-size: 0.97em; }
   .completion-badge { font-size: 1.04em; padding: 10px 8vw; }
 }
 
+/* Animation for popping check badge */
 @keyframes popCheck {
   0% { transform: scale(0.5) translateX(-50%); opacity: 0;}
   80%{ transform: scale(1.14) translateX(-50%);}
