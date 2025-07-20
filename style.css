@@ -1760,173 +1760,22 @@ body.ai-modal-open {
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
 }
-/* === CHECKLIST MODAL & GLASSY CARDS – UPGRADED JULY 2024 === */
+/* === UPGRADED CHECKLIST PAGE POLISH (2024) === */
 
-/* Checklist Modal Card */
-.modal-card.checklist-modal {
-  background: var(--card-bg, #191942e6);
-  border-radius: 18px;
-  padding: 2.1em 1.7em 1.6em 1.7em;
-  box-shadow: 0 8px 42px #0009, 0 1.5px 12px #1e20396b;
-  width: 370px;
-  max-width: 98vw;
-  font-size: 1.11em;
-  color: var(--text-light);
-  position: relative;
-  z-index: 12;
-  border: 1.5px solid rgba(186,160,255,0.09);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+/* Checklist Container */
+.checklist-page {
+  padding: 18px 0 40px 0;
+  background: none;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 @media (max-width: 600px) {
-  .modal-card.checklist-modal {
-    width: 98vw;
-    padding: 1.2em 0.7em 1em 0.7em;
+  .checklist-page {
+    padding: 8px 0 30vw 0;
   }
 }
 
-/* Modal Form Elements */
-.checklist-modal label {
-  background: rgba(255,255,255,0.09);
-  border-radius: 9px;
-  padding: 0.6em 0.9em;
-  margin-bottom: 0.45em;
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
-  font-size: 1.06em;
-  color: var(--text-light);
-  font-weight: 500;
-  box-shadow: 0 1.5px 7px rgba(0,0,0,0.08);
-  border: 1px solid rgba(255,255,255,0.07);
-  transition: background 0.18s;
-}
-.checklist-modal label:hover {
-  background: rgba(180,138,255,0.13);
-}
-.checklist-modal textarea {
-  width: 100%;
-  border-radius: 9px;
-  padding: 0.6em 0.8em;
-  background: rgba(255,255,255,0.13);
-  color: var(--text-light);
-  border: none;
-  font-size: 1em;
-  resize: vertical;
-  margin-top: 0.18em;
-  margin-bottom: 0.3em;
-  transition: background 0.18s;
-}
-.checklist-modal textarea:focus {
-  outline: 2px solid var(--accent, #b48aff);
-  background: rgba(180,138,255,0.13);
-}
-.checklist-modal input[type="checkbox"] {
-  accent-color: var(--accent, #b48aff);
-  width: 1.19em;
-  height: 1.19em;
-  margin-right: 0.7em;
-  box-shadow: 0 1.5px 7px rgba(144,115,255,0.07);
-}
-
-/* Modal Overlay */
-@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-.modal-overlay {
-  animation: fadeIn 0.2s;
-  background: rgba(23,20,47,0.34);
-  backdrop-filter: blur(2.7px) saturate(120%);
-  -webkit-backdrop-filter: blur(2.7px) saturate(120%);
-}
-
-/* Checklist List/Item Styles */
-.checklist-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.12em;
-  padding: 0;
-  margin: 0;
-}
-.checklist-item,
-.checklist-list li {
-  list-style: none;
-  background: rgba(44, 80, 125, 0.17);
-  border-radius: 17px;
-  display: flex;
-  align-items: center;
-  padding: 1.18em 1.1em 1.18em 1.15em;
-  box-shadow: 0 3px 24px 0 rgba(60,48,150,0.12);
-  transition: box-shadow 0.23s, background 0.18s;
-  position: relative;
-  margin-bottom: 0.12em;
-  border: 1.1px solid rgba(186,160,255,0.06);
-}
-.checklist-item.done,
-.checklist-list li.done {
-  background: linear-gradient(97deg, #37e6ae1c 0%, #0c1e2a29 90%);
-  color: #9fdcb7;
-  border: 1.3px solid #21b372;
-  font-weight: 600;
-  box-shadow: 0 4px 22px 0 rgba(49,215,112,0.07);
-}
-.checklist-item.done span,
-.checklist-list li.done span {
-  text-decoration: line-through;
-  color: #a6ffdf;
-}
-.checklist-item .badge-success,
-.checklist-list li .badge-success {
-  margin-left: auto;
-  background: #36d19b;
-  color: #133;
-  border-radius: 50%;
-  padding: 0.38em 0.61em;
-  font-weight: 700;
-  font-size: 1.36em;
-  box-shadow: 0 2px 8px 0 rgba(60,180,150,0.09);
-  border: 1.3px solid #21b372;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.checklist-item .btn.outline.btn-sm,
-.checklist-list li .btn.outline.btn-sm {
-  margin-left: auto;
-  font-size: 1.09em;
-  font-weight: 600;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.17);
-  border: 1.2px solid #c8d5fa;
-  box-shadow: 0 1px 7px 0 rgba(80,90,180,0.07);
-  transition: background 0.19s, border 0.19s;
-}
-.checklist-item .btn.outline.btn-sm:hover,
-.checklist-list li .btn.outline.btn-sm:hover {
-  background: #b48aff;
-  color: #fff;
-  border-color: #b48aff;
-}
-
-/* Alert/Notify Bubble */
-.notify-bubble {
-  position: absolute;
-  top: 14px;
-  right: 16px;
-  width: 25px;
-  height: 25px;
-  background: linear-gradient(125deg, #ff6565 60%, #ffc09e 100%);
-  color: #fff;
-  font-size: 1.15em;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  box-shadow: 0 3px 11px 0 rgba(255,60,30,0.14);
-  border: 2.1px solid #fff;
-  z-index: 1;
-}
-
-/* Progress Bar + Label */
+/* Progress Bar */
 .progress-track {
   height: 22px;
   background: linear-gradient(90deg, #e4eaf8 0%, #c9d9f2 100%);
@@ -1945,55 +1794,211 @@ body.ai-modal-open {
 }
 .progress-label {
   position: absolute;
-  right: 22px;
-  top: 3.7px;
+  right: 20px;
+  top: 2.5px;
   font-weight: bold;
   font-size: 1.14em;
   color: #444e64;
   text-shadow: 0 1px 3px #fff, 0 0 8px #d8deff3a;
 }
 
-/* Section Header (use .checklist-section-header in your markup) */
+/* Section Header */
+.checklist-section {
+  margin: 30px 0 0 0;
+  padding: 0;
+}
+.checklist-section:first-of-type {
+  margin-top: 12px;
+}
 .checklist-section-header {
-  color: var(--accent,#b48aff);
-  font-size: 1.18em;
+  font-size: 1.16em;
   font-weight: 700;
-  text-shadow: 0 2px 12px #b2d0df44;
-  margin-top: 16px;
-  margin-bottom: 7px;
-  letter-spacing: 0.015em;
+  color: #e2dfff;
+  margin: 0 0 10px 0;
+  padding-left: 5px;
   border-left: 4px solid var(--accent, #b48aff);
-  padding-left: 0.7em;
-  background: rgba(190,168,255,0.04);
+  letter-spacing: 0.01em;
+  background: rgba(180,138,255,0.03);
   border-radius: 6px;
   box-shadow: 0 1.5px 7px rgba(144,115,255,0.05);
 }
+@media (max-width: 540px) {
+  .checklist-section-header {
+    font-size: 1.06em;
+    padding-left: 2vw;
+  }
+}
 
-/* Animations */
-@keyframes popCheck {
-  0%{ transform:scale(0.5);opacity:0;}
-  88%{transform:scale(1.14);}
-  100%{transform:scale(1);opacity:1;}
+/* List and Items */
+.checklist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.05em;
+  padding: 0;
+  margin: 0;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(255,255,255,0.09);
+  border-radius: 16px;
+  padding: 16px 15px 16px 15px;
+  box-shadow: 0 3px 24px 0 rgba(60,48,150,0.10);
+  position: relative;
+  border: 1.1px solid rgba(186,160,255,0.09);
+  transition: box-shadow 0.21s, background 0.17s;
+}
+
+.checklist-item.done {
+  background: linear-gradient(93deg, #36d19b 0%, #b3ffe7 100%);
+  color: #17323a;
+  border: 1.3px solid #21b372;
+  font-weight: 600;
+  box-shadow: 0 4px 22px 0 rgba(49,215,112,0.08);
+}
+
+.checklist-item-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+.checklist-item.done .checklist-item-main span {
+  text-decoration: line-through;
+  color: #93d3be;
+}
+.checklist-item.readonly .btn,
+.checklist-item.done .btn {
+  display: none !important;
+}
+
+.badge-success {
+  margin-left: 0;
+  margin-right: 0;
+  background: #36d19b;
+  color: #133;
+  border-radius: 50%;
+  padding: 0.33em 0.7em;
+  font-weight: 700;
+  font-size: 1.22em;
+  box-shadow: 0 2px 8px 0 rgba(60,180,150,0.09);
+  border: 1.1px solid #21b372;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-waiting {
+  margin-right: 0;
+  margin-left: 0;
+  background: #dadada;
+  color: #666;
+  border-radius: 50%;
+  padding: 0.38em 0.72em;
+  font-size: 1.16em;
+  border: 1.1px solid #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notify-bubble {
+  background: linear-gradient(125deg, #ff6565 60%, #ffc09e 100%);
+  color: #fff;
+  font-size: 1.13em;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  box-shadow: 0 3px 11px 0 rgba(255,60,30,0.14);
+  border: 2.1px solid #fff;
+  margin-left: 9px;
+  margin-right: 0;
+}
+
+/* Button styling for checklist */
+.btn.outline.btn-sm {
+  font-size: 1.07em;
+  font-weight: 600;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.15);
+  border: 1.2px solid #c8d5fa;
+  box-shadow: 0 1px 7px 0 rgba(80,90,180,0.07);
+  padding: 0.47em 1.34em;
+  transition: background 0.19s, border 0.19s;
+  color: #111b29;
+  min-width: 104px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn.outline.btn-sm:hover,
+.btn.outline.btn-sm:focus {
+  background: #b48aff;
+  color: #fff;
+  border-color: #b48aff;
+}
+
+.checklist-details {
+  display: block;
+  color: #d2ecfd;
+  font-size: 0.97em;
+  margin: 6px 0 0 0;
+  width: 100%;
+  word-break: break-word;
+}
+.checklist-item.done .checklist-details {
+  color: #155c38;
+}
+.checklist-item .substeps {
+  margin: 7px 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+.checklist-item .substeps li {
+  color: #c3cbe3;
+  font-size: 0.95em;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.checklist-item .substeps li.done {
+  color: #36d19b;
 }
 .completion-badge {
-  position:fixed;
-  top:13vh;
-  left:50%;
-  transform:translateX(-50%);
-  background:#43f3ad;
-  color:#262645;
-  padding:18px 36px;
-  border-radius:18px;
-  font-size:1.23em;
-  box-shadow:0 4px 28px #0c2137ee;
-  z-index:9999;
-  animation:popCheck 0.65s cubic-bezier(.55,1.8,.38,1.06);
+  position: fixed;
+  top: 13vh;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #43f3ad;
+  color: #262645;
+  padding: 18px 36px;
+  border-radius: 18px;
+  font-size: 1.23em;
+  box-shadow: 0 4px 28px #0c2137ee;
+  z-index: 9999;
+  animation: popCheck 0.65s cubic-bezier(.55,1.8,.38,1.06);
+}
+@media (max-width: 540px) {
+  .checklist-item { padding: 14px 5vw; }
+  .completion-badge { font-size: 1.04em; padding: 10px 8vw; }
 }
 
-/* Mobile: cards bigger tap area */
-@media (max-width:540px) {
-  .checklist-item, .checklist-list li { padding:16px 4vw; }
-  .completion-badge { font-size:1.07em;padding:10px 12vw; }
+/* Animation for popping check badge */
+@keyframes popCheck {
+  0% { transform: scale(0.5) translateX(-50%); opacity: 0;}
+  80%{ transform: scale(1.14) translateX(-50%);}
+  100%{ transform: scale(1) translateX(-50%); opacity:1;}
 }
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
