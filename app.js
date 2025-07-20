@@ -728,26 +728,8 @@ async function renderDashboard(container = document.getElementById("app")) {
     return;
   }
 
-  // --- Checklist Progress ---
-  let checklistPct = 0;
-  try {
-    const snap = await getDocs(
-      query(collection(db, "eldtProgress"), where("studentId", "==", currentUserEmail))
-    );
-    let total = 0, done = 0;
-    snap.forEach((d) => {
-      const prog = d.data().progress || {};
-      Object.values(prog).forEach((sec) =>
-        Object.values(sec).forEach((val) => {
-          total++;
-          if (val) done++;
-        })
-      );
-    });
-    checklistPct = total ? Math.round((done / total) * 100) : 0;
-  } catch (e) {
-    console.error("ELDT fetch error", e);
-  }
+  // --- Checklist Progress (now uses profileProgress from userData!) ---
+  let checklistPct = userData.profileProgress || 0;
 
   // --- Last-test summary (optional card/alert) ---
   let lastTestStr = "No tests taken yet.";
@@ -848,16 +830,16 @@ async function renderDashboard(container = document.getElementById("app")) {
         </div>
 
         <div class="dashboard-card ai-tip-card">
-  <div class="ai-tip-title" style="font-weight:600; font-size:1.12em; color:var(--accent); margin-bottom:0.5em;">
-    🤖 AI Tip of the Day
-  </div>
-  <div class="ai-tip-content" style="margin-bottom:0.8em; font-size:1.03em;">
-    ${getRandomAITip()}
-  </div>
-  <button class="btn ai-tip" id="ai-tip-btn" aria-label="Open AI Coach">
-    <span style="font-size:1.1em;">💬</span> Ask AI Coach
-  </button>
-</div>
+          <div class="ai-tip-title" style="font-weight:600; font-size:1.12em; color:var(--accent); margin-bottom:0.5em;">
+            🤖 AI Tip of the Day
+          </div>
+          <div class="ai-tip-content" style="margin-bottom:0.8em; font-size:1.03em;">
+            ${getRandomAITip()}
+          </div>
+          <button class="btn ai-tip" id="ai-tip-btn" aria-label="Open AI Coach">
+            <span style="font-size:1.1em;">💬</span> Ask AI Coach
+          </button>
+        </div>
 
         <div class="dashboard-card last-test-card">
           <h3>🧪 Last Test Score</h3>
@@ -914,30 +896,30 @@ async function renderDashboard(container = document.getElementById("app")) {
       </button>
     </div>
     <button id="ai-coach-fab" aria-label="Ask AI Coach">
-  <span class="ai-coach-mascot-wrapper">
-    <!-- SVG mascot here -->
-    <svg id="ai-coach-mascot" viewBox="0 0 64 64" width="46" height="46" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- Retro mascot SVG code (see below) -->
-      <rect x="5" y="10" width="54" height="38" rx="10" fill="url(#grad1)" stroke="#2b4253" stroke-width="2"/>
-      <ellipse cx="32" cy="39" rx="22" ry="9" fill="#253b4e" opacity="0.16"/>
-      <rect x="20" y="17" width="24" height="18" rx="7" fill="#fff" fill-opacity="0.09"/>
-      <rect x="8" y="13" width="48" height="32" rx="9.5" fill="none" stroke="#82eefd" stroke-width="1.3"/>
-      <circle cx="20" cy="28" r="3" fill="#6de090"/>
-      <circle cx="44" cy="28" r="3" fill="#6de090"/>
-      <ellipse cx="32" cy="34" rx="8" ry="4" fill="#6de090" opacity="0.36"/>
-      <rect x="22" y="13" width="20" height="7" rx="3.5" fill="#253b4e"/>
-      <text x="32" y="19" text-anchor="middle" fill="#ffe688" font-size="5.5" font-weight="bold" font-family="Verdana">COACH</text>
-      <rect x="17" y="42" width="8" height="6" rx="3" fill="#d4eaf7"/>
-      <rect x="39" y="42" width="8" height="6" rx="3" fill="#d4eaf7"/>
-      <defs>
-        <linearGradient id="grad1" x1="0" y1="10" x2="64" y2="48" gradientUnits="userSpaceOnUse">
-          <stop stop-color="#a9e6ff"/>
-          <stop offset="1" stop-color="#4e91ad"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  </span>
-</button>
+      <span class="ai-coach-mascot-wrapper">
+        <!-- SVG mascot here -->
+        <svg id="ai-coach-mascot" viewBox="0 0 64 64" width="46" height="46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Retro mascot SVG code (see below) -->
+          <rect x="5" y="10" width="54" height="38" rx="10" fill="url(#grad1)" stroke="#2b4253" stroke-width="2"/>
+          <ellipse cx="32" cy="39" rx="22" ry="9" fill="#253b4e" opacity="0.16"/>
+          <rect x="20" y="17" width="24" height="18" rx="7" fill="#fff" fill-opacity="0.09"/>
+          <rect x="8" y="13" width="48" height="32" rx="9.5" fill="none" stroke="#82eefd" stroke-width="1.3"/>
+          <circle cx="20" cy="28" r="3" fill="#6de090"/>
+          <circle cx="44" cy="28" r="3" fill="#6de090"/>
+          <ellipse cx="32" cy="34" rx="8" ry="4" fill="#6de090" opacity="0.36"/>
+          <rect x="22" y="13" width="20" height="7" rx="3.5" fill="#253b4e"/>
+          <text x="32" y="19" text-anchor="middle" fill="#ffe688" font-size="5.5" font-weight="bold" font-family="Verdana">COACH</text>
+          <rect x="17" y="42" width="8" height="6" rx="3" fill="#d4eaf7"/>
+          <rect x="39" y="42" width="8" height="6" rx="3" fill="#d4eaf7"/>
+          <defs>
+            <linearGradient id="grad1" x1="0" y1="10" x2="64" y2="48" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#a9e6ff"/>
+              <stop offset="1" stop-color="#4e91ad"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </span>
+    </button>
   `;
 
   setupNavigation();
@@ -946,10 +928,10 @@ async function renderDashboard(container = document.getElementById("app")) {
   document.getElementById("edit-student-profile-btn")?.addEventListener("click", () => {
     renderProfile();
   });
-  
+
   document.getElementById("ai-tip-btn")?.addEventListener("click", () => {
-  renderAICoach();
-});
+    renderAICoach();
+  });
 
   // --- Logout ---
   document.getElementById("logout-btn")?.addEventListener("click", async () => {
@@ -957,11 +939,6 @@ async function renderDashboard(container = document.getElementById("app")) {
     localStorage.removeItem("fullName");
     localStorage.removeItem("userRole");
     renderWelcome();
-  });
-
-  // --- AI Coach Card Button Handler ---
-  document.getElementById("ai-tip-btn")?.addEventListener("click", () => {
-    renderAICoach();
   });
 
   // --- Floating FAB Handler (Ask AI Coach) ---
