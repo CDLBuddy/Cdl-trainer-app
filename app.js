@@ -1709,18 +1709,18 @@ container.innerHTML = `
         <ul class="checklist-list">
           ${section.items.map((item, idx) => `
             <li class="checklist-item ${item.done ? "done" : ""} ${item.readonly ? "readonly" : ""}">
+              ${item.notify && !item.done && !item.readonly
+                ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
+                : ""
+              }
               <div class="checklist-item-main">
-                <span style="font-weight:500;${item.done ? 'text-decoration:line-through;color:#9fdcb7;' : ''}">
+                <span class="checklist-label" style="${item.done ? 'text-decoration:line-through;color:#9fdcb7;' : ''}">
                   ${item.label}
                 </span>
-                ${item.notify && !item.done && !item.readonly
-                  ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention" style="margin-left:8px;font-size:1.3em;color:#ff2a2a;background:none;box-shadow:none;border:none;">!</span>`
-                  : ""
-                }
                 ${item.done 
-                  ? `<span class="badge badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>` 
+                  ? `<span class="badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>` 
                   : item.readonly
-                    ? `<span class="badge badge-waiting" title="Instructor must complete" aria-label="Instructor Only">🔒</span>`
+                    ? `<span class="badge-waiting" title="Instructor must complete" aria-label="Instructor Only">🔒</span>`
                     : `<button class="btn outline btn-sm" data-nav="${item.link}">Complete</button>`
                 }
               </div>
@@ -1778,8 +1778,8 @@ document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () =
   renderDashboard();
 });
 
-setupNavigation();  
-}
+setupNavigation();
+
 // ─── RENDER PRACTICE TESTS ──────────────────────────────────────────────
 async function renderPracticeTests(container = document.getElementById("app")) {
   container = container || document.getElementById("app");
