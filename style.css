@@ -1427,7 +1427,7 @@ body::before {
 
 /* === AI COACH GLASS OVERLAY POLISH =============================== */
 
-/* The backdrop: dim & blur the main page, so modal floats above */
+/* The backdrop: dim the main page, so modal floats above */
 .ai-coach-modal.modal-overlay,
 .modal-overlay {
   position: fixed;
@@ -1435,14 +1435,13 @@ body::before {
   inset: 0;
   width: 100vw;
   height: 100dvh;
-    background: rgba(16,28,44, 0.16);         /* Much lighter, more see-thru */
-  backdrop-filter: blur(18px) saturate(180%);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  background: rgba(16,28,44, 0.16);  /* Subtle dim, NO blur here */
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.28s;
   animation: glassFadeIn 0.38s;
+  /* No border-radius, no padding */
 }
 
 @keyframes glassFadeIn {
@@ -1450,14 +1449,33 @@ body::before {
   to   { opacity: 1; }
 }
 
+/* NEW: Glassy pane behind modal card */
+.modal-glass-bg {
+  position: absolute;
+  z-index: 1;
+  top: 0; left: 0; right: 0; bottom: 0;
+  margin: auto;
+  width: 100%;
+  max-width: 435px;
+  height: 100%;
+  max-height: 98dvh;
+  border-radius: 22px;
+  background: rgba(44, 75, 125, 0.16);      /* Slight glass tint */
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  box-shadow: 0 20px 48px 0 rgba(0,0,0,0.09);
+  pointer-events: none;  /* Don't block clicks */
+}
+
 /* Main glass modal card */
 .ai-coach-modal .modal-card.ai-coach-card,
 .ai-coach-modal,
 .ai-coach-page {
   position: relative;
+  z-index: 2;                        /* Ensure on top of .modal-glass-bg */
   max-width: 435px;
   width: 95vw;
-  margin: 5vw auto;                  /* Add space all sides, esp. mobile */
+  margin: 5vw auto;
   border-radius: 22px;
   background: rgba(29, 55, 75, 0.19);
   backdrop-filter: blur(28px) saturate(180%);
@@ -1471,14 +1489,18 @@ body::before {
   max-height: 98dvh;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;             /* Ensures padding/margin are respected */
+  box-sizing: border-box;
 }
 
 @media (max-width: 650px) {
+  .modal-glass-bg {
+    max-width: 99vw;
+    border-radius: 15px;
+  }
   .ai-coach-modal .modal-card.ai-coach-card,
   .ai-coach-modal,
   .ai-coach-page {
-    margin: 4vw 2vw;                  /* Even more space on smallest screens */
+    margin: 4vw 2vw;
     width: 96vw;
     max-width: 99vw;
     border-radius: 15px;
@@ -1522,7 +1544,7 @@ body::before {
 }
 
 .ai-coach-title {
-  margin-top: -28px;               /* much higher: bring it close to mascot */
+  margin-top: -28px;
   margin-bottom: 8px;
   padding: 4px 22px 2px 22px;
   font-size: 1.13em;
@@ -1537,7 +1559,7 @@ body::before {
   backdrop-filter: blur(6px) saturate(140%);
   -webkit-backdrop-filter: blur(6px) saturate(140%);
   border: 1px solid rgba(185,195,235,0.13);
-  z-index: 2;  /* Ensures it's above the background, just in case */
+  z-index: 2;
 }
 
 /* Close button: lighter, more glassy */
@@ -1709,6 +1731,10 @@ body.ai-modal-open {
 
 /* --- Responsive for mobile --- */
 @media (max-width: 540px) {
+  .modal-glass-bg {
+    max-width: 99vw;
+    border-radius: 15px;
+  }
   .ai-coach-modal .modal-card.ai-coach-card,
   .ai-coach-modal,
   .ai-coach-page {
