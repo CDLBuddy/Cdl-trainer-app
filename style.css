@@ -1410,15 +1410,15 @@ body::before {
 /* --- Mobile scaling for FAB --- */
 @media (max-width: 650px) {
   #ai-coach-fab {
-    width: 50px;
-    height: 50px;
+    width: 70px;
+    height: 70px;
     font-size: 1.35rem;
     right: 11px;
     bottom: 14px;
   }
   .ai-coach-mascot-wrapper, #ai-coach-mascot {
-    width: 36px;
-    height: 36px;
+    width: 76px;
+    height: 76px;
   }
   .mascot-glow {
     width: 50px; height: 50px;
