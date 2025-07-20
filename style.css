@@ -1514,12 +1514,21 @@ body::before {
 }
 
 .ai-coach-title {
-  margin: 0 0 2px 0;
-  font-size: 1.17em;
+  margin-top: -14px;               /* pull label closer to mascot */
+  margin-bottom: 6px;
+  padding: 4px 22px 2px 22px;      /* soft pill shape */
+  font-size: 1.13em;
   font-weight: 700;
   color: var(--accent, #b6f0f7);
-  letter-spacing: 0.01em;
-  text-shadow: 0 1px 12px #1c243099;
+  letter-spacing: 0.02em;
+  background: rgba(44,75,125,0.19); /* subtle glassy background */
+  border-radius: 13px;
+  box-shadow: 0 1px 7px rgba(30,40,80,0.11);
+  text-shadow: 0 1px 10px #1c243055;
+  display: inline-block;
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  border: 1px solid rgba(185,195,235,0.13);
 }
 
 /* Close button: lighter, more glassy */
