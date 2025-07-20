@@ -2550,7 +2550,7 @@ async function renderInstructorDashboard(container = document.getElementById("ap
 }
 
 // ─── REVIEW CHECKLIST FOR INSTRUCTOR ─────────────────────────────────────
-// Instructor can verify key milestones for student, sign off, add notes
+// Instructor can verify key milestones for student, sign off, add notes, FINAL STEP included
 async function renderChecklistReviewForInstructor(studentEmail, container = document.body) {
   if (!studentEmail) return showToast("No student selected.");
 
@@ -2566,7 +2566,7 @@ async function renderChecklistReviewForInstructor(studentEmail, container = docu
     if (progressSnap.exists()) eldtData = progressSnap.data();
   } catch (e) { showToast("Checklist fetch error."); }
 
-  // Render modal with checkboxes for instructor sign-off
+  // Render modal with checkboxes for instructor sign-off, FINAL STEP included
   let modal = document.createElement("div");
   modal.className = "modal-overlay fade-in";
   modal.innerHTML = `
@@ -2593,6 +2593,10 @@ async function renderChecklistReviewForInstructor(studentEmail, container = docu
           Walkthrough Reviewed
         </label>
         <label>
+          <input type="checkbox" name="finalStepCompleted" ${eldtData.finalStepCompleted ? "checked" : ""} />
+          <strong>Final Step:</strong> In-person walkthrough &amp; driving portion completed
+        </label>
+        <label>
           Instructor Notes:
           <textarea name="instructorNotes" rows="2">${eldtData.instructorNotes || ""}</textarea>
         </label>
@@ -2614,6 +2618,7 @@ async function renderChecklistReviewForInstructor(studentEmail, container = docu
         permitVerified: !!fd.get("permitVerified"),
         vehicleVerified: !!fd.get("vehicleVerified"),
         walkthroughReviewed: !!fd.get("walkthroughReviewed"),
+        finalStepCompleted: !!fd.get("finalStepCompleted"),
         instructorNotes: fd.get("instructorNotes") || ""
       });
       showToast("Checklist review saved.");
@@ -2744,7 +2749,7 @@ async function renderInstructorProfile(container = document.getElementById("app"
             <option value="sms" ${preferredContact==="sms"?"selected":""}>SMS/Text</option>
           </select>
         </label>
-        <details>
+                <details>
           <summary><strong>Session Log</strong> (Auto-generated, read-only)</summary>
           <div style="font-size:0.96em;">
             ${Array.isArray(sessionLog) && sessionLog.length
