@@ -27,11 +27,13 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Prevent scrolling on body */
-  overscroll-behavior-y: none; /* Prevent pull-to-refresh */
+  overflow-x: hidden;        /* Prevents unwanted horizontal scroll */
+  overflow-y: auto;          /* Allows vertical scroll/bounce */
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: contain; /* Let vertical bounce, block pull-to-refresh */
   font-family: "Helvetica Neue", Arial, sans-serif;
   color: var(--text-light);
-  background: var(--brand-dark, #0b0a34); /* fallback, your gradients still apply below */
+  background: var(--brand-dark, #0b0a34);
 }
 /* === 2. BACKGROUND, GRADIENTS & ANIMATIONS ============================= */
 body {
@@ -622,20 +624,30 @@ input[type="submit"]:disabled {
 }
 
 /* === 9. WELCOME, FEATURES, CAROUSEL, FAB, PARALLAX ===================== */
-•welcome-screen { min-height: 100vh; display: flex;
-flex-direction: column; justify-content: center;
-padding: 2rem; overflow-y: auto;
-scroll-behavior: smooth; position: relative;
-z-index: 1;
-isolation: isolate;
+.welcome-screen {
+  min-height: 100vh;
+  min-height: 100dvh; /* mobile viewport units */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;       /* vertical center */
+  align-items: center;           /* horizontal center */
+  padding: 2.5rem 1.2rem;
+  overflow-x: hidden;            /* never scroll horizontally */
+  overflow-y: auto;              /* allow vertical scroll if needed */
+  scroll-behavior: smooth;
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  width: 100vw;
+  box-sizing: border-box;
 }
 .welcome-content {
   background: var(--card-bg);
   backdrop-filter: blur(16px) saturate(140%);
   border-radius: 16px;
   padding: 4rem 3rem;
-  margin: 5rem auto;
-  max-width: 800px;
+  margin: 2.5rem auto;
+  max-width: 480px;
   width: 95%;
   color: var(--text-light);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38);
