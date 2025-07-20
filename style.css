@@ -25,13 +25,26 @@ body {
 /* === MOBILE SAFE AREA + LAYOUT FIXES (insert after :root) =============== */
 html, body {
   height: 100%;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Prevent scrolling on body */
-  overscroll-behavior-y: none; /* Prevent pull-to-refresh */
   font-family: "Helvetica Neue", Arial, sans-serif;
   color: var(--text-light);
   background: var(--brand-dark, #0b0a34); /* fallback, your gradients still apply below */
+  overscroll-behavior: none;  /* Prevents navigation bounce, but allows content bounce */
+  overflow-x: hidden !important;  /* Prevent horizontal scroll */
+}
+.screen-wrapper {
+  min-height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  overflow: hidden; /* Don't scroll wrapper itself */
+  display: flex;
+  align-items: center;        /* vertical center */
+  justify-content: center;    /* horizontal center */
+  position: relative;
+  padding: 0;
+  background: none;           /* let animated bg show through */
 }
 
 /* === 2. BACKGROUND, GRADIENTS & ANIMATIONS ============================= */
@@ -124,16 +137,6 @@ input[type="submit"]:disabled {
 .btn-sm { font-size: 0.94em; padding: 7px 16px; }
 
 /* === 5. SCREEN WRAPPER, LAYOUT, CARDS, GLASS =========================== */
-.screen-wrapper {
-  min-height: 100vh;
-  height: 100dvh; /* robust mobile full-height */
-  box-sizing: border-box;
-  padding-top: env(safe-area-inset-top, 24px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
-  /* No background, border-radius, shadow, or extra padding here! */
-}
 
 /* "Glass" cards float inside the wrapper, with glass style, shadow, and border */
 .dashboard-card,
@@ -625,16 +628,34 @@ input[type="submit"]:disabled {
 
 /* === 9. WELCOME, FEATURES, CAROUSEL, FAB, PARALLAX ===================== */
 .welcome-screen {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 2rem;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  position: relative;
-  z-index: 1;
-  isolation: isolate;
+  align-items: center;
+  justify-content: flex-start;
+  width: 98vw;
+  max-width: 420px;
+  min-height: 90vh;
+  margin: 0 auto;
+  background: var(--card-bg, rgba(255,255,255,0.07));
+  box-shadow: 0 10px 40px 0 rgba(36,64,80,0.18), 0 2px 20px 0 rgba(0,0,0,0.16);
+  border-radius: 24px;
+  padding: 2.5rem 1.6rem 2.6rem 1.6rem;
+  backdrop-filter: blur(12px) saturate(120%);
+  transition: box-shadow 0.28s cubic-bezier(0.3,0.5,0.5,1);
+  z-index: 2;
+  /* Mobile safe area for iOS/Android notch screens */
+  padding-top: max(env(safe-area-inset-top, 24px), 1.2rem);
+  padding-bottom: max(env(safe-area-inset-bottom, 20px), 1.3rem);
+  padding-left: max(env(safe-area-inset-left, 12px), 1.1rem);
+  padding-right: max(env(safe-area-inset-right, 12px), 1.1rem);
+}
+@media (max-width: 500px) {
+  .welcome-screen {
+    width: 99vw;
+    max-width: 99vw;
+    min-height: 92vh;
+    padding: 1.6rem 0.3rem 2.2rem 0.3rem;
+  }
 }
 .welcome-content {
   background: var(--card-bg);
