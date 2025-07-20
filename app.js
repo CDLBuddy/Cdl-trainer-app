@@ -1695,104 +1695,90 @@ async function renderChecklists(container = document.getElementById("app")) {
     }, 600);
   }
 
-  // Render
-  container.innerHTML = `
-    <div class="screen-wrapper fade-in checklist-page" style="max-width:480px;margin:0 auto;">
-      <h2 style="display:flex;align-items:center;gap:9px;">📋 Student Checklist</h2>
-      <div class="progress-track" style="margin-bottom:18px;">
-        <div class="progress-fill" style="width:${percent}%;transition:width 0.6s cubic-bezier(.45,1.4,.5,1.02);"></div>
-        <span class="progress-label">${percent}% Complete</span>
-      </div>
-      ${checklistSections.map(section => `
-        <div class="checklist-section">
-          <h3 class="checklist-section-header" style="margin:12px 0 7px 0;font-size:1.19em;letter-spacing:0.01em;">
-            ${section.header}
-          </h3>
-          <ul class="checklist-list">
-            ${section.items.map((item, idx) => `
-              <li class="checklist-item ${item.done ? "done" : ""} ${item.readonly ? "readonly" : ""}">
-                <div class="checklist-item-main" style="display:flex;align-items:center;justify-content:space-between;gap:7px;">
-                  <span style="font-weight:500;${item.done ? 'text-decoration:line-through;color:#9fdcb7;' : ''}">${item.label}</span>
-                  ${item.done 
-                    ? `<span class="badge badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>` 
-                    : item.readonly 
-                      ? `<span class="badge badge-waiting" title="Instructor must complete">🔒</span>`
-                      : `<button class="btn outline btn-sm" data-nav="${item.link}">Complete</button>
-                         ${item.notify ? `<span class="notify-bubble" title="This step needs attention">!</span>` : ""}`
-                  }
-                </div>
-                <div class="checklist-details" style="display:none;color:#e0e9f7;font-size:0.97em;margin:5px 0 1px 0;">
-                  ${item.details}
-                  ${item.substeps ? `
-                    <ul style="margin:6px 0 0 13px;padding:0;list-style:circle;">
-                      ${item.substeps.map(ss => `
-                        <li style="color:${ss.done ? "#9fdcb7" : "#ffaeae"};">
-                          ${ss.done ? "✅" : "❗"} ${ss.label}
-                        </li>
-                      `).join("")}
-                    </ul>
-                  ` : ""}
-                </div>
-              </li>
-            `).join("")}
-          </ul>
-        </div>
-      `).join("")}
-      <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅ Back to Dashboard</button>
+// Render
+container.innerHTML = `
+  <div class="screen-wrapper fade-in checklist-page" style="max-width:480px;margin:0 auto;">
+    <h2 style="display:flex;align-items:center;gap:9px;">📋 Student Checklist</h2>
+    <div class="progress-track" style="margin-bottom:18px;">
+      <div class="progress-fill" style="width:${percent}%;transition:width 0.6s cubic-bezier(.45,1.4,.5,1.02);"></div>
+      <span class="progress-label">${percent}% Complete</span>
     </div>
-    <style>
-      .checklist-list { padding:0; margin:0; list-style:none; }
-      .checklist-item { background:rgba(30,60,80,0.18); border-radius:13px; margin-bottom:13px; padding:16px 12px; box-shadow:0 2px 8px 0 rgba(12,36,66,0.06); transition:box-shadow 0.17s,background 0.19s; }
-      .checklist-item.done { background:rgba(60,160,110,0.12); color:#b2f0ce; }
-      .checklist-item .badge-success { background:#38e7a0; color:#192c28; border-radius:50%; padding:5px 12px; font-size:1.19em; }
-      .checklist-item .badge-waiting { background:#e9e9e9; color:#666; border-radius:50%; padding:5px 12px; font-size:1.13em; }
-      .checklist-item .notify-bubble { background:#ff4957; color:#fff; border-radius:50%; padding:1px 7px; margin-left:7px; font-size:1.12em; vertical-align:middle; }
-      .checklist-item.readonly .btn { display:none !important; }
-      .checklist-section-header { color:var(--accent,#b48aff); font-weight:600; }
-      .checklist-item-main:hover { cursor:pointer; }
-      @keyframes popCheck { 0%{ transform:scale(0.5);opacity:0;} 88%{transform:scale(1.14);} 100%{transform:scale(1);opacity:1;} }
-      .completion-badge { position:fixed;top:13vh;left:50%;transform:translateX(-50%);background:#43f3ad;color:#262645;padding:18px 36px;border-radius:18px;font-size:1.23em;box-shadow:0 4px 28px #0c2137ee;z-index:9999;animation:popCheck 0.65s cubic-bezier(.55,1.8,.38,1.06); }
-      /* Mobile: cards bigger tap area */
-      @media (max-width:540px) {
-        .checklist-item { padding:16px 4vw; }
-        .completion-badge { font-size:1.07em;padding:10px 12vw; }
-      }
-    </style>
-  `;
+    ${checklistSections.map(section => `
+      <div class="checklist-section">
+        <h3 class="checklist-section-header">${section.header}</h3>
+        <ul class="checklist-list">
+          ${section.items.map((item, idx) => `
+            <li class="checklist-item ${item.done ? "done" : ""} ${item.readonly ? "readonly" : ""}">
+              <div class="checklist-item-main">
+                <span style="font-weight:500;${item.done ? 'text-decoration:line-through;color:#9fdcb7;' : ''}">
+                  ${item.label}
+                </span>
+                ${item.notify && !item.done && !item.readonly
+                  ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
+                  : ""
+                }
+                ${item.done 
+                  ? `<span class="badge badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>` 
+                  : item.readonly
+                    ? `<span class="badge badge-waiting" title="Instructor must complete" aria-label="Instructor Only">🔒</span>`
+                    : `<button class="btn outline btn-sm" data-nav="${item.link}">Complete</button>`
+                }
+              </div>
+              <div class="checklist-details" style="display:none;">
+                ${item.details || ""}
+                ${item.substeps ? `
+                  <ul class="substeps">
+                    ${item.substeps.map(ss => `
+                      <li${ss.done ? ' class="done"' : ''}>
+                        ${ss.done ? "✅" : "<span style='color:#ff6565;font-size:1.18em;font-weight:900;vertical-align:middle;'>!</span>"} ${ss.label}
+                      </li>
+                    `).join("")}
+                  </ul>
+                ` : ""}
+              </div>
+            </li>
+          `).join("")}
+        </ul>
+      </div>
+    `).join("")}
+    <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅ Back to Dashboard</button>
+  </div>
+`;
 
-  // Animate progress bar on mount
-  setTimeout(() => {
-    const bar = container.querySelector('.progress-fill');
-    if (bar) bar.style.width = percent + "%";
-  }, 25);
+// ------- Event Listeners and logic -------
 
-  // Expand/collapse details on item tap/click
-  container.querySelectorAll('.checklist-item-main').forEach((el, idx) => {
-    el.addEventListener("click", () => {
-      const det = el.parentElement.querySelector(".checklist-details");
-      if (!det) return;
-      det.style.display = det.style.display === "block" ? "none" : "block";
-    });
+// Animate progress bar on mount
+setTimeout(() => {
+  const bar = container.querySelector('.progress-fill');
+  if (bar) bar.style.width = percent + "%";
+}, 25);
+
+// Expand/collapse checklist details
+container.querySelectorAll('.checklist-item-main').forEach(el => {
+  el.addEventListener("click", () => {
+    const det = el.parentElement.querySelector(".checklist-details");
+    if (!det) return;
+    det.style.display = det.style.display === "block" ? "none" : "block";
   });
+});
 
-  // Checklist completion nav (for 'Complete' buttons)
-  container.querySelectorAll('.btn[data-nav]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      const target = btn.getAttribute('data-nav');
-      if (target === "profile") return renderProfile();
-      if (target === "walkthrough") return renderWalkthrough();
-      if (target === "practiceTests") return renderPracticeTests();
-      setupNavigation();
-    });
+// Navigation for checklist actions
+container.querySelectorAll('.btn[data-nav]').forEach(btn => {
+  btn.addEventListener('click', e => {
+    const target = btn.getAttribute('data-nav');
+    if (target === "profile") return renderProfile();
+    if (target === "walkthrough") return renderWalkthrough();
+    if (target === "practiceTests") return renderPracticeTests();
+    setupNavigation();
   });
+});
 
-  // Back button
-  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    renderDashboard();
-  });
+// Back button
+document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
+  renderDashboard();
+});
 
-  setupNavigation();
-}
+setupNavigation();  
 
 // ─── RENDER PRACTICE TESTS ──────────────────────────────────────────────
 async function renderPracticeTests(container = document.getElementById("app")) {
