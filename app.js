@@ -1527,11 +1527,13 @@ async function renderProfile(container = document.getElementById("app")) {
       }
     });
   }
+
   // All uploads with checklist logic
-  handleFileInput("profilePic", "profilePics", "profilePicUrl"); // Profile pic
-  handleFileInput("permitPhoto", "permits", "permitPhotoUrl", markStudentPermitUploaded); // Permit
-  handleFileInput("driverLicense", "licenses", "driverLicenseUrl"); // DL
-  handleFileInput("medicalCard", "medCards", "medicalCardUrl"); // Medical Card
+  handleFileInput("profilePic", "profilePics", "profilePicUrl", markStudentProfileComplete); // Profile pic
+  handleFileInput("permitPhoto", "permits", "permitPhotoUrl", markStudentPermitUploaded);   // Permit
+  handleFileInput("driverLicense", "licenses", "driverLicenseUrl");                         // DL
+  handleFileInput("medicalCard", "medCards", "medicalCardUrl");                             // Medical Card
+
   // Data plates (when both uploaded, mark vehicle uploaded)
   let truckUploaded = !!truckPlateUrl, trailerUploaded = !!trailerPlateUrl;
   handleFileInput("truckPlate", "vehicle-plates", "truckPlateUrl", async (email) => {
@@ -1575,7 +1577,7 @@ async function renderProfile(container = document.getElementById("app")) {
       const snap = await getDocs(q);
       if (!snap.empty) {
         await updateDoc(snap.docs[0].ref, updateObj);
-        await markStudentProfileComplete(currentUserEmail); // <-- CHECKLIST
+        await markStudentProfileComplete(currentUserEmail); // <-- CHECKLIST progress!
         showToast("✅ Profile saved!");
         renderProfile(container); // re-render for progress update
       } else throw new Error("User document not found.");
