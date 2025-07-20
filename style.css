@@ -1509,14 +1509,14 @@ body::before {
 }
 
 .ai-coach-title {
-  margin-top: -14px;               /* pull label closer to mascot */
-  margin-bottom: 6px;
-  padding: 4px 22px 2px 22px;      /* soft pill shape */
+  margin-top: -28px;               /* much higher: bring it close to mascot */
+  margin-bottom: 8px;
+  padding: 4px 22px 2px 22px;
   font-size: 1.13em;
   font-weight: 700;
   color: var(--accent, #b6f0f7);
   letter-spacing: 0.02em;
-  background: rgba(44,75,125,0.19); /* subtle glassy background */
+  background: rgba(44,75,125,0.19);
   border-radius: 13px;
   box-shadow: 0 1px 7px rgba(30,40,80,0.11);
   text-shadow: 0 1px 10px #1c243055;
@@ -1524,6 +1524,7 @@ body::before {
   backdrop-filter: blur(6px) saturate(140%);
   -webkit-backdrop-filter: blur(6px) saturate(140%);
   border: 1px solid rgba(185,195,235,0.13);
+  z-index: 2;  /* Ensures it's above the background, just in case */
 }
 
 /* Close button: lighter, more glassy */
