@@ -1779,6 +1779,7 @@ document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () =
 });
 
 setupNavigation();
+}
 
 // ─── RENDER PRACTICE TESTS ──────────────────────────────────────────────
 async function renderPracticeTests(container = document.getElementById("app")) {
