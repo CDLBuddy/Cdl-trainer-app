@@ -1459,10 +1459,10 @@ body::before {
   width: 95vw;
   margin: 0 auto;
   border-radius: 22px;
-  background: rgba(29, 55, 75, 0.37);      /* Super glassy */
-  backdrop-filter: blur(22px) saturate(165%);
-  -webkit-backdrop-filter: blur(22px) saturate(165%);
-  box-shadow: 0 24px 64px 0 rgba(0,0,0,0.34),
+  background: rgba(29, 55, 75, 0.19);      /* More transparent (was 0.37) */
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow: 0 24px 64px 0 rgba(0,0,0,0.28),
               0 2.5px 11px 0 var(--brand-mid);
   color: var(--text-light);
   border: none;
@@ -1471,11 +1471,6 @@ body::before {
   max-height: 98dvh;
   display: flex;
   flex-direction: column;
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(38px) scale(0.98);}
-  to   { opacity: 1; transform: translateY(0) scale(1);}
 }
 
 /* Header: glassier, no border */
