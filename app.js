@@ -1695,7 +1695,7 @@ async function renderChecklists(container = document.getElementById("app")) {
     }, 600);
   }
 
-// Render
+// Render Checklist
 container.innerHTML = `
   <div class="screen-wrapper fade-in checklist-page" style="max-width:480px;margin:0 auto;">
     <h2 style="display:flex;align-items:center;gap:9px;">📋 Student Checklist</h2>
