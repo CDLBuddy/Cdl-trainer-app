@@ -272,3 +272,30 @@ export async function logStudySession(studentEmail, minutes, context = "") {
     at: new Date().toISOString()
   });
 }
+import { getLatestUpdate } from "./firebase.js";
+
+// Format a date as needed (define if not already present)
+export function formatDate(dateInput) {
+  // Handles Firestore Timestamp, string, or JS Date
+  const d = dateInput?.toDate ? dateInput.toDate() : new Date(dateInput);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+// Show the "What's New" update in the dashboard
+export async function showLatestUpdate() {
+  const updateEl = document.getElementById("latest-update-card");
+  if (!updateEl) return;
+  updateEl.innerHTML = `<div style="padding:18px;text-align:center;">Loading updates...</div>`;
+  const update = await getLatestUpdate();
+  if (!update) {
+    updateEl.innerHTML = `<div class="update-empty">No recent updates.</div>`;
+    return;
+  }
+  updateEl.innerHTML = `
+    <div class="update-banner">
+      <div class="update-title">📢 What's New</div>
+      <div class="update-content">${update.content || "(No details)"}</div>
+      <div class="update-date">${formatDate(update.date)}</div>
+    </div>
+  `;
+}
