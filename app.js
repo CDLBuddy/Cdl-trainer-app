@@ -1708,12 +1708,12 @@ container.innerHTML = `
         <h3 class="checklist-section-header">${section.header}</h3>
         <ul class="checklist-list">
           ${section.items.map((item, idx) => `
-            <li class="checklist-item ${item.done ? "done" : ""} ${item.readonly ? "readonly" : ""}">
-              ${item.notify && !item.done && !item.readonly
-                ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
-                : ""
-              }
+            <li class="checklist-item${item.done ? " done" : ""}${item.readonly ? " readonly" : ""}" data-index="${idx}">
               <div class="checklist-item-main">
+                ${item.notify && !item.done && !item.readonly
+                  ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
+                  : ""
+                }
                 <span class="checklist-label" style="${item.done ? 'text-decoration:line-through;color:#9fdcb7;' : ''}">
                   ${item.label}
                 </span>
@@ -1753,12 +1753,22 @@ setTimeout(() => {
   if (bar) bar.style.width = percent + "%";
 }, 25);
 
-// Expand/collapse checklist details
-container.querySelectorAll('.checklist-item-main').forEach(el => {
-  el.addEventListener("click", () => {
-    const det = el.parentElement.querySelector(".checklist-details");
-    if (!det) return;
-    det.style.display = det.style.display === "block" ? "none" : "block";
+// Expand/collapse checklist details and label
+container.querySelectorAll('.checklist-item-main').forEach(main => {
+  main.addEventListener("click", function() {
+    const li = this.closest('.checklist-item');
+    const details = li.querySelector('.checklist-details');
+    const label = li.querySelector('.checklist-label');
+    if (!details) return;
+
+    const expanded = li.classList.toggle('expanded');
+    details.style.display = expanded ? "block" : "none";
+    // Hide the label ONLY when expanded (handled by CSS, but set here too for safety)
+    if (expanded) {
+      label.style.display = "none";
+    } else {
+      label.style.display = "";
+    }
   });
 });
 
