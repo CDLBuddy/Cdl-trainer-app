@@ -262,6 +262,14 @@ function initCarousel() {
 }
 
 // Fetch most recent update from Firestore 'updates' collection
+async function getLatestUpdate() {
+  const updatesRef = collection(db, "updates");
+  const updatesQuery = query(updatesRef, orderBy("date", "desc"), limit(1));
+  const querySnapshot = await getDocs(updatesQuery);
+  if (querySnapshot.empty) return null;
+  const doc = querySnapshot.docs[0];
+  return { id: doc.id, ...doc.data() };
+}
 async function showLatestUpdate() {
   const updateEl = document.getElementById("latest-update-card");
   if (!updateEl) return;
