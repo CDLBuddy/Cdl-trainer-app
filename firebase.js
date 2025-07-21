@@ -1,9 +1,16 @@
 // firebase.js
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { 
+  getFirestore, 
+  collection, 
+  query, 
+  orderBy, 
+  limit, 
+  getDocs 
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import { getStorage } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js"; // <-- Add this
+import { getStorage } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey:            "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
@@ -19,6 +26,16 @@ const firebaseConfig = {
 const app     = initializeApp(firebaseConfig);
 const db      = getFirestore(app);
 const auth    = getAuth(app);
-const storage = getStorage(app); // <-- Add this
+const storage = getStorage(app);
 
-export { app, db, auth, storage };
+// Fetch most recent update from Firestore 'updates' collection
+async function getLatestUpdate() {
+  const updatesRef = collection(db, "updates");
+  const updatesQuery = query(updatesRef, orderBy("date", "desc"), limit(1));
+  const querySnapshot = await getDocs(updatesQuery);
+  if (querySnapshot.empty) return null;
+  const doc = querySnapshot.docs[0];
+  return { id: doc.id, ...doc.data() };
+}
+
+export { app, db, auth, storage, getLatestUpdate };
