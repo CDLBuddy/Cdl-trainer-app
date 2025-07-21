@@ -2007,6 +2007,101 @@ body.ai-modal-open {
 .checklist-item.expanded .checklist-label {
   display: none;
 }
+/* === "WHAT'S NEW" UPDATE CARD POLISH (ALL ROLES, 2024) === */
+
+.update-area,
+#latest-update-card, /* fallback ID for injection */
+.dashboard-card.update-banner {
+  background: linear-gradient(104deg, #23294b 60%, #463d6b 100%);
+  border: 1.7px solid #b7bffe23;
+  box-shadow: 0 4px 28px 0 rgba(120, 140, 255, 0.11);
+  border-radius: 16px;
+  padding: 1.3em 1.3em 1em 1.7em;
+  color: #f7f8fd;
+  margin-bottom: 1.25em;
+  min-height: 70px;
+  position: relative;
+  animation: fadeInPop 0.48s cubic-bezier(.55,1.4,.6,1.01);
+  overflow: hidden;
+  transition: box-shadow 0.18s, background 0.15s;
+}
+
+.update-banner .update-title,
+#latest-update-card .update-title {
+  font-weight: 700;
+  font-size: 1.14em;
+  color: #76f1dc;
+  margin-bottom: 0.13em;
+  letter-spacing: 0.02em;
+}
+
+.update-banner .update-content,
+#latest-update-card .update-content {
+  font-size: 1.06em;
+  color: #ece9fa;
+  margin-bottom: 0.4em;
+  white-space: pre-line;  /* Allows newlines from db */
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.update-banner .update-date,
+#latest-update-card .update-date {
+  font-size: 0.98em;
+  color: #b1adff;
+  opacity: 0.8;
+  margin-top: 0.12em;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+.update-empty {
+  text-align: center;
+  color: #b2b6df;
+  font-size: 1.04em;
+  opacity: 0.82;
+  margin: 1.1em 0;
+}
+
+/* Optional: "NEW" badge */
+.update-badge-new {
+  position: absolute;
+  top: 1.05em;
+  right: 1.09em;
+  background: linear-gradient(95deg, #ffdb70 50%, #f4ad3d 100%);
+  color: #442800;
+  font-size: 0.86em;
+  font-weight: 700;
+  padding: 0.16em 1.05em;
+  border-radius: 13px;
+  box-shadow: 0 2px 8px 0 rgba(255,180,50,0.08);
+  letter-spacing: 0.03em;
+  z-index: 2;
+}
+
+@media (max-width: 600px) {
+  .update-area,
+  #latest-update-card,
+  .dashboard-card.update-banner {
+    padding: 0.8em 0.6em 0.8em 1em;
+    border-radius: 13px;
+    font-size: 0.98em;
+  }
+  .update-badge-new {
+    top: 0.65em;
+    right: 0.7em;
+    font-size: 0.82em;
+    padding: 0.1em 0.7em;
+    border-radius: 10px;
+  }
+}
+
+/* Entry Animation */
+@keyframes fadeInPop {
+  0% { transform: scale(0.97) translateY(18px); opacity: 0; }
+  88% { transform: scale(1.04) translateY(-4px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
   opacity: 1;
