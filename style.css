@@ -1991,6 +1991,22 @@ body.ai-modal-open {
 .checklist-item.expanded .checklist-label {
   display: none;
 }
+.checklist-item-main {
+  min-height: 38px;
+}
+
+.checklist-item.expanded .checklist-item-main {
+  align-items: flex-start;
+}
+
+.notify-bubble,
+.btn.outline.btn-sm {
+  flex-shrink: 0;
+}
+
+.checklist-item.expanded .checklist-label {
+  display: none;
+}
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
   opacity: 1;
