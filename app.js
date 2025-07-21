@@ -760,7 +760,7 @@ async function renderDashboard(container = document.getElementById("app")) {
     return;
   }
 
-  // --- Checklist Progress (now uses profileProgress from userData!) ---
+  // --- Checklist Progress (from profileProgress) ---
   let checklistPct = userData.profileProgress || 0;
 
   // --- Last-test summary (optional card/alert) ---
@@ -826,16 +826,19 @@ async function renderDashboard(container = document.getElementById("app")) {
     console.error("Streak calc error", e);
   }
 
-  // --- RENDER DASHBOARD LAYOUT ---------------------------------------
+  // --- Student Name & Badge ---
   const name = localStorage.getItem("fullName") || "CDL User";
   const roleBadge = `<span class="role-badge student">Student</span>`;
 
+  // --- Dashboard Layout (HTML) -----------------------------------------
   container.innerHTML = `
     <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
     <button class="btn" id="edit-student-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
     <div class="dash-layout">
-      <!-- metric cards ---------------------------- -->
       <section class="dash-metrics">
+
+        <!-- --- NEW: "What’s New" Card --- -->
+        <div id="latest-update-card" class="dashboard-card update-area"></div>
 
         <div class="dashboard-card">
           <h3>✅ Checklist Progress</h3>
@@ -878,10 +881,8 @@ async function renderDashboard(container = document.getElementById("app")) {
           <p>${lastTestStr}</p>
           <button class="btn" data-nav="practiceTests">Take a Test</button>
         </div>
-
       </section>
 
-      <!-- compact scrollable nav ---------------------------- -->
       <div class="dash-rail-wrapper">
         <aside class="dash-rail">
           <!-- My Profile -->
@@ -918,7 +919,6 @@ async function renderDashboard(container = document.getElementById("app")) {
           </button>
         </aside>
       </div>
-      <!-- Logout (rectangle) -->
       <button class="rail-btn logout wide-logout" id="logout-btn" aria-label="Logout">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
           <rect x="4" y="4" width="12" height="16" rx="2" stroke="#ff8080" stroke-width="2"/>
@@ -929,7 +929,7 @@ async function renderDashboard(container = document.getElementById("app")) {
     </div>
     <button id="ai-coach-fab" aria-label="Ask AI Coach">
       <span class="ai-coach-mascot-wrapper">
-        <!-- SVG mascot here -->
+        <!-- SVG mascot here (same as before) -->
         <svg id="ai-coach-mascot" viewBox="0 0 64 64" width="46" height="46" fill="none" xmlns="http://www.w3.org/2000/svg">
           <!-- Retro mascot SVG code (see below) -->
           <rect x="5" y="10" width="54" height="38" rx="10" fill="url(#grad1)" stroke="#2b4253" stroke-width="2"/>
@@ -953,6 +953,9 @@ async function renderDashboard(container = document.getElementById("app")) {
       </span>
     </button>
   `;
+
+  // --- After render: load and display the latest "What’s New" update card ---
+  showLatestUpdate(); // This will fill #latest-update-card with the dynamic update
 
   setupNavigation();
 
