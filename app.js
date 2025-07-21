@@ -1708,7 +1708,7 @@ container.innerHTML = `
         <h3 class="checklist-section-header">${section.header}</h3>
         <ul class="checklist-list">
           ${section.items.map((item, idx) => `
-            <li class="checklist-item${item.done ? " done" : ""}${item.readonly ? " readonly" : ""}" data-index="${idx}">
+            <li class="checklist-item${item.done ? " done" : ""}${item.readonly ? " readonly" : ""}">
               <div class="checklist-item-main">
                 ${item.notify && !item.done && !item.readonly
                   ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
