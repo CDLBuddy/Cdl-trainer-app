@@ -1988,6 +1988,9 @@ body.ai-modal-open {
   80%{ transform: scale(1.14) translateX(-50%);}
   100%{ transform: scale(1) translateX(-50%); opacity:1;}
 }
+.checklist-item.expanded .checklist-label {
+  display: none;
+}
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
   opacity: 1;
