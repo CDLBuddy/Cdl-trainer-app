@@ -17,7 +17,9 @@ import {
   query,
   where,
   getDocs,
-  updateDoc
+  updateDoc,
+  orderBy,
+  limit
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 // Auth
@@ -258,7 +260,18 @@ function initCarousel() {
   }
   requestAnimationFrame(drift);
 }
-// ── Welcome screen with infinite carousel, bokeh, typewriter, etc. ── //
+
+// Fetch most recent update from Firestore 'updates' collection
+async function getLatestUpdate() {
+  const updatesRef = collection(db, "updates");
+  const updatesQuery = query(updatesRef, orderBy("date", "desc"), limit(1));
+  const querySnapshot = await getDocs(updatesQuery);
+  if (querySnapshot.empty) return null;
+  const doc = querySnapshot.docs[0];
+  return { id: doc.id, ...doc.data() };
+}
+
+// ── Welcome screen ── //
 
 function renderWelcome() {
   const appEl = document.getElementById("app");
