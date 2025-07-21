@@ -1708,12 +1708,12 @@ container.innerHTML = `
         <h3 class="checklist-section-header">${section.header}</h3>
         <ul class="checklist-list">
           ${section.items.map((item, idx) => `
-            <li class="checklist-item${item.done ? " done" : ""}${item.readonly ? " readonly" : ""}">
+            <li class="checklist-item ${item.done ? "done" : ""} ${item.readonly ? "readonly" : ""}">
+              ${item.notify && !item.done && !item.readonly
+                ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
+                : ""
+              }
               <div class="checklist-item-main">
-                ${item.notify && !item.done && !item.readonly
-                  ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
-                  : ""
-                }
                 <span class="checklist-label" style="${item.done ? 'text-decoration:line-through;color:#9fdcb7;' : ''}">
                   ${item.label}
                 </span>
@@ -1741,8 +1741,9 @@ container.innerHTML = `
         </ul>
       </div>
     `).join("")}
-    <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅ Back to Dashboard</button>
+     <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅ Back to Dashboard</button>
   </div>
+
 `;
 
 // ------- Event Listeners and logic -------
