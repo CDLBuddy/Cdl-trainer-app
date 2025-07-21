@@ -1,6 +1,5 @@
 // dashboard-student.js
 
-// Import Firebase modules, helpers, and shared UI functions you reference:
 import { db, auth } from './firebase.js';
 import {
   showToast,
@@ -10,12 +9,9 @@ import {
   getNextChecklistAlert
 } from './ui-helpers.js';
 
-// Import other renderers your dashboard needs:
-import { renderProfile } from './profile.js';
-import { renderAICoach } from './ai-coach.js';
-import { renderWelcome } from './welcome.js';
-
-import { signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {
+  signOut
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
   collection,
   query,
@@ -23,15 +19,22 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// Global state - these will typically be shared via a state module or imported, but for now:
+// If/when you modularize these pages, you can uncomment the imports below:
+// import { renderProfile } from './profile.js';
+// import { renderAICoach } from './ai-coach.js';
+// import { renderWalkthrough } from './walkthrough.js';
+// import { renderChecklists } from './checklists.js';
+// import { renderPracticeTests } from './practice-tests.js';
+// import { renderFlashcards } from './flashcards.js';
+// import { renderTestResults } from './test-results.js';
+
 let currentUserEmail = window.currentUserEmail || null;
 
-// Export the dashboard function
 export async function renderDashboard(container = document.getElementById("app")) {
   if (!container) return;
   if (!currentUserEmail) {
     showToast("No user found. Please log in again.");
-    renderWelcome();
+    window.location.reload(); // Fallback to reload for now
     return;
   }
 
@@ -45,7 +48,6 @@ export async function renderDashboard(container = document.getElementById("app")
     const snap = await getDocs(q);
     if (!snap.empty) {
       userData = snap.docs[0].data();
-      // Prefer Firestore profile role if set
       userRole = userData.role || userRole || "student";
       localStorage.setItem("userRole", userRole);
     }
@@ -56,7 +58,7 @@ export async function renderDashboard(container = document.getElementById("app")
   // --- Defensive: only students allowed ---
   if (userRole !== "student") {
     showToast("Access denied: Student dashboard only.");
-    renderDashboard(); // Or send to role-based dashboard
+    window.location.reload(); // fallback
     return;
   }
 
@@ -136,7 +138,10 @@ export async function renderDashboard(container = document.getElementById("app")
     <button class="btn" id="edit-student-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
     <div class="dash-layout">
       <section class="dash-metrics">
+
+        <!-- --- NEW: "What’s New" Card --- -->
         <div id="latest-update-card" class="dashboard-card update-area"></div>
+
         <div class="dashboard-card">
           <h3>✅ Checklist Progress</h3>
           <div class="progress-bar">
@@ -149,15 +154,18 @@ export async function renderDashboard(container = document.getElementById("app")
             <span>${getNextChecklistAlert(userData)}</span>
           </div>
         </div>
+
         <div class="dashboard-card">
           <h3>🧭 Walkthrough</h3>
           <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
           <button class="btn" data-nav="walkthrough">Open Walkthrough</button>
         </div>
+
         <div class="glass-card metric">
           <h3>🔥 Study Streak</h3>
           <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? "s" : ""} active this week</p>
         </div>
+
         <div class="dashboard-card ai-tip-card">
           <div class="ai-tip-title" style="font-weight:600; font-size:1.12em; color:var(--accent); margin-bottom:0.5em;">
             🤖 AI Tip of the Day
@@ -169,15 +177,16 @@ export async function renderDashboard(container = document.getElementById("app")
             <span style="font-size:1.1em;">💬</span> Ask AI Coach
           </button>
         </div>
+
         <div class="dashboard-card last-test-card">
           <h3>🧪 Last Test Score</h3>
           <p>${lastTestStr}</p>
           <button class="btn" data-nav="practiceTests">Take a Test</button>
         </div>
       </section>
+
       <div class="dash-rail-wrapper">
         <aside class="dash-rail">
-          <!-- My Profile -->
           <button class="rail-btn profile" data-nav="profile" aria-label="My Profile">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="8" r="4" stroke="#b48aff" stroke-width="2"/>
@@ -185,7 +194,6 @@ export async function renderDashboard(container = document.getElementById("app")
             </svg>
             <span class="label">My Profile</span>
           </button>
-          <!-- My Checklist -->
           <button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <rect x="4" y="4" width="16" height="16" rx="3" stroke="#a8e063" stroke-width="2"/>
@@ -193,7 +201,6 @@ export async function renderDashboard(container = document.getElementById("app")
             </svg>
             <span class="label">My<br>Checklist</span>
           </button>
-          <!-- Testing -->
           <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <rect x="4" y="4" width="16" height="16" rx="3" stroke="#61aeee" stroke-width="2"/>
@@ -201,7 +208,6 @@ export async function renderDashboard(container = document.getElementById("app")
             </svg>
             <span class="label">Testing<br>&nbsp;</span>
           </button>
-          <!-- Flashcards -->
           <button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <rect x="5" y="7" width="14" height="10" rx="2" stroke="#ffdb70" stroke-width="2"/>
@@ -221,9 +227,8 @@ export async function renderDashboard(container = document.getElementById("app")
     </div>
     <button id="ai-coach-fab" aria-label="Ask AI Coach">
       <span class="ai-coach-mascot-wrapper">
-        <!-- SVG mascot here (same as before) -->
         <svg id="ai-coach-mascot" viewBox="0 0 64 64" width="46" height="46" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- ... SVG omitted for brevity ... -->
+          <!-- SVG content omitted for brevity -->
         </svg>
       </span>
     </button>
@@ -232,19 +237,23 @@ export async function renderDashboard(container = document.getElementById("app")
   showLatestUpdate();
   setupNavigation();
 
+  // Profile/Edit button: placeholder until modularized
   document.getElementById("edit-student-profile-btn")?.addEventListener("click", () => {
-    renderProfile();
+    showToast("Profile module coming soon!");
   });
+
   document.getElementById("ai-tip-btn")?.addEventListener("click", () => {
-    renderAICoach();
+    showToast("AI Coach coming soon!");
   });
+
   document.getElementById("logout-btn")?.addEventListener("click", async () => {
     await signOut(auth);
     localStorage.removeItem("fullName");
     localStorage.removeItem("userRole");
-    renderWelcome();
+    window.location.reload();
   });
+
   document.getElementById("ai-coach-fab")?.addEventListener("click", () => {
-    renderAICoach();
+    showToast("AI Coach coming soon!");
   });
 }
