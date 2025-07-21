@@ -1978,6 +1978,14 @@ body.ai-modal-open {
   80%{ transform: scale(1.14) translateX(-50%);}
   100%{ transform: scale(1) translateX(-50%); opacity:1;}
 }
+.checklist-item.expanded {
+  align-items: flex-start;
+  min-height: 55px; /* or auto */
+}
+.checklist-item.expanded .notify-bubble {
+  top: 18px; /* keeps the bubble at the top when expanded */
+  transform: none;
+}
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
   opacity: 1;
