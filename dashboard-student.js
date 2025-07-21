@@ -9,9 +9,7 @@ import {
   getNextChecklistAlert
 } from './ui-helpers.js';
 
-import {
-  signOut
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
   collection,
   query,
@@ -19,14 +17,14 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// If/when you modularize these pages, you can uncomment the imports below:
-// import { renderProfile } from './profile.js';
-// import { renderAICoach } from './ai-coach.js';
-// import { renderWalkthrough } from './walkthrough.js';
-// import { renderChecklists } from './checklists.js';
-// import { renderPracticeTests } from './practice-tests.js';
-// import { renderFlashcards } from './flashcards.js';
-// import { renderTestResults } from './test-results.js';
+// === Modularized pages ===
+import { renderProfile } from './profile.js';
+import { renderAICoach } from './ai-coach.js';
+import { renderWalkthrough } from './walkthrough.js';
+import { renderChecklists } from './checklists.js';
+import { renderPracticeTests, renderTestReview } from './practice-tests.js';
+import { renderFlashcards } from './flashcards.js';
+import { renderTestResults } from './test-results.js';
 
 let currentUserEmail = window.currentUserEmail || null;
 
@@ -34,13 +32,13 @@ export async function renderDashboard(container = document.getElementById("app")
   if (!container) return;
   if (!currentUserEmail) {
     showToast("No user found. Please log in again.");
-    window.location.reload(); // Fallback to reload for now
+    window.location.reload();
     return;
   }
 
   // --- 1. FETCH DATA ---------------------------------------------------
   let userData = {};
-  let userRole = localStorage.getItem("userRole") || "student"; // fallback
+  let userRole = localStorage.getItem("userRole") || "student";
 
   try {
     const usersRef = collection(db, "users");
@@ -55,17 +53,16 @@ export async function renderDashboard(container = document.getElementById("app")
     userData = {};
   }
 
-  // --- Defensive: only students allowed ---
   if (userRole !== "student") {
     showToast("Access denied: Student dashboard only.");
-    window.location.reload(); // fallback
+    window.location.reload();
     return;
   }
 
-  // --- Checklist Progress (from profileProgress) ---
+  // --- Checklist Progress ---
   let checklistPct = userData.profileProgress || 0;
 
-  // --- Last-test summary (optional card/alert) ---
+  // --- Last-test summary ---
   let lastTestStr = "No tests taken yet.";
   try {
     const snap = await getDocs(
@@ -79,9 +76,9 @@ export async function renderDashboard(container = document.getElementById("app")
         (t.timestamp?.toDate
           ? t.timestamp.toDate()
           : new Date(t.timestamp)) >
-          (latest?.timestamp?.toDate
-            ? latest.timestamp.toDate()
-            : new Date(latest?.timestamp))
+        (latest?.timestamp?.toDate
+          ? latest.timestamp.toDate()
+          : new Date(latest?.timestamp))
       ) {
         latest = t;
       }
@@ -128,7 +125,6 @@ export async function renderDashboard(container = document.getElementById("app")
     console.error("Streak calc error", e);
   }
 
-  // --- Student Name & Badge ---
   const name = localStorage.getItem("fullName") || "CDL User";
   const roleBadge = `<span class="role-badge student">Student</span>`;
 
@@ -139,7 +135,6 @@ export async function renderDashboard(container = document.getElementById("app")
     <div class="dash-layout">
       <section class="dash-metrics">
 
-        <!-- --- NEW: "What’s New" Card --- -->
         <div id="latest-update-card" class="dashboard-card update-area"></div>
 
         <div class="dashboard-card">
@@ -237,23 +232,52 @@ export async function renderDashboard(container = document.getElementById("app")
   showLatestUpdate();
   setupNavigation();
 
-  // Profile/Edit button: placeholder until modularized
+  // --- Button Event Listeners ---
+
+  // Main profile/edit
   document.getElementById("edit-student-profile-btn")?.addEventListener("click", () => {
-    showToast("Profile module coming soon!");
+    renderProfile();
   });
 
+  // Rail navigation
+  container.querySelector('.rail-btn.profile')?.addEventListener('click', () => {
+    renderProfile();
+  });
+  container.querySelector('.rail-btn.checklist')?.addEventListener('click', () => {
+    renderChecklists();
+  });
+  container.querySelector('.rail-btn.testing')?.addEventListener('click', () => {
+    renderPracticeTests();
+  });
+  container.querySelector('.rail-btn.flashcards')?.addEventListener('click', () => {
+    renderFlashcards();
+  });
+
+  // Checklist progress card
+  container.querySelector('button[data-nav="walkthrough"]')?.addEventListener('click', () => {
+    renderWalkthrough();
+  });
+
+  // AI Tip of the Day
   document.getElementById("ai-tip-btn")?.addEventListener("click", () => {
-    showToast("AI Coach coming soon!");
+    renderAICoach();
   });
 
+  // Last Test Card - Take a Test
+  container.querySelector('.last-test-card button[data-nav="practiceTests"]')?.addEventListener('click', () => {
+    renderPracticeTests();
+  });
+
+  // AI Coach Floating Button
+  document.getElementById("ai-coach-fab")?.addEventListener("click", () => {
+    renderAICoach();
+  });
+
+  // Logout
   document.getElementById("logout-btn")?.addEventListener("click", async () => {
     await signOut(auth);
     localStorage.removeItem("fullName");
     localStorage.removeItem("userRole");
     window.location.reload();
-  });
-
-  document.getElementById("ai-coach-fab")?.addEventListener("click", () => {
-    showToast("AI Coach coming soon!");
   });
 }
