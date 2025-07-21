@@ -1,12 +1,5 @@
-// ─── Global State ─────────────────────────────────────────────────────────────
-let currentUserEmail = null;
-let loaderShownAt = Date.now();
-let loaderEl = document.getElementById("app-loader");
-
-// ─── 1. MODULE IMPORTS ─────────────────────────────────────────────────────────
-
-// Firebase core
-import { db, auth, storage } from "./firebase.js";
+// Firebase core + custom helpers from firebase.js
+import { db, auth, storage, getLatestUpdate } from "./firebase.js";
 
 // Firestore methods
 import {
@@ -262,14 +255,6 @@ function initCarousel() {
 }
 
 // Fetch most recent update from Firestore 'updates' collection
-async function getLatestUpdate() {
-  const updatesRef = collection(db, "updates");
-  const updatesQuery = query(updatesRef, orderBy("date", "desc"), limit(1));
-  const querySnapshot = await getDocs(updatesQuery);
-  if (querySnapshot.empty) return null;
-  const doc = querySnapshot.docs[0];
-  return { id: doc.id, ...doc.data() };
-}
 async function showLatestUpdate() {
   const updateEl = document.getElementById("latest-update-card");
   if (!updateEl) return;
