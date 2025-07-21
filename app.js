@@ -67,6 +67,8 @@ import {
   instructorChecklistFields,
   adminChecklistFields,
   getNextChecklistAlert,
+  showLatestUpdate,
+  formatDate
 } from "./ui-helpers.js";
 // dashboardstudent
 import { renderDashboard } from './dashboard-student.js';
