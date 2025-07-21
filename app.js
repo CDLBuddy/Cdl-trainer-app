@@ -1,46 +1,31 @@
-// app.js
+// app.js -- Top-level app shell for student dashboard
 
-// ─── Global State ─────────────────────────────────────────────────────────────
+// --- GLOBAL STATE ---
 let currentUserEmail = null;
 let loaderShownAt = Date.now();
 let loaderEl = document.getElementById("app-loader");
 
-// ─── Firebase Core/Helpers ────────────────────────────────────────────────────
+// --- FIREBASE CORE ---
 import { db, auth, storage, getLatestUpdate } from "./firebase.js";
 
-// ─── Firestore Methods ────────────────────────────────────────────────────────
+// --- FIRESTORE METHODS (if needed globally, usually not) ---
 import {
-  doc,
-  getDoc,
-  setDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  orderBy,
-  limit
+  doc, getDoc, setDoc, collection, query, where, getDocs,
+  updateDoc, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
+// --- AUTH ---
 import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut
+  onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, signOut
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
-// ─── Storage ──────────────────────────────────────────────────────────────────
+// --- STORAGE (uploads for permit, etc) ---
 import {
-  uploadBytes,
-  getDownloadURL,
-  ref
+  uploadBytes, getDownloadURL, ref
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 
-// ─── UI Helpers (General + ELDT Progress/Checklist) ───────────────────────────
+// --- UI HELPERS (ALL) ---
 import {
   showToast,
   setupNavigation,
@@ -74,19 +59,18 @@ import {
   formatDate
 } from "./ui-helpers.js";
 
-// ─── Modularized Page Renders ────────────────────────────────────────────────
-// Dashboard
-import { renderDashboard } from './dashboard-student.js';
+// --- MODULAR PAGE RENDERERS ---
+import { renderDashboard }      from "./dashboard-student.js";
+import { renderProfile }        from "./profile.js";
+import { renderChecklists }     from "./checklist.js";
+import { renderPracticeTests }  from "./practice-tests.js";
+import { renderTestResults }    from "./test-results.js";
+import { renderTestEngine }     from "./test-engine.js";
+import { renderFlashcards }     from "./flashcards.js";
+import { renderWalkthrough }    from "./walkthrough.js";
+import { renderAICoach }        from "./ai-coach.js";
 
-// Student Pages
-import { renderProfile } from './profile.js';
-import { renderAICoach } from './ai-coach.js';
-import { renderWalkthrough } from './walkthrough.js';
-import { renderChecklists } from './checklists.js';
-import { renderPracticeTests, renderTestReview } from './practice-tests.js';
-import { renderFlashcards } from './flashcards.js';
-import { renderTestResults } from './test-results.js';
-
+// --- If you have AI backend (like ./ai-api.js), import as needed ---
 // (Instructor/Admin dashboards as you modularize them:)
 // import { renderInstructorDashboard } from './dashboard-instructor.js';
 // import { renderAdminDashboard } from './dashboard-admin.js';
