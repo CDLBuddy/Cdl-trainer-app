@@ -259,35 +259,6 @@ function initCarousel() {
   requestAnimationFrame(drift);
 }
 
-// Fetch most recent update from Firestore 'updates' collection
-async function showLatestUpdate() {
-  const updateEl = document.getElementById("latest-update-card");
-  if (!updateEl) return;
-  updateEl.innerHTML = `<div style="padding:18px;text-align:center;">Loading updates...</div>`;
-  const update = await getLatestUpdate();
-  if (!update) {
-    updateEl.innerHTML = `<div class="update-empty">No recent updates.</div>`;
-    return;
-  }
-  updateEl.innerHTML = `
-    <div class="update-banner">
-      <div class="update-title">📢 What's New</div>
-      <div class="update-content">${update.content || "(No details)"}</div>
-      <div class="update-date">${formatDate(update.date)}</div>
-    </div>
-  `;
-}
-
-function formatDate(d) {
-  if (!d) return "";
-  try {
-    const date = d.seconds ? new Date(d.seconds * 1000) : new Date(d);
-    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  } catch (e) {
-    return "";
-  }
-}
-
 // ── Welcome screen ── //
 
 function renderWelcome() {
