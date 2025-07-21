@@ -1,3 +1,7 @@
+// ─── Global State ─────────────────────────────────────────────────────────────
+let currentUserEmail = null;
+let loaderShownAt = Date.now();
+let loaderEl = document.getElementById("app-loader");
 // Firebase core + custom helpers from firebase.js
 import { db, auth, storage, getLatestUpdate } from "./firebase.js";
 
