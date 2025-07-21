@@ -1707,41 +1707,37 @@ container.innerHTML = `
       <div class="checklist-section">
         <h3 class="checklist-section-header">${section.header}</h3>
         <ul class="checklist-list">
-          ${section.items.map(item => `
-            <li class="checklist-item ${item.done ? "done" : ""} ${item.readonly ? "readonly" : ""}">
-              <div class="checklist-item-main">
-                ${item.notify && !item.done && !item.readonly
-                  ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
-                  : ""
-                }
-                <span class="checklist-label" style="${item.done ? 'text-decoration:line-through;color:#9fdcb7;' : ''}">
-                  ${item.label}
-                </span>
-                ${
-                  item.done
-                  ? `<span class="badge badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>`
-                  : item.readonly
-                    ? `<span class="badge badge-waiting" title="Instructor must complete" aria-label="Instructor Only">🔒</span>`
-                    : `<button class="btn outline btn-sm" data-nav="${item.link}">Complete</button>`
-                }
-              </div>
-              <div class="checklist-details" style="display:none;">
-                ${item.details || ""}
-                ${item.substeps ? `
-                  <ul class="substeps">
-                    ${item.substeps.map(ss => `
-                      <li${ss.done ? ' class="done"' : ''}>
-                        ${ss.done ? "✅" : "<span style='color:#ff6565;font-size:1.18em;font-weight:900;vertical-align:middle;'>!</span>"} ${ss.label}
-                      </li>
-                    `).join("")}
-                  </ul>
-                ` : ""}
-              </div>
+          ${section.items.map((item, idx) => `
+  <li class="checklist-item ${item.done ? "done" : ""} ${item.readonly ? "readonly" : ""}">
+    ${item.notify && !item.done && !item.readonly
+      ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
+      : ""
+    }
+    <div class="checklist-item-main">
+      <span class="checklist-label" style="${item.done ? 'text-decoration:line-through;color:#9fdcb7;' : ''}">
+        ${item.label}
+      </span>
+      ${item.done 
+        ? `<span class="badge badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>` 
+        : item.readonly
+          ? `<span class="badge badge-waiting" title="Instructor must complete" aria-label="Instructor Only">🔒</span>`
+          : `<button class="btn outline btn-sm" data-nav="${item.link}">Complete</button>`
+      }
+    </div>
+    <div class="checklist-details" style="display:none;">
+      ${item.details || ""}
+      ${item.substeps ? `
+        <ul class="substeps">
+          ${item.substeps.map(ss => `
+            <li${ss.done ? ' class="done"' : ''}>
+              ${ss.done ? "✅" : "<span style='color:#ff6565;font-size:1.18em;font-weight:900;vertical-align:middle;'>!</span>"} ${ss.label}
             </li>
           `).join("")}
         </ul>
-      </div>
-    `).join("")}
+      ` : ""}
+    </div>
+  </li>
+`).join("")}
     <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅ Back to Dashboard</button>
   </div>
 `;
