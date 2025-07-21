@@ -1795,16 +1795,17 @@ body.ai-modal-open {
 }
 
 .checklist-item {
+  display: flex;
+  align-items: center;
   background: rgba(255,255,255,0.08);
   border-radius: 15px;
-  padding: 15px 14px;
+  padding: 15px 18px 15px 0; /* right/left */
   box-shadow: 0 2px 14px 0 rgba(20, 20, 60, 0.09);
   border: none;
   margin-bottom: 0.92em;
   position: relative;
   min-height: 55px;
   transition: box-shadow 0.21s, background 0.17s;
-  display: block;
 }
 .checklist-item.done {
   background: linear-gradient(93deg, #36d19b 0%, #b3ffe7 100%);
@@ -1816,8 +1817,10 @@ body.ai-modal-open {
 .checklist-item.done .btn {
   display: none !important;
 }
+.checklist-item.expanded {
+  align-items: flex-start;
+}
 
-/* Flex row, bubble left, label middle, button right */
 .checklist-item-main {
   display: flex;
   align-items: center;
@@ -1825,21 +1828,23 @@ body.ai-modal-open {
   width: 100%;
   min-width: 0;
   gap: 12px;
+  /* Ensure main content doesn't overlap bubble */
+  padding-left: 36px;
+  box-sizing: border-box;
+  position: relative;
 }
 
-/* Alert bubble is small, margin-right to separate */
+/* Alert bubble: absolutely positioned left */
 .notify-bubble {
-  flex-shrink: 0;
-  margin-right: 10px;
-  position: static;
-  left: auto;
-  top: auto;
-  transform: none;
-  width: 20px;
-  height: 20px;
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
   background: #ff4957;
   color: #fff;
-  font-size: 1.13em;
+  font-size: 1.15em;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1847,10 +1852,15 @@ body.ai-modal-open {
   font-weight: 700;
   box-shadow: 0 2px 8px 0 rgba(255,60,30,0.11);
   border: 1.5px solid #fff;
-  z-index: 1;
+  z-index: 2;
 }
 
-/* Label fills space, wraps if needed */
+/* When item expands, keep bubble top-aligned */
+.checklist-item.expanded .notify-bubble {
+  top: 18px;
+  transform: none;
+}
+
 .checklist-label {
   flex: 1 1 0%;
   min-width: 0;
@@ -1929,7 +1939,7 @@ body.ai-modal-open {
   margin: 6px 0 0 0;
   width: 100%;
   word-break: break-word;
-  padding-left: 2px;
+  padding-left: 36px; /* aligns with label start */
 }
 .checklist-item.done .checklist-details {
   color: #155c38;
@@ -1967,7 +1977,7 @@ body.ai-modal-open {
   animation: popCheck 0.65s cubic-bezier(.55,1.8,.38,1.06);
 }
 @media (max-width: 540px) {
-  .checklist-item { padding: 13px 3vw; }
+  .checklist-item { padding: 13px 3vw 13px 0; }
   .checklist-label { font-size: 0.97em; }
   .completion-badge { font-size: 1.04em; padding: 10px 8vw; }
 }
@@ -1977,14 +1987,6 @@ body.ai-modal-open {
   0% { transform: scale(0.5) translateX(-50%); opacity: 0;}
   80%{ transform: scale(1.14) translateX(-50%);}
   100%{ transform: scale(1) translateX(-50%); opacity:1;}
-}
-.checklist-item.expanded {
-  align-items: flex-start;
-  min-height: 55px; /* or auto */
-}
-.checklist-item.expanded .notify-bubble {
-  top: 18px; /* keeps the bubble at the top when expanded */
-  transform: none;
 }
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
