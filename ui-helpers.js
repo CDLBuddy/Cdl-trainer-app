@@ -7,51 +7,105 @@ import {
   serverTimestamp, increment
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// ─── UI TOAST MESSAGE ────────────────────────────────
-export function showToast(message, duration = 3000) {
+// ─── TOAST MESSAGE SYSTEM (queue, accessible, dismissable) ──────────────
+let toastQueue = [];
+let isToastVisible = false;
+
+export function showToast(message, duration = 3000, type = "info") {
+  toastQueue.push({ message, duration, type });
+  if (!isToastVisible) showNextToast();
+}
+
+function showNextToast() {
+  if (toastQueue.length === 0) {
+    isToastVisible = false;
+    return;
+  }
+  isToastVisible = true;
+  const { message, duration, type } = toastQueue.shift();
+
+  // Remove any existing toasts
+  document.querySelectorAll(".toast-message").forEach(t => t.remove());
+
   const toast = document.createElement("div");
-  toast.className = "toast-message";
-  toast.textContent = message;
+  toast.className = `toast-message toast-${type}`;
+  toast.setAttribute("role", "status");
+  toast.setAttribute("aria-live", "polite");
+  toast.tabIndex = 0;
+  toast.innerHTML = `<span>${message}</span>`;
   toast.style.position = "fixed";
-  toast.style.bottom = "20px";
+  toast.style.bottom = "24px";
   toast.style.left = "50%";
   toast.style.transform = "translateX(-50%)";
-  toast.style.background = "#333";
+  toast.style.background = type === "error" ? "#e35656" : (type === "success" ? "#44a368" : "#333");
   toast.style.color = "#fff";
-  toast.style.padding = "10px 20px";
-  toast.style.borderRadius = "5px";
+  toast.style.padding = "12px 26px";
+  toast.style.fontWeight = "500";
+  toast.style.borderRadius = "7px";
   toast.style.opacity = "1";
-  toast.style.transition = "opacity 0.5s ease";
-  toast.style.zIndex = "9999";
+  toast.style.boxShadow = "0 4px 18px 0 rgba(0,0,0,0.15)";
+  toast.style.transition = "opacity 0.45s cubic-bezier(.4,0,.2,1)";
+  toast.style.zIndex = "99999";
+  toast.style.cursor = "pointer";
   document.body.appendChild(toast);
+
+  toast.addEventListener("click", () => {
+    toast.style.opacity = "0";
+    setTimeout(() => toast.remove(), 500);
+    showNextToast();
+  });
+
   setTimeout(() => {
     toast.style.opacity = "0";
-    setTimeout(() => toast.remove(), 600);
+    setTimeout(() => {
+      toast.remove();
+      showNextToast();
+    }, 550);
   }, duration);
 }
 
-// ─── SMART NAVIGATION ────────────────────────────────
+// ─── SMART NAVIGATION (de-duped listeners) ───────────────────────────────
 export function setupNavigation() {
-  const buttons = document.querySelectorAll("[data-nav]");
-  buttons.forEach(btn => {
+  // Remove any previous nav event listeners (to avoid stacking)
+  document.querySelectorAll("[data-nav]").forEach(btn => {
+    btn.replaceWith(btn.cloneNode(true));
+  });
+  document.querySelectorAll("[data-nav]").forEach(btn => {
     btn.addEventListener("click", () => {
       const target = btn.getAttribute("data-nav");
       if (target) {
         history.pushState({ page: target }, "", `#${target}`);
         window.dispatchEvent(new PopStateEvent("popstate", { state: { page: target } }));
       }
-    });
+    }, { once: true });
   });
 }
 
 // ─── PAGE TRANSITION LOADER ──────────────────────────
 export function showPageTransitionLoader() {
   const overlay = document.getElementById("page-loader");
-  if (overlay) overlay.classList.remove("hidden");
+  if (overlay) {
+    overlay.style.zIndex = "12000";
+    overlay.classList.remove("hidden");
+  }
 }
 export function hidePageTransitionLoader() {
   const overlay = document.getElementById("page-loader");
   if (overlay) setTimeout(() => overlay.classList.add("hidden"), 400);
+}
+
+// ─── MODAL OVERLAY (single, ARIA, auto-close) ───────
+export function showModal(html) {
+  closeModal();
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+}
+export function closeModal() {
+  document.querySelector(".modal-overlay")?.remove();
 }
 
 // ─── AI TIP OF THE DAY ───────────────────────────────
@@ -68,6 +122,18 @@ export function getRandomAITip() {
     "Use your checklist to track what you’ve mastered and what needs more review."
   ];
   return tips[new Date().getDay() % tips.length];
+}
+
+// Async, extensible version
+export async function getAITipOfTheDay() {
+  const tips = [
+    "Review your ELDT checklist daily.",
+    "Use flashcards to stay sharp!",
+    "Ask the AI Coach about Class A vs B.",
+    "Take timed quizzes to simulate the real test.",
+    "Complete your checklist for certification."
+  ];
+  return tips[Math.floor(Math.random() * tips.length)];
 }
 
 // ─── TYPEWRITER HEADLINE ─────────────────────────────
@@ -145,6 +211,16 @@ export function initFadeInOnScroll() {
   document.querySelectorAll(".fade-in-on-scroll").forEach(el => observer.observe(el));
 }
 
+// ─── AVATAR RENDERING (user or school) ───────────────
+export function renderAvatar(photoURL, name = "", size = 46) {
+  if (photoURL) {
+    return `<img src="${photoURL}" alt="${name}'s photo" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:1.5px solid #b48aff;">`;
+  }
+  // fallback SVG with initials
+  const initials = (name || "CDL").split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2);
+  return `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#262647;color:#b48aff;font-weight:600;font-size:${Math.floor(size/2.2)}px;">${initials}</div>`;
+}
+
 // ─── FIRESTORE: PROGRESS HELPERS ─────────────────────
 export async function updateELDTProgress(userId, fields, options = {}) {
   try {
@@ -181,7 +257,7 @@ export async function updateELDTProgress(userId, fields, options = {}) {
     return true;
   } catch (err) {
     console.error("❌ Error updating eldtProgress:", err);
-    showToast?.("Failed to update progress: " + (err.message || err), 4000);
+    showToast?.("Failed to update progress: " + (err.message || err), 4000, "error");
     return false;
   }
 }
@@ -266,15 +342,16 @@ export async function logStudySession(studentEmail, minutes, context = "") {
   });
 }
 
+// ─── "WHAT'S NEW" ANNOUNCEMENTS ──────────────────────
 import { getLatestUpdate } from "./firebase.js";
 
-// Format a date as needed (define if not already present)
 export function formatDate(dateInput) {
-  const d = dateInput?.toDate ? dateInput.toDate() : new Date(dateInput);
+  if (!dateInput) return "-";
+  let d = dateInput?.toDate ? dateInput.toDate() : new Date(dateInput);
+  if (isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-// Show the "What's New" update in the dashboard
 export async function showLatestUpdate() {
   const updateEl = document.getElementById("latest-update-card");
   if (!updateEl) return;
@@ -293,38 +370,19 @@ export async function showLatestUpdate() {
   `;
 }
 
-// Show a modal overlay with HTML content
-export function showModal(html) {
-  const overlay = document.createElement("div");
-  overlay.className = "modal-overlay";
-  overlay.innerHTML = html;
-  document.body.appendChild(overlay);
-}
-export function closeModal() {
-  document.querySelector(".modal-overlay")?.remove();
-}
-
-// Return a styled badge for user role (based on email)
-export function getRoleBadge(email) {
-  if (!email) return "";
-  if (email.includes("admin@"))        return `<span class="role-badge admin">Admin</span>`;
-  else if (email.includes("instructor@")) return `<span class="role-badge instructor">Instructor</span>`;
-  else                                   return `<span class="role-badge student">Student</span>`;
+// ─── ROLE BADGE (email or role) ──────────────────────
+export function getRoleBadge(input) {
+  const role = (input?.includes && input.includes("@"))
+    ? input.includes("admin@") ? "admin"
+      : input.includes("instructor@") ? "instructor"
+      : input.includes("superadmin@") ? "superadmin"
+      : "student"
+    : (input || "student");
+  if (!role) return "";
+  return `<span class="role-badge ${role}">${role.charAt(0).toUpperCase() + role.slice(1)}</span>`;
 }
 
-// Async AI Tip of the Day (for future extensibility)
-export async function getAITipOfTheDay() {
-  const tips = [
-    "Review your ELDT checklist daily.",
-    "Use flashcards to stay sharp!",
-    "Ask the AI Coach about Class A vs B.",
-    "Take timed quizzes to simulate the real test.",
-    "Complete your checklist for certification."
-  ];
-  return tips[Math.floor(Math.random() * tips.length)];
-}
-
-// ── Infinite-carousel helper ─────────────────────────────── //
+// ─── Infinite-carousel helper ─────────────────────────────── //
 export function initInfiniteCarousel(trackSelector = ".features-inner") {
   const track = document.querySelector(trackSelector);
   if (!track || track.dataset.looped) return;
@@ -357,4 +415,14 @@ export function initCarousel() {
     requestAnimationFrame(drift);
   }
   requestAnimationFrame(drift);
+}
+
+// ─── ASYNC LOADER UTILITY ─────────────────────────────
+export async function withLoader(taskFn, loaderId = "page-loader") {
+  showPageTransitionLoader();
+  try {
+    return await taskFn();
+  } finally {
+    hidePageTransitionLoader();
+  }
 }

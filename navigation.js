@@ -3,16 +3,15 @@
 // === BARREL IMPORTS FOR EACH ROLE ===
 import * as studentPages    from "./student/index.js";
 import * as instructorPages from "./instructor/index.js";
-import * as adminPages      from "./admin/index.js"; // If you have admin folder
+import * as adminPages      from "./admin/index.js";
+import * as superadminPages from "./superadmin/index.js";
 
 // === COMMON PAGES ===
 import { renderLogin }   from "./login.js";
 import { renderWelcome } from "./welcome.js";
-// ...add any other global pages you want
 
 // === HELPER: Determine user role ===
 function getCurrentRole() {
-  // Try localStorage, then window, fallback to "student"
   return (
     localStorage.getItem("userRole") ||
     window.currentUserRole ||
@@ -25,7 +24,7 @@ export function handleNavigation(page, direction = "forward", ...args) {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  // Clean up previous modals, etc. (optional)
+  // Clean up previous modals, etc.
   document.querySelectorAll(".modal-overlay").forEach(el => el.remove());
 
   // Find role
@@ -33,14 +32,49 @@ export function handleNavigation(page, direction = "forward", ...args) {
 
   // Determine which barrel to use
   let rolePages;
-  if (role === "student") rolePages = studentPages;
-  else if (role === "instructor") rolePages = instructorPages;
+  if (role === "superadmin") rolePages = superadminPages;
   else if (role === "admin") rolePages = adminPages;
-  else rolePages = {}; // fallback
+  else if (role === "instructor") rolePages = instructorPages;
+  else if (role === "student") rolePages = studentPages;
+  else rolePages = {};
 
   // --- SMART ROUTER SWITCH ---
-  // You can make this smarter as you add more shared or role-specific pages
   switch (page) {
+    // === SUPERADMIN ROUTES ===
+    case "superadmin-dashboard":
+      if (role === "superadmin") rolePages.renderSuperadminDashboard?.(appEl, ...args);
+      else renderWelcome(appEl);
+      break;
+    case "schoolManagement":
+      if (role === "superadmin") rolePages.renderSchoolManagement?.(appEl, ...args);
+      else renderWelcome(appEl);
+      break;
+    case "userManagement":
+      if (role === "superadmin") rolePages.renderUserManagement?.(appEl, ...args);
+      else renderWelcome(appEl);
+      break;
+    case "complianceCenter":
+      if (role === "superadmin") rolePages.renderComplianceCenter?.(appEl, ...args);
+      else renderWelcome(appEl);
+      break;
+    case "billing":
+      if (role === "superadmin") rolePages.renderBilling?.(appEl, ...args);
+      else renderWelcome(appEl);
+      break;
+    case "settings":
+      if (role === "superadmin") rolePages.renderSettings?.(appEl, ...args);
+      else renderWelcome(appEl);
+      break;
+    case "permissions":
+      if (role === "superadmin") rolePages.renderPermissions?.(appEl, ...args);
+      else renderWelcome(appEl);
+      break;
+    case "logs":
+      if (role === "superadmin") rolePages.renderLogs?.(appEl, ...args);
+      else renderWelcome(appEl);
+      break;
+
+    // === STUDENT/INSTRUCTOR/ADMIN ROUTES (UNCHANGED) ===
     case "dashboard":
       rolePages.renderDashboard?.(appEl, ...args) || renderWelcome(appEl);
       break;
@@ -65,11 +99,12 @@ export function handleNavigation(page, direction = "forward", ...args) {
     case "coach":
       rolePages.renderAICoach?.(appEl, ...args) || renderWelcome(appEl);
       break;
+
     // Instructor-specific
     case "checklistReview":
       instructorPages.renderChecklistReviewForInstructor?.(...args) || renderWelcome(appEl);
       break;
-    // Add admin-specific pages as needed...
+
     // Auth / public pages
     case "login":
       renderLogin(appEl, ...args);
@@ -82,9 +117,6 @@ export function handleNavigation(page, direction = "forward", ...args) {
       // Fallback to dashboard of their role
       rolePages.renderDashboard?.(appEl, ...args) || renderWelcome(appEl);
   }
-
-  // Optional: Add transitions/animations here if needed
-  // (your old code for fade/slide can go here)
 }
 
 // === HASH & POPSTATE NAVIGATION SUPPORT ===
@@ -95,7 +127,6 @@ window.addEventListener("popstate", () => {
 
 // === INITIAL LOAD SUPPORT (optional) ===
 window.addEventListener("DOMContentLoaded", () => {
-  // Let auth listener trigger the correct page, or go to welcome
   if (!window.currentUserEmail) {
     handleNavigation("welcome");
   }

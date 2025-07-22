@@ -1,6 +1,6 @@
 // firebase.js
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { 
   getFirestore, 
   collection, 
@@ -22,20 +22,29 @@ const firebaseConfig = {
   measurementId:     "G-MJ22BD2J1J"
 };
 
-// Initialize Firebase
-const app     = initializeApp(firebaseConfig);
+// Prevent re-initialization in hot reload or multi-import setups
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
 const db      = getFirestore(app);
 const auth    = getAuth(app);
 const storage = getStorage(app);
 
 // Fetch most recent update from Firestore 'updates' collection
 async function getLatestUpdate() {
-  const updatesRef = collection(db, "updates");
-  const updatesQuery = query(updatesRef, orderBy("date", "desc"), limit(1));
-  const querySnapshot = await getDocs(updatesQuery);
-  if (querySnapshot.empty) return null;
-  const doc = querySnapshot.docs[0];
-  return { id: doc.id, ...doc.data() };
+  try {
+    const updatesRef = collection(db, "updates");
+    const updatesQuery = query(updatesRef, orderBy("date", "desc"), limit(1));
+    const querySnapshot = await getDocs(updatesQuery);
+    if (querySnapshot.empty) return null;
+    const doc = querySnapshot.docs[0];
+    return { id: doc.id, ...doc.data() };
+  } catch (e) {
+    console.error("Failed to fetch latest update:", e);
+    return null;
+  }
 }
 
 export { app, db, auth, storage, getLatestUpdate };
+
+// Optionally, you can export Firestore helpers for convenience:
+// export { collection, query, orderBy, limit, getDocs };

@@ -8,21 +8,28 @@ yarn-error.log*
 node_modules/
 bower_components/
 
-# Firebase config
+# Firebase config & local emulators
 .firebase/
 .firebaserc
 firebase-debug.log
 firebase-debug.*
+firebase-emulator-*
 
 # Build outputs
 dist/
 build/
 out/
+public/build/
+public/dist/
+coverage/
 
 # Environment variable files
 .env
+.env.*
 .env.local
 .env.*.local
+.env.development.local
+.env.production.local
 
 # Mac system files
 .DS_Store
@@ -43,29 +50,59 @@ Desktop.ini
 *.tmp
 *.swp
 *~
+.cache/
+*.pid
+*.seed
+*.orig
 
 # Zip & archive files
 *.zip
 *.tar.gz
+*.tgz
 *.rar
 
-# Coverage reports
+# Local test & coverage results
+*.spec.js
+*.test.js
+*.test.html
 coverage/
-
-# Python cache (safe even if not using Python)
-__pycache__/
-
-# Optional Firebase Hosting deploy previews
-firebase.json
+nyc_output/
+.jest/
+.jest-cache/
+.jest-config/
 
 # Ignore GitHub Pages CNAME override if used
 CNAME
 
-# Ignore log, cache, and temporary files from tools like Parcel/Vite/React
+# Optional: Frontend tool caches (Parcel, Vite, Next, etc)
+.parcel-cache/
+.next/
+out/
+.svelte-kit/
+.svelte/
+.storybook/
 .cache/
-*.pid
+.npm/
+.pnpm-debug.log
 
-# Local test results
-*.spec.js
-*.test.js
-*.test.html
+# Firebase Hosting preview
+firebase.json
+
+# Ignore local user scripts or utility files
+local.*
+scripts/
+tools/
+
+# Ignore image thumbnails, generated icons, and design exports
+*.sketch
+*.ai
+*.psd
+*.xcf
+*.svg~*
+*Icon?*.png
+*Logo?*.png
+
+# Ignore temp uploads and user-uploaded files (customize as needed)
+uploads/
+tmp/
+temp/

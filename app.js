@@ -23,10 +23,11 @@ import { renderWelcome } from "./welcome.js";
 import { renderLogin }   from "./login.js";
 import { renderSignup }  from "./signup.js";
 
-// ─── BARREL IMPORTS (STUDENT, INSTRUCTOR, ADMIN) ─────────────
+// ─── BARREL IMPORTS (STUDENT, INSTRUCTOR, ADMIN, SUPERADMIN) ─
 import * as studentPages    from "./student/index.js";
 import * as instructorPages from "./instructor/index.js";
 import * as adminPages      from "./admin/index.js";
+import * as superadminPages from "./superadmin/index.js";
 
 // ─── SMART DATA/EVENT NAVIGATION HANDLERS ─────────────────────
 document.body.addEventListener("click", (e) => {
@@ -45,7 +46,7 @@ window.addEventListener("popstate", () => {
   handleNavigation(page, "back");
 });
 
-// ─── AUTH STATE LISTENER WITH ROLE DETECTION ──────────────────
+// ─── AUTH STATE LISTENER WITH ROLE & SCHOOL DETECTION ─────────
 import {
   doc, getDoc, setDoc, collection, query, where, getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
@@ -87,6 +88,7 @@ onAuthStateChanged(auth, async user => {
       const snap = await getDocs(query(usersRef, where("email", "==", user.email)));
       if (!snap.empty) {
         userData = snap.docs[0].data();
+        // Ensure userData role is synced
         if (!userData.role || userData.role !== userRole) {
           userData.role = userRole;
           await setDoc(doc(db, "users", user.email), { ...userData }, { merge: true });
@@ -94,6 +96,7 @@ onAuthStateChanged(auth, async user => {
         if (userData.schoolId) schoolId = userData.schoolId;
         localStorage.setItem("fullName", userData.name || "CDL User");
       } else {
+        // Create user profile if missing
         userData = {
           uid: user.uid,
           email: user.email,
@@ -106,14 +109,22 @@ onAuthStateChanged(auth, async user => {
         localStorage.setItem("fullName", userData.name);
       }
 
+      // Set localStorage for role and school
       localStorage.setItem("userRole", userRole);
       if (schoolId) localStorage.setItem("schoolId", schoolId);
       else localStorage.removeItem("schoolId");
 
+      // Superadmin session protection (optional)
+      if (userRole === "superadmin") {
+        // Optionally: add extra logging or session checks here
+        localStorage.setItem("isSuperAdmin", "1");
+      } else {
+        localStorage.removeItem("isSuperAdmin");
+      }
+
       showPageTransitionLoader();
       setTimeout(() => {
         // Use smart, role-aware navigation to initial dashboard
-        // (handleNavigation("dashboard") should route role appropriately)
         handleNavigation("dashboard");
         hidePageTransitionLoader();
       }, 350);
@@ -125,7 +136,10 @@ onAuthStateChanged(auth, async user => {
     }
 
   } else {
+    // Not logged in
     currentUserEmail = null;
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("schoolId");
     showPageTransitionLoader();
     setTimeout(() => {
       renderWelcome();
@@ -133,11 +147,13 @@ onAuthStateChanged(auth, async user => {
     }, 300);
   }
 
+  // Loader hiding (delayed for visual smoothness)
   const elapsed = Date.now() - loaderShownAt;
   setTimeout(() => loaderEl?.classList.add("hide"), Math.max(0, 400 - elapsed));
 });
 
 // ─── INITIAL LOAD ─────────────────────────────────────────────
 window.addEventListener("DOMContentLoaded", () => {
-  // Auth state listener will trigger
+  // Auth state listener will trigger and handle boot
+  // (No need to call handleNavigation or renderLogin here)
 });

@@ -1,0 +1,150 @@
+// superadmin/superadmin-dashboard.js
+
+import { db, auth } from '../firebase.js';
+import { signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { renderWelcome } from '../welcome.js';
+import {
+  renderSchoolManagement,
+  renderUserManagement,
+  renderComplianceCenter,
+  renderBilling,
+  renderSettings,
+  renderLogs
+  // ...add new imports as you add more features
+} from './index.js';
+
+import { showToast, setupNavigation } from '../ui-helpers.js';
+
+// --- Helper: Fetch platform stats (stub, you can make async for live counts) ---
+async function getSuperadminStats() {
+  // Replace these with Firestore queries if you want live data
+  let schools = 0, users = 0, complianceAlerts = 0;
+  try {
+    const schoolsSnap = await db.collection("schools").get();
+    schools = schoolsSnap.size;
+    const usersSnap = await db.collection("users").get();
+    users = usersSnap.size;
+    // For compliance alerts, you could flag schools/users with missing/expiring compliance
+    const alertsSnap = await db.collection("complianceAlerts").where("resolved", "==", false).get();
+    complianceAlerts = alertsSnap.size;
+  } catch (e) {
+    // fallback: just show zero if query fails
+  }
+  return { schools, users, complianceAlerts };
+}
+
+// --- Main Super Admin Dashboard ---
+export async function renderSuperadminDashboard(container = document.getElementById("app")) {
+  if (!container) return;
+
+  // --- Authentication check (strict superadmin role) ---
+  const currentUserRole = localStorage.getItem("userRole") || window.currentUserRole;
+  if (currentUserRole !== "superadmin") {
+    showToast("Access denied: Super Admins only.");
+    renderWelcome();
+    return;
+  }
+
+  // --- Fetch superadmin info ---
+  const currentUserEmail = localStorage.getItem("currentUserEmail") || window.currentUserEmail || null;
+  let userData = {};
+  try {
+    const usersRef = db.collection("users");
+    const snap = await usersRef.where("email", "==", currentUserEmail).get();
+    if (!snap.empty) userData = snap.docs[0].data();
+  } catch (e) {
+    userData = {};
+  }
+
+  // --- Fetch stats (live) ---
+  const { schools, users, complianceAlerts } = await getSuperadminStats();
+
+  // --- Dashboard layout ---
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in superadmin-page" style="max-width:900px;margin:0 auto;">
+      <h2 class="dash-head">
+        🏆 Super Admin Panel 
+        <span class="role-badge superadmin">Super Admin</span>
+      </h2>
+      <div class="superadmin-stats-bar" style="display:flex;gap:2.4em;margin-bottom:1.1em;font-weight:600;">
+        <span>🏫 Schools: <b>${schools}</b></span>
+        <span>👤 Users: <b>${users}</b></span>
+        <span style="color:#ff5e5e;">🛡️ Compliance Alerts: <b>${complianceAlerts}</b></span>
+      </div>
+      <div class="dashboard-card superadmin-profile" style="display:flex;align-items:center;gap:2.4em;">
+        ${userData.profilePicUrl ? `<img src="${userData.profilePicUrl}" alt="Profile Photo" style="width:68px;height:68px;border-radius:50%;object-fit:cover;border:2.5px solid #b48aff;">` : ""}
+        <div>
+          <strong>Name:</strong> ${userData.name || "Super Admin"}<br>
+          <strong>Email:</strong> ${currentUserEmail || ""}
+        </div>
+      </div>
+      <div class="dash-layout superadmin-grid">
+        <div class="dashboard-card feature-card">
+          <h3>🏫 School Management</h3>
+          <p>Create, edit, view, or remove CDL training schools.<br>
+          Manage TPR IDs, locations, and compliance status for each site.</p>
+          <button class="btn wide" id="manage-schools-btn">Manage Schools</button>
+        </div>
+        <div class="dashboard-card feature-card">
+          <h3>👤 User Management</h3>
+          <p>Add, remove, or modify instructor, admin, and student accounts.<br>
+          Set roles, reset passwords, or assign users to schools.</p>
+          <button class="btn wide" id="manage-users-btn">Manage Users</button>
+        </div>
+        <div class="dashboard-card feature-card">
+          <h3>🛡️ Compliance Center</h3>
+          <p>Audit schools and users for ELDT and FMCSA/State compliance.<br>
+          Generate compliance reports or upload supporting documentation.</p>
+          <button class="btn wide" id="compliance-center-btn">Compliance Center</button>
+        </div>
+        <div class="dashboard-card feature-card">
+          <h3>💳 Billing & Licensing</h3>
+          <p>View or manage school billing info, subscriptions, and license renewals.</p>
+          <button class="btn wide" id="billing-btn">Billing & Licensing</button>
+        </div>
+        <div class="dashboard-card feature-card">
+          <h3>⚙️ Platform Settings</h3>
+          <p>Configure system-wide settings, defaults, and advanced options.</p>
+          <button class="btn wide" id="settings-btn">Platform Settings</button>
+        </div>
+        <div class="dashboard-card feature-card">
+          <h3>🪵 Audit Logs</h3>
+          <p>View platform activity logs, user actions, and system events for security or troubleshooting.</p>
+          <button class="btn wide" id="logs-btn">View Logs</button>
+        </div>
+        <!-- Add more feature cards here as your app grows -->
+      </div>
+      <button class="btn outline wide" id="logout-btn" style="margin-top:2.2rem;">
+        🚪 Logout
+      </button>
+    </div>
+  `;
+
+  setupNavigation();
+
+  // --- Button Event Handlers ---
+  document.getElementById("manage-schools-btn")?.addEventListener("click", () => {
+    renderSchoolManagement(container);
+  });
+  document.getElementById("manage-users-btn")?.addEventListener("click", () => {
+    renderUserManagement(container);
+  });
+  document.getElementById("compliance-center-btn")?.addEventListener("click", () => {
+    renderComplianceCenter(container);
+  });
+  document.getElementById("billing-btn")?.addEventListener("click", () => {
+    renderBilling(container);
+  });
+  document.getElementById("settings-btn")?.addEventListener("click", () => {
+    renderSettings(container);
+  });
+  document.getElementById("logs-btn")?.addEventListener("click", () => {
+    if (typeof renderLogs === "function") renderLogs(container);
+    else showToast("Logs module coming soon!");
+  });
+  document.getElementById("logout-btn")?.addEventListener("click", async () => {
+    await signOut(auth);
+    localStorage.clear();
+    renderWelcome();
+  });
+}
