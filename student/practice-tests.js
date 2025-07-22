@@ -19,8 +19,7 @@ import {
 
 import {
   renderDashboard as renderStudentDashboard,
-  renderTestEngine,
-  renderTestReview // Keep this to allow review from setTimeout handler
+  renderTestEngine
 } from './index.js';
 
 // ─── PRACTICE TESTS PAGE (STUDENT) ─────────────────────────
