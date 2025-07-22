@@ -1,11 +1,11 @@
-// test-engine.js
+// student/test-engine.js
 
 // IMPORTS
-import { db } from './firebase.js';
+import { db } from '../firebase.js';
 import { addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { setupNavigation, showToast } from './ui-helpers.js';
-// Import or pass as argument: currentUserEmail
+import { setupNavigation, showToast } from '../ui-helpers.js';
 
+// Main export (matches all your other modular student pages)
 export async function renderTestEngine(container = document.getElementById("app"), testName, currentUserEmail) {
   if (!container || !testName || !currentUserEmail) return;
 
@@ -27,7 +27,7 @@ export async function renderTestEngine(container = document.getElementById("app"
         ],
         answer: 1
       }
-      // …add more…
+      // ...add more...
     ],
     "Air Brakes": [
       {
@@ -145,7 +145,7 @@ export async function renderTestEngine(container = document.getElementById("app"
 
     // Navigation
     container.querySelector('[data-nav="dashboard"]')?.addEventListener("click", () => {
-      import('./dashboard-student.js').then(mod => mod.renderDashboard());
+      import('./dashboard.js').then(mod => mod.renderDashboard());
     });
     container.querySelector('[data-nav="practiceTests"]')?.addEventListener("click", () => {
       import('./practice-tests.js').then(mod => mod.renderPracticeTests());
