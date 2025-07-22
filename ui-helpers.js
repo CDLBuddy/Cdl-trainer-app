@@ -46,11 +46,11 @@ export function setupNavigation() {
 
 // ─── PAGE TRANSITION LOADER ──────────────────────────
 export function showPageTransitionLoader() {
-  const overlay = document.getElementById("loader-overlay");
+  const overlay = document.getElementById("page-loader");
   if (overlay) overlay.classList.remove("hidden");
 }
 export function hidePageTransitionLoader() {
-  const overlay = document.getElementById("loader-overlay");
+  const overlay = document.getElementById("page-loader");
   if (overlay) setTimeout(() => overlay.classList.add("hidden"), 400);
 }
 
