@@ -1,6 +1,33 @@
-// ─── INSTRUCTOR DASHBOARD ────────────────────────────────────────────────
-async function renderInstructorDashboard(container = document.getElementById("app")) {
+// instructor/instructor-dashboard.js
+
+import { db, auth } from '../firebase.js';
+import { signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {
+  collection,
+  query,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+import {
+  showToast,
+  setupNavigation,
+  getNextChecklistAlert
+} from '../ui-helpers.js';
+
+// Modular instructor page renderers (update these to match your folder)
+import { renderWelcome } from '../welcome.js';
+import {
+  renderInstructorProfile,
+  renderStudentProfileForInstructor,
+  renderChecklistReviewForInstructor,
+  renderDashboard as renderStudentDashboard
+} from './index.js'; // Use your instructor/index.js as the single source
+
+export async function renderInstructorDashboard(container = document.getElementById("app")) {
   if (!container) return;
+  // Prefer global or pass in as param
+  let currentUserEmail = window.currentUserEmail || localStorage.getItem("currentUserEmail") || null;
   if (!currentUserEmail) {
     showToast("No user found. Please log in again.");
     renderWelcome();
@@ -24,7 +51,7 @@ async function renderInstructorDashboard(container = document.getElementById("ap
   }
   if (userRole !== "instructor") {
     showToast("Access denied: Instructor role required.");
-    renderDashboard();
+    renderStudentDashboard();
     return;
   }
 

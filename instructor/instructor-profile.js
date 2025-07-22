@@ -1,6 +1,6 @@
-// instructor-profile.js
+// instructor/instructor-profile.js
 
-import { db, storage } from "./firebase.js";
+import { db, storage } from '../firebase.js';
 import {
   collection,
   query,
@@ -14,15 +14,13 @@ import {
   getDownloadURL,
   ref
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
-import { showToast, setupNavigation } from "./ui-helpers.js";
-import { renderWelcome } from "./welcome.js";
-import { renderInstructorDashboard } from "./dashboard-instructor.js";
+import { showToast, setupNavigation } from '../ui-helpers.js';
+import { renderWelcome } from '../welcome.js';
+import { renderInstructorDashboard } from './instructor-dashboard.js';
 
-// You might have a top-level state or context for the current user email
-// Import or pass it as a param; here's a flexible pattern:
-let currentUserEmail = window.currentUserEmail || null;
+// Prefer global or pass as param
+let currentUserEmail = window.currentUserEmail || localStorage.getItem("currentUserEmail") || null;
 
-// Named export!
 export async function renderInstructorProfile(container = document.getElementById("app")) {
   if (!container) return;
 

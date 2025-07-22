@@ -1,6 +1,6 @@
-// instructor-checklist.js
+// instructor/instructor-checklist.js
 
-import { db } from "./firebase.js";
+import { db } from '../firebase.js';
 import {
   collection,
   query,
@@ -10,7 +10,7 @@ import {
   getDoc,
   updateDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { showToast } from "./ui-helpers.js";
+import { showToast } from '../ui-helpers.js';
 
 // --- Named export for Instructor Checklist Modal ---
 export async function renderChecklistReviewForInstructor(studentEmail, container = document.body) {
