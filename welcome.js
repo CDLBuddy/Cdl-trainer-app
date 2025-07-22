@@ -1,6 +1,5 @@
 // welcome.js
 
-}
 import {
   initInfiniteCarousel,
   initCarousel,
@@ -11,6 +10,7 @@ import { handleNavigation } from "./navigation.js";
 
 // Accepts optional config for custom branding/headlines/etc.
 export function renderWelcome(container = document.getElementById("app"), opts = {}) {
+  alert("🟣 renderWelcome() called!"); // Debug
   if (!container) return;
 
   // Customizable for future white-label/school branding:
@@ -64,7 +64,6 @@ export function renderWelcome(container = document.getElementById("app"), opts =
   `;
 
   // --- Effects and Animation ---
-  // Prevent double init if user navigates back
   if (!container._welcomeInit) {
     initInfiniteCarousel?.();
     initCarousel?.();
