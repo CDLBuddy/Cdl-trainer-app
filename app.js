@@ -1,3 +1,13 @@
+// ======== DEBUG/DEV TRAP ========
+console.log("✅ app.js loaded!");
+window.onerror = function(msg, src, lineno, col, error) {
+  alert("🚨 JS Error: " + msg + "\n" + src + " @ " + lineno + ":" + col);
+};
+window.addEventListener("unhandledrejection", function(event) {
+  alert("🚨 Promise Rejection: " + (event.reason && event.reason.message ? event.reason.message : event.reason));
+});
+// =================================
+
 // app.js -- Top-level app shell
 
 // ─── GLOBAL STATE ─────────────────────────────────────────────
