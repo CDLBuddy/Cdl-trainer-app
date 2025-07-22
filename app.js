@@ -56,15 +56,17 @@ window.addEventListener("popstate", () => {
   handleNavigation(page, "back");
 });
 
-// ─── AUTH STATE LISTENER WITH ROLE & SCHOOL DETECTION ─────────
-console.log("🔥 Auth state handler running! user:", user);
-alert("🔥 Auth handler running! user: " + (user ? user.email : "none"));
+// ─── FIREBASE IMPORTS FOR AUTH STATE LISTENER ────────────────
 import {
   doc, getDoc, setDoc, collection, query, where, getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
+// ─── AUTH STATE LISTENER WITH ROLE & SCHOOL DETECTION ─────────
 onAuthStateChanged(auth, async user => {
+  console.log("🔥 Auth state handler running! user:", user);
+  alert("🔥 Auth handler running! user: " + (user ? user.email : "none"));
+
   document.getElementById("js-error")?.classList.add("hidden");
   document.getElementById("loading-screen")?.classList.add("hidden");
 
@@ -169,4 +171,5 @@ window.addEventListener("DOMContentLoaded", () => {
   // Auth state listener will trigger and handle boot
   // (No need to call handleNavigation or renderLogin here)
 });
+
 alert("🌎 End of app.js reached!");
