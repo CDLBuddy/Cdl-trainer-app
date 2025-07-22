@@ -115,6 +115,18 @@
   </script>
 
   <!-- Main App Entry (keep as type=module!) -->
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js"></script><!-- Fallback Loader Debug: Show if JS fails to render the app -->
+<script>
+  setTimeout(() => {
+    const loader = document.getElementById('app-loader');
+    if (loader && !loader.classList.contains('hide')) {
+      loader.classList.add('hide');
+      const appEl = document.getElementById('app');
+      if (appEl && !appEl.innerHTML.trim()) {
+        appEl.innerHTML = '<h2 style="color:white; text-align:center; margin-top:2em;">App loaded fallback!<br><span style="font-size:1.1em;color:#a3e063;">(No JS render)</span></h2>';
+      }
+    }
+  }, 3000);
+</script>
 </body>
 </html>
