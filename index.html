@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <!-- Updated viewport for safe area support -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>CDL Trainer</title>
   <link rel="stylesheet" href="style.css" />
@@ -10,11 +9,12 @@
   <!-- =======================
        GLOBAL DEBUG SETTINGS
        ======================= -->
+  <!-- EARLY DEBUG: Show alert + change bg color to prove JS runs -->
   <script>
+    alert("🟢 Inline JS ran!");
+    document.body.style.background = "#f00"; // Red if this JS runs!
+  </script>
   <script>
-  alert("🟢 Inline JS ran!");
-  document.body.style.background = "#f00"; // Red background if this JS runs!
-</script>
     // Toggle dev/debug options here!
     window.APP_DEBUG = {
       htmlAlerts: true,        // Pop up alert when HTML loads
@@ -26,16 +26,11 @@
       authEvents: false,       // Log auth/user events
       featureFlags: true,      // Toggle feature-flag logic in-app
       simulateLatency: false,  // Simulate slow network for loader testing
-      // More toggles as you grow!
     };
-    // Example feature flag (can be used anywhere in app code)
     window.FEATURE_BILLING_V2 = window.APP_DEBUG.featureFlags; // Example flag
   </script>
-
-  <!-- =======================
-       DEV/DEBUG HOOKS
-       ======================= -->
   <script>
+    // DEV/DEBUG HOOKS
     const D = window.APP_DEBUG || {};
     // Pop up HTML loaded alert
     if (D.htmlAlerts) alert("✅ HTML loaded");
@@ -98,14 +93,13 @@
   <div class="dots"><span></span><span></span><span></span></div>
 
   <!-- ==== DEV/DEBUG/UTILITIES - Optional for Future ==== -->
-  <!-- Example: Simulated latency for loader testing in your JS -->
   <script>
     // Usage: await window.simulateNetworkLatency(1200) in async functions
     window.simulateNetworkLatency = function (ms = 1200) {
       return (window.APP_DEBUG && window.APP_DEBUG.simulateLatency)
         ? new Promise(res => setTimeout(res, ms))
         : Promise.resolve();
-    }
+    };
     // Example: Navigation tracer
     window.traceNavigation = function(page, ...args) {
       if ((window.APP_DEBUG||{}).navTracer)
@@ -119,18 +113,20 @@
   </script>
 
   <!-- Main App Entry (keep as type=module!) -->
-  <script type="module" src="app.js"></script><!-- Fallback Loader Debug: Show if JS fails to render the app -->
-<script>
-  setTimeout(() => {
-    const loader = document.getElementById('app-loader');
-    if (loader && !loader.classList.contains('hide')) {
-      loader.classList.add('hide');
-      const appEl = document.getElementById('app');
-      if (appEl && !appEl.innerHTML.trim()) {
-        appEl.innerHTML = '<h2 style="color:white; text-align:center; margin-top:2em;">App loaded fallback!<br><span style="font-size:1.1em;color:#a3e063;">(No JS render)</span></h2>';
+  <script type="module" src="app.js"></script>
+
+  <!-- Fallback Loader Debug: Show if JS fails to render the app -->
+  <script>
+    setTimeout(() => {
+      const loader = document.getElementById('app-loader');
+      if (loader && !loader.classList.contains('hide')) {
+        loader.classList.add('hide');
+        const appEl = document.getElementById('app');
+        if (appEl && !appEl.innerHTML.trim()) {
+          appEl.innerHTML = '<h2 style="color:white; text-align:center; margin-top:2em;">App loaded fallback!<br><span style="font-size:1.1em;color:#a3e063;">(No JS render)</span></h2>';
+        }
       }
-    }
-  }, 3000);
-</script>
+    }, 3000);
+  </script>
 </body>
 </html>
