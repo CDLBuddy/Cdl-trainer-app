@@ -1,4 +1,4 @@
-// dashboard-student.js
+// student-dashboard.js
 
 import { db, auth } from './firebase.js';
 import {
@@ -17,16 +17,15 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// === Modularized pages ===
-import { renderProfile } from './profile.js';
-import { renderAICoach } from './ai-coach.js';
-import { renderWalkthrough } from './walkthrough.js';
-import { renderChecklists } from './checklists.js';
-import { renderPracticeTests, renderTestReview } from './practice-tests.js';
-import { renderFlashcards } from './flashcards.js';
-import { renderTestResults } from './test-results.js';
+// === Modularized page renderers ===
+import { renderProfile }        from './profile.js';
+import { renderAICoach }        from './ai-coach.js';
+import { renderWalkthrough }    from './walkthrough.js';
+import { renderChecklists }     from './checklist.js';     // correct plural/singular
+import { renderPracticeTests }  from './practice-tests.js';
+import { renderFlashcards }     from './flashcards.js';
 
-let currentUserEmail = window.currentUserEmail || null;
+let currentUserEmail = window.currentUserEmail || localStorage.getItem("currentUserEmail") || null;
 
 export async function renderDashboard(container = document.getElementById("app")) {
   if (!container) return;
@@ -94,20 +93,9 @@ export async function renderDashboard(container = document.getElementById("app")
     console.error("TestResults fetch error", e);
   }
 
-  // --- License & Experience ---
-  let license = "Not selected", experience = "Unknown";
-  try {
-    const licSnap = await getDocs(
-      query(collection(db, "licenseSelection"), where("studentId", "==", currentUserEmail))
-    );
-    licSnap.forEach((d) => (license = d.data().licenseType || license));
-    const expSnap = await getDocs(
-      query(collection(db, "experienceResponses"), where("studentId", "==", currentUserEmail))
-    );
-    expSnap.forEach((d) => (experience = d.data().experience || experience));
-  } catch (e) {
-    console.error("Profile fetch error", e);
-  }
+  // --- License & Experience (optional, placeholder if you use these) ---
+  let license = userData.cdlClass || "Not selected";
+  let experience = userData.experience || "Unknown";
 
   // --- 7-day Study Streak ---
   let streak = 0;
@@ -222,9 +210,7 @@ export async function renderDashboard(container = document.getElementById("app")
     </div>
     <button id="ai-coach-fab" aria-label="Ask AI Coach">
       <span class="ai-coach-mascot-wrapper">
-        <svg id="ai-coach-mascot" viewBox="0 0 64 64" width="46" height="46" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- SVG content omitted for brevity -->
-        </svg>
+        <!-- Your mascot SVG here -->
       </span>
     </button>
   `;
@@ -233,45 +219,25 @@ export async function renderDashboard(container = document.getElementById("app")
   setupNavigation();
 
   // --- Button Event Listeners ---
-
-  // Main profile/edit
-  document.getElementById("edit-student-profile-btn")?.addEventListener("click", () => {
-    renderProfile();
-  });
+  document.getElementById("edit-student-profile-btn")?.addEventListener("click", renderProfile);
 
   // Rail navigation
-  container.querySelector('.rail-btn.profile')?.addEventListener('click', () => {
-    renderProfile();
-  });
-  container.querySelector('.rail-btn.checklist')?.addEventListener('click', () => {
-    renderChecklists();
-  });
-  container.querySelector('.rail-btn.testing')?.addEventListener('click', () => {
-    renderPracticeTests();
-  });
-  container.querySelector('.rail-btn.flashcards')?.addEventListener('click', () => {
-    renderFlashcards();
-  });
+  container.querySelector('.rail-btn.profile')?.addEventListener('click', renderProfile);
+  container.querySelector('.rail-btn.checklist')?.addEventListener('click', renderChecklists);
+  container.querySelector('.rail-btn.testing')?.addEventListener('click', renderPracticeTests);
+  container.querySelector('.rail-btn.flashcards')?.addEventListener('click', renderFlashcards);
 
-  // Checklist progress card
-  container.querySelector('button[data-nav="walkthrough"]')?.addEventListener('click', () => {
-    renderWalkthrough();
-  });
+  // Walkthrough button
+  container.querySelector('button[data-nav="walkthrough"]')?.addEventListener('click', renderWalkthrough);
 
   // AI Tip of the Day
-  document.getElementById("ai-tip-btn")?.addEventListener("click", () => {
-    renderAICoach();
-  });
+  document.getElementById("ai-tip-btn")?.addEventListener("click", renderAICoach);
 
-  // Last Test Card - Take a Test
-  container.querySelector('.last-test-card button[data-nav="practiceTests"]')?.addEventListener('click', () => {
-    renderPracticeTests();
-  });
+  // Last Test Card
+  container.querySelector('.last-test-card button[data-nav="practiceTests"]')?.addEventListener('click', renderPracticeTests);
 
   // AI Coach Floating Button
-  document.getElementById("ai-coach-fab")?.addEventListener("click", () => {
-    renderAICoach();
-  });
+  document.getElementById("ai-coach-fab")?.addEventListener("click", renderAICoach);
 
   // Logout
   document.getElementById("logout-btn")?.addEventListener("click", async () => {
