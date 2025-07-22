@@ -1,31 +1,31 @@
 // app.js -- Top-level app shell for student dashboard
 
-// --- GLOBAL STATE ---
+// ─── GLOBAL STATE ─────────────────────────────────────────────
 let currentUserEmail = null;
 let loaderShownAt = Date.now();
 let loaderEl = document.getElementById("app-loader");
 
-// --- FIREBASE CORE ---
+// ─── FIREBASE CORE ────────────────────────────────────────────
 import { db, auth, storage, getLatestUpdate } from "./firebase.js";
 
-// --- FIRESTORE METHODS (if needed globally, usually not) ---
+// ─── FIRESTORE (if needed globally, usually not) ──────────────
 import {
   doc, getDoc, setDoc, collection, query, where, getDocs,
-  updateDoc, orderBy, limit
+  updateDoc, orderBy, limit, serverTimestamp, addDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// --- AUTH ---
+// ─── AUTH ─────────────────────────────────────────────────────
 import {
   onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
   sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, signOut
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
-// --- STORAGE (uploads for permit, etc) ---
+// ─── STORAGE (uploads for permit, etc) ────────────────────────
 import {
   uploadBytes, getDownloadURL, ref
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 
-// --- UI HELPERS (ALL) ---
+// ─── UI HELPERS (ALL) ─────────────────────────────────────────
 import {
   showToast,
   setupNavigation,
@@ -56,10 +56,12 @@ import {
   adminChecklistFields,
   getNextChecklistAlert,
   showLatestUpdate,
-  formatDate
+  formatDate,
+  // Any new helper functions you add, import here!
 } from "./ui-helpers.js";
 
-// --- MODULAR PAGE RENDERERS ---
+// ─── MODULAR PAGE RENDERERS ───────────────────────────────────
+import { renderWelcome }        from "./welcome.js";
 import { renderDashboard }      from "./dashboard-student.js";
 import { renderProfile }        from "./profile.js";
 import { renderChecklists }     from "./checklist.js";
@@ -70,18 +72,33 @@ import { renderFlashcards }     from "./flashcards.js";
 import { renderWalkthrough }    from "./walkthrough.js";
 import { renderAICoach }        from "./ai-coach.js";
 
-// --- If you have AI backend (like ./ai-api.js), import as needed ---
-// (Instructor/Admin dashboards as you modularize them:)
+// --- Navigation handler (modularized) ---
+import { handleNavigation } from "./navigation.js";
+
+// --- If you have admin/instructor dashboards, import when modularized ---
 // import { renderInstructorDashboard } from './dashboard-instructor.js';
 // import { renderAdminDashboard } from './dashboard-admin.js';
 
-// ─── End Imports ──────────────────────────────────────────────────────────────
-// (future) school branding helpers, etc
-// import { getSchoolBranding, ... } from "./ui-helpers.js";
+// ─── EVENT LISTENERS FOR SMART NAVIGATION ─────────────────────
+document.body.addEventListener("click", (e) => {
+  const target = e.target.closest("[data-nav]");
+  if (target) {
+    const page = target.getAttribute("data-nav");
+    if (page) {
+      let dir = "forward";
+      if (window.location.hash.replace("#", "") === page) dir = "back";
+      handleNavigation(page, dir);
+    }
+  }
+});
+window.addEventListener("popstate", () => {
+  const page = location.hash.replace("#", "") || "home";
+  handleNavigation(page, "back");
+});
 
-// ─── AUTH STATE LISTENER WITH DEFAULT ROLE ASSIGNMENT ───────────
+// ─── AUTH STATE LISTENER WITH DEFAULT ROLE ASSIGNMENT ─────────
 onAuthStateChanged(auth, async user => {
-  // Hide any error or static loading overlays
+  // Hide static overlays
   document.getElementById("js-error")?.classList.add("hidden");
   document.getElementById("loading-screen")?.classList.add("hidden");
 
@@ -102,7 +119,7 @@ onAuthStateChanged(auth, async user => {
     let userData = {};
 
     try {
-      // Fetch role from userRoles collection (by email)
+      // Get role from userRoles
       const roleDocRef = doc(db, "userRoles", user.email);
       const roleDoc = await getDoc(roleDocRef);
 
@@ -114,18 +131,15 @@ onAuthStateChanged(auth, async user => {
           showToast("⚠️ No role set in userRoles for: " + user.email, 4000);
         }
       } else {
-        // If role doc missing, default to student and notify admin
         showToast("⚠️ No userRoles entry found for: " + user.email, 4000);
         console.warn("No userRoles entry found for:", user.email);
       }
 
-      // Fetch user profile from users collection
+      // Get profile from users collection
       const usersRef = collection(db, "users");
       const snap = await getDocs(query(usersRef, where("email", "==", user.email)));
-
       if (!snap.empty) {
         userData = snap.docs[0].data();
-        // Always sync role field
         if (!userData.role || userData.role !== userRole) {
           userData.role = userRole;
           await setDoc(doc(db, "users", user.email), { ...userData }, { merge: true });
@@ -133,7 +147,7 @@ onAuthStateChanged(auth, async user => {
         if (userData.schoolId) schoolId = userData.schoolId;
         localStorage.setItem("fullName", userData.name || "CDL User");
       } else {
-        // No user doc: create profile
+        // Create new user profile if not found
         userData = {
           uid: user.uid,
           email: user.email,
@@ -146,20 +160,20 @@ onAuthStateChanged(auth, async user => {
         localStorage.setItem("fullName", userData.name);
       }
 
-      // Write role and schoolId for UI logic
+      // Save role/schoolId in localStorage for UI
       localStorage.setItem("userRole", userRole);
       if (schoolId) localStorage.setItem("schoolId", schoolId);
       else localStorage.removeItem("schoolId");
 
-      // Route strictly by role (no longer blocked by schoolId)
+      // Route strictly by role
       showPageTransitionLoader();
       setTimeout(() => {
-        if (userRole === "admin") {
+        if (userRole === "admin" && typeof renderAdminDashboard === "function") {
           renderAdminDashboard();
-        } else if (userRole === "instructor") {
+        } else if (userRole === "instructor" && typeof renderInstructorDashboard === "function") {
           renderInstructorDashboard();
         } else {
-          renderDashboard(); // Always fallback to student dashboard
+          renderDashboard();
         }
         hidePageTransitionLoader();
       }, 350);
@@ -180,245 +194,9 @@ onAuthStateChanged(auth, async user => {
     }, 300);
   }
 
-  // Hide loader after minimum time
+  // Hide loader after min time
   const elapsed = Date.now() - loaderShownAt;
   setTimeout(() => loaderEl?.classList.add("hide"), Math.max(0, 400 - elapsed));
-});
-
-// ─── 4. UTILITY FUNCTIONS ──────────────────────────────────────────────────────
-
-// Show a modal overlay with HTML content
-function showModal(html) {
-  const overlay = document.createElement("div");
-  overlay.className = "modal-overlay";
-  overlay.innerHTML = html;
-  document.body.appendChild(overlay);
-}
-
-// Close any open modal overlay
-function closeModal() {
-  document.querySelector(".modal-overlay")?.remove();
-}
-
-// Return a styled badge for user role (based on email)
-function getRoleBadge(email) {
-  if (!email) return "";
-  if (email.includes("admin@"))        return `<span class="role-badge admin">Admin</span>`;
-  else if (email.includes("instructor@")) return `<span class="role-badge instructor">Instructor</span>`;
-  else                                   return `<span class="role-badge student">Student</span>`;
-}
-
-// (Async for future: could pull from Firestore if needed)
-async function getAITipOfTheDay() {
-  const tips = [
-    "Review your ELDT checklist daily.",
-    "Use flashcards to stay sharp!",
-    "Ask the AI Coach about Class A vs B.",
-    "Take timed quizzes to simulate the real test.",
-    "Complete your checklist for certification."
-  ];
-  return tips[Math.floor(Math.random() * tips.length)];
-}
-
-// ── Infinite-carousel helper ───────────────────────────────────────── //
-function initInfiniteCarousel(trackSelector = ".features-inner") {
-  const track = document.querySelector(trackSelector);
-  if (!track || track.dataset.looped) return;   // already initialized
-
-  // Duplicate for infinite scroll illusion
-  track.innerHTML += track.innerHTML;
-  track.dataset.looped = "true";
-
-  // Seamlessly reset scroll position at loop ends
-  track.addEventListener("scroll", () => {
-    const max = track.scrollWidth / 2;
-    if (track.scrollLeft >= max) {
-      track.scrollLeft -= max;
-    } else if (track.scrollLeft <= 0) {
-      track.scrollLeft += max;
-    }
-  });
-}
-
-// Auto-scroll helper: seamless drift, pauses on hover/touch //
-function initCarousel() {
-  const track = document.querySelector(".features-inner");
-  if (!track) return;
-  const half = () => track.scrollWidth / 2;
-  let isPaused = false;
-  const speed  = 1.0; // px per frame
-
-  // Pause on interaction
-  ["mouseenter", "touchstart"].forEach(evt =>
-    track.addEventListener(evt, () => isPaused = true)
-  );
-  ["mouseleave", "touchend"].forEach(evt =>
-    track.addEventListener(evt, () => isPaused = false)
-  );
-
-  function drift() {
-    if (!isPaused) {
-      track.scrollLeft = (track.scrollLeft + speed) % half();
-    }
-    requestAnimationFrame(drift);
-  }
-  requestAnimationFrame(drift);
-}
-
-// ── Welcome screen ── //
-
-function renderWelcome() {
-  const appEl = document.getElementById("app");
-  if (!appEl) return;
-
-  appEl.innerHTML = `
-    <div class="welcome-screen">
-      <div class="bokeh-layer">
-        <div class="bokeh-dot parallax-float" style="top:10%; left:15%; animation-delay:0s;"></div>
-        <div class="bokeh-dot parallax-float" style="top:30%; left:70%; animation-delay:2s;"></div>
-        <div class="bokeh-dot parallax-float" style="top:60%; left:25%; animation-delay:4s;"></div>
-        <div class="bokeh-dot parallax-float" style="top:80%; left:80%; animation-delay:6s;"></div>
-      </div>
-      <div class="welcome-content shimmer-glow fade-in">
-        <h1 class="typewriter">
-          <span id="headline"></span><span class="cursor">|</span>
-        </h1>
-        <p>Your all-in-one CDL prep coach. Scroll down to get started!</p>
-        <button id="login-btn" class="btn pulse">
-          <span class="icon">🚀</span> Login
-        </button>
-        <div class="features">
-          <div class="features-inner">
-            <div class="feat"><i>🧪</i><p>Practice Tests</p></div>
-            <div class="feat"><i>✅</i><p>Checklists</p></div>
-            <div class="feat"><i>📊</i><p>Results</p></div>
-            <div class="feat"><i>🎧</i><p>AI Coach</p></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Init effects
-  initInfiniteCarousel?.();
-  initCarousel?.();
-  initFadeInOnScroll?.();
-  startTypewriter();
-
-  // Login button handler
-  document.getElementById("login-btn")?.addEventListener("click", () => {
-    handleNavigation('login');
-  });
-
-  // Optionally, add handler for floating AI Coach button
-  document.querySelector(".fab")?.addEventListener("click", () => {
-    handleNavigation('coach');
-  });
-}
-
-// ─── 4. SMART HYBRID NAVIGATION ───────────────────────────────────────────────
-
-// Helper: Detect mobile (touch device)
-function isMobile() {
-  return ("ontouchstart" in window) || (window.innerWidth < 900);
-}
-
-// Route and transition handler (handles fade or slide)
-function handleNavigation(page, direction = "forward") {
-  const appEl = document.getElementById("app");
-  if (!appEl) return;
-
-  const currentScreen = appEl.querySelector(".screen-wrapper");
-  const mobile = isMobile();
-  let outClass = mobile
-    ? (direction === "forward" ? "slide-out-left" : "slide-out-right")
-    : "fade-out";
-
-  if (currentScreen) {
-    currentScreen.classList.add(outClass);
-
-    currentScreen.addEventListener("transitionend", function onFade() {
-      currentScreen.removeEventListener("transitionend", onFade);
-      doNavigation(page, appEl, direction);
-    }, { once: true });
-
-    showPageTransitionLoader();
-  } else {
-    doNavigation(page, appEl, direction);
-  }
-}
-
-// Navigation switcher (with direction for mobile slide effect)
-function doNavigation(page, appEl, direction = "forward") {
-  // For browser history: set direction by hash
-  let lastHash = window.__lastPageHash || "home";
-  window.__lastPageHash = page;
-  let navDir = "forward";
-  if (window.__navHistory && window.__navHistory.length) {
-    const last = window.__navHistory[window.__navHistory.length - 1];
-    navDir = last === page ? "back" : "forward";
-  }
-  if (!window.__navHistory) window.__navHistory = [];
-  window.__navHistory.push(page);
-
-  // Render correct page
-  switch (page) {
-    case "dashboard":      renderDashboard(appEl); break;
-    case "instructor":     renderInstructorDashboard(appEl); break;
-    case "admin":          renderAdminDashboard(appEl); break;
-    case "checklists":     renderChecklists(appEl); break;
-    case "practiceTests":  renderPracticeTests(appEl); break;
-    case "flashcards":     renderFlashcards(appEl); break;
-    case "results":        renderTestResults(appEl); break;
-    case "coach":          renderAICoach(appEl); break;
-    case "profile":        renderProfile(appEl); break;
-    case "walkthrough":    renderWalkthrough(appEl); break;
-    case "login":          renderLogin(appEl); break;
-    case "home": default:  renderHome(appEl); break;
-  }
-
-  // Add incoming animation for new screen
-  setTimeout(() => {
-    const newScreen = appEl.querySelector(".screen-wrapper");
-    if (!newScreen) return;
-    const mobile = isMobile();
-    newScreen.classList.remove("fade-out", "slide-out-left", "slide-out-right", "fade-in", "slide-in-right", "slide-in-left");
-    if (mobile) {
-      if (navDir === "back") {
-        newScreen.classList.add("slide-in-right");
-      } else {
-        newScreen.classList.add("slide-in-left");
-      }
-    } else {
-      newScreen.classList.add("fade-in");
-    }
-    hidePageTransitionLoader();
-  }, 10);
-
-  // Only update URL hash if needed
-  if (page !== location.hash.replace("#", "")) {
-    history.pushState({}, "", "#" + page);
-  }
-}
-
-// Global event handler for nav buttons (delegated)
-document.body.addEventListener("click", (e) => {
-  const target = e.target.closest("[data-nav]");
-  if (target) {
-    const page = target.getAttribute("data-nav");
-    if (page) {
-      // Smart direction: always forward (unless back)
-      let dir = "forward";
-      if (window.location.hash.replace("#", "") === page) dir = "back";
-      handleNavigation(page, dir);
-    }
-  }
-});
-
-// Browser back/forward support
-window.addEventListener("popstate", () => {
-  const page = location.hash.replace("#", "") || "home";
-  handleNavigation(page, "back");
 });
 
 // Render login

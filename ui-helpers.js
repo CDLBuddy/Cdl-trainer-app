@@ -299,3 +299,79 @@ export async function showLatestUpdate() {
     </div>
   `;
 }
+// Show a modal overlay with HTML content
+export function showModal(html) {
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+}
+
+// Close any open modal overlay
+export function closeModal() {
+  document.querySelector(".modal-overlay")?.remove();
+}
+
+// Return a styled badge for user role (based on email)
+export function getRoleBadge(email) {
+  if (!email) return "";
+  if (email.includes("admin@"))        return `<span class="role-badge admin">Admin</span>`;
+  else if (email.includes("instructor@")) return `<span class="role-badge instructor">Instructor</span>`;
+  else                                   return `<span class="role-badge student">Student</span>`;
+}
+
+// Async AI Tip of the Day (for future extensibility)
+export async function getAITipOfTheDay() {
+  const tips = [
+    "Review your ELDT checklist daily.",
+    "Use flashcards to stay sharp!",
+    "Ask the AI Coach about Class A vs B.",
+    "Take timed quizzes to simulate the real test.",
+    "Complete your checklist for certification."
+  ];
+  return tips[Math.floor(Math.random() * tips.length)];
+}
+// ── Infinite-carousel helper ───────────────────────────────────────── //
+export function initInfiniteCarousel(trackSelector = ".features-inner") {
+  const track = document.querySelector(trackSelector);
+  if (!track || track.dataset.looped) return;   // already initialized
+
+  // Duplicate for infinite scroll illusion
+  track.innerHTML += track.innerHTML;
+  track.dataset.looped = "true";
+
+  // Seamlessly reset scroll position at loop ends
+  track.addEventListener("scroll", () => {
+    const max = track.scrollWidth / 2;
+    if (track.scrollLeft >= max) {
+      track.scrollLeft -= max;
+    } else if (track.scrollLeft <= 0) {
+      track.scrollLeft += max;
+    }
+  });
+}
+
+// Auto-scroll helper: seamless drift, pauses on hover/touch //
+export function initCarousel() {
+  const track = document.querySelector(".features-inner");
+  if (!track) return;
+  const half = () => track.scrollWidth / 2;
+  let isPaused = false;
+  const speed  = 1.0; // px per frame
+
+  // Pause on interaction
+  ["mouseenter", "touchstart"].forEach(evt =>
+    track.addEventListener(evt, () => isPaused = true)
+  );
+  ["mouseleave", "touchend"].forEach(evt =>
+    track.addEventListener(evt, () => isPaused = false)
+  );
+
+  function drift() {
+    if (!isPaused) {
+      track.scrollLeft = (track.scrollLeft + speed) % half();
+    }
+    requestAnimationFrame(drift);
+  }
+  requestAnimationFrame(drift);
+}
