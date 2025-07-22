@@ -1,5 +1,9 @@
 // welcome.js
-
+export function renderWelcome(container = document.getElementById("app"), opts = {}) {
+  alert("🟣 renderWelcome() called!"); // Add this line for debugging
+  if (!container) return;
+  // ...rest of your code...
+}
 import {
   initInfiniteCarousel,
   initCarousel,
