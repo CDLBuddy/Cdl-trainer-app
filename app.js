@@ -18,19 +18,23 @@ import {
 // ─── NAVIGATION ───────────────────────────────────────────────
 import { handleNavigation } from "./navigation.js";
 
-// ─── PAGE RENDERERS ───────────────────────────────────────────
+// ─── PAGE RENDERERS (modular barrel import for student) ──────
 import { renderWelcome }         from "./welcome.js";
 import { renderLogin }           from "./login.js";
 import { renderSignup }          from "./signup.js";
-import { renderDashboard }       from "./dashboard-student.js";
-import { renderProfile }         from "./profile.js";
-import { renderChecklists }      from "./checklist.js";
-import { renderPracticeTests }   from "./practice-tests.js";
-import { renderTestResults }     from "./test-results.js";
-import { renderTestEngine }      from "./test-engine.js";
-import { renderFlashcards }      from "./flashcards.js";
-import { renderWalkthrough }     from "./walkthrough.js";
-import { renderAICoach }         from "./ai-coach.js";
+
+import {
+  renderDashboard,
+  renderProfile,
+  renderChecklists,
+  renderPracticeTests,
+  renderTestResults,
+  renderTestEngine,
+  renderFlashcards,
+  renderWalkthrough,
+  renderAICoach
+} from "./student/index.js";
+
 import { renderInstructorDashboard } from "./dashboard-instructor.js";
 import { renderAdminDashboard }      from "./dashboard-admin.js";
 
