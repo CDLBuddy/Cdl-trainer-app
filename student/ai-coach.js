@@ -2,8 +2,12 @@
 
 import { getUserInitials, showToast, setupNavigation } from "../ui-helpers.js";
 import { auth } from "../firebase.js";
-import { askCDLAI } from "../ai-api.js"; // Adjust the path if ai-api.js lives elsewhere
+import { askCDLAI } from "./ai-api.js"; // Now points to student/ai-api.js
 
+/**
+ * Renders the AI Coach modal for CDL Buddy students.
+ * Supports conversation history, context suggestions, FMCSA compliance, and responsive UI.
+ */
 export function renderAICoach(container = document.getElementById("app")) {
   // Remove any existing modal overlays
   document.querySelectorAll(".ai-coach-modal").forEach(el => el.remove());
@@ -12,6 +16,7 @@ export function renderAICoach(container = document.getElementById("app")) {
   const name = localStorage.getItem("fullName") || "Driver";
   const isFirstTime = !localStorage.getItem("aiCoachWelcomed");
 
+  // Prompts tailored by app section/context
   const starterPrompts = {
     dashboard: [
       "What should I work on next?",
@@ -43,7 +48,7 @@ export function renderAICoach(container = document.getElementById("app")) {
   };
   const suggestions = starterPrompts[context] || starterPrompts.dashboard;
 
-  // Modal structure
+  // Build modal
   const modal = document.createElement("div");
   modal.className = "ai-coach-modal modal-overlay fade-in";
   modal.innerHTML = `
@@ -51,7 +56,7 @@ export function renderAICoach(container = document.getElementById("app")) {
     <div class="modal-card ai-coach-card glass" role="dialog" aria-modal="true" aria-label="AI CDL Coach">
       <div class="ai-coach-modal-header">
         <div class="coach-avatar" style="display:flex; align-items:center; justify-content:center; margin-bottom: 12px; animation: floatMascot 2.6s ease-in-out infinite;">
-          <!-- Retro Monitor Coach SVG -->
+          <!-- Retro Monitor Coach SVG (your mascot here) -->
           <svg id="ai-coach-mascot" viewBox="0 0 88 88" width="60" height="60" fill="none" xmlns="http://www.w3.org/2000/svg">
             <!-- SVG omitted for brevity -->
           </svg>
@@ -84,7 +89,7 @@ export function renderAICoach(container = document.getElementById("app")) {
   document.body.appendChild(modal);
   document.body.style.overflow = "hidden";
 
-  // --- Conversation State
+  // Conversation state from session
   const chatHistoryEl = modal.querySelector("#ai-chat-history");
   let conversation = JSON.parse(sessionStorage.getItem("aiCoachHistory") || "[]");
   if (!conversation.length) {
@@ -99,6 +104,7 @@ export function renderAICoach(container = document.getElementById("app")) {
     localStorage.setItem("aiCoachWelcomed", "yes");
   }
 
+  // Renders message history in modal
   function renderHistory() {
     chatHistoryEl.innerHTML = conversation.map(
       msg => `
@@ -126,6 +132,7 @@ export function renderAICoach(container = document.getElementById("app")) {
   }
   renderHistory();
 
+  // Suggestion quick-fill
   modal.querySelectorAll(".ai-suggestion").forEach(btn => {
     btn.addEventListener("click", () => {
       const input = modal.querySelector("#ai-coach-input");
@@ -134,6 +141,7 @@ export function renderAICoach(container = document.getElementById("app")) {
     });
   });
 
+  // Main form: send question to AI
   modal.querySelector("#ai-coach-form").onsubmit = async (e) => {
     e.preventDefault();
     const input = modal.querySelector("#ai-coach-input");
@@ -175,7 +183,7 @@ export function renderAICoach(container = document.getElementById("app")) {
     sessionStorage.setItem("aiCoachHistory", JSON.stringify(conversation));
     renderHistory();
 
-    // Easter Egg every 10th question!
+    // Easter Egg every 10th user question
     if (conversation.filter(m => m.role === "user").length % 10 === 0) {
       setTimeout(() => {
         const funFacts = [
@@ -193,11 +201,13 @@ export function renderAICoach(container = document.getElementById("app")) {
     }
   };
 
+  // Modal close
   modal.querySelector(".modal-close")?.addEventListener("click", () => {
     modal.remove();
     document.body.style.overflow = "";
   });
 
+  // ESC key closes modal
   window.addEventListener("keydown", function escClose(e) {
     if (e.key === "Escape") {
       modal.remove();
@@ -206,5 +216,6 @@ export function renderAICoach(container = document.getElementById("app")) {
     }
   });
 
+  // Navigation setup for modals/buttons
   setupNavigation();
 }
