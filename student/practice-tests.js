@@ -1,5 +1,6 @@
 // student/practice-tests.js
 
+// ─── IMPORTS ────────────────────────────────────────────────
 import { db, auth } from '../firebase.js';
 import {
   collection,
@@ -16,17 +17,18 @@ import {
   getUserProgress
 } from '../ui-helpers.js';
 
-// ★★ CENTRALIZED INDEX IMPORTS ★★
 import {
   renderDashboard as renderStudentDashboard,
   renderTestEngine,
-  renderTestReview // Import review here so setTimeout handler works!
+  renderTestReview // Keep this to allow review from setTimeout handler
 } from './index.js';
 
+// ─── PRACTICE TESTS PAGE (STUDENT) ─────────────────────────
 export async function renderPracticeTests(container = document.getElementById("app")) {
   if (!container) return;
 
-  if (!window.currentUserEmail || !auth.currentUser) {
+  const email = (auth.currentUser && auth.currentUser.email) || window.currentUserEmail || localStorage.getItem("currentUserEmail");
+  if (!email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
     return;
   }
@@ -36,7 +38,7 @@ export async function renderPracticeTests(container = document.getElementById("a
   let userData = {};
   try {
     const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", window.currentUserEmail));
+    const q = query(usersRef, where("email", "==", email));
     const snap = await getDocs(q);
     if (!snap.empty) {
       userData = snap.docs[0].data();
@@ -56,7 +58,7 @@ export async function renderPracticeTests(container = document.getElementById("a
 
   try {
     const snap = await getDocs(
-      query(collection(db, "testResults"), where("studentId", "==", window.currentUserEmail))
+      query(collection(db, "testResults"), where("studentId", "==", email))
     );
     tests.forEach(test => {
       const testDocs = snap.docs
@@ -79,9 +81,10 @@ export async function renderPracticeTests(container = document.getElementById("a
     console.error("❌ Error loading test results:", e);
   }
 
+  // --- RENDER PAGE ---
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
-      <h2 class="dash-head">🧪 CDL Practice Tests</h2>
+      <h2 class="dash-head">🧪 Student Practice Tests</h2>
       <p style="margin-bottom: 1.4rem;">Select a practice test to begin:</p>
       <div class="test-list">
         ${tests.map(name => {
@@ -120,8 +123,7 @@ export async function renderPracticeTests(container = document.getElementById("a
       btn.addEventListener("click", () => {
         const test = btn.dataset.test;
         showToast(`Restarting "${test}" test…`);
-        // Always pass currentUserEmail for testEngine!
-        renderTestEngine(container, test, window.currentUserEmail);
+        renderTestEngine(container, test, email);
       });
     });
     container.querySelectorAll(".review-btn").forEach(btn => {
@@ -134,14 +136,15 @@ export async function renderPracticeTests(container = document.getElementById("a
   }, 0);
 }
 
-// ─── REVIEW A SPECIFIC TEST RESULT ────────────────────────────────────────────
+// ─── REVIEW A SPECIFIC TEST RESULT ───────────────────────────
 export async function renderTestReview(container, testName) {
   container = container || document.getElementById("app");
   container.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧾 ${testName} Review</h2><p>Loading...</p></div>`;
 
+  const email = (auth.currentUser && auth.currentUser.email) || window.currentUserEmail || localStorage.getItem("currentUserEmail");
   try {
     const snap = await getDocs(
-      query(collection(db, "testResults"), where("studentId", "==", window.currentUserEmail))
+      query(collection(db, "testResults"), where("studentId", "==", email))
     );
 
     const results = snap.docs
@@ -163,17 +166,17 @@ export async function renderTestReview(container, testName) {
     // Milestone: Mark test as passed if pct >= 80
     if (pct >= 80) {
       // Only show toast the first time they pass
-      const progress = await getUserProgress(window.currentUserEmail);
+      const progress = await getUserProgress(email);
       if (!progress.practiceTestPassed) {
-        await markStudentTestPassed(window.currentUserEmail);
+        await markStudentTestPassed(email);
         showToast("🎉 Practice Test milestone complete! Progress updated.");
       }
     }
 
     // Always log study minutes and session
     const minutes = latest?.durationMinutes || 5;
-    await incrementStudentStudyMinutes(window.currentUserEmail, minutes);
-    await logStudySession(window.currentUserEmail, minutes, `Practice Test: ${testName}`);
+    await incrementStudentStudyMinutes(email, minutes);
+    await logStudySession(email, minutes, `Practice Test: ${testName}`);
 
     container.innerHTML = `
       <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">

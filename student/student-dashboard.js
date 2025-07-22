@@ -17,7 +17,7 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// Modularized page renderers
+// Modular page renderers
 import { renderProfile }        from './profile.js';
 import { renderAICoach }        from './ai-coach.js';
 import { renderWalkthrough }    from './walkthrough.js';

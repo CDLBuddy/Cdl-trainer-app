@@ -14,8 +14,7 @@ import {
   query,
   where,
   getDocs,
-  updateDoc,
-  doc
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import {
   ref,
@@ -62,7 +61,6 @@ export async function renderProfile(container = document.getElementById("app")) 
     profileProgress = 0
   } = userData;
 
-  // Options
   const endorsementOptions = [
     { val: "H", label: "Hazmat (H)" },
     { val: "N", label: "Tanker (N)" },
@@ -100,7 +98,6 @@ export async function renderProfile(container = document.getElementById("app")) 
     return Math.round((filled / total) * 100);
   }
 
-  // --- HTML ---
   container.innerHTML = `
     <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
       <h2>👤 Student Profile <span class="role-badge student">Student</span></h2>
@@ -109,19 +106,153 @@ export async function renderProfile(container = document.getElementById("app")) 
         <span class="progress-label">${profileProgress||0}% Complete</span>
       </div>
       <form id="profile-form" autocomplete="off" style="display:flex;flex-direction:column;gap:1.1rem;">
-        <!-- ... all your input fields ... (omitted for brevity; see your code above) ... -->
-        <!-- ... -->
+        <label>Name:
+          <input name="name" type="text" required value="${name}" />
+        </label>
+        <label>Date of Birth:
+          <input name="dob" type="date" required value="${dob}" />
+        </label>
+        <label>Profile Picture:
+          <input name="profilePic" type="file" accept="image/*" />
+          ${profilePicUrl ? `<img src="${profilePicUrl}" alt="Profile Picture" style="max-width:70px; margin-top:5px; border-radius:9px;">` : ""}
+        </label>
+        <label>CDL Class:
+          <select name="cdlClass" required>
+            <option value="">Select</option>
+            <option value="A" ${cdlClass === "A" ? "selected" : ""}>Class A</option>
+            <option value="B" ${cdlClass === "B" ? "selected" : ""}>Class B</option>
+            <option value="C" ${cdlClass === "C" ? "selected" : ""}>Class C</option>
+          </select>
+        </label>
+        <label>Endorsements:<br>
+          ${endorsementOptions.map(opt =>
+            `<label style="margin-right:1em;">
+              <input type="checkbox" name="endorsements[]" value="${opt.val}" ${endorsements.includes(opt.val) ? "checked" : ""}> ${opt.label}
+            </label>`
+          ).join("")}
+        </label>
+        <label>Restrictions:<br>
+          ${restrictionOptions.map(opt =>
+            `<label style="margin-right:1em;">
+              <input type="checkbox" name="restrictions[]" value="${opt.val}" ${restrictions.includes(opt.val) ? "checked" : ""}> ${opt.label}
+            </label>`
+          ).join("")}
+        </label>
+        <label>Experience:
+          <select name="experience" required>
+            <option value="">Select</option>
+            <option value="none" ${experience === "none" ? "selected" : ""}>No Experience</option>
+            <option value="1-2" ${experience === "1-2" ? "selected" : ""}>1–2 Years</option>
+            <option value="3-5" ${experience === "3-5" ? "selected" : ""}>3–5 Years</option>
+            <option value="6-10" ${experience === "6-10" ? "selected" : ""}>6–10 Years</option>
+            <option value="10+" ${experience === "10+" ? "selected" : ""}>10+ Years</option>
+          </select>
+        </label>
+        <label>Previous Employer:
+          <input name="prevEmployer" type="text" value="${prevEmployer}" />
+        </label>
+        <label>Assigned Company:
+          <input name="assignedCompany" type="text" value="${assignedCompany}" />
+        </label>
+        <label>Assigned Instructor:
+          <input name="assignedInstructor" type="text" value="${assignedInstructor}" />
+        </label>
+        <label>CDL Permit?
+          <select name="cdlPermit" required>
+            <option value="">Select</option>
+            <option value="yes" ${cdlPermit === "yes" ? "selected" : ""}>Yes</option>
+            <option value="no" ${cdlPermit === "no" ? "selected" : ""}>No</option>
+          </select>
+        </label>
+        <div id="permit-photo-section" style="display:${cdlPermit === "yes" ? "" : "none"};">
+          <label>Permit Photo:
+            <input name="permitPhoto" type="file" accept="image/*" />
+            ${permitPhotoUrl ? `<img src="${permitPhotoUrl}" alt="Permit Photo" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ""}
+          </label>
+          <label>Permit Expiry:
+            <input name="permitExpiry" type="date" value="${permitExpiry}" />
+          </label>
+        </div>
+        <label>Driver License Upload:
+          <input name="driverLicense" type="file" accept="image/*" />
+          ${driverLicenseUrl ? `<img src="${driverLicenseUrl}" alt="License" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ""}
+        </label>
+        <label>License Expiry:
+          <input name="licenseExpiry" type="date" value="${licenseExpiry}" />
+        </label>
+        <label>Medical Card Upload:
+          <input name="medicalCard" type="file" accept="image/*" />
+          ${medicalCardUrl ? `<img src="${medicalCardUrl}" alt="Medical Card" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ""}
+        </label>
+        <label>Medical Card Expiry:
+          <input name="medCardExpiry" type="date" value="${medCardExpiry}" />
+        </label>
+        <label>Is Your Vehicle Qualified?
+          <select name="vehicleQualified" required>
+            <option value="">Select</option>
+            <option value="yes" ${vehicleQualified === "yes" ? "selected" : ""}>Yes</option>
+            <option value="no" ${vehicleQualified === "no" ? "selected" : ""}>No</option>
+          </select>
+        </label>
+        <div id="vehicle-photos-section" style="display:${vehicleQualified === "yes" ? "" : "none"};">
+          <label>Truck Data Plate:
+            <input name="truckPlate" type="file" accept="image/*" />
+            ${truckPlateUrl ? `<img src="${truckPlateUrl}" alt="Truck Plate" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ""}
+          </label>
+          <label>Trailer Data Plate:
+            <input name="trailerPlate" type="file" accept="image/*" />
+            ${trailerPlateUrl ? `<img src="${trailerPlateUrl}" alt="Trailer Plate" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ""}
+          </label>
+        </div>
+        <label>Emergency Contact Name:
+          <input name="emergencyName" type="text" value="${emergencyName}" />
+        </label>
+        <label>Emergency Contact Phone:
+          <input name="emergencyPhone" type="tel" value="${emergencyPhone}" />
+        </label>
+        <label>Emergency Contact Relation:
+          <input name="emergencyRelation" type="text" value="${emergencyRelation}" />
+        </label>
+        <label>Waiver Signed:
+          <input name="waiver" type="checkbox" ${waiverSigned ? "checked" : ""} />
+        </label>
+        <label>Waiver Signature:
+          <input name="waiverSignature" type="text" value="${waiverSignature}" />
+        </label>
+        <label>Course:
+          <input name="course" type="text" value="${course}" />
+        </label>
+        <label>Schedule Preference:
+          <input name="schedulePref" type="text" value="${schedulePref}" />
+        </label>
+        <label>Schedule Notes:
+          <textarea name="scheduleNotes">${scheduleNotes}</textarea>
+        </label>
+        <label>Payment Status:
+          <input name="paymentStatus" type="text" value="${paymentStatus}" />
+        </label>
+        <label>Payment Proof Upload:
+          <input name="paymentProof" type="file" accept="image/*" />
+          ${paymentProofUrl ? `<img src="${paymentProofUrl}" alt="Payment Proof" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ""}
+        </label>
+        <label>Accommodation Needs:
+          <input name="accommodation" type="text" value="${accommodation}" />
+        </label>
+        <label>Student Notes:
+          <textarea name="studentNotes">${studentNotes}</textarea>
+        </label>
         <button class="btn primary wide" type="submit">Save Profile</button>
         <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Dashboard</button>
       </form>
     </div>
   `;
 
-  // Show/hide sections
-  container.querySelector('select[name="cdlPermit"]').addEventListener('change', function() {
+  // Show/hide permit photo section
+  container.querySelector('select[name="cdlPermit"]')?.addEventListener('change', function() {
     document.getElementById('permit-photo-section').style.display = this.value === "yes" ? "" : "none";
   });
-  container.querySelector('select[name="vehicleQualified"]').addEventListener('change', function() {
+  // Show/hide vehicle photos section
+  container.querySelector('select[name="vehicleQualified"]')?.addEventListener('change', function() {
     document.getElementById('vehicle-photos-section').style.display = this.value === "yes" ? "" : "none";
   });
 
@@ -146,7 +277,7 @@ export async function renderProfile(container = document.getElementById("app")) 
         const q = query(usersRef, where("email", "==", currentUserEmail));
         const snap = await getDocs(q);
         if (!snap.empty) {
-          await updateDoc(doc(db, "users", snap.docs[0].id), { [updateField]: downloadURL });
+          await updateDoc(snap.docs[0].ref, { [updateField]: downloadURL });
           showToast(`${updateField.replace(/Url$/,"")} uploaded!`);
           if (typeof checklistFn === "function") await checklistFn(currentUserEmail);
           renderProfile(container); // refresh to show

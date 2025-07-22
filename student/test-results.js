@@ -3,17 +3,32 @@
 import { db } from '../firebase.js';
 import { getDocs, query, collection, where } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { setupNavigation } from '../ui-helpers.js';
-// Use global or window.currentUserEmail, or accept as arg:
-let currentUserEmail = window.currentUserEmail || null;
 
-// Main function
+// Accept email as param for flexibility, fallback to global/user
+let currentUserEmail =
+  window.currentUserEmail ||
+  localStorage.getItem("currentUserEmail") ||
+  null;
+
 export async function renderTestResults(container = document.getElementById("app")) {
   if (!container) return;
+
+  // Guard against missing user
+  if (!currentUserEmail) {
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
+        <h2>📊 Student Test Results</h2>
+        <p>You must be logged in to view this page.</p>
+      </div>
+    `;
+    setupNavigation();
+    return;
+  }
 
   // Show loading state
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
-      <h2>📊 Test Results</h2>
+      <h2>📊 Student Test Results</h2>
       <p>Loading...</p>
     </div>
   `;
@@ -48,7 +63,7 @@ export async function renderTestResults(container = document.getElementById("app
   // Build results HTML
   let html = `
     <div class="screen-wrapper fade-in" style="padding:20px; max-width:600px; margin:0 auto;">
-      <h2>📊 Test Results</h2>
+      <h2>📊 Student Test Results</h2>
       <ul style="list-style:none; padding:0;">
   `;
 

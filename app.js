@@ -23,8 +23,7 @@ import { renderWelcome } from "./welcome.js";
 import { renderLogin }   from "./login.js";
 import { renderSignup }  from "./signup.js";
 
-// ─── BARREL IMPORTS: STUDENT, INSTRUCTOR, ADMIN  ──────────────
-// (Only needed if you call these directly, most navigation should use handleNavigation)
+// ─── BARREL IMPORTS (STUDENT, INSTRUCTOR, ADMIN) ─────────────
 import * as studentPages    from "./student/index.js";
 import * as instructorPages from "./instructor/index.js";
 import * as adminPages      from "./admin/index.js";
@@ -113,6 +112,8 @@ onAuthStateChanged(auth, async user => {
 
       showPageTransitionLoader();
       setTimeout(() => {
+        // Use smart, role-aware navigation to initial dashboard
+        // (handleNavigation("dashboard") should route role appropriately)
         handleNavigation("dashboard");
         hidePageTransitionLoader();
       }, 350);

@@ -2,7 +2,7 @@
 
 import { getUserInitials, showToast, setupNavigation } from "../ui-helpers.js";
 import { auth } from "../firebase.js";
-import { askCDLAI } from "../ai-api.js"; // Or adjust the path if ai-api.js lives elsewhere
+import { askCDLAI } from "../ai-api.js"; // Adjust the path if ai-api.js lives elsewhere
 
 export function renderAICoach(container = document.getElementById("app")) {
   // Remove any existing modal overlays
@@ -48,7 +48,7 @@ export function renderAICoach(container = document.getElementById("app")) {
   modal.className = "ai-coach-modal modal-overlay fade-in";
   modal.innerHTML = `
     <div class="modal-glass-bg"></div>
-    <div class="modal-card ai-coach-card glass">
+    <div class="modal-card ai-coach-card glass" role="dialog" aria-modal="true" aria-label="AI CDL Coach">
       <div class="ai-coach-modal-header">
         <div class="coach-avatar" style="display:flex; align-items:center; justify-content:center; margin-bottom: 12px; animation: floatMascot 2.6s ease-in-out infinite;">
           <!-- Retro Monitor Coach SVG -->
@@ -75,7 +75,7 @@ export function renderAICoach(container = document.getElementById("app")) {
       </div>
       <form class="ai-coach-input-row" id="ai-coach-form" autocomplete="off">
         <input type="text" class="ai-coach-input" id="ai-coach-input"
-          placeholder="Type your CDL question..." autofocus />
+          placeholder="Type your CDL question..." autocomplete="off" autofocus />
         <button type="submit" class="btn ai-coach-send">Send</button>
       </form>
     </div>

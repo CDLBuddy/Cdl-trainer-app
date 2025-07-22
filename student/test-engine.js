@@ -1,15 +1,18 @@
 // student/test-engine.js
 
-// IMPORTS
 import { db } from '../firebase.js';
 import { addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { setupNavigation, showToast } from '../ui-helpers.js';
 
-// Main export (matches all your other modular student pages)
-export async function renderTestEngine(container = document.getElementById("app"), testName, currentUserEmail) {
+// Main export -- modular, role-aware
+export async function renderTestEngine(
+  container = document.getElementById("app"),
+  testName,
+  currentUserEmail
+) {
   if (!container || !testName || !currentUserEmail) return;
 
-  // 1. Question banks (expand as needed)
+  // 1. Question banks (add to/replace as needed)
   const questionBanks = {
     "General Knowledge": [
       {
@@ -27,7 +30,6 @@ export async function renderTestEngine(container = document.getElementById("app"
         ],
         answer: 1
       }
-      // ...add more...
     ],
     "Air Brakes": [
       {
@@ -143,9 +145,9 @@ export async function renderTestEngine(container = document.getElementById("app"
     `;
     setupNavigation();
 
-    // Navigation
+    // Smart navigation -- import dynamically to avoid circular deps
     container.querySelector('[data-nav="dashboard"]')?.addEventListener("click", () => {
-      import('./dashboard.js').then(mod => mod.renderDashboard());
+      import('./student-dashboard.js').then(mod => mod.renderDashboard());
     });
     container.querySelector('[data-nav="practiceTests"]')?.addEventListener("click", () => {
       import('./practice-tests.js').then(mod => mod.renderPracticeTests());

@@ -24,6 +24,7 @@ export async function renderWalkthrough(container = document.getElementById("app
   if (!container) return;
   if (!auth.currentUser || !auth.currentUser.email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
+    setupNavigation();
     return;
   }
 
@@ -36,6 +37,7 @@ export async function renderWalkthrough(container = document.getElementById("app
     userData = snap.empty ? {} : snap.docs[0].data();
   } catch (e) {
     container.innerHTML = "<p>Error loading user profile.</p>";
+    setupNavigation();
     return;
   }
   const cdlClass = userData?.cdlClass || null;
@@ -52,7 +54,7 @@ export async function renderWalkthrough(container = document.getElementById("app
     visual: !!progress.drills?.visual
   };
 
-  // --- Drill Data (for easy updates/expansion) ---
+  // --- Drill Data ---
   const brakeCheckFull = [
     "With the engine off and key on, I will release the parking brake, hold the service brake pedal for 1 minute, and check for air loss no more than 3 PSI.",
     "Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI.",
@@ -86,7 +88,7 @@ export async function renderWalkthrough(container = document.getElementById("app
     }
   ];
 
-  let currentDrill = "fill"; // default
+  let currentDrill = "fill";
 
   // --- Walkthrough Main HTML ------------------------------------------
   let content = `
@@ -122,13 +124,10 @@ export async function renderWalkthrough(container = document.getElementById("app
         <p>Check oil level with dipstick. Look for leaks, cracks, or broken hoses...</p>
       </div>
 
-      <!-- Drills Progress Bar -->
       <div style="margin:2rem 0 1.3rem 0;">
         <progress value="${Object.values(completedDrills).filter(Boolean).length}" max="4" style="width:100%;"></progress>
         <span>${Object.values(completedDrills).filter(Boolean).length}/4 drills completed</span>
       </div>
-
-      <!-- Drills Nav Bar -->
       <nav class="drills-nav" style="display:flex;gap:0.7rem;margin-bottom:1.2rem;">
         <button data-drill="fill" class="btn small${completedDrills.fill ? ' drill-done' : ''}">Fill-in-the-Blank${completedDrills.fill ? ' ✅' : ''}</button>
         <button data-drill="order" class="btn small${completedDrills.order ? ' drill-done' : ''}">Ordered Steps${completedDrills.order ? ' ✅' : ''}</button>
@@ -193,6 +192,7 @@ export async function renderWalkthrough(container = document.getElementById("app
     }
   }
 
+  // Drill renderers (all handlers go here, can be expanded modularly)
   function renderDrill(drillType, container) {
     let html = "";
     if (drillType === "fill") {
@@ -254,13 +254,13 @@ export async function renderWalkthrough(container = document.getElementById("app
   }
 
   function setupDrillEvents(type, drillsContainer) {
-    // (fill-in-the-blank, order, type, visual) logic as before...
-    // -- keep your event logic from above --
-    // -- (omitted here for brevity, already complete) --
-    // (Paste your previous event handling code for each drill type here)
-    // Nothing in your prior code needs to change for these handlers.
-    // See previous messages for full code.
-    // (Omitting to keep this response concise)
+    // Place your drill event logic here (from your earlier code)
+    // For brevity, handlers omitted here, but copy your current event logic for:
+    // - Fill-in-the-blank (form submissions, input checking)
+    // - Ordered steps (drag-and-drop or check button)
+    // - Typing challenge (input validation)
+    // - Visual recall (check button input)
+    // All handlers you already use should go in this function, modularized per drill type.
   }
 
   // --- Init drills on load (default to first drill) ---

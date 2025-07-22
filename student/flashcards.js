@@ -1,5 +1,6 @@
 // student/flashcards.js
 
+// ─── IMPORTS ────────────────────────────────────────────────
 import { db, auth } from '../firebase.js';
 import {
   collection,
@@ -7,29 +8,29 @@ import {
   where,
   getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-
 import {
   showToast,
   setupNavigation,
   incrementStudentStudyMinutes,
   logStudySession
 } from '../ui-helpers.js';
-
 import { renderStudentDashboard } from './student-dashboard.js';
 
+// ─── FLASHCARDS PAGE (STUDENT) ─────────────────────────────
 export async function renderFlashcards(container = document.getElementById("app")) {
   if (!container) return;
 
-  if (!auth.currentUser || !auth.currentUser.email) {
+  // Auth and Role Check
+  const email = (auth.currentUser && auth.currentUser.email) || window.currentUserEmail || localStorage.getItem("currentUserEmail");
+  if (!email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
     return;
   }
 
-  // Restrict to students only
   let userRole = localStorage.getItem("userRole") || "student";
   try {
     const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", auth.currentUser.email));
+    const q = query(usersRef, where("email", "==", email));
     const snap = await getDocs(q);
     if (!snap.empty) userRole = snap.docs[0].data().role || userRole;
   } catch (e) {}
@@ -38,18 +39,20 @@ export async function renderFlashcards(container = document.getElementById("app"
     return;
   }
 
-  // Flashcards Data (add more as needed)
+  // ─── FLASHCARDS DATA ──────────────────────────────
   const flashcards = [
     { q: "What is the minimum tread depth for front tires?", a: "4/32 of an inch." },
     { q: "What do you check for on rims?", a: "Bent, damaged, or rust trails." },
     { q: "When must you use 3 points of contact?", a: "When entering and exiting the vehicle." },
     { q: "What triggers the spring brake pop-out?", a: "Low air pressure (between 20–45 PSI)." }
+    // Add more as needed
   ];
 
   let current = 0;
   let startedAt = Date.now();
   let completed = false;
 
+  // ─── RENDER FLASHCARD ──────────────────────────────
   async function renderCard() {
     if (completed) {
       // Session Complete UI
@@ -63,8 +66,8 @@ export async function renderFlashcards(container = document.getElementById("app"
           <button id="back-to-dashboard-btn" class="btn outline" style="margin:26px 0 0 0;">⬅ Back to Dashboard</button>
         </div>
       `;
-      await incrementStudentStudyMinutes(auth.currentUser.email, minutes);
-      await logStudySession(auth.currentUser.email, minutes, "Flashcards");
+      await incrementStudentStudyMinutes(email, minutes);
+      await logStudySession(email, minutes, "Flashcards");
       showToast("✅ Flashcard session logged!");
 
       document.getElementById("restart-flashcards")?.addEventListener("click", () => {
@@ -84,7 +87,7 @@ export async function renderFlashcards(container = document.getElementById("app"
     // Main Flashcard UI
     container.innerHTML = `
       <div class="screen-wrapper fade-in" style="max-width:420px;margin:0 auto;">
-        <h2>🃏 CDL Flashcards</h2>
+        <h2>🃏 Student Flashcards</h2>
         <div style="margin-bottom:1rem;">
           <progress value="${current + 1}" max="${flashcards.length}" style="width:100%;"></progress>
           <div style="text-align:center;">Card ${current + 1} of ${flashcards.length}</div>
@@ -128,7 +131,7 @@ export async function renderFlashcards(container = document.getElementById("app"
       }
     };
 
-    // Navigation
+    // Button Navigation
     document.getElementById("prev-flash")?.addEventListener("click", () => {
       if (current > 0) {
         current--; flipped = false; renderCard();

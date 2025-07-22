@@ -1,11 +1,7 @@
 // student/checklists.js
 
 import { db, auth } from '../firebase.js';
-import {
-  showToast,
-  setupNavigation
-} from '../ui-helpers.js';
-
+import { showToast, setupNavigation } from '../ui-helpers.js';
 import {
   collection,
   query,
@@ -13,25 +9,22 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// Modular student renderers
-import { renderProfile } from './profile.js';
-import { renderWalkthrough } from './walkthrough.js';
-import { renderPracticeTests } from './practice-tests.js';
-import { renderStudentDashboard } from './student-dashboard.js';
-
-let currentUserEmail = window.currentUserEmail || null;
+import { renderProfile }        from './profile.js';
+import { renderWalkthrough }    from './walkthrough.js';
+import { renderPracticeTests }  from './practice-tests.js';
+import { renderDashboard }      from './student-dashboard.js'; // For back nav
 
 export async function renderChecklists(container = document.getElementById("app")) {
   if (!container) return;
 
-  // User context
-  const email = currentUserEmail || (auth.currentUser && auth.currentUser.email);
+  // Consistent user email resolution (auth then localStorage)
+  const email = (auth.currentUser && auth.currentUser.email) || localStorage.getItem("currentUserEmail");
   if (!email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
     return;
   }
 
-  // Fetch data
+  // Fetch user data and role
   let userData = {};
   let userRole = localStorage.getItem("userRole") || "student";
   try {
@@ -40,7 +33,7 @@ export async function renderChecklists(container = document.getElementById("app"
     const snap = await getDocs(q);
     if (!snap.empty) {
       userData = snap.docs[0].data();
-      userRole = userData.role || userRole || "student";
+      userRole = userData.role || userRole;
       localStorage.setItem("userRole", userRole);
     }
   } catch (e) {
@@ -52,7 +45,7 @@ export async function renderChecklists(container = document.getElementById("app"
     return;
   }
 
-  // Extract progress fields
+  // Checklist progress data
   const {
     cdlClass = "", cdlPermit = "", permitPhotoUrl = "",
     vehicleQualified = "", truckPlateUrl = "", trailerPlateUrl = "",
@@ -60,7 +53,6 @@ export async function renderChecklists(container = document.getElementById("app"
     walkthroughComplete = false,
   } = userData;
 
-  // Checklist logic
   const checklistSections = [
     {
       header: "Personal Info",
@@ -131,15 +123,15 @@ export async function renderChecklists(container = document.getElementById("app"
     }
   ];
 
-  // Flat checklist for progress
+  // Progress % calculation
   const flatChecklist = checklistSections.flatMap(sec => sec.items);
   const complete = flatChecklist.filter(x => x.done).length;
   const percent = Math.round((complete / flatChecklist.length) * 100);
 
-  // Confetti on 100%
-  if (percent === 100) {
+  // Confetti celebration at 100%
+  if (percent === 100 && window.confetti) {
     setTimeout(() => {
-      if (window.confetti) window.confetti();
+      window.confetti();
       const badge = document.createElement("div");
       badge.className = "completion-badge";
       badge.innerHTML = "🎉 All steps complete! Ready for certification.";
@@ -148,7 +140,7 @@ export async function renderChecklists(container = document.getElementById("app"
     }, 600);
   }
 
-  // Render Checklist Page
+  // Render UI
   container.innerHTML = `
     <div class="screen-wrapper fade-in checklist-page" style="max-width:480px;margin:0 auto;">
       <h2 style="display:flex;align-items:center;gap:9px;">📋 Student Checklist</h2>
@@ -160,7 +152,7 @@ export async function renderChecklists(container = document.getElementById("app"
         <div class="checklist-section">
           <h3 class="checklist-section-header">${section.header}</h3>
           <ul class="checklist-list">
-            ${section.items.map((item, idx) => `
+            ${section.items.map(item => `
               <li class="checklist-item ${item.done ? "done" : ""} ${item.readonly ? "readonly" : ""}">
                 ${item.notify && !item.done && !item.readonly
                   ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
@@ -194,11 +186,11 @@ export async function renderChecklists(container = document.getElementById("app"
           </ul>
         </div>
       `).join("")}
-       <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅ Back to Dashboard</button>
+      <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅ Back to Dashboard</button>
     </div>
   `;
 
-  // Animate progress bar on mount
+  // Animate progress bar
   setTimeout(() => {
     const bar = container.querySelector('.progress-fill');
     if (bar) bar.style.width = percent + "%";
@@ -213,17 +205,13 @@ export async function renderChecklists(container = document.getElementById("app"
       if (!details) return;
       const expanded = li.classList.toggle('expanded');
       details.style.display = expanded ? "block" : "none";
-      if (expanded) {
-        label.style.display = "none";
-      } else {
-        label.style.display = "";
-      }
+      label.style.display = expanded ? "none" : "";
     });
   });
 
   // Checklist nav actions
   container.querySelectorAll('.btn[data-nav]').forEach(btn => {
-    btn.addEventListener('click', e => {
+    btn.addEventListener('click', () => {
       const target = btn.getAttribute('data-nav');
       if (target === "profile") return renderProfile();
       if (target === "walkthrough") return renderWalkthrough();
@@ -233,9 +221,9 @@ export async function renderChecklists(container = document.getElementById("app"
     });
   });
 
-  // Back to dashboard
-  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    renderStudentDashboard();
+  // Back to dashboard button
+  container.querySelector("#back-to-dashboard-btn")?.addEventListener("click", () => {
+    renderDashboard();
   });
 
   setupNavigation();
