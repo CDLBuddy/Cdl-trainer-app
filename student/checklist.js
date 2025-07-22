@@ -1,10 +1,10 @@
-// checklists.js
+// student/checklists.js
 
-import { db, auth } from './firebase.js';
+import { db, auth } from '../firebase.js';
 import {
   showToast,
   setupNavigation
-} from './ui-helpers.js';
+} from '../ui-helpers.js';
 
 import {
   collection,
@@ -13,11 +13,11 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// Modular renderers – Uncomment these imports only if you've modularized them!
+// Modular student renderers
 import { renderProfile } from './profile.js';
 import { renderWalkthrough } from './walkthrough.js';
 import { renderPracticeTests } from './practice-tests.js';
-import { renderDashboard } from './dashboard-student.js';
+import { renderStudentDashboard } from './student-dashboard.js';
 
 let currentUserEmail = window.currentUserEmail || null;
 
@@ -60,7 +60,7 @@ export async function renderChecklists(container = document.getElementById("app"
     walkthroughComplete = false,
   } = userData;
 
-  // Main checklist logic (grouped)
+  // Checklist logic
   const checklistSections = [
     {
       header: "Personal Info",
@@ -131,7 +131,7 @@ export async function renderChecklists(container = document.getElementById("app"
     }
   ];
 
-  // Flat checklist for progress calc
+  // Flat checklist for progress
   const flatChecklist = checklistSections.flatMap(sec => sec.items);
   const complete = flatChecklist.filter(x => x.done).length;
   const percent = Math.round((complete / flatChecklist.length) * 100);
@@ -204,7 +204,7 @@ export async function renderChecklists(container = document.getElementById("app"
     if (bar) bar.style.width = percent + "%";
   }, 25);
 
-  // Expand/collapse checklist details and label
+  // Expand/collapse checklist details
   container.querySelectorAll('.checklist-item-main').forEach(main => {
     main.addEventListener("click", function() {
       const li = this.closest('.checklist-item');
@@ -221,7 +221,7 @@ export async function renderChecklists(container = document.getElementById("app"
     });
   });
 
-  // Navigation for checklist actions
+  // Checklist nav actions
   container.querySelectorAll('.btn[data-nav]').forEach(btn => {
     btn.addEventListener('click', e => {
       const target = btn.getAttribute('data-nav');
@@ -233,9 +233,9 @@ export async function renderChecklists(container = document.getElementById("app"
     });
   });
 
-  // Back button
+  // Back to dashboard
   document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    renderDashboard();
+    renderStudentDashboard();
   });
 
   setupNavigation();

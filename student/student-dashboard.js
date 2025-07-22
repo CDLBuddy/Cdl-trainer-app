@@ -1,13 +1,13 @@
-// student-dashboard.js
+// student/student-dashboard.js
 
-import { db, auth } from './firebase.js';
+import { db, auth } from '../firebase.js';
 import {
   showToast,
   setupNavigation,
   showLatestUpdate,
   getRandomAITip,
   getNextChecklistAlert
-} from './ui-helpers.js';
+} from '../ui-helpers.js';
 
 import { signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
@@ -17,15 +17,19 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// === Modularized page renderers ===
+// Modularized page renderers
 import { renderProfile }        from './profile.js';
 import { renderAICoach }        from './ai-coach.js';
 import { renderWalkthrough }    from './walkthrough.js';
-import { renderChecklists }     from './checklist.js';     // correct plural/singular
+import { renderChecklists }     from './checklists.js';
 import { renderPracticeTests }  from './practice-tests.js';
 import { renderFlashcards }     from './flashcards.js';
 
-let currentUserEmail = window.currentUserEmail || localStorage.getItem("currentUserEmail") || null;
+let currentUserEmail =
+  window.currentUserEmail ||
+  localStorage.getItem("currentUserEmail") ||
+  (auth.currentUser && auth.currentUser.email) ||
+  null;
 
 export async function renderDashboard(container = document.getElementById("app")) {
   if (!container) return;
@@ -93,7 +97,7 @@ export async function renderDashboard(container = document.getElementById("app")
     console.error("TestResults fetch error", e);
   }
 
-  // --- License & Experience (optional, placeholder if you use these) ---
+  // --- License & Experience
   let license = userData.cdlClass || "Not selected";
   let experience = userData.experience || "Unknown";
 
@@ -210,7 +214,7 @@ export async function renderDashboard(container = document.getElementById("app")
     </div>
     <button id="ai-coach-fab" aria-label="Ask AI Coach">
       <span class="ai-coach-mascot-wrapper">
-        <!-- Your mascot SVG here -->
+        <!-- Mascot SVG here if you want -->
       </span>
     </button>
   `;

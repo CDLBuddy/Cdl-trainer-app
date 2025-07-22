@@ -1,6 +1,6 @@
-// practice-tests.js
+// student/practice-tests.js
 
-import { db, auth } from './firebase.js';
+import { db, auth } from '../firebase.js';
 import {
   collection,
   query,
@@ -14,14 +14,12 @@ import {
   logStudySession,
   markStudentTestPassed,
   getUserProgress
-} from './ui-helpers.js';
+} from '../ui-helpers.js';
 
-import { renderDashboard } from './dashboard-student.js';
-import { renderTestEngine } from './test-engine.js'; // You’ll need to modularize this if not already done!
-export { renderPracticeTests, renderTestReview };
+import { renderStudentDashboard } from './student-dashboard.js';
+import { renderTestEngine } from './test-engine.js'; // Update path as needed
 
-// ─── RENDER PRACTICE TESTS ──────────────────────────────────────────────
-async function renderPracticeTests(container = document.getElementById("app")) {
+export async function renderPracticeTests(container = document.getElementById("app")) {
   if (!container) return;
 
   if (!window.currentUserEmail || !auth.currentUser) {
@@ -29,7 +27,7 @@ async function renderPracticeTests(container = document.getElementById("app")) {
     return;
   }
 
-  // Defensive: Only students can access practice tests
+  // Only students can access
   let userRole = localStorage.getItem("userRole") || "student";
   let userData = {};
   try {
@@ -109,10 +107,10 @@ async function renderPracticeTests(container = document.getElementById("app")) {
   setupNavigation();
 
   document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    renderDashboard();
+    renderStudentDashboard();
   });
 
-  // Add listeners after DOM is rendered
+  // DOM event listeners after DOM render
   setTimeout(() => {
     container.querySelectorAll(".retake-btn").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -132,7 +130,7 @@ async function renderPracticeTests(container = document.getElementById("app")) {
 }
 
 // ─── REVIEW A SPECIFIC TEST RESULT ────────────────────────────────────────────
-async function renderTestReview(container, testName) {
+export async function renderTestReview(container, testName) {
   container = container || document.getElementById("app");
   container.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧾 ${testName} Review</h2><p>Loading...</p></div>`;
 
@@ -157,9 +155,9 @@ async function renderTestReview(container, testName) {
     const latest = results[0];
     const pct = Math.round((latest.correct / latest.total) * 100);
 
-    // --- Milestone: Mark test as passed if pct >= 80 ---
+    // Milestone: Mark test as passed if pct >= 80
     if (pct >= 80) {
-      // Optional: only show toast the first time they pass
+      // Only show toast the first time they pass
       const progress = await getUserProgress(window.currentUserEmail);
       if (!progress.practiceTestPassed) {
         await markStudentTestPassed(window.currentUserEmail);
@@ -168,7 +166,7 @@ async function renderTestReview(container, testName) {
     }
 
     // Always log study minutes and session
-    const minutes = latest?.durationMinutes || 5; // sensible default
+    const minutes = latest?.durationMinutes || 5;
     await incrementStudentStudyMinutes(window.currentUserEmail, minutes);
     await logStudySession(window.currentUserEmail, minutes, `Practice Test: ${testName}`);
 

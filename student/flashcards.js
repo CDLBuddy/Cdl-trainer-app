@@ -1,6 +1,6 @@
-// flashcards.js
+// student/flashcards.js
 
-import { db, auth } from './firebase.js';
+import { db, auth } from '../firebase.js';
 import {
   collection,
   query,
@@ -13,13 +13,11 @@ import {
   setupNavigation,
   incrementStudentStudyMinutes,
   logStudySession
-} from './ui-helpers.js';
+} from '../ui-helpers.js';
 
-import { renderDashboard } from './dashboard-student.js';
+import { renderStudentDashboard } from './student-dashboard.js';
 
-export { renderFlashcards };
-
-async function renderFlashcards(container = document.getElementById("app")) {
+export async function renderFlashcards(container = document.getElementById("app")) {
   if (!container) return;
 
   if (!auth.currentUser || !auth.currentUser.email) {
@@ -27,7 +25,7 @@ async function renderFlashcards(container = document.getElementById("app")) {
     return;
   }
 
-  // Optional: Only allow students (if you wish to restrict)
+  // Restrict to students only
   let userRole = localStorage.getItem("userRole") || "student";
   try {
     const usersRef = collection(db, "users");
@@ -40,7 +38,7 @@ async function renderFlashcards(container = document.getElementById("app")) {
     return;
   }
 
-  // --- Flashcards Data ---
+  // Flashcards Data (add more as needed)
   const flashcards = [
     { q: "What is the minimum tread depth for front tires?", a: "4/32 of an inch." },
     { q: "What do you check for on rims?", a: "Bent, damaged, or rust trails." },
@@ -54,7 +52,7 @@ async function renderFlashcards(container = document.getElementById("app")) {
 
   async function renderCard() {
     if (completed) {
-      // --- Session Complete UI ---
+      // Session Complete UI
       const minutes = Math.max(1, Math.round((Date.now() - startedAt) / 60000));
       container.innerHTML = `
         <div class="screen-wrapper fade-in" style="max-width:420px;margin:0 auto;">
@@ -76,14 +74,14 @@ async function renderFlashcards(container = document.getElementById("app")) {
         renderCard();
       });
       document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-        renderDashboard();
+        renderStudentDashboard();
       });
 
       setupNavigation();
       return;
     }
 
-    // --- Main Flashcard UI ---
+    // Main Flashcard UI
     container.innerHTML = `
       <div class="screen-wrapper fade-in" style="max-width:420px;margin:0 auto;">
         <h2>🃏 CDL Flashcards</h2>
@@ -107,7 +105,7 @@ async function renderFlashcards(container = document.getElementById("app")) {
       </div>
     `;
 
-    // --- Flip Logic ---
+    // Flip Logic
     let flipped = false;
     const flashcard = document.getElementById("flashcard");
     flashcard.onclick = flipCard;
@@ -119,7 +117,7 @@ async function renderFlashcards(container = document.getElementById("app")) {
       if (flipped) flashcard.focus();
     }
 
-    // --- Keyboard Navigation (Enter to flip, arrows to nav) ---
+    // Keyboard Navigation (Enter to flip, arrows to nav)
     flashcard.onkeydown = (e) => {
       if (e.key === "Enter") flipCard();
       if (e.key === "ArrowRight" && current < flashcards.length - 1) {
@@ -130,7 +128,7 @@ async function renderFlashcards(container = document.getElementById("app")) {
       }
     };
 
-    // --- Navigation ---
+    // Navigation
     document.getElementById("prev-flash")?.addEventListener("click", () => {
       if (current > 0) {
         current--; flipped = false; renderCard();
@@ -145,7 +143,7 @@ async function renderFlashcards(container = document.getElementById("app")) {
       completed = true; renderCard();
     });
     document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-      renderDashboard();
+      renderStudentDashboard();
     });
 
     setupNavigation();
