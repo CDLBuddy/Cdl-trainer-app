@@ -3,7 +3,6 @@
 import { auth, db } from "./firebase.js";
 import {
   createUserWithEmailAndPassword,
-  updateProfile
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
   doc,
@@ -14,9 +13,8 @@ import {
 import { showToast } from "./ui-helpers.js";
 import { renderLogin } from "./login.js";
 import { renderWelcome } from "./welcome.js";
-// You can import renderDashboard if you want instant dashboard routing after signup
-// import { renderDashboard } from "./dashboard-student.js";
 
+// --- SIGNUP RENDERER ---
 export function renderSignup(container = document.getElementById("app")) {
   if (!container) return;
 
@@ -49,10 +47,10 @@ export function renderSignup(container = document.getElementById("app")) {
     </div>
   `;
 
-  // Log In button in footer
+  // Go to Log In page
   container.querySelector("#go-login")?.addEventListener("click", () => renderLogin(container));
 
-  // Back to welcome
+  // Back to welcome page
   container.querySelector("#back-to-welcome-btn")?.addEventListener("click", () => renderWelcome());
 
   // --- Signup form handler ---
@@ -65,7 +63,7 @@ export function renderSignup(container = document.getElementById("app")) {
     const password = form.password.value;
     const confirm  = form.confirm.value;
 
-    // Basic validation
+    // Validation
     if (!name || !email || !password || !confirm) {
       showToast("Please fill out all fields.");
       return;
@@ -80,7 +78,7 @@ export function renderSignup(container = document.getElementById("app")) {
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
 
-      // Set display name (not always supported in all emulators)
+      // Set displayName if possible (not always available on some emulators)
       if (user && user.updateProfile) {
         try {
           await user.updateProfile({ displayName: name });
@@ -90,15 +88,15 @@ export function renderSignup(container = document.getElementById("app")) {
         }
       }
 
-      // Firestore profile (role always student on sign up, admin updates later)
+      // Create Firestore profile (role student by default)
       await setDoc(doc(db, "users", user.email), {
         name,
         email,
         createdAt: serverTimestamp(),
-        role: "student" // default role
+        role: "student"
       });
 
-      // UserRoles collection (can be updated later by admin)
+      // UserRoles collection
       await setDoc(doc(db, "userRoles", user.email), {
         role: "student",
         assignedAt: serverTimestamp()
@@ -109,8 +107,7 @@ export function renderSignup(container = document.getElementById("app")) {
       localStorage.setItem("userRole", "student");
 
       showToast("Account created! Logging in…");
-      // Optionally: let onAuthStateChanged in app.js do the redirect
-      // setTimeout(() => renderDashboard(), 1000);
+      // onAuthStateChanged will handle dashboard redirect
 
     } catch (err) {
       console.error("Signup error:", err);

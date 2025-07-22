@@ -3,14 +3,8 @@
 // ─── FIREBASE IMPORTS ────────────────────────────────
 import { db, auth } from "./firebase.js";
 import {
-  doc,
-  getDoc,
-  updateDoc,
-  setDoc,
-  collection,
-  addDoc,
-  serverTimestamp,
-  increment
+  doc, getDoc, updateDoc, setDoc, collection, addDoc,
+  serverTimestamp, increment
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 // ─── UI TOAST MESSAGE ────────────────────────────────
@@ -191,7 +185,6 @@ export async function updateELDTProgress(userId, fields, options = {}) {
     return false;
   }
 }
-
 export async function getUserProgress(userId) {
   const progressRef = doc(db, "eldtProgress", userId);
   const snap = await getDoc(progressRef);
@@ -272,11 +265,11 @@ export async function logStudySession(studentEmail, minutes, context = "") {
     at: new Date().toISOString()
   });
 }
+
 import { getLatestUpdate } from "./firebase.js";
 
 // Format a date as needed (define if not already present)
 export function formatDate(dateInput) {
-  // Handles Firestore Timestamp, string, or JS Date
   const d = dateInput?.toDate ? dateInput.toDate() : new Date(dateInput);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
@@ -299,6 +292,7 @@ export async function showLatestUpdate() {
     </div>
   `;
 }
+
 // Show a modal overlay with HTML content
 export function showModal(html) {
   const overlay = document.createElement("div");
@@ -306,8 +300,6 @@ export function showModal(html) {
   overlay.innerHTML = html;
   document.body.appendChild(overlay);
 }
-
-// Close any open modal overlay
 export function closeModal() {
   document.querySelector(".modal-overlay")?.remove();
 }
@@ -331,23 +323,17 @@ export async function getAITipOfTheDay() {
   ];
   return tips[Math.floor(Math.random() * tips.length)];
 }
-// ── Infinite-carousel helper ───────────────────────────────────────── //
+
+// ── Infinite-carousel helper ─────────────────────────────── //
 export function initInfiniteCarousel(trackSelector = ".features-inner") {
   const track = document.querySelector(trackSelector);
-  if (!track || track.dataset.looped) return;   // already initialized
-
-  // Duplicate for infinite scroll illusion
+  if (!track || track.dataset.looped) return;
   track.innerHTML += track.innerHTML;
   track.dataset.looped = "true";
-
-  // Seamlessly reset scroll position at loop ends
   track.addEventListener("scroll", () => {
     const max = track.scrollWidth / 2;
-    if (track.scrollLeft >= max) {
-      track.scrollLeft -= max;
-    } else if (track.scrollLeft <= 0) {
-      track.scrollLeft += max;
-    }
+    if (track.scrollLeft >= max)      track.scrollLeft -= max;
+    else if (track.scrollLeft <= 0)   track.scrollLeft += max;
   });
 }
 
@@ -359,7 +345,6 @@ export function initCarousel() {
   let isPaused = false;
   const speed  = 1.0; // px per frame
 
-  // Pause on interaction
   ["mouseenter", "touchstart"].forEach(evt =>
     track.addEventListener(evt, () => isPaused = true)
   );
@@ -368,9 +353,7 @@ export function initCarousel() {
   );
 
   function drift() {
-    if (!isPaused) {
-      track.scrollLeft = (track.scrollLeft + speed) % half();
-    }
+    if (!isPaused) track.scrollLeft = (track.scrollLeft + speed) % half();
     requestAnimationFrame(drift);
   }
   requestAnimationFrame(drift);
