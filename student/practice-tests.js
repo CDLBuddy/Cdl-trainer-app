@@ -16,8 +16,12 @@ import {
   getUserProgress
 } from '../ui-helpers.js';
 
-import { renderStudentDashboard } from './student-dashboard.js';
-import { renderTestEngine } from './test-engine.js'; // Update path as needed
+// ★★ CENTRALIZED INDEX IMPORTS ★★
+import {
+  renderDashboard as renderStudentDashboard,
+  renderTestEngine,
+  renderTestReview // Import review here so setTimeout handler works!
+} from './index.js';
 
 export async function renderPracticeTests(container = document.getElementById("app")) {
   if (!container) return;
@@ -116,7 +120,8 @@ export async function renderPracticeTests(container = document.getElementById("a
       btn.addEventListener("click", () => {
         const test = btn.dataset.test;
         showToast(`Restarting "${test}" test…`);
-        renderTestEngine(container, test);
+        // Always pass currentUserEmail for testEngine!
+        renderTestEngine(container, test, window.currentUserEmail);
       });
     });
     container.querySelectorAll(".review-btn").forEach(btn => {
