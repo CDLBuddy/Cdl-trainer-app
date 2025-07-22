@@ -1,15 +1,15 @@
-// admin-dashboard.js
+// admin/admin-dashboard.js
 
-import { db, auth } from "./firebase.js";
+import { db, auth } from "../firebase.js";
 import {
   collection, query, where, getDocs, setDoc, doc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { showToast, setupNavigation } from "./ui-helpers.js";
-import { renderWelcome } from "./welcome.js";
-import { renderDashboard } from "./dashboard-student.js"; // fallback for non-admins
-import { renderAdminProfile } from "./admin-profile.js";   // to be modularized
+import { showToast, setupNavigation } from "../ui-helpers.js";
+import { renderWelcome } from "../welcome.js";
+import { renderDashboard } from "../student/dashboard-student.js"; // fallback for non-admins
+import { renderAdminProfile } from "./admin-profile.js";
 
-let currentUserEmail = window.currentUserEmail || null;
+export let currentUserEmail = window.currentUserEmail || localStorage.getItem("currentUserEmail") || null;
 
 export async function renderAdminDashboard(container = document.getElementById("app")) {
   if (!container) return;
@@ -19,7 +19,7 @@ export async function renderAdminDashboard(container = document.getElementById("
     return;
   }
 
-  // Defensive role fallback
+  // --- Role defense/fallback ---
   let userData = {};
   let userRole = localStorage.getItem("userRole") || "admin";
   try {
@@ -40,7 +40,7 @@ export async function renderAdminDashboard(container = document.getElementById("
     return;
   }
 
-  // --- Fetch All Users ---
+  // --- Fetch all users ---
   let allUsers = [];
   try {
     const usersSnap = await getDocs(collection(db, "users"));
@@ -65,12 +65,11 @@ export async function renderAdminDashboard(container = document.getElementById("
     console.error("Admin user fetch error", e);
   }
 
-  // --- Fetch Instructor List (for assignments) ---
+  // --- Instructor & company lists ---
   const instructorList = allUsers.filter(u => u.role === "instructor");
-  // --- Fetch Company List (future feature, supports client companies) ---
   const companyList = Array.from(new Set(allUsers.map(u => u.assignedCompany).filter(Boolean)));
 
-  // --- Render Admin Dashboard Layout ---
+  // --- Render Admin Dashboard HTML ---
   container.innerHTML = `
     <h2 class="dash-head">Welcome, Admin! <span class="role-badge admin">Admin</span></h2>
     <button class="btn" id="edit-admin-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
@@ -174,12 +173,12 @@ export async function renderAdminDashboard(container = document.getElementById("
 
   setupNavigation();
 
-  // --- View/Edit My Profile (Admin) ---
+  // View/Edit My Profile (Admin)
   container.querySelector("#edit-admin-profile-btn")?.addEventListener("click", () => {
     renderAdminProfile();
   });
 
-  // --- Filter Logic (role/company) ---
+  // Filter logic (role/company)
   const roleFilter = container.querySelector("#user-role-filter");
   const companyFilter = container.querySelector("#user-company-filter");
   roleFilter?.addEventListener("change", filterUserTable);
@@ -199,9 +198,9 @@ export async function renderAdminDashboard(container = document.getElementById("
     });
   }
 
-  // --- Role Change Handler ---
+  // Role change handler
   container.querySelectorAll(".role-select").forEach(select => {
-    select.addEventListener("change", async (e) => {
+    select.addEventListener("change", async () => {
       const userEmail = select.getAttribute("data-user");
       const newRole = select.value;
       try {
@@ -215,7 +214,7 @@ export async function renderAdminDashboard(container = document.getElementById("
     });
   });
 
-  // --- Company Assignment Handler ---
+  // Company assignment handler
   container.querySelectorAll(".company-input").forEach(input => {
     input.addEventListener("blur", async () => {
       const userEmail = input.getAttribute("data-user");
@@ -229,9 +228,9 @@ export async function renderAdminDashboard(container = document.getElementById("
     });
   });
 
-  // --- Instructor Assignment Handler ---
+  // Instructor assignment handler
   container.querySelectorAll(".instructor-select").forEach(select => {
-    select.addEventListener("change", async (e) => {
+    select.addEventListener("change", async () => {
       const userEmail = select.getAttribute("data-user");
       const newInstructor = select.value;
       try {
@@ -244,9 +243,9 @@ export async function renderAdminDashboard(container = document.getElementById("
     });
   });
 
-  // --- Remove User Handler ---
+  // Remove user handler
   container.querySelectorAll(".btn-remove-user").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
+    btn.addEventListener("click", async () => {
       const userEmail = btn.getAttribute("data-user");
       if (!confirm(`Remove user: ${userEmail}? This cannot be undone.`)) return;
       try {
@@ -260,13 +259,13 @@ export async function renderAdminDashboard(container = document.getElementById("
     });
   });
 
-  // --- Add Company Button (future) ---
+  // Add Company (future)
   container.querySelector("#add-company-btn")?.addEventListener("click", () => {
     showToast("Add company: Coming soon!");
     // TODO: Open company creation modal/form
   });
 
-  // --- Logout ---
+  // Logout
   container.querySelector("#logout-btn")?.addEventListener("click", async () => {
     await auth.signOut();
     localStorage.clear();

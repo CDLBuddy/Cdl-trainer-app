@@ -1,100 +1,102 @@
 // navigation.js
 
-// === PAGE RENDERERS ===
-import { renderDashboard }      from "./dashboard-student.js";
-import { renderInstructorDashboard } from "./dashboard-instructor.js"; // Only if you have this
-import { renderAdminDashboard } from "./dashboard-admin.js";           // Only if you have this
-import { renderChecklists }     from "./checklist.js";
-import { renderPracticeTests }  from "./practice-tests.js";
-import { renderFlashcards }     from "./flashcards.js";
-import { renderTestResults }    from "./test-results.js";
-import { renderAICoach }        from "./ai-coach.js";
-import { renderProfile }        from "./profile.js";
-import { renderWalkthrough }    from "./walkthrough.js";
-import { renderLogin }          from "./login.js";
-import { renderHome }           from "./home.js";
-import { showPageTransitionLoader, hidePageTransitionLoader } from "./ui-helpers.js";
+// === BARREL IMPORTS FOR EACH ROLE ===
+import * as studentPages    from "./student/index.js";
+import * as instructorPages from "./instructor/index.js";
+import * as adminPages      from "./admin/index.js"; // If you have admin folder
 
-// === DEVICE HELPER ===
-function isMobile() {
-  return ("ontouchstart" in window) || (window.innerWidth < 900);
+// === COMMON PAGES ===
+import { renderLogin }   from "./login.js";
+import { renderWelcome } from "./welcome.js";
+// ...add any other global pages you want
+
+// === HELPER: Determine user role ===
+function getCurrentRole() {
+  // Try localStorage, then window, fallback to "student"
+  return (
+    localStorage.getItem("userRole") ||
+    window.currentUserRole ||
+    "student"
+  );
 }
 
-// === MAIN NAVIGATION FUNCTION ===
-function handleNavigation(page, direction = "forward") {
+// === MAIN SMART NAVIGATION FUNCTION ===
+export function handleNavigation(page, direction = "forward", ...args) {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  const currentScreen = appEl.querySelector(".screen-wrapper");
-  const mobile = isMobile();
-  let outClass = mobile
-    ? (direction === "forward" ? "slide-out-left" : "slide-out-right")
-    : "fade-out";
+  // Clean up previous modals, etc. (optional)
+  document.querySelectorAll(".modal-overlay").forEach(el => el.remove());
 
-  if (currentScreen) {
-    currentScreen.classList.add(outClass);
-    currentScreen.addEventListener("transitionend", function onFade() {
-      currentScreen.removeEventListener("transitionend", onFade);
-      doNavigation(page, appEl, direction);
-    }, { once: true });
+  // Find role
+  const role = getCurrentRole();
 
-    showPageTransitionLoader();
-  } else {
-    doNavigation(page, appEl, direction);
-  }
-}
+  // Determine which barrel to use
+  let rolePages;
+  if (role === "student") rolePages = studentPages;
+  else if (role === "instructor") rolePages = instructorPages;
+  else if (role === "admin") rolePages = adminPages;
+  else rolePages = {}; // fallback
 
-// === PAGE SWITCHER ===
-function doNavigation(page, appEl, direction = "forward") {
-  let lastHash = window.__lastPageHash || "home";
-  window.__lastPageHash = page;
-  let navDir = "forward";
-  if (window.__navHistory && window.__navHistory.length) {
-    const last = window.__navHistory[window.__navHistory.length - 1];
-    navDir = last === page ? "back" : "forward";
-  }
-  if (!window.__navHistory) window.__navHistory = [];
-  window.__navHistory.push(page);
-
-  // Render correct page
+  // --- SMART ROUTER SWITCH ---
+  // You can make this smarter as you add more shared or role-specific pages
   switch (page) {
-    case "dashboard":      renderDashboard(appEl); break;
-    case "instructor":     renderInstructorDashboard?.(appEl); break;
-    case "admin":          renderAdminDashboard?.(appEl); break;
-    case "checklists":     renderChecklists(appEl); break;
-    case "practiceTests":  renderPracticeTests(appEl); break;
-    case "flashcards":     renderFlashcards(appEl); break;
-    case "results":        renderTestResults(appEl); break;
-    case "coach":          renderAICoach(appEl); break;
-    case "profile":        renderProfile(appEl); break;
-    case "walkthrough":    renderWalkthrough(appEl); break;
-    case "login":          renderLogin(appEl); break;
-    case "home": default:  renderHome(appEl); break;
+    case "dashboard":
+      rolePages.renderDashboard?.(appEl, ...args) || renderWelcome(appEl);
+      break;
+    case "profile":
+      rolePages.renderProfile?.(appEl, ...args) || renderWelcome(appEl);
+      break;
+    case "checklists":
+      rolePages.renderChecklists?.(appEl, ...args) || renderWelcome(appEl);
+      break;
+    case "practiceTests":
+      rolePages.renderPracticeTests?.(appEl, ...args) || renderWelcome(appEl);
+      break;
+    case "flashcards":
+      rolePages.renderFlashcards?.(appEl, ...args) || renderWelcome(appEl);
+      break;
+    case "results":
+      rolePages.renderTestResults?.(appEl, ...args) || renderWelcome(appEl);
+      break;
+    case "walkthrough":
+      rolePages.renderWalkthrough?.(appEl, ...args) || renderWelcome(appEl);
+      break;
+    case "coach":
+      rolePages.renderAICoach?.(appEl, ...args) || renderWelcome(appEl);
+      break;
+    // Instructor-specific
+    case "checklistReview":
+      instructorPages.renderChecklistReviewForInstructor?.(...args) || renderWelcome(appEl);
+      break;
+    // Add admin-specific pages as needed...
+    // Auth / public pages
+    case "login":
+      renderLogin(appEl, ...args);
+      break;
+    case "welcome":
+    case "home":
+      renderWelcome(appEl, ...args);
+      break;
+    default:
+      // Fallback to dashboard of their role
+      rolePages.renderDashboard?.(appEl, ...args) || renderWelcome(appEl);
   }
 
-  // Add incoming animation for new screen
-  setTimeout(() => {
-    const newScreen = appEl.querySelector(".screen-wrapper");
-    if (!newScreen) return;
-    const mobile = isMobile();
-    newScreen.classList.remove("fade-out", "slide-out-left", "slide-out-right", "fade-in", "slide-in-right", "slide-in-left");
-    if (mobile) {
-      if (navDir === "back") {
-        newScreen.classList.add("slide-in-right");
-      } else {
-        newScreen.classList.add("slide-in-left");
-      }
-    } else {
-      newScreen.classList.add("fade-in");
-    }
-    hidePageTransitionLoader();
-  }, 10);
-
-  // Only update URL hash if needed
-  if (page !== location.hash.replace("#", "")) {
-    history.pushState({}, "", "#" + page);
-  }
+  // Optional: Add transitions/animations here if needed
+  // (your old code for fade/slide can go here)
 }
 
-// === EXPORTS ===
-export { handleNavigation, isMobile };
+// === HASH & POPSTATE NAVIGATION SUPPORT ===
+window.addEventListener("popstate", () => {
+  const page = location.hash.replace("#", "") || "dashboard";
+  handleNavigation(page, "back");
+});
+
+// === INITIAL LOAD SUPPORT (optional) ===
+window.addEventListener("DOMContentLoaded", () => {
+  // Let auth listener trigger the correct page, or go to welcome
+  if (!window.currentUserEmail) {
+    handleNavigation("welcome");
+  }
+});

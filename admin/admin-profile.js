@@ -1,14 +1,14 @@
-// admin-profile.js
+// admin/admin-profile.js
 
-import { db, storage } from "./firebase.js";
+import { db, storage } from "../firebase.js";
 import {
   collection, query, where, getDocs, updateDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import {
   ref, uploadBytes, getDownloadURL
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
-import { showToast, setupNavigation } from "./ui-helpers.js";
-import { renderWelcome } from "./welcome.js";
+import { showToast, setupNavigation } from "../ui-helpers.js";
+import { renderWelcome } from "../welcome.js";
 import { renderAdminDashboard } from "./admin-dashboard.js";
 
 let currentUserEmail = window.currentUserEmail || null;
@@ -57,7 +57,6 @@ export async function renderAdminProfile(container = document.getElementById("ap
     adminSignature = ""
   } = userData;
 
-  // MAIN ADMIN PROFILE FORM
   container.innerHTML = `
     <div class="screen-wrapper fade-in profile-page" style="max-width:520px;margin:0 auto;">
       <h2>👤 Admin Profile <span class="role-badge admin">Admin</span></h2>
@@ -122,7 +121,7 @@ export async function renderAdminProfile(container = document.getElementById("ap
     </div>
   `;
 
-  // --- NAVIGATION ---
+  // NAVIGATION: Back button
   container.querySelector("#back-to-admin-dashboard-btn")?.addEventListener("click", () => {
     renderAdminDashboard();
   });
