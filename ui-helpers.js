@@ -123,8 +123,6 @@ export function getRandomAITip() {
   ];
   return tips[new Date().getDay() % tips.length];
 }
-
-// Async, extensible version
 export async function getAITipOfTheDay() {
   const tips = [
     "Review your ELDT checklist daily.",
@@ -426,6 +424,7 @@ export async function withLoader(taskFn, loaderId = "page-loader") {
     hidePageTransitionLoader();
   }
 }
+
 // --- ROLE/ORG DETECTORS ---
 export function getCurrentUserRole(userObj = null) {
   return (
@@ -456,7 +455,10 @@ export function showRoleToast(message, role = null, duration = 3200) {
 // --- CSV EXPORTER ---
 export function exportTableToCSV(tableId, filename = "export.csv") {
   const table = document.getElementById(tableId);
-  if (!table) return;
+  if (!table) {
+    showToast("Export failed: Table not found.", 2000, "error");
+    return;
+  }
   let csv = [];
   for (let row of table.rows) {
     let rowData = [];

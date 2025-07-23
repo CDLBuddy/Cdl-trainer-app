@@ -10,37 +10,37 @@ import * as superadminPages from "./superadmin/index.js";
 import { renderLogin }   from "./login.js";
 import { renderWelcome } from "./welcome.js";
 
-// === HELPER: Determine user role ===
+// === SMART DETECTOR: Universal role detection ===
 function getCurrentRole() {
   return (
-    localStorage.getItem("userRole") ||
     window.currentUserRole ||
+    localStorage.getItem("userRole") ||
     "student"
   );
 }
 
-// === MAIN SMART NAVIGATION FUNCTION ===
+// === SMART NAVIGATION FUNCTION ===
 export function handleNavigation(page, direction = "forward", ...args) {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  // Clean up previous modals, etc.
+  // Clean up previous modals, overlays, etc.
   document.querySelectorAll(".modal-overlay").forEach(el => el.remove());
 
-  // Find role
+  // Role detection (window, localStorage, fallback)
   const role = getCurrentRole();
 
-  // Determine which barrel to use
+  // Barrel assignment
   let rolePages;
-  if (role === "superadmin") rolePages = superadminPages;
-  else if (role === "admin") rolePages = adminPages;
+  if (role === "superadmin")      rolePages = superadminPages;
+  else if (role === "admin")      rolePages = adminPages;
   else if (role === "instructor") rolePages = instructorPages;
-  else if (role === "student") rolePages = studentPages;
-  else rolePages = {};
+  else if (role === "student")    rolePages = studentPages;
+  else                            rolePages = {};
 
   // --- SMART ROUTER SWITCH ---
   switch (page) {
-    // === SUPERADMIN ROUTES ===
+    // --- SUPERADMIN ROUTES ---
     case "superadmin-dashboard":
       if (role === "superadmin") rolePages.renderSuperadminDashboard?.(appEl, ...args);
       else renderWelcome(appEl);
@@ -74,7 +74,14 @@ export function handleNavigation(page, direction = "forward", ...args) {
       else renderWelcome(appEl);
       break;
 
-    // === STUDENT/INSTRUCTOR/ADMIN ROUTES (UNCHANGED) ===
+    // --- ADMIN ROUTES (futureproof) ---
+    case "admin-dashboard":
+      if (role === "admin") rolePages.renderAdminDashboard?.(appEl, ...args);
+      else renderWelcome(appEl);
+      break;
+    // Add more admin routes here as you expand.
+
+    // --- COMMON ROLE ROUTES ---
     case "dashboard":
       rolePages.renderDashboard?.(appEl, ...args) || renderWelcome(appEl);
       break;
@@ -100,12 +107,12 @@ export function handleNavigation(page, direction = "forward", ...args) {
       rolePages.renderAICoach?.(appEl, ...args) || renderWelcome(appEl);
       break;
 
-    // Instructor-specific
+    // --- INSTRUCTOR-SPECIFIC (may add more in future) ---
     case "checklistReview":
       instructorPages.renderChecklistReviewForInstructor?.(...args) || renderWelcome(appEl);
       break;
 
-    // Auth / public pages
+    // --- AUTH / PUBLIC PAGES ---
     case "login":
       renderLogin(appEl, ...args);
       break;
@@ -113,6 +120,7 @@ export function handleNavigation(page, direction = "forward", ...args) {
     case "home":
       renderWelcome(appEl, ...args);
       break;
+
     default:
       // Fallback to dashboard of their role
       rolePages.renderDashboard?.(appEl, ...args) || renderWelcome(appEl);

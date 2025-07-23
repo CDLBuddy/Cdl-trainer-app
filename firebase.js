@@ -7,11 +7,16 @@ import {
   query, 
   orderBy, 
   limit, 
-  getDocs 
+  getDocs,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 
+// --- CONFIG (secure in .env for production!) ---
 const firebaseConfig = {
   apiKey:            "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
   authDomain:        "cdltrainerapp.firebaseapp.com",
@@ -22,14 +27,14 @@ const firebaseConfig = {
   measurementId:     "G-MJ22BD2J1J"
 };
 
-// Prevent re-initialization in hot reload or multi-import setups
+// --- Prevent re-initialization in hot reload or multi-import setups
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 const db      = getFirestore(app);
 const auth    = getAuth(app);
 const storage = getStorage(app);
 
-// Fetch most recent update from Firestore 'updates' collection
+// --- Latest Update Helper (for global use)
 async function getLatestUpdate() {
   try {
     const updatesRef = collection(db, "updates");
@@ -44,15 +49,36 @@ async function getLatestUpdate() {
   }
 }
 
-// Optional: handy helper for schoolId (for future instructor/admin use)
+// --- User & School helpers (future admin/school portals)
 export function getCurrentUserSchool() {
-  return localStorage.getItem("schoolId") ||
+  return (
+    localStorage.getItem("schoolId") ||
     (auth.currentUser && auth.currentUser.schoolId) ||
-    null;
+    null
+  );
+}
+export async function getUserRole(email) {
+  // Used in multi-role auth listeners, cross-role dashboards
+  try {
+    const docSnap = await getDoc(doc(db, "userRoles", email));
+    return docSnap.exists() ? docSnap.data().role : "student";
+  } catch (e) {
+    return "student";
+  }
+}
+export async function setUserRole(email, role, schoolId = null) {
+  try {
+    await setDoc(doc(db, "userRoles", email), { role, schoolId }, { merge: true });
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
-// Main exports
+// --- Exports for compatibility everywhere ---
 export {
   app, db, auth, storage, getLatestUpdate,
-  collection, query, orderBy, limit, getDocs
+  collection, query, orderBy, limit, getDocs,
+  doc, getDoc, setDoc, updateDoc,
+  getUserRole, setUserRole
 };
