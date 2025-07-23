@@ -1,3 +1,5 @@
+// app.js
+
 // ======== DEBUG/DEV TRAP ========
 console.log("✅ app.js loaded!");
 window.onerror = function(msg, src, lineno, col, error) {
@@ -19,6 +21,7 @@ import * as studentPages    from "./student/index.js";
 import * as instructorPages from "./instructor/index.js";
 import * as adminPages      from "./admin/index.js";
 import * as superadminPages from "./superadmin/index.js";
+import { getCurrentSchoolBranding, setCurrentSchool } from "./school-branding.js"; // <-- NEW
 
 // --- GLOBAL STATE ---
 export let currentUserEmail = null;
@@ -117,7 +120,7 @@ onAuthStateChanged(auth, async user => {
         await setDoc(doc(db, "users", user.email), userData);
         localStorage.setItem("fullName", userData.name);
       }
-      // Sync to localStorage and globals for easy access
+      // --- SYNC TO LOCAL STORAGE AND WINDOW ---
       localStorage.setItem("userRole", userRole);
       localStorage.setItem("currentUserEmail", user.email);
       window.currentUserRole = userRole;
@@ -126,6 +129,8 @@ onAuthStateChanged(auth, async user => {
         localStorage.setItem("schoolId", schoolIdVal);
         window.schoolId = schoolIdVal;
         schoolId = schoolIdVal;
+        // --- SET CSS VARS/BRANDING ---
+        setCurrentSchool(schoolIdVal); // <-- Make sure CSS theme is updated!
       } else {
         localStorage.removeItem("schoolId");
         window.schoolId = null;
@@ -146,7 +151,7 @@ onAuthStateChanged(auth, async user => {
       renderWelcome();
     }
   } else {
-    // Not logged in, clear everything
+    // --- LOGOUT or NOT LOGGED IN ---
     currentUserEmail = null;
     currentUserRole = null;
     schoolId = null;
@@ -155,8 +160,10 @@ onAuthStateChanged(auth, async user => {
     window.schoolId = null;
     localStorage.removeItem("userRole");
     localStorage.removeItem("schoolId");
+    localStorage.removeItem("schoolBrand"); // <-- Clear branding on logout!
     showPageTransitionLoader();
     setTimeout(() => {
+      // Always renderWelcome with correct default school branding
       renderWelcome();
       hidePageTransitionLoader();
     }, 300);
@@ -169,5 +176,8 @@ onAuthStateChanged(auth, async user => {
 
 // --- INITIAL LOAD ---
 window.addEventListener("DOMContentLoaded", () => {
+  // On initial load, always update CSS vars for current school
+  const sid = localStorage.getItem("schoolId");
+  if (sid) setCurrentSchool(sid); // Applies CSS var for brand color
   // Auth state listener will trigger and handle boot
 });
