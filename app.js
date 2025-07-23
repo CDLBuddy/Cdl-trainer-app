@@ -48,6 +48,8 @@ import {
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 onAuthStateChanged(auth, async user => {
+  console.log("🔔 Auth state changed! User:", user); // <--- Debug line added
+
   // Remove any loading overlays/errors
   document.getElementById("js-error")?.classList.add("hidden");
   document.getElementById("loading-screen")?.classList.add("hidden");
