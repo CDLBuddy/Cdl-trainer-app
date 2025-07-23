@@ -7,6 +7,7 @@ import { askCDLAI } from "./ai-api.js"; // Now points to student/ai-api.js
 /**
  * Renders the AI Coach modal for CDL Buddy students.
  * Supports conversation history, context suggestions, FMCSA compliance, and responsive UI.
+ * Now includes schoolId/role context, improved accessibility, and robust event cleanup.
  */
 export function renderAICoach(container = document.getElementById("app")) {
   // Remove any existing modal overlays
@@ -15,6 +16,11 @@ export function renderAICoach(container = document.getElementById("app")) {
   const context = (window.location.hash || "dashboard").replace("#", "");
   const name = localStorage.getItem("fullName") || "Driver";
   const isFirstTime = !localStorage.getItem("aiCoachWelcomed");
+
+  // Multi-tenant: get school/role for context
+  const schoolId = localStorage.getItem("schoolId") || "";
+  const userRole = localStorage.getItem("userRole") || "student";
+  const email    = localStorage.getItem("currentUserEmail") || (auth.currentUser?.email) || "";
 
   // Prompts tailored by app section/context
   const starterPrompts = {
@@ -51,6 +57,7 @@ export function renderAICoach(container = document.getElementById("app")) {
   // Build modal
   const modal = document.createElement("div");
   modal.className = "ai-coach-modal modal-overlay fade-in";
+  modal.setAttribute("tabindex", "0");
   modal.innerHTML = `
     <div class="modal-glass-bg"></div>
     <div class="modal-card ai-coach-card glass" role="dialog" aria-modal="true" aria-label="AI CDL Coach">
@@ -64,7 +71,7 @@ export function renderAICoach(container = document.getElementById("app")) {
         <span class="ai-coach-title" style="font-size: 1.25rem; font-weight: 700; color: var(--accent, #b6f0f7); margin-bottom: 4px;">AI Coach</span>
         <button class="modal-close" aria-label="Close" style="margin-left:auto;">&times;</button>
       </div>
-      <div class="ai-coach-modal-body">
+      <div class="ai-coach-modal-body" aria-live="polite">
         <div class="ai-coach-intro">
           👋 Hi${name ? `, ${name}` : ""}! I’m your AI CDL Coach.<br>
           <span class="ai-coach-intro-small">
@@ -80,7 +87,7 @@ export function renderAICoach(container = document.getElementById("app")) {
       </div>
       <form class="ai-coach-input-row" id="ai-coach-form" autocomplete="off">
         <input type="text" class="ai-coach-input" id="ai-coach-input"
-          placeholder="Type your CDL question..." autocomplete="off" autofocus />
+          placeholder="Type your CDL question..." autocomplete="off" autofocus aria-label="Ask AI Coach"/>
         <button type="submit" class="btn ai-coach-send">Send</button>
       </form>
     </div>
@@ -88,6 +95,7 @@ export function renderAICoach(container = document.getElementById("app")) {
 
   document.body.appendChild(modal);
   document.body.style.overflow = "hidden";
+  modal.focus();
 
   // Conversation state from session
   const chatHistoryEl = modal.querySelector("#ai-chat-history");
@@ -159,12 +167,18 @@ export function renderAICoach(container = document.getElementById("app")) {
     chatHistoryEl.appendChild(loadingBubble);
     chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
 
-    // CALL AI
+    // CALL AI with full user context
     let reply = "";
     try {
-      reply = await askCDLAI(question, conversation.slice(-10));
+      reply = await askCDLAI(
+        question,
+        conversation.slice(-10),
+        { role: userRole, schoolId, email, context } // send all useful context
+      );
     } catch (err) {
       reply = "Sorry, I couldn't reach the AI right now.";
+      // Optionally, log error here for admin analytics/debug
+      console.error("AI Coach API error:", err);
     }
 
     let fmcsatag = "Based on FMCSA regulations, updated 2024";
@@ -201,20 +215,27 @@ export function renderAICoach(container = document.getElementById("app")) {
     }
   };
 
-  // Modal close
-  modal.querySelector(".modal-close")?.addEventListener("click", () => {
+  // Modal close (and robust cleanup)
+  function closeModal() {
     modal.remove();
     document.body.style.overflow = "";
-  });
+    // Return focus to FAB/button if desired (optional)
+    if (container && container.querySelector("#ai-coach-fab")) {
+      container.querySelector("#ai-coach-fab").focus();
+    }
+    // Remove ESC event listener for good
+    window.removeEventListener("keydown", escClose);
+  }
+
+  modal.querySelector(".modal-close")?.addEventListener("click", closeModal);
 
   // ESC key closes modal
-  window.addEventListener("keydown", function escClose(e) {
+  function escClose(e) {
     if (e.key === "Escape") {
-      modal.remove();
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", escClose);
+      closeModal();
     }
-  });
+  }
+  window.addEventListener("keydown", escClose);
 
   // Navigation setup for modals/buttons
   setupNavigation();
