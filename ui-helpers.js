@@ -7,6 +7,9 @@ import {
   serverTimestamp, increment
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
+// --- SCHOOL BRANDING IMPORT (if used globally; optional) ---
+// import { getCurrentSchoolBranding } from "./school-branding.js";
+
 // ─── TOAST MESSAGE SYSTEM (queue, accessible, dismissable) ──────────────
 let toastQueue = [];
 let isToastVisible = false;
@@ -66,7 +69,6 @@ function showNextToast() {
 
 // ─── SMART NAVIGATION (de-duped listeners) ───────────────────────────────
 export function setupNavigation() {
-  // Remove any previous nav event listeners (to avoid stacking)
   document.querySelectorAll("[data-nav]").forEach(btn => {
     btn.replaceWith(btn.cloneNode(true));
   });
@@ -141,18 +143,19 @@ const _headlines = [
   "Study Smarter, Not Harder"
 ];
 let _hw = 0, _hc = 0;
-export function startTypewriter() {
+export function startTypewriter(custom = null) {
   const el = document.getElementById("headline");
   if (!el) return;
-  if (_hc < _headlines[_hw].length) {
-    el.textContent += _headlines[_hw][_hc++];
-    setTimeout(startTypewriter, 100);
+  const headlineArr = custom || _headlines;
+  if (_hc < headlineArr[_hw].length) {
+    el.textContent += headlineArr[_hw][_hc++];
+    setTimeout(() => startTypewriter(custom), 100);
   } else {
     setTimeout(() => {
       el.textContent = "";
       _hc = 0;
-      _hw = (_hw + 1) % _headlines.length;
-      startTypewriter();
+      _hw = (_hw + 1) % headlineArr.length;
+      startTypewriter(custom);
     }, 2000);
   }
 }

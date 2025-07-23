@@ -19,15 +19,15 @@ function getCurrentRole() {
   );
 }
 
-// === SMART NAVIGATION FUNCTION ===
+// === MAIN SMART NAVIGATION FUNCTION ===
 export function handleNavigation(page, direction = "forward", ...args) {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  // Clean up previous modals, overlays, etc.
+  // Clean up overlays
   document.querySelectorAll(".modal-overlay").forEach(el => el.remove());
 
-  // Role detection (window, localStorage, fallback)
+  // Get user role
   const role = getCurrentRole();
 
   // Barrel assignment
@@ -74,12 +74,12 @@ export function handleNavigation(page, direction = "forward", ...args) {
       else renderWelcome(appEl);
       break;
 
-    // --- ADMIN ROUTES (futureproof) ---
+    // --- ADMIN ROUTES ---
     case "admin-dashboard":
       if (role === "admin") rolePages.renderAdminDashboard?.(appEl, ...args);
       else renderWelcome(appEl);
       break;
-    // Add more admin routes here as you expand.
+    // Add more admin routes as you expand
 
     // --- COMMON ROLE ROUTES ---
     case "dashboard":
@@ -107,14 +107,14 @@ export function handleNavigation(page, direction = "forward", ...args) {
       rolePages.renderAICoach?.(appEl, ...args) || renderWelcome(appEl);
       break;
 
-    // --- INSTRUCTOR-SPECIFIC (may add more in future) ---
+    // --- INSTRUCTOR-SPECIFIC ---
     case "checklistReview":
       instructorPages.renderChecklistReviewForInstructor?.(...args) || renderWelcome(appEl);
       break;
 
     // --- AUTH / PUBLIC PAGES ---
     case "login":
-      renderLogin(appEl, ...args);
+      renderLogin(appEl, ...args); // args can include {schoolBrand} etc.
       break;
     case "welcome":
     case "home":

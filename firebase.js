@@ -34,7 +34,7 @@ const db      = getFirestore(app);
 const auth    = getAuth(app);
 const storage = getStorage(app);
 
-// --- Latest Update Helper (for global use)
+// --- Latest Update Helper (for global use) ---
 async function getLatestUpdate() {
   try {
     const updatesRef = collection(db, "updates");
@@ -49,7 +49,7 @@ async function getLatestUpdate() {
   }
 }
 
-// --- User & School helpers (future admin/school portals)
+// --- User & School helpers (multi-school/role support) ---
 export function getCurrentUserSchool() {
   return (
     localStorage.getItem("schoolId") ||
