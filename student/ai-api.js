@@ -1,25 +1,29 @@
 // student/ai-api.js
 
 /**
- * Placeholder for the CDL AI Coach API.
- * This stub returns a test response so your app does not break if the real AI backend is not implemented yet.
- * Replace this with your real API integration (e.g. fetch, OpenAI call) later!
- * 
- * @param {string} question - The user's question.
- * @param {Array} history - (Optional) Recent chat history.
- * @returns {Promise<string>} Simulated AI response.
+ * Placeholder/mock for AI Coach API.
+ * Replace this logic with your real API call when ready.
+ * Accepts: question (string), conversation (array), meta (object: role, schoolId, email, context)
  */
-export async function askCDLAI(question, history = []) {
-  // Log for debugging
-  if (window.APP_DEBUG?.featureFlags) {
-    console.log("🧠 [ai-api.js] AI Coach asked:", question, history);
+export async function askCDLAI(question, conversation = [], meta = {}) {
+  // Simulate network delay
+  await new Promise(res => setTimeout(res, 900));
+
+  // You can customize responses here for demo/testing purposes:
+  if (/checklist|progress/i.test(question)) {
+    return "Your checklist is almost done! Just a few more steps to go.";
   }
-  // Simulate a slight delay for realism
-  await new Promise(res => setTimeout(res, 700));
-  // Return placeholder reply
-  return `🤖 [AI Coach Placeholder] You asked: "${question}"${
-    history && history.length
-      ? `<br><small>Chat history: ${history.length} exchanges</small>`
-      : ""
-  }`;
+  if (/profile|photo/i.test(question)) {
+    return "To complete your profile, be sure to upload a permit photo and fill out all required fields.";
+  }
+  if (/walkthrough|memorize/i.test(question)) {
+    return "Try repeating each section of the walkthrough out loud, or ask me for a memory drill!";
+  }
+  if (/endorsement|hazmat/i.test(question)) {
+    return "An endorsement lets you drive special types of vehicles or carry certain cargo. Hazmat requires a special written test and TSA clearance.";
+  }
+
+  // Default (mock AI) reply:
+  return `This is a placeholder AI Coach response for: "${question}"
+  <br><br><i>(Your conversation and school context is: role=${meta.role}, schoolId=${meta.schoolId || "n/a"})</i>`;
 }
