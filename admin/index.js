@@ -1,16 +1,16 @@
 // admin/index.js
 
-// === MODULE EXPORTS (barrel pattern) ===
+// === ADMIN MODULE BARREL EXPORTS ===
 export { renderAdminDashboard } from './admin-dashboard.js';
 export { renderAdminProfile } from './admin-profile.js';
 export { renderAdminUsers } from './admin-users.js';
 export { renderAdminCompanies } from './admin-companies.js';
 export { renderAdminReports } from './admin-reports.js';
 
-// Optionally: Export shared helpers or state
+// Optionally: Export shared helpers or state (if needed elsewhere)
 export { currentUserEmail } from './admin-dashboard.js';
 
-// === SMART NAVIGATION HANDLER (optional, but recommended for modular routing) ===
+// === ADMIN NAVIGATION HANDLER ===
 export function handleAdminNav(page, ...args) {
   switch (page) {
     case "dashboard":
@@ -33,17 +33,21 @@ export function handleAdminNav(page, ...args) {
   }
 }
 
-// --- (Optional) Load dashboard on DOMContentLoaded if using direct entry point ---
+// --- (Optional) Standalone admin entry for direct page loads ---
+// Only runs if admin section is directly accessed (rare, but futureproof)
 window.addEventListener("DOMContentLoaded", () => {
-  // Only auto-load if #admin in hash, otherwise defer to app shell
-  if (location.hash.startsWith("#admin")) renderAdminDashboard();
+  if (location.hash.startsWith("#admin")) {
+    // Example: #admin-users, #admin-companies, #admin-profile, etc.
+    const match = location.hash.match(/^#admin-([a-z]+)/);
+    const page = match ? match[1] : "dashboard";
+    handleAdminNav(page);
+  }
 });
 
-// --- (Optional) Hash-based navigation ---
+// --- (Optional) Admin-specific popstate handling (not required if global nav already works) ---
 window.addEventListener("popstate", () => {
   if (!location.hash.startsWith("#admin")) return;
-  // E.g. #admin-users, #admin-reports
-  const pageMatch = location.hash.match(/^#admin-([a-z]+)/);
-  const page = pageMatch ? pageMatch[1] : "dashboard";
+  const match = location.hash.match(/^#admin-([a-z]+)/);
+  const page = match ? match[1] : "dashboard";
   handleAdminNav(page);
 });

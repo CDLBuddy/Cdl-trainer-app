@@ -1,9 +1,8 @@
 // admin/admin-reports.js
 
 // ===== PDF EXPORT DEPENDENCY =====
-// Include jsPDF via CDN in your HTML (if not already):
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-// jsPDF will be available as window.jspdf.jsPDF
+// window.jspdf.jsPDF will be available
 
 // ===== CSV EXPORT (No dependencies needed) =====
 
@@ -80,20 +79,16 @@ export function exportUsersToPDF(users) {
   doc.text("CDL User Export", 14, 18);
   doc.setFontSize(10);
 
-  // Auto-table logic (simple manual layout)
+  // Simple auto-table logic
   let y = 28;
-  // Draw headers
-  colHeaders.forEach((h, i) => {
-    doc.text(h, 14 + i * 26, y);
-  });
+  colHeaders.forEach((h, i) => doc.text(h, 14 + i * 26, y));
   y += 7;
-  // Draw rows
   rows.forEach(row => {
     row.forEach((cell, i) => {
       doc.text(String(cell), 14 + i * 26, y, { maxWidth: 26 });
     });
     y += 7;
-    if (y > 270) { // Add new page if too long
+    if (y > 270) { // Page break
       doc.addPage();
       y = 20;
     }
@@ -107,7 +102,6 @@ export function exportUsersToPDF(users) {
  * @param {Array} companies - Array of company objects.
  */
 export function exportCompaniesToCSV(companies) {
-  // TODO: Implement export for companies.
   alert("Company CSV export coming soon!");
 }
 
@@ -116,7 +110,6 @@ export function exportCompaniesToCSV(companies) {
  * @param {Array} companies - Array of company objects.
  */
 export function exportCompaniesToPDF(companies) {
-  // TODO: Implement export for companies.
   alert("Company PDF export coming soon!");
 }
 

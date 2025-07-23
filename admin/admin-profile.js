@@ -10,18 +10,26 @@ import {
 import { showToast, setupNavigation } from "../ui-helpers.js";
 import { renderWelcome } from "../welcome.js";
 import { renderAdminDashboard } from "./admin-dashboard.js";
+import { getCurrentSchoolBranding } from "../school-branding.js";
 
-let currentUserEmail = window.currentUserEmail || null;
+let currentUserEmail = window.currentUserEmail || localStorage.getItem("currentUserEmail") || null;
 
 /** Admin Profile Renderer */
 export async function renderAdminProfile(container = document.getElementById("app")) {
-  if (!container) return;
-
+  if (!container) container = document.getElementById("app");
   if (!currentUserEmail) {
     showToast("No user found. Please log in again.");
     renderWelcome();
     return;
   }
+
+  // School Branding (logo, color, schoolName)
+  const brand = getCurrentSchoolBranding?.() || {};
+  const headerLogo = brand.logoUrl
+    ? `<img src="${brand.logoUrl}" alt="School Logo" class="dashboard-logo" style="max-width:90px;vertical-align:middle;margin-bottom:3px;">`
+    : "";
+  const schoolName = brand.schoolName || "CDL Trainer";
+  const accent = brand.primaryColor || "#b48aff";
 
   // Fetch admin data
   let userData = {};
@@ -59,6 +67,10 @@ export async function renderAdminProfile(container = document.getElementById("ap
 
   container.innerHTML = `
     <div class="screen-wrapper fade-in profile-page" style="max-width:520px;margin:0 auto;">
+      <header style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+        <span style="font-size:1.35em;font-weight:500;color:${accent};">${schoolName}</span>
+        ${headerLogo}
+      </header>
       <h2>👤 Admin Profile <span class="role-badge admin">Admin</span></h2>
       <form id="admin-profile-form" style="display:flex;flex-direction:column;gap:1.1rem;">
         <label>
@@ -115,7 +127,7 @@ export async function renderAdminProfile(container = document.getElementById("ap
         <label>
           Digital Signature: <input type="text" name="adminSignature" value="${adminSignature || ""}" placeholder="Type or sign your name" />
         </label>
-        <button class="btn primary wide" type="submit">Save Profile</button>
+        <button class="btn primary wide" type="submit" style="background:${accent};border:none;">Save Profile</button>
         <button class="btn outline" id="back-to-admin-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅ Dashboard</button>
       </form>
     </div>

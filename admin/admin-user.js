@@ -3,8 +3,6 @@
 import { db } from "../firebase.js";
 import {
   collection,
-  query,
-  where,
   getDocs,
   setDoc,
   doc,
@@ -12,7 +10,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { showToast, setupNavigation } from "../ui-helpers.js";
 
-// Named export for main admin users page
+/**
+ * Renders the main admin users management page.
+ * @param {HTMLElement} container
+ */
 export async function renderAdminUsers(container = document.getElementById("app")) {
   if (!container) return;
 
@@ -42,12 +43,11 @@ export async function renderAdminUsers(container = document.getElementById("app"
     console.error("Admin user fetch error", e);
   }
 
-  // --- Instructor list for assignment dropdowns ---
+  // --- Instructor & Company lists ---
   const instructorList = allUsers.filter(u => u.role === "instructor");
-  // --- Company list for assignment/filter ---
   const companyList = Array.from(new Set(allUsers.map(u => u.assignedCompany).filter(Boolean)));
 
-  // --- Render layout ---
+  // --- Render UI ---
   container.innerHTML = `
     <div class="screen-wrapper fade-in admin-users-page" style="padding: 24px; max-width: 1160px; margin: 0 auto;">
       <h2>👥 Manage Users</h2>
@@ -148,14 +148,14 @@ export async function renderAdminUsers(container = document.getElementById("app"
 
   // --- Role Change Handler ---
   container.querySelectorAll(".role-select").forEach(select => {
-    select.addEventListener("change", async (e) => {
+    select.addEventListener("change", async () => {
       const userEmail = select.getAttribute("data-user");
       const newRole = select.value;
       try {
         await setDoc(doc(db, "users", userEmail), { role: newRole }, { merge: true });
         await setDoc(doc(db, "userRoles", userEmail), { role: newRole }, { merge: true });
         showToast(`Role updated for ${userEmail}`);
-        renderAdminUsers(container); // Refresh
+        renderAdminUsers(container); // Refresh UI
       } catch (err) {
         showToast("Failed to update role.");
       }
@@ -178,13 +178,13 @@ export async function renderAdminUsers(container = document.getElementById("app"
 
   // --- Instructor Assignment Handler ---
   container.querySelectorAll(".instructor-select").forEach(select => {
-    select.addEventListener("change", async (e) => {
+    select.addEventListener("change", async () => {
       const userEmail = select.getAttribute("data-user");
       const newInstructor = select.value;
       try {
         await setDoc(doc(db, "users", userEmail), { assignedInstructor: newInstructor }, { merge: true });
         showToast(`Instructor assigned to ${userEmail}`);
-        renderAdminUsers(container); // Refresh
+        renderAdminUsers(container); // Refresh UI
       } catch (err) {
         showToast("Failed to assign instructor.");
       }
@@ -193,14 +193,14 @@ export async function renderAdminUsers(container = document.getElementById("app"
 
   // --- Remove User Handler ---
   container.querySelectorAll(".btn-remove-user").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
+    btn.addEventListener("click", async () => {
       const userEmail = btn.getAttribute("data-user");
       if (!confirm(`Remove user: ${userEmail}? This cannot be undone.`)) return;
       try {
         await deleteDoc(doc(db, "users", userEmail));
         await deleteDoc(doc(db, "userRoles", userEmail));
         showToast(`User ${userEmail} removed`);
-        renderAdminUsers(container);
+        renderAdminUsers(container); // Refresh UI
       } catch (err) {
         showToast("Failed to remove user.");
       }
@@ -209,7 +209,6 @@ export async function renderAdminUsers(container = document.getElementById("app"
 
   // --- Back to Dashboard ---
   container.querySelector("#back-to-admin-dashboard-btn")?.addEventListener("click", () => {
-    // Use your smart navigation or import directly
     import("./admin-dashboard.js").then(mod => mod.renderAdminDashboard());
   });
 }
