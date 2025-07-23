@@ -53,20 +53,30 @@ const visualRecall = [
   }
 ];
 
+// --- User Context for Future Multi-tenant Support ---
+const currentUserEmail = (
+  window.currentUserEmail ||
+  localStorage.getItem("currentUserEmail") ||
+  (auth.currentUser && auth.currentUser.email) ||
+  ""
+);
+const userRole = localStorage.getItem("userRole") || "student";
+const schoolId = localStorage.getItem("schoolId") || "";
+
 // --- Walkthrough Page ---
 export async function renderWalkthrough(container = document.getElementById("app")) {
   if (!container) return;
-  if (!auth.currentUser || !auth.currentUser.email) {
+  if (!currentUserEmail) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
     setupNavigation();
     return;
   }
 
-  // Fetch user profile (CDL class)
+  // Fetch user profile (CDL class, school)
   let userData = {};
   try {
     const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", auth.currentUser.email));
+    const q = query(usersRef, where("email", "==", currentUserEmail));
     const snap = await getDocs(q);
     userData = snap.empty ? {} : snap.docs[0].data();
   } catch (e) {
@@ -75,11 +85,12 @@ export async function renderWalkthrough(container = document.getElementById("app
     return;
   }
   const cdlClass = userData?.cdlClass || null;
+  const school   = userData?.schoolName || schoolId || "N/A";
 
   // Fetch Drill Progress
   let progress = {};
   try {
-    progress = await getUserProgress(auth.currentUser.email) || {};
+    progress = await getUserProgress(currentUserEmail) || {};
   } catch (e) { progress = {}; }
   const completedDrills = {
     fill: !!progress.drills?.fill,
@@ -92,13 +103,13 @@ export async function renderWalkthrough(container = document.getElementById("app
 
   // --- Main HTML ---
   let content = `
-    <div class="screen-wrapper walkthrough-page fade-in">
-      <h2>🧭 CDL Walkthrough Practice</h2>
+    <div class="screen-wrapper walkthrough-page fade-in" tabindex="0">
+      <h2>🧭 CDL Walkthrough Practice ${school !== "N/A" ? `<span class="school-badge">${school}</span>` : ""}</h2>
   `;
 
   if (!cdlClass) {
     content += `
-      <div class="alert-box">
+      <div class="alert-box" role="alert">
         ⚠ You haven’t selected your CDL class yet.<br>
         Please go to your <strong>Profile</strong> and select one so we can load the correct walkthrough script.
       </div>
@@ -107,13 +118,11 @@ export async function renderWalkthrough(container = document.getElementById("app
   } else {
     content += `
       <p><strong>CDL Class:</strong> ${cdlClass}</p>
-      <p>Study the following walkthrough to prepare for your in-person vehicle inspection test. <span style="color:var(--accent);font-weight:bold;">Critical sections will be highlighted.</span></p>
-      <div class="walkthrough-script">
+      <p>Study the following walkthrough to prepare for your in-person vehicle inspection test. <span style="color:var(--accent);font-weight:bold;">Critical sections are highlighted.</span></p>
+      <div class="walkthrough-script" aria-label="Walkthrough script">
         <h3>🚨 Three-Point Brake Check <span style="color:var(--accent);">(Must Memorize Word-for-Word)</span></h3>
-        <div class="highlight-section">
-          <p>"With the engine off and key on, I will release the parking brake, hold the service brake pedal for 1 minute, and check for air loss no more than 3 PSI."</p>
-          <p>"Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI."</p>
-          <p>"Finally, I will fan the brakes to trigger the spring brake pop-out between 20–45 PSI."</p>
+        <div class="highlight-section" aria-live="polite">
+          ${brakeCheckFull.map(line => `<p>${line}</p>`).join("")}
         </div>
         <h3>✅ Entering the Vehicle</h3>
         <p>Say: <strong>"Getting in using three points of contact."</strong></p>
@@ -123,14 +132,14 @@ export async function renderWalkthrough(container = document.getElementById("app
         <p>Check oil level with dipstick. Look for leaks, cracks, or broken hoses...</p>
       </div>
       <div style="margin:2rem 0 1.3rem 0;">
-        <progress value="${Object.values(completedDrills).filter(Boolean).length}" max="4" style="width:100%;"></progress>
+        <progress value="${Object.values(completedDrills).filter(Boolean).length}" max="4" style="width:100%;" aria-valuemax="4" aria-valuenow="${Object.values(completedDrills).filter(Boolean).length}" aria-label="Walkthrough drill progress"></progress>
         <span>${Object.values(completedDrills).filter(Boolean).length}/4 drills completed</span>
       </div>
-      <nav class="drills-nav" style="display:flex;gap:0.7rem;margin-bottom:1.2rem;">
-        <button data-drill="fill" class="btn small${completedDrills.fill ? ' drill-done' : ''}">Fill-in-the-Blank${completedDrills.fill ? ' ✅' : ''}</button>
-        <button data-drill="order" class="btn small${completedDrills.order ? ' drill-done' : ''}">Ordered Steps${completedDrills.order ? ' ✅' : ''}</button>
-        <button data-drill="type" class="btn small${completedDrills.type ? ' drill-done' : ''}">Typing Challenge${completedDrills.type ? ' ✅' : ''}</button>
-        <button data-drill="visual" class="btn small${completedDrills.visual ? ' drill-done' : ''}">Visual Recall${completedDrills.visual ? ' ✅' : ''}</button>
+      <nav class="drills-nav" style="display:flex;gap:0.7rem;margin-bottom:1.2rem;" aria-label="Drill navigation">
+        <button data-drill="fill" class="btn small${completedDrills.fill ? ' drill-done' : ''}" aria-pressed="${currentDrill === 'fill'}">Fill-in-the-Blank${completedDrills.fill ? ' ✅' : ''}</button>
+        <button data-drill="order" class="btn small${completedDrills.order ? ' drill-done' : ''}" aria-pressed="${currentDrill === 'order'}">Ordered Steps${completedDrills.order ? ' ✅' : ''}</button>
+        <button data-drill="type" class="btn small${completedDrills.type ? ' drill-done' : ''}" aria-pressed="${currentDrill === 'type'}">Typing Challenge${completedDrills.type ? ' ✅' : ''}</button>
+        <button data-drill="visual" class="btn small${completedDrills.visual ? ' drill-done' : ''}" aria-pressed="${currentDrill === 'visual'}">Visual Recall${completedDrills.visual ? ' ✅' : ''}</button>
       </nav>
       <div id="drills-container"></div>
       <canvas id="drill-confetti" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:100;"></canvas>
@@ -171,19 +180,23 @@ export async function renderWalkthrough(container = document.getElementById("app
   async function markDrillComplete(type) {
     if (completedDrills[type]) return;
     completedDrills[type] = true;
-    await updateELDTProgress(auth.currentUser.email, {
-      [`drills.${type}`]: true,
-      [`drills.${type}CompletedAt`]: new Date().toISOString()
-    });
-    const completedCount = Object.values(completedDrills).filter(Boolean).length;
-    document.querySelector("progress").value = completedCount;
-    document.querySelector("progress").nextElementSibling.textContent = `${completedCount}/4 drills completed`;
-    document.querySelector(`[data-drill='${type}']`).innerHTML += " ✅";
-    document.querySelector(`[data-drill='${type}']`).classList.add("drill-done");
-    if (Object.values(completedDrills).every(Boolean)) {
-      showConfetti();
-      showToast("🎉 All drills complete! Walkthrough milestone saved.");
-      await markStudentWalkthroughComplete(auth.currentUser.email);
+    try {
+      await updateELDTProgress(currentUserEmail, {
+        [`drills.${type}`]: true,
+        [`drills.${type}CompletedAt`]: new Date().toISOString()
+      });
+      const completedCount = Object.values(completedDrills).filter(Boolean).length;
+      document.querySelector("progress").value = completedCount;
+      document.querySelector("progress").nextElementSibling.textContent = `${completedCount}/4 drills completed`;
+      document.querySelector(`[data-drill='${type}']`).innerHTML += " ✅";
+      document.querySelector(`[data-drill='${type}']`).classList.add("drill-done");
+      if (Object.values(completedDrills).every(Boolean)) {
+        showConfetti();
+        showToast("🎉 All drills complete! Walkthrough milestone saved.");
+        await markStudentWalkthroughComplete(currentUserEmail);
+      }
+    } catch (err) {
+      showToast("❌ Error saving progress. Try again.", 3200, "error");
     }
   }
 
@@ -196,12 +209,12 @@ export async function renderWalkthrough(container = document.getElementById("app
         let blanks = 0;
         const text = item.text.replace(/___/g, () => {
           blanks++;
-          return `<input type="text" size="5" class="blank-input" data-answer="${item.answers[blanks-1]}" required style="margin:0 3px;" />`;
+          return `<input type="text" size="5" class="blank-input" data-answer="${item.answers[blanks-1]}" required style="margin:0 3px;" aria-label="Blank" />`;
         });
         html += `<form class="drill-blank" data-idx="${idx}" style="margin-bottom:1.2rem;">
                   <div>${text}</div>
                   <button class="btn" type="submit" style="margin-top:0.6rem;">Check</button>
-                  <div class="drill-result" style="margin-top:0.3rem;"></div>
+                  <div class="drill-result" style="margin-top:0.3rem;" aria-live="polite"></div>
                 </form>`;
       });
     } else if (drillType === "order") {
@@ -211,17 +224,17 @@ export async function renderWalkthrough(container = document.getElementById("app
                                    .sort((a, b) => a.sort - b.sort)
                                    .map((o) => o.v);
       shuffled.forEach((step, idx) => {
-        html += `<li draggable="true" class="order-step" data-idx="${idx}" style="background:#222;padding:7px 11px;border-radius:8px;margin:7px 0;cursor:grab;">${step}</li>`;
+        html += `<li draggable="true" class="order-step" data-idx="${idx}" style="background:#222;padding:7px 11px;border-radius:8px;margin:7px 0;cursor:grab;" tabindex="0" aria-label="Step">${step}</li>`;
       });
       html += `</ul>
         <button class="btn" id="check-order-btn">Check Order</button>
-        <div class="drill-result" style="margin-top:0.3rem;"></div>`;
+        <div class="drill-result" style="margin-top:0.3rem;" aria-live="polite"></div>`;
     } else if (drillType === "type") {
       html += `<h3>Type the Brake Check Phrase Word-for-Word</h3>
         <form id="typing-challenge">
-          <textarea rows="4" style="width:100%;" placeholder="Type the full phrase here"></textarea>
+          <textarea rows="4" style="width:100%;" placeholder="Type the full phrase here" aria-label="Type phrase"></textarea>
           <button class="btn" type="submit" style="margin-top:0.5rem;">Check</button>
-          <div class="drill-result" style="margin-top:0.3rem;"></div>
+          <div class="drill-result" style="margin-top:0.3rem;" aria-live="polite"></div>
         </form>
         <div style="font-size:0.95em;margin-top:0.6rem;opacity:0.6;">Hint: ${brakeCheckFull[0]}</div>`;
     } else if (drillType === "visual") {
@@ -229,9 +242,9 @@ export async function renderWalkthrough(container = document.getElementById("app
         <div style="margin-bottom:1rem;">
           <img src="${visualRecall[0].img}" alt="Brake Gauge" style="max-width:160px;display:block;margin-bottom:0.7rem;">
           <div>${visualRecall[0].question}</div>
-          <input type="text" class="visual-answer" placeholder="Your answer" />
+          <input type="text" class="visual-answer" placeholder="Your answer" aria-label="Visual answer" />
           <button class="btn" id="check-visual-btn" style="margin-left:9px;">Check</button>
-          <div class="drill-result" style="margin-top:0.3rem;"></div>
+          <div class="drill-result" style="margin-top:0.3rem;" aria-live="polite"></div>
         </div>`;
     }
     drillsContainer.innerHTML = html;

@@ -14,28 +14,37 @@ import { renderWalkthrough }    from "./walkthrough.js";
 import { renderPracticeTests }  from "./practice-tests.js";
 import { renderDashboard }      from "./student-dashboard.js";
 
+// User/email fallback (future-proofed, matches all modules)
+const currentUserEmail =
+  window.currentUserEmail ||
+  localStorage.getItem("currentUserEmail") ||
+  (auth.currentUser && auth.currentUser.email) ||
+  null;
+
 // Main Checklist Renderer
 export async function renderChecklists(container = document.getElementById("app")) {
   if (!container) return;
 
-  // Consistent user email resolution
-  const email = (auth.currentUser && auth.currentUser.email) || localStorage.getItem("currentUserEmail");
-  if (!email) {
+  if (!currentUserEmail) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
+    setupNavigation();
     return;
   }
 
   // Fetch user data and role
   let userData = {};
   let userRole = localStorage.getItem("userRole") || "student";
+  let schoolId = localStorage.getItem("schoolId") || "";
   try {
     const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", email));
+    const q = query(usersRef, where("email", "==", currentUserEmail));
     const snap = await getDocs(q);
     if (!snap.empty) {
       userData = snap.docs[0].data();
       userRole = userData.role || userRole;
+      schoolId = userData.schoolId || schoolId;
       localStorage.setItem("userRole", userRole);
+      if (schoolId) localStorage.setItem("schoolId", schoolId);
     }
   } catch (e) {
     userData = {};
@@ -43,6 +52,7 @@ export async function renderChecklists(container = document.getElementById("app"
 
   if (userRole !== "student") {
     container.innerHTML = "<p>This checklist is only available for students.</p>";
+    setupNavigation();
     return;
   }
 
@@ -54,8 +64,8 @@ export async function renderChecklists(container = document.getElementById("app"
     walkthroughComplete = false,
   } = userData;
 
-  // Define all checklist sections and steps
-  const checklistSections = [
+  // Define all checklist sections and steps (exportable for future instructor/admin checklists)
+  export const studentChecklistSections = [
     {
       header: "Personal Info",
       items: [
@@ -126,7 +136,7 @@ export async function renderChecklists(container = document.getElementById("app"
   ];
 
   // Progress percent calculation
-  const flatChecklist = checklistSections.flatMap(sec => sec.items);
+  const flatChecklist = studentChecklistSections.flatMap(sec => sec.items);
   const complete = flatChecklist.filter(x => x.done).length;
   const percent = Math.round((complete / flatChecklist.length) * 100);
 
@@ -150,7 +160,7 @@ export async function renderChecklists(container = document.getElementById("app"
         <div class="progress-fill" style="width:${percent}%;transition:width 0.6s cubic-bezier(.45,1.4,.5,1.02);"></div>
         <span class="progress-label">${percent}% Complete</span>
       </div>
-      ${checklistSections.map(section => `
+      ${studentChecklistSections.map(section => `
         <div class="checklist-section">
           <h3 class="checklist-section-header">${section.header}</h3>
           <ul class="checklist-list">
@@ -209,6 +219,9 @@ export async function renderChecklists(container = document.getElementById("app"
       details.style.display = expanded ? "block" : "none";
       label.style.display = expanded ? "none" : "";
       this.setAttribute("aria-expanded", expanded ? "true" : "false");
+    });
+    main.addEventListener("keyup", function(e) {
+      if (e.key === "Enter" || e.key === " ") this.click();
     });
   });
 
