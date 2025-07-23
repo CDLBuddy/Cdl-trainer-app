@@ -1,6 +1,6 @@
 // student/profile.js
 
-import { db, storage } from '../firebase.js';
+import { db, storage, app } from '../firebase.js';
 import {
   showToast,
   setupNavigation,
@@ -10,11 +10,14 @@ import {
 } from '../ui-helpers.js';
 
 import {
+  doc,
+  getDoc,
+  updateDoc,
+  serverTimestamp,
   collection,
   query,
   where,
-  getDocs,
-  updateDoc
+  getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import {
   ref,
@@ -22,12 +25,31 @@ import {
   getDownloadURL
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 
-import { renderStudentDashboard } from './student-dashboard.js';
+import { renderDashboard as renderStudentDashboard } from './student-dashboard.js';
 
-let currentUserEmail = window.currentUserEmail ||
+let currentUserEmail =
+  window.currentUserEmail ||
   (window.auth?.currentUser?.email) ||
   localStorage.getItem("currentUserEmail") ||
   null;
+
+// Utility: fetch school name from schoolId
+async function fetchSchoolName(schoolId) {
+  if (!schoolId) return '';
+  try {
+    const schoolDoc = await getDoc(doc(db, "schools", schoolId));
+    return schoolDoc.exists() ? schoolDoc.data().name : '';
+  } catch {
+    return '';
+  }
+}
+
+// Utility: HTML-escape for security
+function escapeHTML(str) {
+  return (str || '').replace(/[&<>"'`]/g, s =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;', '`':'&#96;' })[s]
+  );
+}
 
 export async function renderProfile(container = document.getElementById("app")) {
   if (!container) return;
@@ -37,17 +59,28 @@ export async function renderProfile(container = document.getElementById("app")) 
     return;
   }
 
-  // Fetch user data
+  // --- FETCH user data by doc ID (faster, safer) ---
   let userData = {};
+  let userDocRef = doc(db, "users", currentUserEmail);
   try {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", currentUserEmail));
-    const snap = await getDocs(q);
-    if (!snap.empty) userData = snap.docs[0].data();
-    else { showToast("Profile not found."); window.location.reload(); return; }
+    const userSnap = await getDoc(userDocRef);
+    if (userSnap.exists()) {
+      userData = userSnap.data();
+    } else {
+      showToast("Profile not found."); window.location.reload(); return;
+    }
   } catch { userData = {}; }
 
-  // Fields & defaults
+  // --- Enforce role and schoolId from Firestore ---
+  const userRole = userData.role || "student";
+  const schoolId = userData.schoolId || "";
+  const status   = userData.status || "active"; // Can be 'active', 'inactive', etc.
+
+  // --- Fetch and display school name ---
+  let schoolName = "";
+  if (schoolId) schoolName = await fetchSchoolName(schoolId);
+
+  // --- Fields & defaults ---
   const {
     name = "", dob = "", profilePicUrl = "",
     cdlClass = "", endorsements = [], restrictions = [],
@@ -61,26 +94,28 @@ export async function renderProfile(container = document.getElementById("app")) 
     course = "", schedulePref = "", scheduleNotes = "",
     paymentStatus = "", paymentProofUrl = "",
     accommodation = "", studentNotes = "",
-    profileProgress = 0
+    profileProgress = 0,
+    profileUpdatedAt = null,
+    lastUpdatedBy = "",
   } = userData;
 
-  const endorsementOptions = [
-    { val: "H", label: "Hazmat (H)" },
-    { val: "N", label: "Tanker (N)" },
-    { val: "T", label: "Double/Triple Trailers (T)" },
-    { val: "P", label: "Passenger (P)" },
-    { val: "S", label: "School Bus (S)" },
-    { val: "AirBrakes", label: "Air Brakes" },
-    { val: "Other", label: "Other" }
-  ];
-  const restrictionOptions = [
-    { val: "auto", label: "Remove Automatic Restriction" },
-    { val: "airbrake", label: "Remove Air Brake Restriction" },
-    { val: "refresher", label: "One-day Refresher" },
-    { val: "roadtest", label: "Road Test Prep" }
-  ];
+  // --- Validate status ---
+  if (status !== "active") {
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
+        <h2>Profile Inactive</h2>
+        <p>Your profile is currently inactive. Please contact your instructor or school admin for details.</p>
+        <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Dashboard</button>
+      </div>`;
+    document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => renderStudentDashboard());
+    setupNavigation();
+    return;
+  }
 
-  // Profile completion calculation
+  // --- For accessibility: phone pattern and label ids ---
+  const phonePattern = "[0-9\\-\\(\\)\\+ ]{10,15}";
+
+  // --- Profile completion calculation ---
   function calcProgress(fd) {
     let total = 15, filled = 0;
     if (fd.get("name")) filled++;
@@ -101,27 +136,51 @@ export async function renderProfile(container = document.getElementById("app")) 
     return Math.round((filled / total) * 100);
   }
 
-  // --------- FULL FORM SECTION STARTS HERE ----------
+  // --- Field options ---
+  const endorsementOptions = [
+    { val: "H", label: "Hazmat (H)" },
+    { val: "N", label: "Tanker (N)" },
+    { val: "T", label: "Double/Triple Trailers (T)" },
+    { val: "P", label: "Passenger (P)" },
+    { val: "S", label: "School Bus (S)" },
+    { val: "AirBrakes", label: "Air Brakes" },
+    { val: "Other", label: "Other" }
+  ];
+  const restrictionOptions = [
+    { val: "auto", label: "Remove Automatic Restriction" },
+    { val: "airbrake", label: "Remove Air Brake Restriction" },
+    { val: "refresher", label: "One-day Refresher" },
+    { val: "roadtest", label: "Road Test Prep" }
+  ];
+
+  // --- Accessibility: Add aria-labels and label ids ---
   container.innerHTML = `
     <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
-      <h2>👤 Student Profile <span class="role-badge student">Student</span></h2>
+      <h2>
+        👤 Student Profile <span class="role-badge student">Student</span>
+        ${schoolName ? `<span class="school-badge">School: ${escapeHTML(schoolName)}</span>` : ""}
+      </h2>
+      <div style="font-size:0.99em; color:#bbb; margin-bottom:0.5em;">
+        <strong>Status:</strong> ${status.charAt(0).toUpperCase() + status.slice(1)}
+        ${profileUpdatedAt ? `&nbsp;|&nbsp;<span aria-label="Profile last updated">Last updated: ${new Date(profileUpdatedAt.seconds ? profileUpdatedAt.seconds*1000 : profileUpdatedAt).toLocaleString()}</span>` : ""}
+      </div>
       <div class="progress-bar" style="margin-bottom:1.4rem;">
         <div class="progress" style="width:${profileProgress||0}%;"></div>
         <span class="progress-label">${profileProgress||0}% Complete</span>
       </div>
       <form id="profile-form" autocomplete="off" style="display:flex;flex-direction:column;gap:1.1rem;">
-        <label>Name:
-          <input name="name" type="text" required value="${name}" />
+        <label for="name">Name:
+          <input id="name" name="name" type="text" required value="${escapeHTML(name)}" />
         </label>
-        <label>Date of Birth:
-          <input name="dob" type="date" required value="${dob}" />
+        <label for="dob">Date of Birth:
+          <input id="dob" name="dob" type="date" required value="${dob}" />
         </label>
-        <label>Profile Picture:
-          <input name="profilePic" type="file" accept="image/*" />
+        <label for="profilePic">Profile Picture:
+          <input id="profilePic" name="profilePic" type="file" accept="image/*" aria-label="Profile Picture" />
           ${profilePicUrl ? `<img src="${profilePicUrl}" alt="Profile Picture" style="max-width:70px; margin-top:5px; border-radius:9px;">` : ""}
         </label>
-        <label>CDL Class:
-          <select name="cdlClass" required>
+        <label for="cdlClass">CDL Class:
+          <select id="cdlClass" name="cdlClass" required>
             <option value="">Select</option>
             <option value="A" ${cdlClass === "A" ? "selected" : ""}>Class A</option>
             <option value="B" ${cdlClass === "B" ? "selected" : ""}>Class B</option>
@@ -142,8 +201,8 @@ export async function renderProfile(container = document.getElementById("app")) 
             </label>`
           ).join("")}
         </label>
-        <label>Experience:
-          <select name="experience" required>
+        <label for="experience">Experience:
+          <select id="experience" name="experience" required>
             <option value="">Select</option>
             <option value="none" ${experience === "none" ? "selected" : ""}>No Experience</option>
             <option value="1-2" ${experience === "1-2" ? "selected" : ""}>1–2 Years</option>
@@ -152,107 +211,106 @@ export async function renderProfile(container = document.getElementById("app")) 
             <option value="10+" ${experience === "10+" ? "selected" : ""}>10+ Years</option>
           </select>
         </label>
-        <label>Previous Employer:
-          <input name="prevEmployer" type="text" value="${prevEmployer}" />
+        <label for="prevEmployer">Previous Employer:
+          <input id="prevEmployer" name="prevEmployer" type="text" value="${escapeHTML(prevEmployer)}" />
         </label>
-        <label>Assigned Company:
-          <input name="assignedCompany" type="text" value="${assignedCompany}" />
+        <label for="assignedCompany">Assigned Company:
+          <input id="assignedCompany" name="assignedCompany" type="text" value="${escapeHTML(assignedCompany)}" />
         </label>
-        <label>Assigned Instructor:
-          <input name="assignedInstructor" type="text" value="${assignedInstructor}" />
+        <label for="assignedInstructor">Assigned Instructor:
+          <input id="assignedInstructor" name="assignedInstructor" type="text" value="${escapeHTML(assignedInstructor)}" />
         </label>
-        <label>CDL Permit?
-          <select name="cdlPermit" required>
+        <label for="cdlPermit">CDL Permit?
+          <select id="cdlPermit" name="cdlPermit" required>
             <option value="">Select</option>
             <option value="yes" ${cdlPermit === "yes" ? "selected" : ""}>Yes</option>
             <option value="no" ${cdlPermit === "no" ? "selected" : ""}>No</option>
           </select>
         </label>
         <div id="permit-photo-section" style="display:${cdlPermit === "yes" ? "" : "none"};">
-          <label>Permit Photo:
-            <input name="permitPhoto" type="file" accept="image/*" />
+          <label for="permitPhoto">Permit Photo:
+            <input id="permitPhoto" name="permitPhoto" type="file" accept="image/*" aria-label="Permit Photo" />
             ${permitPhotoUrl ? `<img src="${permitPhotoUrl}" alt="Permit Photo" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ""}
           </label>
-          <label>Permit Expiry:
-            <input name="permitExpiry" type="date" value="${permitExpiry}" />
+          <label for="permitExpiry">Permit Expiry:
+            <input id="permitExpiry" name="permitExpiry" type="date" value="${permitExpiry}" />
           </label>
         </div>
-        <label>Driver License Upload:
-          <input name="driverLicense" type="file" accept="image/*" />
+        <label for="driverLicense">Driver License Upload:
+          <input id="driverLicense" name="driverLicense" type="file" accept="image/*" aria-label="Driver License" />
           ${driverLicenseUrl ? `<img src="${driverLicenseUrl}" alt="License" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ""}
         </label>
-        <label>License Expiry:
-          <input name="licenseExpiry" type="date" value="${licenseExpiry}" />
+        <label for="licenseExpiry">License Expiry:
+          <input id="licenseExpiry" name="licenseExpiry" type="date" value="${licenseExpiry}" />
         </label>
-        <label>Medical Card Upload:
-          <input name="medicalCard" type="file" accept="image/*" />
+        <label for="medicalCard">Medical Card Upload:
+          <input id="medicalCard" name="medicalCard" type="file" accept="image/*" aria-label="Medical Card" />
           ${medicalCardUrl ? `<img src="${medicalCardUrl}" alt="Medical Card" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ""}
         </label>
-        <label>Medical Card Expiry:
-          <input name="medCardExpiry" type="date" value="${medCardExpiry}" />
+        <label for="medCardExpiry">Medical Card Expiry:
+          <input id="medCardExpiry" name="medCardExpiry" type="date" value="${medCardExpiry}" />
         </label>
-        <label>Is Your Vehicle Qualified?
-          <select name="vehicleQualified" required>
+        <label for="vehicleQualified">Is Your Vehicle Qualified?
+          <select id="vehicleQualified" name="vehicleQualified" required>
             <option value="">Select</option>
             <option value="yes" ${vehicleQualified === "yes" ? "selected" : ""}>Yes</option>
             <option value="no" ${vehicleQualified === "no" ? "selected" : ""}>No</option>
           </select>
         </label>
         <div id="vehicle-photos-section" style="display:${vehicleQualified === "yes" ? "" : "none"};">
-          <label>Truck Data Plate:
-            <input name="truckPlate" type="file" accept="image/*" />
+          <label for="truckPlate">Truck Data Plate:
+            <input id="truckPlate" name="truckPlate" type="file" accept="image/*" aria-label="Truck Plate" />
             ${truckPlateUrl ? `<img src="${truckPlateUrl}" alt="Truck Plate" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ""}
           </label>
-          <label>Trailer Data Plate:
-            <input name="trailerPlate" type="file" accept="image/*" />
+          <label for="trailerPlate">Trailer Data Plate:
+            <input id="trailerPlate" name="trailerPlate" type="file" accept="image/*" aria-label="Trailer Plate" />
             ${trailerPlateUrl ? `<img src="${trailerPlateUrl}" alt="Trailer Plate" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ""}
           </label>
         </div>
-        <label>Emergency Contact Name:
-          <input name="emergencyName" type="text" value="${emergencyName}" />
+        <label for="emergencyName">Emergency Contact Name:
+          <input id="emergencyName" name="emergencyName" type="text" required value="${escapeHTML(emergencyName)}" />
         </label>
-        <label>Emergency Contact Phone:
-          <input name="emergencyPhone" type="tel" value="${emergencyPhone}" />
+        <label for="emergencyPhone">Emergency Contact Phone:
+          <input id="emergencyPhone" name="emergencyPhone" type="tel" required value="${escapeHTML(emergencyPhone)}" pattern="${phonePattern}" />
         </label>
-        <label>Emergency Contact Relation:
-          <input name="emergencyRelation" type="text" value="${emergencyRelation}" />
+        <label for="emergencyRelation">Emergency Contact Relation:
+          <input id="emergencyRelation" name="emergencyRelation" type="text" required value="${escapeHTML(emergencyRelation)}" />
         </label>
-        <label>Waiver Signed:
-          <input name="waiver" type="checkbox" ${waiverSigned ? "checked" : ""} />
+        <label for="waiver">Waiver Signed:
+          <input id="waiver" name="waiver" type="checkbox" ${waiverSigned ? "checked" : ""} />
         </label>
-        <label>Waiver Signature:
-          <input name="waiverSignature" type="text" value="${waiverSignature}" />
+        <label for="waiverSignature">Waiver Signature:
+          <input id="waiverSignature" name="waiverSignature" type="text" value="${escapeHTML(waiverSignature)}" />
         </label>
-        <label>Course:
-          <input name="course" type="text" value="${course}" />
+        <label for="course">Course:
+          <input id="course" name="course" type="text" value="${escapeHTML(course)}" />
         </label>
-        <label>Schedule Preference:
-          <input name="schedulePref" type="text" value="${schedulePref}" />
+        <label for="schedulePref">Schedule Preference:
+          <input id="schedulePref" name="schedulePref" type="text" value="${escapeHTML(schedulePref)}" />
         </label>
-        <label>Schedule Notes:
-          <textarea name="scheduleNotes">${scheduleNotes}</textarea>
+        <label for="scheduleNotes">Schedule Notes:
+          <textarea id="scheduleNotes" name="scheduleNotes">${escapeHTML(scheduleNotes)}</textarea>
         </label>
-        <label>Payment Status:
-          <input name="paymentStatus" type="text" value="${paymentStatus}" />
+        <label for="paymentStatus">Payment Status:
+          <input id="paymentStatus" name="paymentStatus" type="text" value="${escapeHTML(paymentStatus)}" />
         </label>
-        <label>Payment Proof Upload:
-          <input name="paymentProof" type="file" accept="image/*" />
+        <label for="paymentProof">Payment Proof Upload:
+          <input id="paymentProof" name="paymentProof" type="file" accept="image/*" aria-label="Payment Proof" />
           ${paymentProofUrl ? `<img src="${paymentProofUrl}" alt="Payment Proof" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ""}
         </label>
-        <label>Accommodation Needs:
-          <input name="accommodation" type="text" value="${accommodation}" />
+        <label for="accommodation">Accommodation Needs:
+          <input id="accommodation" name="accommodation" type="text" value="${escapeHTML(accommodation)}" />
         </label>
-        <label>Student Notes:
-          <textarea name="studentNotes">${studentNotes}</textarea>
+        <label for="studentNotes">Student Notes:
+          <textarea id="studentNotes" name="studentNotes">${escapeHTML(studentNotes)}</textarea>
         </label>
-        <button class="btn primary wide" type="submit">Save Profile</button>
+        <button class="btn primary wide" id="save-profile-btn" type="submit">Save Profile</button>
         <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Dashboard</button>
       </form>
     </div>
   `;
-  // --------- END FORM SECTION ---------
 
-  // Show/hide permit photo section
+  // --- Show/hide permit photo section
   container.querySelector('select[name="cdlPermit"]')?.addEventListener('change', function() {
     document.getElementById('permit-photo-section').style.display = this.value === "yes" ? "" : "none";
   });
@@ -261,7 +319,7 @@ export async function renderProfile(container = document.getElementById("app")) 
     document.getElementById('vehicle-photos-section').style.display = this.value === "yes" ? "" : "none";
   });
 
-  // Back to dashboard
+  // --- Back to dashboard ---
   document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
     renderStudentDashboard();
   });
@@ -277,16 +335,11 @@ export async function renderProfile(container = document.getElementById("app")) 
         const storageRef = ref(storage, `${storagePath}/${currentUserEmail}-${Date.now()}`);
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
-        // Update Firestore
-        const usersRef = collection(db, "users");
-        const q = query(usersRef, where("email", "==", currentUserEmail));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          await updateDoc(snap.docs[0].ref, { [updateField]: downloadURL });
-          showToast(`${updateField.replace(/Url$/,"")} uploaded!`);
-          if (typeof checklistFn === "function") await checklistFn(currentUserEmail);
-          renderProfile(container); // refresh to show
-        }
+        // Update Firestore by doc ID
+        await updateDoc(userDocRef, { [updateField]: downloadURL });
+        showToast(`${updateField.replace(/Url$/,"")} uploaded!`);
+        if (typeof checklistFn === "function") await checklistFn(currentUserEmail);
+        renderProfile(container); // refresh to show
       } catch (err) {
         showToast(`Failed to upload ${updateField}: ` + err.message);
       }
@@ -311,11 +364,21 @@ export async function renderProfile(container = document.getElementById("app")) 
   });
   handleFileInput("paymentProof", "payments", "paymentProofUrl");
 
-  // --- SAVE PROFILE HANDLER ---
+  // --- SAVE PROFILE HANDLER (defensive, disables submit while saving) ---
   container.querySelector("#profile-form").onsubmit = async e => {
     e.preventDefault();
+    const saveBtn = document.getElementById("save-profile-btn");
+    saveBtn.disabled = true;
     const fd = new FormData(e.target);
 
+    // Emergency contact must have all fields
+    if (!fd.get("emergencyName") || !fd.get("emergencyPhone") || !fd.get("emergencyRelation")) {
+      showToast("Please fill in all emergency contact fields.", 3300, "error");
+      saveBtn.disabled = false;
+      return;
+    }
+
+    // Only save allowed fields, NOT role or schoolId
     const updateObj = {
       name: fd.get("name"), dob: fd.get("dob"), cdlClass: fd.get("cdlClass"),
       endorsements: fd.getAll("endorsements[]"),
@@ -332,21 +395,20 @@ export async function renderProfile(container = document.getElementById("app")) 
       scheduleNotes: fd.get("scheduleNotes"), paymentStatus: fd.get("paymentStatus"),
       accommodation: fd.get("accommodation"), studentNotes: fd.get("studentNotes"),
       waiverSigned: !!fd.get("waiver"), waiverSignature: fd.get("waiverSignature"),
-      profileProgress: calcProgress(fd)
+      profileProgress: calcProgress(fd),
+      profileUpdatedAt: serverTimestamp(),
+      lastUpdatedBy: currentUserEmail
+      // Do NOT update role or schoolId here!
     };
 
     try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("email", "==", currentUserEmail));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        await updateDoc(snap.docs[0].ref, updateObj);
-        await markStudentProfileComplete(currentUserEmail);
-        showToast("✅ Profile saved!");
-        renderProfile(container);
-      } else throw new Error("User document not found.");
+      await updateDoc(userDocRef, updateObj);
+      await markStudentProfileComplete(currentUserEmail);
+      showToast("✅ Profile saved!");
+      renderProfile(container);
     } catch (err) {
       showToast("❌ Error saving: " + err.message);
+      saveBtn.disabled = false;
     }
   };
 
