@@ -20,6 +20,7 @@ import * as instructorPages from "./instructor/index.js";
 import * as adminPages      from "./admin/index.js";
 import * as superadminPages from "./superadmin/index.js";
 
+// --- GLOBAL STATE ---
 export let currentUserEmail = null;
 let loaderShownAt = Date.now();
 let loaderEl = document.getElementById("app-loader");
@@ -48,7 +49,7 @@ import {
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 onAuthStateChanged(auth, async user => {
-  console.log("🔔 Auth state changed! User:", user); // <--- Debug line added
+  console.log("🔔 Auth state changed! User:", user); // <--- Debug line
 
   // Remove any loading overlays/errors
   document.getElementById("js-error")?.classList.add("hidden");
@@ -67,12 +68,14 @@ onAuthStateChanged(auth, async user => {
 
   if (user) {
     currentUserEmail = user.email;
+    window.currentUserEmail = user.email; // <--- Make available globally
+
     let userRole = "student";
     let schoolId = null;
     let userData = {};
 
     try {
-      // Fetch user role
+      // Fetch user role from userRoles collection
       const roleDoc = await getDoc(doc(db, "userRoles", user.email));
       if (roleDoc.exists()) {
         const data = roleDoc.data();
@@ -82,12 +85,12 @@ onAuthStateChanged(auth, async user => {
         showToast("⚠️ No userRoles entry found for: " + user.email, 4000);
       }
 
-      // Fetch (or create) user profile
+      // Fetch (or create) user profile in users collection
       const usersRef = collection(db, "users");
       const snap = await getDocs(query(usersRef, where("email", "==", user.email)));
       if (!snap.empty) {
         userData = snap.docs[0].data();
-        // Sync userData role
+        // Sync userData role (for consistency)
         if (!userData.role || userData.role !== userRole) {
           userData.role = userRole;
           await setDoc(doc(db, "users", user.email), { ...userData }, { merge: true });
@@ -107,9 +110,17 @@ onAuthStateChanged(auth, async user => {
         await setDoc(doc(db, "users", user.email), userData);
         localStorage.setItem("fullName", userData.name);
       }
+      // Set localStorage and global context
       localStorage.setItem("userRole", userRole);
-      if (schoolId) localStorage.setItem("schoolId", schoolId);
-      else localStorage.removeItem("schoolId");
+      localStorage.setItem("currentUserEmail", user.email);
+      window.currentUserRole = userRole;
+      if (schoolId) {
+        localStorage.setItem("schoolId", schoolId);
+        window.schoolId = schoolId;
+      } else {
+        localStorage.removeItem("schoolId");
+        window.schoolId = null;
+      }
       if (userRole === "superadmin") localStorage.setItem("isSuperAdmin", "1");
       else localStorage.removeItem("isSuperAdmin");
 
@@ -127,6 +138,9 @@ onAuthStateChanged(auth, async user => {
   } else {
     // Not logged in
     currentUserEmail = null;
+    window.currentUserEmail = null;
+    window.currentUserRole = null;
+    window.schoolId = null;
     localStorage.removeItem("userRole");
     localStorage.removeItem("schoolId");
     showPageTransitionLoader();

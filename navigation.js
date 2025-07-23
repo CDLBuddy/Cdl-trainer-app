@@ -125,9 +125,11 @@ window.addEventListener("popstate", () => {
   handleNavigation(page, "back");
 });
 
-// === INITIAL LOAD SUPPORT (optional) ===
+// === INITIAL LOAD SUPPORT (auto-login redirect) ===
 window.addEventListener("DOMContentLoaded", () => {
   if (!window.currentUserEmail) {
     handleNavigation("welcome");
+  } else {
+    handleNavigation("dashboard");
   }
 });

@@ -426,3 +426,56 @@ export async function withLoader(taskFn, loaderId = "page-loader") {
     hidePageTransitionLoader();
   }
 }
+// --- ROLE/ORG DETECTORS ---
+export function getCurrentUserRole(userObj = null) {
+  return (
+    userObj?.role ||
+    localStorage.getItem("userRole") ||
+    (auth.currentUser && auth.currentUser.role) ||
+    "student"
+  );
+}
+export function getCurrentSchoolId(userObj = null) {
+  return (
+    userObj?.schoolId ||
+    localStorage.getItem("schoolId") ||
+    "default"
+  );
+}
+
+// --- ROLE-AWARE TOASTS ---
+export function showRoleToast(message, role = null, duration = 3200) {
+  const type = role === "admin"
+    ? "error"
+    : role === "instructor"
+      ? "success"
+      : "info";
+  showToast(message, duration, type);
+}
+
+// --- CSV EXPORTER ---
+export function exportTableToCSV(tableId, filename = "export.csv") {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  let csv = [];
+  for (let row of table.rows) {
+    let rowData = [];
+    for (let cell of row.cells) {
+      rowData.push(`"${cell.innerText.replace(/"/g, '""')}"`);
+    }
+    csv.push(rowData.join(","));
+  }
+  const blob = new Blob([csv.join("\n")], { type: "text/csv" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+}
+
+// --- POPSTATE NAVIGATION HANDLER ---
+export function handlePopStateNavigation(navigateFn) {
+  window.addEventListener("popstate", (e) => {
+    const page = (e.state && e.state.page) || (window.location.hash || "").replace(/^#/, "");
+    if (page) navigateFn(page);
+  });
+}

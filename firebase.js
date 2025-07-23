@@ -44,7 +44,15 @@ async function getLatestUpdate() {
   }
 }
 
-export { app, db, auth, storage, getLatestUpdate };
+// Optional: handy helper for schoolId (for future instructor/admin use)
+export function getCurrentUserSchool() {
+  return localStorage.getItem("schoolId") ||
+    (auth.currentUser && auth.currentUser.schoolId) ||
+    null;
+}
 
-// Optionally, you can export Firestore helpers for convenience:
-// export { collection, query, orderBy, limit, getDocs };
+// Main exports
+export {
+  app, db, auth, storage, getLatestUpdate,
+  collection, query, orderBy, limit, getDocs
+};
