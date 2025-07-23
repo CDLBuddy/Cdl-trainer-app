@@ -8,25 +8,19 @@ import {
   where,
   getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-
 import {
   showToast,
   setupNavigation,
   getNextChecklistAlert
 } from '../ui-helpers.js';
 
-// Modular instructor page renderers (update these to match your folder)
+// Barrel import for all instructor/role-based pages:
+import * as instructorPages from './index.js';
 import { renderWelcome } from '../welcome.js';
-import {
-  renderInstructorProfile,
-  renderStudentProfileForInstructor,
-  renderChecklistReviewForInstructor,
-  renderDashboard as renderStudentDashboard
-} from './index.js'; // Use your instructor/index.js as the single source
 
+// Main instructor dashboard
 export async function renderInstructorDashboard(container = document.getElementById("app")) {
   if (!container) return;
-  // Prefer global or pass in as param
   let currentUserEmail = window.currentUserEmail || localStorage.getItem("currentUserEmail") || null;
   if (!currentUserEmail) {
     showToast("No user found. Please log in again.");
@@ -34,7 +28,7 @@ export async function renderInstructorDashboard(container = document.getElementB
     return;
   }
 
-  // Defensive role fallback
+  // Role check
   let userData = {};
   let userRole = localStorage.getItem("userRole") || "instructor";
   try {
@@ -43,7 +37,7 @@ export async function renderInstructorDashboard(container = document.getElementB
     const snap = await getDocs(q);
     if (!snap.empty) {
       userData = snap.docs[0].data();
-      userRole = userData.role || userRole || "instructor";
+      userRole = userData.role || userRole;
       localStorage.setItem("userRole", userRole);
     }
   } catch (e) {
@@ -51,11 +45,11 @@ export async function renderInstructorDashboard(container = document.getElementB
   }
   if (userRole !== "instructor") {
     showToast("Access denied: Instructor role required.");
-    renderStudentDashboard();
+    if (instructorPages.renderDashboard) instructorPages.renderDashboard();
     return;
   }
 
-  // ---- Fetch Assigned Students (admin-appoints these) ----
+  // === Fetch Assigned Students (admin-assigned only) ===
   let assignedStudents = [];
   try {
     const assignSnap = await getDocs(
@@ -81,7 +75,7 @@ export async function renderInstructorDashboard(container = document.getElementB
     console.error("Assigned students fetch error", e);
   }
 
-  // ---- Fetch Latest Test Results for Assigned Students ----
+  // === Fetch Latest Test Results per Student ===
   let testResultsByStudent = {};
   try {
     for (const student of assignedStudents) {
@@ -118,10 +112,11 @@ export async function renderInstructorDashboard(container = document.getElementB
     console.error("Instructor test results error", e);
   }
 
-  // ---- Render Instructor Dashboard Layout ----
+  // === Dashboard Layout HTML ===
   container.innerHTML = `
     <h2 class="dash-head">Welcome, Instructor! <span class="role-badge instructor">Instructor</span></h2>
     <button class="btn" id="edit-instructor-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
+    <button class="btn outline" id="export-csv-btn" style="margin-bottom:1.2rem;margin-left:10px;">⬇️ Export CSV</button>
     <div class="dash-layout">
       <section class="dash-metrics">
         <div class="dashboard-card">
@@ -134,7 +129,7 @@ export async function renderInstructorDashboard(container = document.getElementB
                     .map(
                       (student) => `
                       <div class="student-list-card">
-                        <strong>${student.name}</strong>
+                        <strong class="student-name" style="cursor:pointer;color:var(--accent);" data-email="${student.email}">${student.name}</strong>
                         <div>Email: ${student.email}</div>
                         <div>CDL Class: ${student.cdlClass}</div>
                         <div>Experience: ${student.experience}</div>
@@ -190,31 +185,75 @@ export async function renderInstructorDashboard(container = document.getElementB
 
   setupNavigation();
 
-  // View/Edit My Profile button
+  // === Profile Edit ===
   document.getElementById("edit-instructor-profile-btn")?.addEventListener("click", () => {
-    renderInstructorProfile();
+    if (instructorPages.renderInstructorProfile) instructorPages.renderInstructorProfile();
   });
 
-  // Handle logout
+  // === Logout ===
   document.getElementById("logout-btn")?.addEventListener("click", async () => {
     await signOut(auth);
     localStorage.clear();
     renderWelcome();
   });
 
-  // View Student Profile modal
-  container.querySelectorAll('button[data-nav="viewStudentProfile"]').forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const studentEmail = btn.getAttribute("data-student");
-      renderStudentProfileForInstructor(studentEmail);
+  // === View Student Profile (click name or button) ===
+  container.querySelectorAll('.student-name, button[data-nav="viewStudentProfile"]').forEach((el) => {
+    el.addEventListener("click", () => {
+      const studentEmail = el.getAttribute("data-email") || el.getAttribute("data-student");
+      if (instructorPages.renderStudentProfileForInstructor) {
+        instructorPages.renderStudentProfileForInstructor(studentEmail);
+      }
     });
   });
 
-  // Checklist Review modal
+  // === Checklist Review modal ===
   container.querySelectorAll('button[data-nav="reviewChecklist"]').forEach((btn) => {
     btn.addEventListener("click", () => {
       const studentEmail = btn.getAttribute("data-student");
-      renderChecklistReviewForInstructor(studentEmail);
+      if (instructorPages.renderChecklistReviewForInstructor) {
+        instructorPages.renderChecklistReviewForInstructor(studentEmail);
+      }
     });
+  });
+
+  // === CSV Export ===
+  document.getElementById("export-csv-btn")?.addEventListener("click", () => {
+    // CSV headers
+    const headers = [
+      "Name", "Email", "CDL Class", "Experience",
+      "Permit", "Med Card", "Profile Completion", "Checklist Alerts", "Last Test"
+    ];
+    // Build rows
+    const rows = assignedStudents.map(s => [
+      `"${s.name}"`,
+      `"${s.email}"`,
+      `"${s.cdlClass}"`,
+      `"${s.experience}"`,
+      `"${s.cdlPermit === "yes" && s.permitPhotoUrl ? "Uploaded" : "Not Uploaded"}"`,
+      `"${s.medicalCardUrl ? "Uploaded" : "Not Uploaded"}"`,
+      `"${s.profileProgress}%"`,
+      `"${s.checklistAlerts.replace(/"/g, "'")}"`,
+      `"${testResultsByStudent[s.email]
+        ? testResultsByStudent[s.email].testName + " – " +
+          testResultsByStudent[s.email].pct + "% on " +
+          testResultsByStudent[s.email].date
+        : "No recent test"}"`
+    ]);
+    // CSV string
+    const csv = [headers, ...rows].map(row => row.join(",")).join("\r\n");
+    // Download
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "assigned-students.csv";
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      link.remove();
+    }, 300);
+    showToast("CSV export downloaded.", 2600, "success");
   });
 }

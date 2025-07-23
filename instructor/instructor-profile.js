@@ -18,7 +18,7 @@ import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderWelcome } from '../welcome.js';
 import { renderInstructorDashboard } from './instructor-dashboard.js';
 
-// Prefer global or pass as param
+// Use global or pass in as param
 let currentUserEmail = window.currentUserEmail || localStorage.getItem("currentUserEmail") || null;
 
 export async function renderInstructorProfile(container = document.getElementById("app")) {
@@ -30,7 +30,7 @@ export async function renderInstructorProfile(container = document.getElementByI
     return;
   }
 
-  // Fetch instructor data
+  // Fetch instructor profile
   let userData = {};
   try {
     const usersRef = collection(db, "users");
@@ -46,7 +46,7 @@ export async function renderInstructorProfile(container = document.getElementByI
     return;
   }
 
-  // --- Fields ---
+  // --- Profile fields ---
   const {
     name = "",
     email = currentUserEmail,
@@ -72,7 +72,7 @@ export async function renderInstructorProfile(container = document.getElementByI
     ? `<div class="alert warning" style="margin-bottom:1em;">⚠️ Please complete your instructor license info below.</div>`
     : `<div class="alert success" style="margin-bottom:1em;">✅ All required compliance info current!</div>`;
 
-  // Assigned students display (read only)
+  // Assigned students (read only)
   const assignedStudentsHtml = Array.isArray(assignedStudents) && assignedStudents.length
     ? assignedStudents.map((s, i) => `<div>#${i+1}: ${s.name || s.email}</div>`).join("")
     : "<i>No students assigned yet.</i>";
