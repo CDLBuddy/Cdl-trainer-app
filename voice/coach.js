@@ -1,1 +1,0 @@
-function speak(text) { console.log(`Voice Coach says: ${text}`); }

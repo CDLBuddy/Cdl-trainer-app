@@ -1,16 +1,36 @@
-// serviceworker.js
+// === CDL Trainer Service Worker – Optimized for SPA and Modular Imports ===
+// 1) Bump the cache version on any deploy to force update!
+const CACHE_NAME = "cdl-trainer-cache-v4";  // ← incremented from v3
 
-// 1) Bump the cache version whenever you change your code!
-const CACHE_NAME = "cdl-trainer-cache-v3";  // ← incremented from v2
-
-// 2) List your truly static files here
+// 2) List your static (build-time) files here.
 const STATIC_ASSETS = [
   "/",
   "/index.html",
   "/offline.html",
   "/style.css",
   "/manifest.json",
-  // images & icons
+  // JS Entrypoints (add more if code-split)
+  "/app.js",
+  "/ui-helpers.js",
+  "/firebase.js",
+  "/navigation.js",
+  // Main role barrels (add if split for SSR or performance)
+  "/student/index.js",
+  "/instructor/index.js",
+  "/admin/index.js",
+  "/superadmin/index.js",
+  // Student pages (add each if you import by path)
+  "/student/student-dashboard.js",
+  "/student/profile.js",
+  "/student/checklists.js",
+  "/student/practice-tests.js",
+  "/student/flashcards.js",
+  "/student/test-results.js",
+  "/student/test-engine.js",
+  "/student/walkthrough.js",
+  "/student/ai-coach.js",
+  "/student/ai-api.js",
+  // Icons and images
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/icons/walkthrough.png",
@@ -21,10 +41,13 @@ const STATIC_ASSETS = [
   "/icons/flashcards.png",
   "/icons/experience.png",
   "/icons/license.png",
-  "/icons/login.png"
+  "/icons/login.png",
+  // Mascot & background assets
+  "/pattern.svg",
+  "/noise.png"
 ];
 
-// 3) On install, cache your static assets
+// 3) Install handler: cache all static assets
 self.addEventListener("install", event => {
   self.skipWaiting();
   event.waitUntil(
@@ -33,7 +56,7 @@ self.addEventListener("install", event => {
   );
 });
 
-// 4) On activate, clear out old caches
+// 4) Activate handler: remove old caches
 self.addEventListener("activate", event => {
   self.clients.claim();
   event.waitUntil(
@@ -47,22 +70,27 @@ self.addEventListener("activate", event => {
   );
 });
 
-// 5) Fetch handler:  
-//    - For app.js (and any .js), try network first → fallback to cache  
-//    - For HTML pages, try network first → fallback to offline.html  
-//    - For everything else, use cache first → fallback to network
+// 5) Fetch handler
 self.addEventListener("fetch", event => {
-  // Only handle GET requests
   if (event.request.method !== "GET") return;
 
   const url = new URL(event.request.url);
 
-  // Network-first for JavaScript bundles
+  // Handle navigation requests for SPA (pushState routes)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => caches.match("/offline.html"))
+    );
+    return;
+  }
+
+  // Network-first for all JS (so you get new code instantly, fallback to cache)
   if (url.pathname.endsWith(".js")) {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          // Update the cache in the background
+          // Update cache in the background
           const copy = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
           return response;
@@ -72,8 +100,8 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // Network-first for HTML pages
-  if (event.request.headers.get("accept")?.includes("text/html")) {
+  // Network-first for HTML files (except navigation, which is handled above)
+  if (event.request.destination === "document") {
     event.respondWith(
       fetch(event.request)
         .then(resp => resp)
@@ -82,7 +110,7 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // Otherwise--static assets: cache-first
+  // Cache-first for images, icons, CSS, SVG, manifest, etc.
   event.respondWith(
     caches.match(event.request).then(cached => {
       return cached || fetch(event.request);
