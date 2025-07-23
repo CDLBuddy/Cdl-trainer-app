@@ -1,6 +1,6 @@
 // student/index.js
 
-export { renderDashboard }        from './student-dashboard.js';  // Use your actual file name: student-dashboard.js
+export { renderDashboard }        from './student-dashboard.js';
 export { renderProfile }          from './profile.js';
 export { renderAICoach }          from './ai-coach.js';
 export { renderWalkthrough }      from './walkthrough.js';
