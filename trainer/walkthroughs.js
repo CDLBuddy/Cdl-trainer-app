@@ -1,1 +1,0 @@
-const walkthroughSteps = [ { step: 1, title: 'Pre-trip Inspection', audio: 'pretrip.mp3' }, { step: 2, title: 'Basic Controls' } ];

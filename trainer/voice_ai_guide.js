@@ -1,1 +1,0 @@
-export function speak(text) { const utter = new SpeechSynthesisUtterance(text); speechSynthesis.speak(utter); }

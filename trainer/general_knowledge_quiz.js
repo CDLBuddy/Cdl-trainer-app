@@ -1,1 +1,0 @@
-export const generalQuestions = [{ question: 'What should you inspect during a pre-trip?', answer: 'Brakes, tires, lights.' }];

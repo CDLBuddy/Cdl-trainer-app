@@ -1,1 +1,0 @@
-export const comboQuestions = [{ question: 'What is a tractor trailer?', answer: 'A combination of a tractor and one or more trailers.' }];

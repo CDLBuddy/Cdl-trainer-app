@@ -1,1 +1,0 @@
-function adjustDifficulty(score) { return score > 80 ? 'hard' : 'easy'; }
