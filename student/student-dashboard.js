@@ -17,7 +17,6 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// Modular page renderers
 import { renderProfile }        from './profile.js';
 import { renderAICoach }        from './ai-coach.js';
 import { renderWalkthrough }    from './walkthrough.js';
@@ -39,7 +38,7 @@ export async function renderDashboard(container = document.getElementById("app")
     return;
   }
 
-  // --- 1. FETCH DATA ---------------------------------------------------
+  // --- FETCH DATA ---------------------------------------------------
   let userData = {};
   let userRole = localStorage.getItem("userRole") || "student";
 
@@ -62,10 +61,10 @@ export async function renderDashboard(container = document.getElementById("app")
     return;
   }
 
-  // --- Checklist Progress ---
+  // Checklist Progress
   let checklistPct = userData.profileProgress || 0;
 
-  // --- Last-test summary ---
+  // Last-test summary
   let lastTestStr = "No tests taken yet.";
   try {
     const snap = await getDocs(
@@ -97,11 +96,11 @@ export async function renderDashboard(container = document.getElementById("app")
     console.error("TestResults fetch error", e);
   }
 
-  // --- License & Experience
+  // License & Experience
   let license = userData.cdlClass || "Not selected";
   let experience = userData.experience || "Unknown";
 
-  // --- 7-day Study Streak ---
+  // 7-day Study Streak
   let streak = 0;
   try {
     const today = new Date().toDateString();
@@ -120,15 +119,13 @@ export async function renderDashboard(container = document.getElementById("app")
   const name = localStorage.getItem("fullName") || "CDL User";
   const roleBadge = `<span class="role-badge student">Student</span>`;
 
-  // --- Dashboard Layout (HTML) -----------------------------------------
+  // DASHBOARD LAYOUT (HTML)
   container.innerHTML = `
     <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
     <button class="btn" id="edit-student-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
     <div class="dash-layout">
       <section class="dash-metrics">
-
         <div id="latest-update-card" class="dashboard-card update-area"></div>
-
         <div class="dashboard-card">
           <h3>✅ Checklist Progress</h3>
           <div class="progress-bar">
@@ -141,18 +138,15 @@ export async function renderDashboard(container = document.getElementById("app")
             <span>${getNextChecklistAlert(userData)}</span>
           </div>
         </div>
-
         <div class="dashboard-card">
           <h3>🧭 Walkthrough</h3>
           <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
           <button class="btn" data-nav="walkthrough">Open Walkthrough</button>
         </div>
-
         <div class="glass-card metric">
           <h3>🔥 Study Streak</h3>
           <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? "s" : ""} active this week</p>
         </div>
-
         <div class="dashboard-card ai-tip-card">
           <div class="ai-tip-title" style="font-weight:600; font-size:1.12em; color:var(--accent); margin-bottom:0.5em;">
             🤖 AI Tip of the Day
@@ -164,14 +158,12 @@ export async function renderDashboard(container = document.getElementById("app")
             <span style="font-size:1.1em;">💬</span> Ask AI Coach
           </button>
         </div>
-
         <div class="dashboard-card last-test-card">
           <h3>🧪 Last Test Score</h3>
           <p>${lastTestStr}</p>
           <button class="btn" data-nav="practiceTests">Take a Test</button>
         </div>
       </section>
-
       <div class="dash-rail-wrapper">
         <aside class="dash-rail">
           <button class="rail-btn profile" data-nav="profile" aria-label="My Profile">
@@ -213,9 +205,7 @@ export async function renderDashboard(container = document.getElementById("app")
       </button>
     </div>
     <button id="ai-coach-fab" aria-label="Ask AI Coach">
-      <span class="ai-coach-mascot-wrapper">
-        <!-- Mascot SVG here if you want -->
-      </span>
+      <span class="ai-coach-mascot-wrapper"></span>
     </button>
   `;
 

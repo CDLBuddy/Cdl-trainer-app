@@ -19,7 +19,41 @@ import {
 import { renderProfile } from './profile.js';
 import { renderDashboard } from './student-dashboard.js';
 
-// ─── WALKTHROUGH PAGE ────────────────────────────────────────────────
+// --- Data for drills ---
+const brakeCheckFull = [
+  "With the engine off and key on, I will release the parking brake, hold the service brake pedal for 1 minute, and check for air loss no more than 3 PSI.",
+  "Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI.",
+  "Finally, I will fan the brakes to trigger the spring brake pop-out between 20–45 PSI."
+];
+const brakeCheckBlanks = [
+  {
+    text: "With the engine ___ and key on, I will release the ___ brake, hold the ___ brake pedal for 1 minute, and check for air loss no more than ___ PSI.",
+    answers: ["off", "parking", "service", "3"]
+  },
+  {
+    text: "Then I will perform a low air warning check, fan the brakes to make sure the warning activates before ___ PSI.",
+    answers: ["60"]
+  },
+  {
+    text: "Finally, I will fan the brakes to trigger the spring brake pop-out between ___–___ PSI.",
+    answers: ["20", "45"]
+  }
+];
+const brakeCheckSteps = [
+  "Release the parking brake",
+  "Hold the service brake pedal for 1 minute, check for air loss no more than 3 PSI",
+  "Perform low air warning check--fan brakes, warning should activate before 60 PSI",
+  "Fan brakes to trigger spring brake pop-out between 20–45 PSI"
+];
+const visualRecall = [
+  {
+    img: "brake-gauge.png", // update path as needed
+    question: "At what PSI should the low air warning activate?",
+    answer: "before 60"
+  }
+];
+
+// --- Walkthrough Page ---
 export async function renderWalkthrough(container = document.getElementById("app")) {
   if (!container) return;
   if (!auth.currentUser || !auth.currentUser.email) {
@@ -28,7 +62,7 @@ export async function renderWalkthrough(container = document.getElementById("app
     return;
   }
 
-  // --- Fetch user profile (CDL class) ---
+  // Fetch user profile (CDL class)
   let userData = {};
   try {
     const usersRef = collection(db, "users");
@@ -42,7 +76,7 @@ export async function renderWalkthrough(container = document.getElementById("app
   }
   const cdlClass = userData?.cdlClass || null;
 
-  // --- Fetch Drill Progress ---
+  // Fetch Drill Progress
   let progress = {};
   try {
     progress = await getUserProgress(auth.currentUser.email) || {};
@@ -54,43 +88,9 @@ export async function renderWalkthrough(container = document.getElementById("app
     visual: !!progress.drills?.visual
   };
 
-  // --- Drill Data ---
-  const brakeCheckFull = [
-    "With the engine off and key on, I will release the parking brake, hold the service brake pedal for 1 minute, and check for air loss no more than 3 PSI.",
-    "Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI.",
-    "Finally, I will fan the brakes to trigger the spring brake pop-out between 20–45 PSI."
-  ];
-  const brakeCheckBlanks = [
-    {
-      text: "With the engine ___ and key on, I will release the ___ brake, hold the ___ brake pedal for 1 minute, and check for air loss no more than ___ PSI.",
-      answers: ["off", "parking", "service", "3"]
-    },
-    {
-      text: "Then I will perform a low air warning check, fan the brakes to make sure the warning activates before ___ PSI.",
-      answers: ["60"]
-    },
-    {
-      text: "Finally, I will fan the brakes to trigger the spring brake pop-out between ___–___ PSI.",
-      answers: ["20", "45"]
-    }
-  ];
-  const brakeCheckSteps = [
-    "Release the parking brake",
-    "Hold the service brake pedal for 1 minute, check for air loss no more than 3 PSI",
-    "Perform low air warning check--fan brakes, warning should activate before 60 PSI",
-    "Fan brakes to trigger spring brake pop-out between 20–45 PSI"
-  ];
-  const visualRecall = [
-    {
-      img: "brake-gauge.png", // update path as needed
-      question: "At what PSI should the low air warning activate?",
-      answer: "before 60"
-    }
-  ];
-
   let currentDrill = "fill";
 
-  // --- Walkthrough Main HTML ------------------------------------------
+  // --- Main HTML ---
   let content = `
     <div class="screen-wrapper walkthrough-page fade-in">
       <h2>🧭 CDL Walkthrough Practice</h2>
@@ -108,7 +108,6 @@ export async function renderWalkthrough(container = document.getElementById("app
     content += `
       <p><strong>CDL Class:</strong> ${cdlClass}</p>
       <p>Study the following walkthrough to prepare for your in-person vehicle inspection test. <span style="color:var(--accent);font-weight:bold;">Critical sections will be highlighted.</span></p>
-
       <div class="walkthrough-script">
         <h3>🚨 Three-Point Brake Check <span style="color:var(--accent);">(Must Memorize Word-for-Word)</span></h3>
         <div class="highlight-section">
@@ -123,7 +122,6 @@ export async function renderWalkthrough(container = document.getElementById("app
         <h3>🔧 Engine Compartment (Sample)</h3>
         <p>Check oil level with dipstick. Look for leaks, cracks, or broken hoses...</p>
       </div>
-
       <div style="margin:2rem 0 1.3rem 0;">
         <progress value="${Object.values(completedDrills).filter(Boolean).length}" max="4" style="width:100%;"></progress>
         <span>${Object.values(completedDrills).filter(Boolean).length}/4 drills completed</span>
@@ -152,11 +150,7 @@ export async function renderWalkthrough(container = document.getElementById("app
     renderProfile();
   });
 
-  // Drills
-  const drillsContainer = document.getElementById("drills-container");
-  const drillsNav = document.querySelector(".drills-nav");
-  let updatedDrills = {...completedDrills};
-
+  // --- Confetti ---
   function showConfetti() {
     const canvas = document.getElementById('drill-confetti');
     if (!canvas) return;
@@ -173,41 +167,42 @@ export async function renderWalkthrough(container = document.getElementById("app
     setTimeout(() => canvas.style.display = "none", 1800);
   }
 
+  // --- Mark Drill Complete ---
   async function markDrillComplete(type) {
-    if (updatedDrills[type]) return;
-    updatedDrills[type] = true;
+    if (completedDrills[type]) return;
+    completedDrills[type] = true;
     await updateELDTProgress(auth.currentUser.email, {
       [`drills.${type}`]: true,
       [`drills.${type}CompletedAt`]: new Date().toISOString()
     });
-    const completedCount = Object.values(updatedDrills).filter(Boolean).length;
+    const completedCount = Object.values(completedDrills).filter(Boolean).length;
     document.querySelector("progress").value = completedCount;
     document.querySelector("progress").nextElementSibling.textContent = `${completedCount}/4 drills completed`;
-    drillsNav.querySelector(`[data-drill='${type}']`).innerHTML += " ✅";
-    drillsNav.querySelector(`[data-drill='${type}']`).classList.add("drill-done");
-    if (Object.values(updatedDrills).every(Boolean)) {
+    document.querySelector(`[data-drill='${type}']`).innerHTML += " ✅";
+    document.querySelector(`[data-drill='${type}']`).classList.add("drill-done");
+    if (Object.values(completedDrills).every(Boolean)) {
       showConfetti();
       showToast("🎉 All drills complete! Walkthrough milestone saved.");
       await markStudentWalkthroughComplete(auth.currentUser.email);
     }
   }
 
-  // Drill renderers (all handlers go here, can be expanded modularly)
-  function renderDrill(drillType, container) {
+  // --- Drill Renderers & Events ---
+  function renderDrill(drillType, drillsContainer) {
     let html = "";
     if (drillType === "fill") {
       html += `<h3>Fill in the Blanks</h3>`;
       brakeCheckBlanks.forEach((item, idx) => {
-        html += `<form class="drill-blank" data-idx="${idx}" style="margin-bottom:1.2rem;">`;
         let blanks = 0;
         const text = item.text.replace(/___/g, () => {
           blanks++;
           return `<input type="text" size="5" class="blank-input" data-answer="${item.answers[blanks-1]}" required style="margin:0 3px;" />`;
         });
-        html += `<div>${text}</div>
-          <button class="btn" type="submit" style="margin-top:0.6rem;">Check</button>
-          <div class="drill-result" style="margin-top:0.3rem;"></div>
-        </form>`;
+        html += `<form class="drill-blank" data-idx="${idx}" style="margin-bottom:1.2rem;">
+                  <div>${text}</div>
+                  <button class="btn" type="submit" style="margin-top:0.6rem;">Check</button>
+                  <div class="drill-result" style="margin-top:0.3rem;"></div>
+                </form>`;
       });
     } else if (drillType === "order") {
       html += `<h3>Put the Steps in Order</h3>
@@ -239,35 +234,124 @@ export async function renderWalkthrough(container = document.getElementById("app
           <div class="drill-result" style="margin-top:0.3rem;"></div>
         </div>`;
     }
-    container.innerHTML = html;
+    drillsContainer.innerHTML = html;
+
+    // Fill-in-the-Blank Handler
+    drillsContainer.querySelectorAll(".drill-blank").forEach((form, formIdx) => {
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        let correct = true;
+        form.querySelectorAll(".blank-input").forEach((input, idx) => {
+          const answer = input.dataset.answer.toLowerCase().trim();
+          if (input.value.toLowerCase().trim() !== answer) {
+            correct = false;
+            input.style.background = "#ffcccc";
+          } else {
+            input.style.background = "#caffcb";
+          }
+        });
+        const res = form.querySelector(".drill-result");
+        if (correct) {
+          res.innerHTML = "✅ Correct!";
+          markDrillComplete("fill");
+        } else {
+          res.innerHTML = "❌ Try again!";
+        }
+      };
+    });
+
+    // Ordered Steps Handler (Drag & Drop)
+    if (drillType === "order") {
+      const list = drillsContainer.querySelector("#order-list");
+      let draggingEl = null, dragIdx = null;
+
+      list.querySelectorAll(".order-step").forEach((li, idx) => {
+        li.draggable = true;
+
+        li.ondragstart = (e) => {
+          draggingEl = li;
+          dragIdx = idx;
+          li.style.opacity = 0.5;
+        };
+        li.ondragend = () => {
+          draggingEl = null;
+          dragIdx = null;
+          li.style.opacity = 1;
+        };
+        li.ondragover = (e) => e.preventDefault();
+        li.ondrop = (e) => {
+          e.preventDefault();
+          if (draggingEl && draggingEl !== li) {
+            list.insertBefore(draggingEl, li.nextSibling);
+          }
+        };
+      });
+
+      drillsContainer.querySelector("#check-order-btn").onclick = () => {
+        const order = Array.from(list.children).map(li => li.textContent.trim());
+        let correct = true;
+        for (let i = 0; i < brakeCheckSteps.length; i++) {
+          if (order[i] !== brakeCheckSteps[i]) correct = false;
+        }
+        const res = drillsContainer.querySelector(".drill-result");
+        if (correct) {
+          res.innerHTML = "✅ Correct order!";
+          markDrillComplete("order");
+        } else {
+          res.innerHTML = "❌ Try again! Drag the steps into the correct order.";
+        }
+      };
+    }
+
+    // Typing Challenge Handler
+    if (drillType === "type") {
+      drillsContainer.querySelector("#typing-challenge").onsubmit = (e) => {
+        e.preventDefault();
+        const val = drillsContainer.querySelector("textarea").value.trim().replace(/\s+/g, " ").toLowerCase();
+        const ans = brakeCheckFull[0].trim().replace(/\s+/g, " ").toLowerCase();
+        const res = drillsContainer.querySelector(".drill-result");
+        if (val === ans) {
+          res.innerHTML = "✅ Perfect! You memorized it.";
+          markDrillComplete("type");
+        } else {
+          res.innerHTML = "❌ Not quite right. Try again!";
+        }
+      };
+    }
+
+    // Visual Recall Handler
+    if (drillType === "visual") {
+      drillsContainer.querySelector("#check-visual-btn").onclick = () => {
+        const input = drillsContainer.querySelector(".visual-answer").value.trim().toLowerCase();
+        const ans = visualRecall[0].answer.trim().toLowerCase();
+        const res = drillsContainer.querySelector(".drill-result");
+        if (input.includes(ans)) {
+          res.innerHTML = "✅ Correct!";
+          markDrillComplete("visual");
+        } else {
+          res.innerHTML = "❌ Try again!";
+        }
+      };
+    }
   }
 
+  // Setup drill nav
   function setupDrillsNav(drillNavBar, drillsContainer) {
     ["fill", "order", "type", "visual"].forEach(type => {
       const btn = drillNavBar.querySelector(`[data-drill="${type}"]`);
       btn.onclick = () => {
         currentDrill = type;
         renderDrill(type, drillsContainer);
-        setupDrillEvents(type, drillsContainer);
       };
     });
   }
 
-  function setupDrillEvents(type, drillsContainer) {
-    // Place your drill event logic here (from your earlier code)
-    // For brevity, handlers omitted here, but copy your current event logic for:
-    // - Fill-in-the-blank (form submissions, input checking)
-    // - Ordered steps (drag-and-drop or check button)
-    // - Typing challenge (input validation)
-    // - Visual recall (check button input)
-    // All handlers you already use should go in this function, modularized per drill type.
-  }
-
   // --- Init drills on load (default to first drill) ---
+  const drillsContainer = document.getElementById("drills-container");
+  const drillsNav = document.querySelector(".drills-nav");
   if (drillsContainer && drillsNav) {
     renderDrill(currentDrill, drillsContainer);
     setupDrillsNav(drillsNav, drillsContainer);
-    setupDrillEvents(currentDrill, drillsContainer);
   }
 
   setupNavigation();

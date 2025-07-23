@@ -24,7 +24,10 @@ import {
 
 import { renderStudentDashboard } from './student-dashboard.js';
 
-let currentUserEmail = window.currentUserEmail || null;
+let currentUserEmail = window.currentUserEmail ||
+  (window.auth?.currentUser?.email) ||
+  localStorage.getItem("currentUserEmail") ||
+  null;
 
 export async function renderProfile(container = document.getElementById("app")) {
   if (!container) return;
@@ -77,7 +80,7 @@ export async function renderProfile(container = document.getElementById("app")) 
     { val: "roadtest", label: "Road Test Prep" }
   ];
 
-  // Profile completion
+  // Profile completion calculation
   function calcProgress(fd) {
     let total = 15, filled = 0;
     if (fd.get("name")) filled++;
@@ -98,6 +101,7 @@ export async function renderProfile(container = document.getElementById("app")) 
     return Math.round((filled / total) * 100);
   }
 
+  // --------- FULL FORM SECTION STARTS HERE ----------
   container.innerHTML = `
     <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
       <h2>👤 Student Profile <span class="role-badge student">Student</span></h2>
@@ -246,6 +250,7 @@ export async function renderProfile(container = document.getElementById("app")) 
       </form>
     </div>
   `;
+  // --------- END FORM SECTION ---------
 
   // Show/hide permit photo section
   container.querySelector('select[name="cdlPermit"]')?.addEventListener('change', function() {

@@ -1,7 +1,7 @@
 // student/checklists.js
 
-import { db, auth } from '../firebase.js';
-import { showToast, setupNavigation } from '../ui-helpers.js';
+import { db, auth } from "../firebase.js";
+import { showToast, setupNavigation } from "../ui-helpers.js";
 import {
   collection,
   query,
@@ -9,15 +9,16 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-import { renderProfile }        from './profile.js';
-import { renderWalkthrough }    from './walkthrough.js';
-import { renderPracticeTests }  from './practice-tests.js';
-import { renderDashboard }      from './student-dashboard.js'; // For back nav
+import { renderProfile }        from "./profile.js";
+import { renderWalkthrough }    from "./walkthrough.js";
+import { renderPracticeTests }  from "./practice-tests.js";
+import { renderDashboard }      from "./student-dashboard.js";
 
+// Main Checklist Renderer
 export async function renderChecklists(container = document.getElementById("app")) {
   if (!container) return;
 
-  // Consistent user email resolution (auth then localStorage)
+  // Consistent user email resolution
   const email = (auth.currentUser && auth.currentUser.email) || localStorage.getItem("currentUserEmail");
   if (!email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
@@ -53,6 +54,7 @@ export async function renderChecklists(container = document.getElementById("app"
     walkthroughComplete = false,
   } = userData;
 
+  // Define all checklist sections and steps
   const checklistSections = [
     {
       header: "Personal Info",
@@ -123,7 +125,7 @@ export async function renderChecklists(container = document.getElementById("app"
     }
   ];
 
-  // Progress % calculation
+  // Progress percent calculation
   const flatChecklist = checklistSections.flatMap(sec => sec.items);
   const complete = flatChecklist.filter(x => x.done).length;
   const percent = Math.round((complete / flatChecklist.length) * 100);
@@ -140,7 +142,7 @@ export async function renderChecklists(container = document.getElementById("app"
     }, 600);
   }
 
-  // Render UI
+  // Render checklist UI
   container.innerHTML = `
     <div class="screen-wrapper fade-in checklist-page" style="max-width:480px;margin:0 auto;">
       <h2 style="display:flex;align-items:center;gap:9px;">📋 Student Checklist</h2>
@@ -158,7 +160,7 @@ export async function renderChecklists(container = document.getElementById("app"
                   ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
                   : ""
                 }
-                <div class="checklist-item-main">
+                <div class="checklist-item-main" tabindex="0" role="button" aria-expanded="false">
                   <span class="checklist-label" style="${item.done ? 'text-decoration:line-through;color:#9fdcb7;' : ''}">
                     ${item.label}
                   </span>
@@ -192,27 +194,28 @@ export async function renderChecklists(container = document.getElementById("app"
 
   // Animate progress bar
   setTimeout(() => {
-    const bar = container.querySelector('.progress-fill');
+    const bar = container.querySelector(".progress-fill");
     if (bar) bar.style.width = percent + "%";
   }, 25);
 
   // Expand/collapse checklist details
-  container.querySelectorAll('.checklist-item-main').forEach(main => {
+  container.querySelectorAll(".checklist-item-main").forEach(main => {
     main.addEventListener("click", function() {
-      const li = this.closest('.checklist-item');
-      const details = li.querySelector('.checklist-details');
-      const label = li.querySelector('.checklist-label');
+      const li = this.closest(".checklist-item");
+      const details = li.querySelector(".checklist-details");
+      const label = li.querySelector(".checklist-label");
       if (!details) return;
-      const expanded = li.classList.toggle('expanded');
+      const expanded = li.classList.toggle("expanded");
       details.style.display = expanded ? "block" : "none";
       label.style.display = expanded ? "none" : "";
+      this.setAttribute("aria-expanded", expanded ? "true" : "false");
     });
   });
 
   // Checklist nav actions
-  container.querySelectorAll('.btn[data-nav]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const target = btn.getAttribute('data-nav');
+  container.querySelectorAll(".btn[data-nav]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.getAttribute("data-nav");
       if (target === "profile") return renderProfile();
       if (target === "walkthrough") return renderWalkthrough();
       if (target === "practiceTests") return renderPracticeTests();

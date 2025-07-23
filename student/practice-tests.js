@@ -18,15 +18,17 @@ import {
 } from '../ui-helpers.js';
 
 import {
-  renderDashboard as renderStudentDashboard,
+  renderStudentDashboard,
   renderTestEngine
-} from './index.js';
+} from './student-dashboard.js'; // Make sure index.js re-exports these or adjust path
 
 // ─── PRACTICE TESTS PAGE (STUDENT) ─────────────────────────
 export async function renderPracticeTests(container = document.getElementById("app")) {
   if (!container) return;
 
-  const email = (auth.currentUser && auth.currentUser.email) || window.currentUserEmail || localStorage.getItem("currentUserEmail");
+  const email = (auth.currentUser && auth.currentUser.email) ||
+    window.currentUserEmail ||
+    localStorage.getItem("currentUserEmail");
   if (!email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
     return;
@@ -140,7 +142,9 @@ export async function renderTestReview(container, testName) {
   container = container || document.getElementById("app");
   container.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧾 ${testName} Review</h2><p>Loading...</p></div>`;
 
-  const email = (auth.currentUser && auth.currentUser.email) || window.currentUserEmail || localStorage.getItem("currentUserEmail");
+  const email = (auth.currentUser && auth.currentUser.email) ||
+    window.currentUserEmail ||
+    localStorage.getItem("currentUserEmail");
   try {
     const snap = await getDocs(
       query(collection(db, "testResults"), where("studentId", "==", email))

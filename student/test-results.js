@@ -4,13 +4,14 @@ import { db } from '../firebase.js';
 import { getDocs, query, collection, where } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { setupNavigation } from '../ui-helpers.js';
 
-// Accept email as param for flexibility, fallback to global/user
-let currentUserEmail =
-  window.currentUserEmail ||
-  localStorage.getItem("currentUserEmail") ||
-  null;
-
+// Accepts container param, and always checks for logged in user email
 export async function renderTestResults(container = document.getElementById("app")) {
+  // Resolve current user
+  const currentUserEmail =
+    window.currentUserEmail ||
+    localStorage.getItem("currentUserEmail") ||
+    null;
+
   if (!container) return;
 
   // Guard against missing user
@@ -43,7 +44,7 @@ export async function renderTestResults(container = document.getElementById("app
       )
     );
 
-    // Normalize timestamps
+    // Normalize timestamps and format results
     results = snap.docs.map(d => {
       const data = d.data();
       const ts = data.timestamp;

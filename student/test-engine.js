@@ -10,9 +10,12 @@ export async function renderTestEngine(
   testName,
   currentUserEmail
 ) {
-  if (!container || !testName || !currentUserEmail) return;
+  if (!container || !testName || !currentUserEmail) {
+    showToast("Missing required parameters for test engine.");
+    return;
+  }
 
-  // 1. Question banks (add to/replace as needed)
+  // --- 1. Question Banks -----------------------------------------------
   const questionBanks = {
     "General Knowledge": [
       {
@@ -76,7 +79,7 @@ export async function renderTestEngine(
   let currentIdx = 0;
   let correctCount = 0;
 
-  // --- Render a single question ---
+  // --- Render a single question ----------------------------------------
   function showQuestion() {
     const { q, choices } = questions[currentIdx];
     container.innerHTML = `
@@ -95,7 +98,7 @@ export async function renderTestEngine(
       </div>
     `;
 
-    // Bind choice buttons
+    // Choice button click handler
     container.querySelectorAll(".choice-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const chosen = parseInt(btn.dataset.choice, 10);
@@ -110,7 +113,7 @@ export async function renderTestEngine(
     });
   }
 
-  // --- Render Results Page ---
+  // --- Render Results Page ---------------------------------------------
   async function showResults() {
     const total = questions.length;
     const pct   = total ? Math.round((correctCount / total) * 100) : 0;
@@ -145,7 +148,7 @@ export async function renderTestEngine(
     `;
     setupNavigation();
 
-    // Smart navigation -- import dynamically to avoid circular deps
+    // Dynamic imports to prevent circular dependency
     container.querySelector('[data-nav="dashboard"]')?.addEventListener("click", () => {
       import('./student-dashboard.js').then(mod => mod.renderDashboard());
     });
@@ -154,7 +157,7 @@ export async function renderTestEngine(
     });
   }
 
-  // --- Start quiz or show empty-state message ---
+  // --- Start quiz or show empty-state message --------------------------
   if (questions.length === 0) {
     container.innerHTML = `<div class="screen-wrapper fade-in"><p>No questions found for "${testName}".</p></div>`;
     setupNavigation();

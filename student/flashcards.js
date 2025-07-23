@@ -1,7 +1,7 @@
 // student/flashcards.js
 
 // ─── IMPORTS ────────────────────────────────────────────────
-import { db, auth } from '../firebase.js';
+import { db, auth } from "../firebase.js";
 import {
   collection,
   query,
@@ -13,15 +13,18 @@ import {
   setupNavigation,
   incrementStudentStudyMinutes,
   logStudySession
-} from '../ui-helpers.js';
-import { renderStudentDashboard } from './student-dashboard.js';
+} from "../ui-helpers.js";
+import { renderStudentDashboard } from "./student-dashboard.js";
 
 // ─── FLASHCARDS PAGE (STUDENT) ─────────────────────────────
 export async function renderFlashcards(container = document.getElementById("app")) {
   if (!container) return;
 
   // Auth and Role Check
-  const email = (auth.currentUser && auth.currentUser.email) || window.currentUserEmail || localStorage.getItem("currentUserEmail");
+  const email =
+    (auth.currentUser && auth.currentUser.email) ||
+    window.currentUserEmail ||
+    localStorage.getItem("currentUserEmail");
   if (!email) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
     return;
