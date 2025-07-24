@@ -5,15 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>CDL Trainer</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Optional: Favicon -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
 </head>
 <body>
   <!-- Minimal Loader -->
-  <div id="app-loader">
+  <div id="app-loader" aria-live="polite">
     <div>🚛 CDL Trainer</div>
   </div>
 
   <!-- Main App Mount -->
-  <div id="app"></div>
+  <div id="app" tabindex="0"></div>
 
   <!-- Main JS as ES Module (ONLY this, nothing else needed) -->
   <script type="module">

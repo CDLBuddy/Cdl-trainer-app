@@ -27,7 +27,7 @@ const firebaseConfig = {
   measurementId:     "G-MJ22BD2J1J"
 };
 
-// --- Prevent re-initialization in hot reload or multi-import setups
+// --- Prevent re-initialization in hot reload or multi-import setups ---
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 const db      = getFirestore(app);
@@ -51,6 +51,7 @@ export async function getLatestUpdate() {
 
 // --- User & School helpers (multi-school/role support) ---
 export function getCurrentUserSchool() {
+  // Returns current user's schoolId from localStorage or Firebase auth object
   return (
     localStorage.getItem("schoolId") ||
     (auth.currentUser && auth.currentUser.schoolId) ||
@@ -59,6 +60,7 @@ export function getCurrentUserSchool() {
 }
 
 export async function getUserRole(email) {
+  // Returns user role for the given email, or 'student' by default
   try {
     const roleSnap = await getDoc(doc(db, "userRoles", email));
     return roleSnap.exists() ? roleSnap.data().role : "student";
@@ -68,6 +70,7 @@ export async function getUserRole(email) {
 }
 
 export async function setUserRole(email, role, schoolId = null) {
+  // Sets the user role and optional schoolId for a given email
   try {
     await setDoc(doc(db, "userRoles", email), { role, schoolId }, { merge: true });
     return true;
@@ -76,7 +79,7 @@ export async function setUserRole(email, role, schoolId = null) {
   }
 }
 
-// --- Exports for compatibility everywhere ---
+// --- Export for compatibility everywhere ---
 export {
   app, db, auth, storage,
   collection, query, orderBy, limit, getDocs,

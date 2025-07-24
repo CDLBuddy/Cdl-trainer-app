@@ -16,13 +16,12 @@ import { getCurrentSchoolBranding, setCurrentSchool } from "./school-branding.js
 export function renderLogin(container = document.getElementById("app"), opts = {}) {
   if (!container) return;
 
-  // --- Get branding ---
+  // --- Branding ---
   const schoolBrand = getCurrentSchoolBranding();
   const schoolLogo = schoolBrand.logoUrl || "/default-logo.svg";
   const schoolName = schoolBrand.schoolName || "CDL Trainer";
   const accentColor = schoolBrand.primaryColor || "#b48aff";
   const supportEmail = schoolBrand.contactEmail || "support@cdltrainerapp.com";
-
   document.documentElement.style.setProperty("--brand-primary", accentColor);
 
   container.innerHTML = `
@@ -163,11 +162,7 @@ export function renderLogin(container = document.getElementById("app"), opts = {
   // Back to welcome page
   container.querySelector("#back-to-welcome-btn")?.addEventListener("click", async () => {
     if (auth.currentUser) {
-      try {
-        await signOut(auth);
-      } catch (err) {
-        // ignore
-      }
+      try { await signOut(auth); } catch (err) {/* ignore */ }
     }
     renderWelcome();
   });

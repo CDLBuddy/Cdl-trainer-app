@@ -24,14 +24,19 @@ import { renderChecklists }     from './checklists.js';
 import { renderPracticeTests }  from './practice-tests.js';
 import { renderFlashcards }     from './flashcards.js';
 
-let currentUserEmail =
-  window.currentUserEmail ||
-  localStorage.getItem("currentUserEmail") ||
-  (auth.currentUser && auth.currentUser.email) ||
-  null;
+let currentUserEmail = null;
 
+// Main dashboard renderer
 export async function renderStudentDashboard(container = document.getElementById("app")) {
   if (!container) return;
+
+  // Always resolve current user at runtime
+  currentUserEmail =
+    window.currentUserEmail ||
+    localStorage.getItem("currentUserEmail") ||
+    (auth.currentUser && auth.currentUser.email) ||
+    null;
+
   if (!currentUserEmail) {
     showToast("No user found. Please log in again.");
     window.location.reload();
@@ -209,6 +214,7 @@ export async function renderStudentDashboard(container = document.getElementById
     </button>
   `;
 
+  // Show latest update card (news/alerts from Firestore)
   showLatestUpdate();
   setupNavigation();
 

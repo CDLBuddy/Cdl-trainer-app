@@ -1,6 +1,5 @@
-// student/index.js
-
-export { renderStudentDashboard }    from './student-dashboard.js';   // FIXED
+//student/index.js
+export { renderStudentDashboard, renderStudentDashboard as renderDashboard }    from './student-dashboard.js';
 export { renderProfile }             from './profile.js';
 export { renderAICoach }             from './ai-coach.js';
 export { renderWalkthrough }         from './walkthrough.js';
