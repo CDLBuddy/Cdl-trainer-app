@@ -38,7 +38,7 @@
     if (D.moduleAlerts) window.addEventListener('DOMContentLoaded', () => alert("🧪 Inline module is running!"));
     // Test if app.js fetches cleanly
     if (D.fetchTest) {
-      fetch('app.js').then(r => alert("🔍 fetch app.js → " + r.status)).catch(e => alert("❌ fetch error: " + e.message));
+      fetch('../app.js').then(r => alert("🔍 fetch app.js → " + r.status)).catch(e => alert("❌ fetch error: " + e.message));
     }
     // Global error trapping (disable in production)
     if (D.globalErrors) {
@@ -113,7 +113,7 @@
   </script>
 
   <!-- Main App Entry (keep as type=module!) -->
-  <script type="module" src="app.js"></script>
+  <script type="module" src="../app.js"></script>
 
   <!-- Fallback Loader Debug: Show if JS fails to render the app -->
   <script>
