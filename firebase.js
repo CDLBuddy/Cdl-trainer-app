@@ -35,7 +35,7 @@ const auth    = getAuth(app);
 const storage = getStorage(app);
 
 // --- Latest Update Helper (for global use) ---
-async function getLatestUpdate() {
+export async function getLatestUpdate() {
   try {
     const updatesRef = collection(db, "updates");
     const updatesQuery = query(updatesRef, orderBy("date", "desc"), limit(1));
@@ -78,8 +78,7 @@ export async function setUserRole(email, role, schoolId = null) {
 
 // --- Exports for compatibility everywhere ---
 export {
-  app, db, auth, storage, getLatestUpdate,
+  app, db, auth, storage,
   collection, query, orderBy, limit, getDocs,
-  doc, getDoc, setDoc, updateDoc,
-  getUserRole, setUserRole
+  doc, getDoc, setDoc, updateDoc
 };
