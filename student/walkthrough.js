@@ -17,7 +17,7 @@ import {
   getUserProgress
 } from '../ui-helpers.js';
 import { renderProfile } from './profile.js';
-import { renderDashboard } from './student-dashboard.js';
+import { renderDashboard as renderStudentDashboard } from './student-dashboard.js';
 
 // --- Data for drills ---
 const brakeCheckFull = [
@@ -47,25 +47,26 @@ const brakeCheckSteps = [
 ];
 const visualRecall = [
   {
-    img: "brake-gauge.png", // update path as needed
+    img: "brake-gauge.png",
     question: "At what PSI should the low air warning activate?",
     answer: "before 60"
   }
 ];
 
-// --- User Context for Future Multi-tenant Support ---
-const currentUserEmail = (
-  window.currentUserEmail ||
-  localStorage.getItem("currentUserEmail") ||
-  (auth.currentUser && auth.currentUser.email) ||
-  ""
-);
-const userRole = localStorage.getItem("userRole") || "student";
-const schoolId = localStorage.getItem("schoolId") || "";
-
 // --- Walkthrough Page ---
 export async function renderWalkthrough(container = document.getElementById("app")) {
   if (!container) return;
+
+  // Always re-resolve user context for latest login/session state
+  const currentUserEmail = (
+    window.currentUserEmail ||
+    localStorage.getItem("currentUserEmail") ||
+    (auth.currentUser && auth.currentUser.email) ||
+    ""
+  );
+  const userRole = localStorage.getItem("userRole") || "student";
+  const schoolId = localStorage.getItem("schoolId") || "";
+
   if (!currentUserEmail) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
     setupNavigation();
@@ -153,7 +154,7 @@ export async function renderWalkthrough(container = document.getElementById("app
   container.innerHTML = content;
 
   document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    renderDashboard();
+    renderStudentDashboard();
   });
   container.querySelector('[data-nav="profile"]')?.addEventListener("click", () => {
     renderProfile();

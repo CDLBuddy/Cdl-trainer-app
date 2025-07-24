@@ -27,11 +27,15 @@ import {
 
 import { renderDashboard as renderStudentDashboard } from './student-dashboard.js';
 
-let currentUserEmail =
-  window.currentUserEmail ||
-  (window.auth?.currentUser?.email) ||
-  localStorage.getItem("currentUserEmail") ||
-  null;
+// DRY user email getter
+function getCurrentUserEmail() {
+  return (
+    window.currentUserEmail ||
+    (window.auth?.currentUser?.email) ||
+    localStorage.getItem("currentUserEmail") ||
+    null
+  );
+}
 
 // Utility: fetch school name from schoolId
 async function fetchSchoolName(schoolId) {
@@ -53,13 +57,14 @@ function escapeHTML(str) {
 
 export async function renderProfile(container = document.getElementById("app")) {
   if (!container) return;
+  const currentUserEmail = getCurrentUserEmail();
   if (!currentUserEmail) {
     showToast("No user found. Please log in again.");
     window.location.reload();
     return;
   }
 
-  // --- FETCH user data by doc ID (faster, safer) ---
+  // --- FETCH user data by doc ID ---
   let userData = {};
   let userDocRef = doc(db, "users", currentUserEmail);
   try {

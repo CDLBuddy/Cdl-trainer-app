@@ -9,21 +9,96 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-import { renderProfile }        from "./profile.js";
-import { renderWalkthrough }    from "./walkthrough.js";
-import { renderPracticeTests }  from "./practice-tests.js";
-import { renderDashboard }      from "./student-dashboard.js";
+import { renderProfile } from "./profile.js";
+import { renderWalkthrough } from "./walkthrough.js";
+import { renderPracticeTests } from "./practice-tests.js";
+import { renderStudentDashboard } from "./student-dashboard.js"; // <-- FIXED
 
-// User/email fallback (future-proofed, matches all modules)
-const currentUserEmail =
-  window.currentUserEmail ||
-  localStorage.getItem("currentUserEmail") ||
-  (auth.currentUser && auth.currentUser.email) ||
-  null;
+// Checklist template: define *structure only* at module level (NOT user data)
+export const studentChecklistSectionsTemplate = [
+  {
+    header: "Personal Info",
+    items: [
+      {
+        label: "Profile Complete",
+        key: "profileComplete",
+        link: "profile",
+        details: "Complete all required fields in your student profile.",
+        readonly: false,
+        substeps: null
+      }
+    ]
+  },
+  {
+    header: "Permit & Docs",
+    items: [
+      {
+        label: "Permit Uploaded",
+        key: "permitUploaded",
+        link: "profile",
+        details: "Upload a clear photo of your CDL permit.",
+        readonly: false,
+        substeps: null
+      },
+      {
+        label: "Vehicle Data Plates Uploaded",
+        key: "vehicleUploaded",
+        link: "profile",
+        details: "Upload photos of both your truck and trailer data plates.",
+        readonly: false,
+        substeps: [
+          { label: "Truck Plate", key: "truckPlateUrl" },
+          { label: "Trailer Plate", key: "trailerPlateUrl" }
+        ]
+      }
+    ]
+  },
+  {
+    header: "Testing & Study",
+    items: [
+      {
+        label: "Practice Test Passed",
+        key: "practiceTestPassed",
+        link: "practiceTests",
+        details: "Score at least 80% on any practice test to unlock the next step.",
+        readonly: false,
+        substeps: null
+      },
+      {
+        label: "Walkthrough Progress",
+        key: "walkthroughComplete",
+        link: "walkthrough",
+        details: "Start and complete your CDL vehicle inspection walkthrough.",
+        readonly: false,
+        substeps: null
+      }
+    ]
+  },
+  {
+    header: "Final Certification",
+    items: [
+      {
+        label: "Complete in-person walkthrough and driving portion",
+        key: "finalInstructorSignoff",
+        link: "",
+        details: "This final step must be marked complete by your instructor.",
+        readonly: true,
+        substeps: null
+      }
+    ]
+  }
+];
 
 // Main Checklist Renderer
 export async function renderChecklists(container = document.getElementById("app")) {
   if (!container) return;
+
+  // User/email fallback (future-proofed, matches all modules)
+  const currentUserEmail =
+    window.currentUserEmail ||
+    localStorage.getItem("currentUserEmail") ||
+    (auth.currentUser && auth.currentUser.email) ||
+    null;
 
   if (!currentUserEmail) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
@@ -56,84 +131,49 @@ export async function renderChecklists(container = document.getElementById("app"
     return;
   }
 
-  // Checklist progress data
-  const {
-    cdlClass = "", cdlPermit = "", permitPhotoUrl = "",
-    vehicleQualified = "", truckPlateUrl = "", trailerPlateUrl = "",
-    experience = "", lastTestScore = 0, walkthroughProgress = 0,
-    walkthroughComplete = false,
-  } = userData;
+  // Gather student progress fields
+  const cdlClass = userData.cdlClass || "";
+  const cdlPermit = userData.cdlPermit || "";
+  const permitPhotoUrl = userData.permitPhotoUrl || "";
+  const vehicleQualified = userData.vehicleQualified || "";
+  const truckPlateUrl = userData.truckPlateUrl || "";
+  const trailerPlateUrl = userData.trailerPlateUrl || "";
+  const experience = userData.experience || "";
+  const lastTestScore = typeof userData.lastTestScore === "number" ? userData.lastTestScore : 0;
+  const walkthroughProgress = typeof userData.walkthroughProgress === "number" ? userData.walkthroughProgress : 0;
+  const walkthroughComplete = !!userData.walkthroughComplete;
+  const finalInstructorSignoff = !!userData.finalInstructorSignoff; // For the "Final Certification" step
 
-  // Define all checklist sections and steps (exportable for future instructor/admin checklists)
-  export const studentChecklistSections = [
-    {
-      header: "Personal Info",
-      items: [
-        {
-          label: "Profile Complete",
-          done: !!(cdlClass && cdlPermit && experience),
-          link: "profile",
-          notify: !(cdlClass && cdlPermit && experience),
-          details: "Complete all required fields in your student profile.",
-        },
-      ]
-    },
-    {
-      header: "Permit & Docs",
-      items: [
-        {
-          label: "Permit Uploaded",
-          done: cdlPermit === "yes" && !!permitPhotoUrl,
-          link: "profile",
-          notify: cdlPermit === "yes" && !permitPhotoUrl,
-          details: "Upload a clear photo of your CDL permit.",
-        },
-        {
-          label: "Vehicle Data Plates Uploaded",
-          done: vehicleQualified === "yes" && !!truckPlateUrl && !!trailerPlateUrl,
-          link: "profile",
-          notify: vehicleQualified === "yes" && (!truckPlateUrl || !trailerPlateUrl),
-          details: "Upload photos of both your truck and trailer data plates.",
-          substeps: [
-            { label: "Truck Plate", done: !!truckPlateUrl },
-            { label: "Trailer Plate", done: !!trailerPlateUrl }
-          ]
-        },
-      ]
-    },
-    {
-      header: "Testing & Study",
-      items: [
-        {
-          label: "Practice Test Passed",
-          done: lastTestScore >= 80,
-          link: "practiceTests",
-          notify: lastTestScore < 80,
-          details: "Score at least 80% on any practice test to unlock the next step.",
-        },
-        {
-          label: "Walkthrough Progress",
-          done: walkthroughProgress >= 1,
-          link: "walkthrough",
-          notify: walkthroughProgress < 1,
-          details: "Start and complete your CDL vehicle inspection walkthrough.",
-        },
-      ]
-    },
-    {
-      header: "Final Certification",
-      items: [
-        {
-          label: "Complete in-person walkthrough and driving portion",
-          done: !!walkthroughComplete,
-          link: "",
-          notify: !walkthroughComplete,
-          details: "This final step must be marked complete by your instructor.",
-          readonly: true
-        }
-      ]
-    }
-  ];
+  // Build a FRESH checklist for THIS user
+  const studentChecklistSections = JSON.parse(JSON.stringify(studentChecklistSectionsTemplate));
+
+  // Personal Info
+  studentChecklistSections[0].items[0].done = !!(cdlClass && cdlPermit && experience);
+  studentChecklistSections[0].items[0].notify = !studentChecklistSections[0].items[0].done;
+
+  // Permit & Docs
+  studentChecklistSections[1].items[0].done = (cdlPermit === "yes" && !!permitPhotoUrl);
+  studentChecklistSections[1].items[0].notify = (cdlPermit === "yes" && !permitPhotoUrl);
+
+  studentChecklistSections[1].items[1].done =
+    (vehicleQualified === "yes" && !!truckPlateUrl && !!trailerPlateUrl);
+  studentChecklistSections[1].items[1].notify =
+    (vehicleQualified === "yes" && (!truckPlateUrl || !trailerPlateUrl));
+  if (studentChecklistSections[1].items[1].substeps) {
+    studentChecklistSections[1].items[1].substeps[0].done = !!truckPlateUrl;
+    studentChecklistSections[1].items[1].substeps[1].done = !!trailerPlateUrl;
+  }
+
+  // Testing & Study
+  studentChecklistSections[2].items[0].done = (lastTestScore >= 80);
+  studentChecklistSections[2].items[0].notify = (lastTestScore < 80);
+
+  studentChecklistSections[2].items[1].done = (walkthroughProgress >= 1);
+  studentChecklistSections[2].items[1].notify = (walkthroughProgress < 1);
+
+  // Final Certification
+  studentChecklistSections[3].items[0].done = walkthroughComplete || finalInstructorSignoff;
+  studentChecklistSections[3].items[0].notify = !studentChecklistSections[3].items[0].done;
 
   // Progress percent calculation
   const flatChecklist = studentChecklistSections.flatMap(sec => sec.items);
@@ -239,7 +279,7 @@ export async function renderChecklists(container = document.getElementById("app"
 
   // Back to dashboard button
   container.querySelector("#back-to-dashboard-btn")?.addEventListener("click", () => {
-    renderDashboard();
+    renderStudentDashboard(); // <-- FIXED
   });
 
   setupNavigation();

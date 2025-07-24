@@ -30,7 +30,7 @@ let currentUserEmail =
   (auth.currentUser && auth.currentUser.email) ||
   null;
 
-export async function renderDashboard(container = document.getElementById("app")) {
+export async function renderStudentDashboard(container = document.getElementById("app")) {
   if (!container) return;
   if (!currentUserEmail) {
     showToast("No user found. Please log in again.");

@@ -194,10 +194,10 @@ export async function renderTestEngine(
 
     // Dynamic imports to prevent circular dependency
     container.querySelector('[data-nav="dashboard"]')?.addEventListener("click", () => {
-      import('./student-dashboard.js').then(mod => mod.renderDashboard());
+      import('./student-dashboard.js').then(mod => mod.renderDashboard(container));
     });
     container.querySelector('[data-nav="practiceTests"]')?.addEventListener("click", () => {
-      import('./practice-tests.js').then(mod => mod.renderPracticeTests());
+      import('./practice-tests.js').then(mod => mod.renderPracticeTests(container));
     });
   }
 

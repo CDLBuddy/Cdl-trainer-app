@@ -130,12 +130,12 @@ export async function renderTestResults(container = document.getElementById("app
   container.innerHTML = html;
   setupNavigation();
 
-  // Back and Retake navigation
+  // Back and Retake navigation (always uses latest dashboard, no hardcode)
   document.getElementById('back-to-dashboard-btn')?.addEventListener("click", () => {
-    import('./student-dashboard.js').then(mod => mod.renderDashboard());
+    import('./student-dashboard.js').then(mod => mod.renderDashboard(container));
   });
   document.getElementById('retake-test-btn')?.addEventListener("click", () => {
-    import('./practice-tests.js').then(mod => mod.renderPracticeTests());
+    import('./practice-tests.js').then(mod => mod.renderPracticeTests(container));
   });
 
   // --- CSV EXPORT FOR STAFF ---

@@ -13,12 +13,10 @@ import {
   incrementStudentStudyMinutes,
   logStudySession
 } from "../ui-helpers.js";
-import { renderStudentDashboard } from "./student-dashboard.js";
+import { renderStudentDashboard } from "./student-dashboard.js"; // <--- FIXED
 
 // ========== CONFIG ==========
-// For multi-school future, flashcards could load from Firestore:
-//   const flashcardRef = collection(db, `schools/${schoolId}/flashcards`);
-// For now, local set:
+// For multi-school, swap this with Firestore fetch in the future.
 const defaultFlashcards = [
   { q: "What is the minimum tread depth for front tires?", a: "4/32 of an inch." },
   { q: "What do you check for on rims?", a: "Bent, damaged, or rust trails." },
@@ -52,7 +50,7 @@ export async function renderFlashcards(container = document.getElementById("app"
   }
 
   // --- State
-  let flashcards = [...defaultFlashcards]; // Optionally, shuffle below if needed
+  let flashcards = [...defaultFlashcards];
   let current = 0;
   let startedAt = Date.now();
   let completed = false;
@@ -115,7 +113,7 @@ export async function renderFlashcards(container = document.getElementById("app"
         renderCard();
       });
       document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-        renderStudentDashboard();
+        renderStudentDashboard(); // <--- FIXED
       });
       setupNavigation();
       return;
@@ -223,7 +221,7 @@ export async function renderFlashcards(container = document.getElementById("app"
       completed = true; renderCard();
     });
     document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-      renderStudentDashboard();
+      renderStudentDashboard(); // <--- FIXED
     });
 
     // Mark as known logic

@@ -21,11 +21,15 @@ import {
   renderTestEngine
 } from './student-dashboard.js';
 
-let currentUserEmail =
-  (auth.currentUser && auth.currentUser.email) ||
-  window.currentUserEmail ||
-  localStorage.getItem("currentUserEmail") ||
-  null;
+// --- Helper for user email everywhere (keeps DRY) ---
+function getCurrentUserEmail() {
+  return (
+    (auth.currentUser && auth.currentUser.email) ||
+    window.currentUserEmail ||
+    localStorage.getItem("currentUserEmail") ||
+    null
+  );
+}
 
 // Multi-school future support
 let schoolId = localStorage.getItem("schoolId") || "";
@@ -34,12 +38,7 @@ let schoolId = localStorage.getItem("schoolId") || "";
 export async function renderPracticeTests(container = document.getElementById("app")) {
   if (!container) return;
 
-  // Fresh resolve (handles hot reload)
-  currentUserEmail =
-    (auth.currentUser && auth.currentUser.email) ||
-    window.currentUserEmail ||
-    localStorage.getItem("currentUserEmail") ||
-    null;
+  const currentUserEmail = getCurrentUserEmail();
   if (!currentUserEmail) {
     container.innerHTML = "<p>You must be logged in to view this page.</p>";
     setupNavigation();
@@ -176,11 +175,7 @@ export async function renderTestReview(container, testName) {
   container = container || document.getElementById("app");
   container.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧾 ${testName} Review</h2><p>Loading...</p></div>`;
 
-  currentUserEmail =
-    (auth.currentUser && auth.currentUser.email) ||
-    window.currentUserEmail ||
-    localStorage.getItem("currentUserEmail") ||
-    null;
+  const currentUserEmail = getCurrentUserEmail();
   try {
     const snap = await getDocs(
       query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
