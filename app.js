@@ -39,8 +39,8 @@ window.schoolId = null;
 let loaderShownAt = Date.now();
 let loaderEl = document.getElementById("app-loader");
 
-console.log("🖱️ Setting up nav handlers...");
 // --- NAV HANDLERS ---
+console.log("🖱️ Setting up nav handlers...");
 document.body.addEventListener("click", (e) => {
   const target = e.target.closest("[data-nav]");
   if (target) {

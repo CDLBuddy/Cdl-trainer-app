@@ -13,7 +13,7 @@
     // EARLY: Prove JS runs
     alert("🟢 [debug] Inline JS executed at HEAD");
     console.log("[debug] Inline JS executed at HEAD");
-    document.body.style.background = "#f00";
+    // Dev only: document.body.style.background = "#f00";
   </script>
   <script>
     window.APP_DEBUG = {
@@ -30,23 +30,19 @@
     window.FEATURE_BILLING_V2 = window.APP_DEBUG.featureFlags;
   </script>
   <script>
-    // DEV/DEBUG HOOKS
     const D = window.APP_DEBUG || {};
-    // HTML loaded
     if (D.htmlAlerts) {
       alert("✅ [debug] HTML <head> parsed");
       console.log("[debug] HTML <head> parsed");
     }
-    // DOM ready/module loaded
     if (D.moduleAlerts) {
       window.addEventListener('DOMContentLoaded', () => {
         alert("🧪 [debug] DOMContentLoaded - Module inline");
         console.log("[debug] DOMContentLoaded - Module inline");
       });
     }
-    // Test if app.js fetches cleanly
     if (D.fetchTest) {
-      fetch('../app.js').then(r => {
+      fetch('./app.js').then(r => {
         alert("🔍 [debug] fetch app.js → " + r.status);
         console.log("[debug] fetch app.js →", r.status);
       }).catch(e => {
@@ -54,7 +50,6 @@
         console.error("[debug] fetch app.js error:", e);
       });
     }
-    // Global error trapping
     if (D.globalErrors) {
       window.addEventListener("error", e => {
         alert("🚨 [debug] JS Global Error: " + e.message);
@@ -65,7 +60,6 @@
         console.error("[debug] Promise Rejection:", e.reason);
       });
     }
-    // Optional: Console log trace upgrades
     if (D.verboseLogs) {
       const oldLog = console.log;
       console.log = function (...args) {
@@ -120,7 +114,6 @@
   <script>
     alert("🧪 [debug] Pre-app utility hooks running");
     console.log("[debug] Pre-app utility hooks running");
-    // Usage: await window.simulateNetworkLatency(1200) in async functions
     window.simulateNetworkLatency = function (ms = 1200) {
       if ((window.APP_DEBUG||{}).simulateLatency) {
         alert("⏳ [debug] Simulate latency: "+ms+"ms");
@@ -130,14 +123,12 @@
         return Promise.resolve();
       }
     };
-    // Example: Navigation tracer
     window.traceNavigation = function(page, ...args) {
       if ((window.APP_DEBUG||{}).navTracer) {
         alert("➡️ [debug] Navigation Trace: "+page);
         console.log("[debug] Navigation Trace:", { page, args });
       }
     };
-    // Example: Auth event logger
     window.logAuthEvent = function(event, data) {
       if ((window.APP_DEBUG||{}).authEvents) {
         alert("🔐 [debug] Auth Event: "+event);
@@ -150,7 +141,7 @@
   <script type="module">
     alert("🟢 [debug] <script type=module> app.js entry");
     console.log("[debug] <script type=module> app.js entry");
-    import("../app.js").then(()=> {
+    import("./app.js").then(()=> {
       alert("✅ [debug] app.js module loaded");
       console.log("[debug] app.js module loaded");
     }).catch(e=>{
