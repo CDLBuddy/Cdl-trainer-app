@@ -41,8 +41,8 @@ async function getLatestUpdate() {
     const updatesQuery = query(updatesRef, orderBy("date", "desc"), limit(1));
     const querySnapshot = await getDocs(updatesQuery);
     if (querySnapshot.empty) return null;
-    const doc = querySnapshot.docs[0];
-    return { id: doc.id, ...doc.data() };
+    const latestDoc = querySnapshot.docs[0];
+    return { id: latestDoc.id, ...latestDoc.data() };
   } catch (e) {
     console.error("Failed to fetch latest update:", e);
     return null;
@@ -57,15 +57,16 @@ export function getCurrentUserSchool() {
     null
   );
 }
+
 export async function getUserRole(email) {
-  // Used in multi-role auth listeners, cross-role dashboards
   try {
-    const docSnap = await getDoc(doc(db, "userRoles", email));
-    return docSnap.exists() ? docSnap.data().role : "student";
+    const roleSnap = await getDoc(doc(db, "userRoles", email));
+    return roleSnap.exists() ? roleSnap.data().role : "student";
   } catch (e) {
     return "student";
   }
 }
+
 export async function setUserRole(email, role, schoolId = null) {
   try {
     await setDoc(doc(db, "userRoles", email), { role, schoolId }, { merge: true });

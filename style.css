@@ -21,7 +21,29 @@
 body {
   padding-top: var(--safe-area-inset-top);
 }
-
+.toast-message.toast-success {
+  background: var(--success, #48bb78);
+  color: #fff;
+}
+.toast-message.toast-error {
+  background: var(--error, #e53e3e);
+  color: #fff;
+}
+.toast-message.toast-info {
+  background: var(--toast-bg, rgba(0,0,0,0.85));
+  color: var(--toast-text, #fff);
+}
+/* Optional: Toast focus (for a11y, tab) */
+.toast-message:focus {
+  outline: 2px solid var(--accent, #b48aff);
+  outline-offset: 2px;
+}
+/* Optional: Smoother fade out */
+@keyframes fadeInEnhanced {
+  0% { opacity: 0; transform: translateY(16px) scale(0.96);}
+  80% { opacity: 1; transform: translateY(-4px) scale(1.02);}
+  100% { opacity: 1; transform: translateY(0) scale(1);}
+}
 /* === MOBILE SAFE AREA + LAYOUT FIXES (insert after :root) =============== */
 html, body {
   height: 100%;
