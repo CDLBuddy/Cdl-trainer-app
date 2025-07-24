@@ -8,7 +8,7 @@ window.onerror = function(msg, src, lineno, col, error) {
 window.addEventListener("unhandledrejection", function(event) {
   alert("🚨 Promise Rejection: " + (event.reason && event.reason.message ? event.reason.message : event.reason));
 });
-// =================================
+// ================================
 
 // --- IMPORTS ---
 import { db, auth, storage } from "./firebase.js";
