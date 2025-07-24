@@ -9,53 +9,77 @@
   <!-- =======================
        GLOBAL DEBUG SETTINGS
        ======================= -->
-  <!-- EARLY DEBUG: Show alert + change bg color to prove JS runs -->
   <script>
-    alert("🟢 Inline JS ran!");
-    document.body.style.background = "#f00"; // Red if this JS runs!
+    // EARLY: Prove JS runs
+    alert("🟢 [debug] Inline JS executed at HEAD");
+    console.log("[debug] Inline JS executed at HEAD");
+    document.body.style.background = "#f00";
   </script>
   <script>
-    // Toggle dev/debug options here!
     window.APP_DEBUG = {
-      htmlAlerts: true,        // Pop up alert when HTML loads
-      moduleAlerts: true,      // Pop up alert when inline module runs
-      fetchTest: true,         // Test fetch of app.js
-      globalErrors: true,      // Show alerts for JS errors/rejections
-      verboseLogs: false,      // Console log trace points (can alert if true)
-      navTracer: false,        // Trace navigation/page loads
-      authEvents: false,       // Log auth/user events
-      featureFlags: true,      // Toggle feature-flag logic in-app
-      simulateLatency: false,  // Simulate slow network for loader testing
+      htmlAlerts: true,
+      moduleAlerts: true,
+      fetchTest: true,
+      globalErrors: true,
+      verboseLogs: true,
+      navTracer: true,
+      authEvents: true,
+      featureFlags: true,
+      simulateLatency: true
     };
-    window.FEATURE_BILLING_V2 = window.APP_DEBUG.featureFlags; // Example flag
+    window.FEATURE_BILLING_V2 = window.APP_DEBUG.featureFlags;
   </script>
   <script>
     // DEV/DEBUG HOOKS
     const D = window.APP_DEBUG || {};
-    // Pop up HTML loaded alert
-    if (D.htmlAlerts) alert("✅ HTML loaded");
-    // Pop up when DOM is ready/module loaded
-    if (D.moduleAlerts) window.addEventListener('DOMContentLoaded', () => alert("🧪 Inline module is running!"));
+    // HTML loaded
+    if (D.htmlAlerts) {
+      alert("✅ [debug] HTML <head> parsed");
+      console.log("[debug] HTML <head> parsed");
+    }
+    // DOM ready/module loaded
+    if (D.moduleAlerts) {
+      window.addEventListener('DOMContentLoaded', () => {
+        alert("🧪 [debug] DOMContentLoaded - Module inline");
+        console.log("[debug] DOMContentLoaded - Module inline");
+      });
+    }
     // Test if app.js fetches cleanly
     if (D.fetchTest) {
-      fetch('../app.js').then(r => alert("🔍 fetch app.js → " + r.status)).catch(e => alert("❌ fetch error: " + e.message));
+      fetch('../app.js').then(r => {
+        alert("🔍 [debug] fetch app.js → " + r.status);
+        console.log("[debug] fetch app.js →", r.status);
+      }).catch(e => {
+        alert("❌ [debug] fetch app.js error: " + e.message);
+        console.error("[debug] fetch app.js error:", e);
+      });
     }
-    // Global error trapping (disable in production)
+    // Global error trapping
     if (D.globalErrors) {
-      window.addEventListener("error", e => alert("🚨 Global Error: " + e.message));
-      window.addEventListener("unhandledrejection", e => alert("🚨 Promise Rejection: " + e.reason));
+      window.addEventListener("error", e => {
+        alert("🚨 [debug] JS Global Error: " + e.message);
+        console.error("[debug] JS Global Error:", e);
+      });
+      window.addEventListener("unhandledrejection", e => {
+        alert("🚨 [debug] Promise Rejection: " + (e.reason && e.reason.message ? e.reason.message : e.reason));
+        console.error("[debug] Promise Rejection:", e.reason);
+      });
     }
-    // (Optional) Console log/trace upgrades
+    // Optional: Console log trace upgrades
     if (D.verboseLogs) {
       const oldLog = console.log;
       console.log = function (...args) {
         oldLog.apply(console, args);
-        alert("[console.log] " + args.join(' '));
+        alert("[console.log] " + args.map(a=>typeof a==="object"?JSON.stringify(a):a).join(' '));
       };
     }
   </script>
 </head>
 <body>
+  <script>
+    alert("🟢 [debug] <body> tag entered");
+    console.log("[debug] <body> tag entered");
+  </script>
   <!-- Initial Boot Loader (ALWAYS first, always present!) -->
   <div id="app-loader">
     <div class="loader-logo glow-shimmer">🚛 CDL&nbsp;Trainer</div>
@@ -94,26 +118,46 @@
 
   <!-- ==== DEV/DEBUG/UTILITIES - Optional for Future ==== -->
   <script>
+    alert("🧪 [debug] Pre-app utility hooks running");
+    console.log("[debug] Pre-app utility hooks running");
     // Usage: await window.simulateNetworkLatency(1200) in async functions
     window.simulateNetworkLatency = function (ms = 1200) {
-      return (window.APP_DEBUG && window.APP_DEBUG.simulateLatency)
-        ? new Promise(res => setTimeout(res, ms))
-        : Promise.resolve();
+      if ((window.APP_DEBUG||{}).simulateLatency) {
+        alert("⏳ [debug] Simulate latency: "+ms+"ms");
+        console.log("[debug] Simulate latency:", ms);
+        return new Promise(res => setTimeout(res, ms));
+      } else {
+        return Promise.resolve();
+      }
     };
     // Example: Navigation tracer
     window.traceNavigation = function(page, ...args) {
-      if ((window.APP_DEBUG||{}).navTracer)
-        console.info("[Navigation Trace]", { page, args });
+      if ((window.APP_DEBUG||{}).navTracer) {
+        alert("➡️ [debug] Navigation Trace: "+page);
+        console.log("[debug] Navigation Trace:", { page, args });
+      }
     };
     // Example: Auth event logger
     window.logAuthEvent = function(event, data) {
-      if ((window.APP_DEBUG||{}).authEvents)
-        console.info("[Auth Event]", event, data);
+      if ((window.APP_DEBUG||{}).authEvents) {
+        alert("🔐 [debug] Auth Event: "+event);
+        console.log("[debug] Auth Event:", event, data);
+      }
     };
   </script>
 
   <!-- Main App Entry (keep as type=module!) -->
-  <script type="module" src="../app.js"></script>
+  <script type="module">
+    alert("🟢 [debug] <script type=module> app.js entry");
+    console.log("[debug] <script type=module> app.js entry");
+    import("../app.js").then(()=> {
+      alert("✅ [debug] app.js module loaded");
+      console.log("[debug] app.js module loaded");
+    }).catch(e=>{
+      alert("❌ [debug] app.js module error: "+e.message);
+      console.error("[debug] app.js module error:", e);
+    });
+  </script>
 
   <!-- Fallback Loader Debug: Show if JS fails to render the app -->
   <script>
@@ -123,6 +167,8 @@
         loader.classList.add('hide');
         const appEl = document.getElementById('app');
         if (appEl && !appEl.innerHTML.trim()) {
+          alert("⚠️ [debug] App fallback loader triggered");
+          console.log("[debug] App fallback loader triggered");
           appEl.innerHTML = '<h2 style="color:white; text-align:center; margin-top:2em;">App loaded fallback!<br><span style="font-size:1.1em;color:#a3e063;">(No JS render)</span></h2>';
         }
       }
