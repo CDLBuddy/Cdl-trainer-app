@@ -28,9 +28,10 @@ import { getCurrentSchoolBranding, setCurrentSchool } from "./school-branding.js
 
 // --- GLOBAL STATE ---
 console.log("🌐 Setting global state...");
-export let currentUserEmail = null;
-export let currentUserRole = null;
-export let schoolId = null;
+// Use plain let (not export), and mirror to window for global debugging access
+let currentUserEmail = null;
+let currentUserRole = null;
+let schoolId = null;
 
 window.currentUserEmail = null;
 window.currentUserRole = null;
