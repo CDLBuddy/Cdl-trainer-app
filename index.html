@@ -7,22 +7,17 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Minimal Initial Loader -->
+  <!-- Minimal Loader -->
   <div id="app-loader">
     <div>🚛 CDL Trainer</div>
   </div>
 
-  <!-- Main App Content -->
+  <!-- Main App Mount -->
   <div id="app"></div>
 
-  <!-- Main App JS (keep as module) -->
+  <!-- Main JS as ES Module (ONLY this, nothing else needed) -->
   <script type="module">
-    import("./app.js").then(() => {
-      console.log("✅ app.js module loaded");
-    }).catch(e => {
-      alert("❌ app.js module error: " + e.message);
-      console.error("app.js module error:", e);
-    });
+    import "./app.js";
   </script>
 </body>
 </html>
