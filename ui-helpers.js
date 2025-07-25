@@ -339,6 +339,17 @@ export async function logStudySession(studentEmail, minutes, context = "") {
   });
 }
 
+// --- USER INITIALS HELPER ---------------------------------------------
+export function getUserInitials(name = "") {
+  if (!name) return "U";
+  return name
+    .split(" ")
+    .map(w => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 // --- "WHAT'S NEW" ANNOUNCEMENTS ---------------------------------------
 import { getLatestUpdate } from "./firebase.js";
 
