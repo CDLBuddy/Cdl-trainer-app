@@ -9,7 +9,7 @@ export async function askCDLAI(question, conversation = [], meta = {}) {
   // Simulate network delay
   await new Promise(res => setTimeout(res, 900));
 
-  // You can customize responses here for demo/testing purposes:
+  // Demo/test logic:
   if (/checklist|progress/i.test(question)) {
     return "Your checklist is almost done! Just a few more steps to go.";
   }
@@ -23,7 +23,7 @@ export async function askCDLAI(question, conversation = [], meta = {}) {
     return "An endorsement lets you drive special types of vehicles or carry certain cargo. Hazmat requires a special written test and TSA clearance.";
   }
 
-  // Default (mock AI) reply:
+  // Default mock AI reply:
   return `This is a placeholder AI Coach response for: "${question}"
   <br><br><i>(Your conversation and school context is: role=${meta.role}, schoolId=${meta.schoolId || "n/a"})</i>`;
 }
