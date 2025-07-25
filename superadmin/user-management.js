@@ -42,11 +42,11 @@ export async function renderUserManagement(container = document.getElementById("
   if (!container) return;
   setupNavigation();
 
-  // Fetch all users and schools
+  // Fetch all users and schools (data state)
   let [users, schools] = await Promise.all([getAllUsers(), getAllSchools()]);
   let filter = { search: "", role: "", school: "", active: "all" };
 
-  // ====== Filter/Sort Bar ======
+  // ====== Render Filter Bar ======
   function renderFilterBar() {
     return `
       <div class="user-filter-bar">
@@ -75,14 +75,14 @@ export async function renderUserManagement(container = document.getElementById("
     `;
   }
 
-  // ====== Table ======
+  // ====== Table Render (filter + display) ======
   function filterUsers(users) {
     return users.filter(u =>
       (filter.search === "" ||
         (u.name && u.name.toLowerCase().includes(filter.search)) ||
         (u.email && u.email.toLowerCase().includes(filter.search))) &&
       (filter.role === "" || u.role === filter.role) &&
-      (filter.school === "" || (u.schools || [u.assignedSchool]).includes(filter.school)) &&
+      (filter.school === "" || (Array.isArray(u.schools) ? u.schools.includes(filter.school) : u.assignedSchool === filter.school)) &&
       (filter.active === "all" ||
         (filter.active === "locked" ? u.locked === true : !!u.active === (filter.active === "active")))
     );
@@ -134,7 +134,30 @@ export async function renderUserManagement(container = document.getElementById("
     `;
   }
 
-  // ====== Main Page ======
+  // ====== Update Table Only (after filter/search) ======
+  function updateUsersTable() {
+    const tbodyWrap = container.querySelector('.user-table-scroll');
+    if (tbodyWrap) {
+      tbodyWrap.innerHTML = renderTable(filterUsers(users));
+      // Reattach row action listeners:
+      tbodyWrap.querySelectorAll("button[data-userid]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const userId = btn.dataset.userid;
+          const action = btn.dataset.action;
+          const user = users.find(u => u.id === userId);
+          if (!user) return;
+          if (action === "view" || action === "edit") showUserModal(user, action === "edit");
+          else if (action === "deactivate") updateUserStatus(user, false);
+          else if (action === "activate") updateUserStatus(user, true);
+          else if (action === "impersonate") impersonateUser(user);
+          else if (action === "lock") lockUser(user, !user.locked);
+          else if (action === "delete") deleteUser(user);
+        });
+      });
+    }
+  }
+
+  // ====== Main Page Render ======
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="max-width:1100px;margin:0 auto;padding:16px;">
       <h2 class="dash-head">👥 Super Admin: User Management</h2>
@@ -144,46 +167,33 @@ export async function renderUserManagement(container = document.getElementById("
     </div>
   `;
 
-  // ====== UI Handlers ======
+  // ====== Filter/Sort/Event Handlers (update table only) ======
   container.querySelector("#user-search").addEventListener("input", e => {
     filter.search = e.target.value.toLowerCase();
-    renderUserManagement(container);
+    updateUsersTable();
   });
   container.querySelector("#user-role-filter").addEventListener("change", e => {
     filter.role = e.target.value;
-    renderUserManagement(container);
+    updateUsersTable();
   });
   container.querySelector("#user-school-filter").addEventListener("change", e => {
     filter.school = e.target.value;
-    renderUserManagement(container);
+    updateUsersTable();
   });
   container.querySelector("#user-status-filter").addEventListener("change", e => {
     filter.active = e.target.value;
-    renderUserManagement(container);
+    updateUsersTable();
   });
   container.querySelector("#create-user-btn").addEventListener("click", () => showUserModal());
   container.querySelector("#bulk-actions-btn").addEventListener("click", showBulkModal);
   container.querySelector("#export-users-btn").addEventListener("click", () => exportUsers(filterUsers(users)));
 
-  // ====== Row Actions ======
-  container.querySelectorAll("button[data-userid]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const userId = btn.dataset.userid;
-      const action = btn.dataset.action;
-      const user = users.find(u => u.id === userId);
-      if (!user) return;
-      if (action === "view" || action === "edit") showUserModal(user, action === "edit");
-      else if (action === "deactivate") updateUserStatus(user, false);
-      else if (action === "activate") updateUserStatus(user, true);
-      else if (action === "impersonate") impersonateUser(user);
-      else if (action === "lock") lockUser(user, !user.locked);
-      else if (action === "delete") deleteUser(user);
-    });
-  });
+  // ====== Row Actions (first render) ======
+  updateUsersTable();
 
-  // ====== Modals ======
-
+  // ====== Modals (unchanged) ======
   function showUserModal(user = {}, editable = true) {
+    // ... [keep this code as is, from your current file] ...
     // API credential display and multi-school assign UI included!
     showModal(`
       <div class="modal-card user-modal">
@@ -247,7 +257,7 @@ export async function renderUserManagement(container = document.getElementById("
           showToast("User created!");
         }
         closeModal();
-        renderUserManagement(container);
+        renderUserManagement(container); // Full reload after create/update
       } catch (err) {
         showToast("Failed to save user: " + err.message);
       }
@@ -308,7 +318,7 @@ export async function renderUserManagement(container = document.getElementById("
     await updateDoc(doc(db, "users", user.id), { active });
     logUserAction(user.id, active ? "activate" : "deactivate");
     showToast(`User ${active ? "activated" : "deactivated"}.`);
-    renderUserManagement(container);
+    renderUserManagement(container); // Full reload for accuracy
   }
   async function lockUser(user, locked) {
     await updateDoc(doc(db, "users", user.id), { locked });
