@@ -1,16 +1,16 @@
 // navigation.js
 
-// === BARREL IMPORTS FOR EACH ROLE ===
+// === ROLE-BASED BARREL IMPORTS ===
 import * as studentPages    from "./student/index.js";
 import * as instructorPages from "./instructor/index.js";
 import * as adminPages      from "./admin/index.js";
 import * as superadminPages from "./superadmin/index.js";
 
-// === COMMON PAGES ===
+// === COMMON PAGE IMPORTS ===
 import { renderLogin }   from "./login.js";
 import { renderWelcome } from "./welcome.js";
 
-// === SMART DETECTOR: Universal role detection ===
+// === ROLE DETECTOR (universal, robust) ===
 function getCurrentRole() {
   return (
     window.currentUserRole ||
@@ -19,18 +19,19 @@ function getCurrentRole() {
   );
 }
 
+// === DEBUGGER (set true for route logs) ===
+const NAV_DEBUG = false;
+
 // === MAIN SMART NAVIGATION FUNCTION ===
 export function handleNavigation(page, direction = "forward", ...args) {
   const appEl = document.getElementById("app");
   if (!appEl) return;
 
-  // Clean up overlays
+  // Accessibility: Remove any modal overlays
   document.querySelectorAll(".modal-overlay").forEach(el => el.remove());
 
-  // Get user role
+  // Role selection
   const role = getCurrentRole();
-
-  // Barrel assignment
   let rolePages;
   if (role === "superadmin")      rolePages = superadminPages;
   else if (role === "admin")      rolePages = adminPages;
@@ -38,92 +39,104 @@ export function handleNavigation(page, direction = "forward", ...args) {
   else if (role === "student")    rolePages = studentPages;
   else                            rolePages = {};
 
+  // Optional: log for debugging
+  if (NAV_DEBUG) {
+    console.log(`[NAV] Routing "${page}" as role "${role}"`, rolePages);
+  }
+
   // --- SMART ROUTER SWITCH ---
   switch (page) {
     // --- SUPERADMIN ROUTES ---
     case "superadmin-dashboard":
-      if (role === "superadmin") rolePages.renderSuperadminDashboard?.(appEl, ...args);
-      else renderWelcome(appEl);
-      break;
+      return role === "superadmin"
+        ? rolePages.renderSuperadminDashboard?.(appEl, ...args)
+        : renderWelcome(appEl);
+
     case "schoolManagement":
-      if (role === "superadmin") rolePages.renderSchoolManagement?.(appEl, ...args);
-      else renderWelcome(appEl);
-      break;
+      return role === "superadmin"
+        ? rolePages.renderSchoolManagement?.(appEl, ...args)
+        : renderWelcome(appEl);
+
     case "userManagement":
-      if (role === "superadmin") rolePages.renderUserManagement?.(appEl, ...args);
-      else renderWelcome(appEl);
-      break;
+      return role === "superadmin"
+        ? rolePages.renderUserManagement?.(appEl, ...args)
+        : renderWelcome(appEl);
+
     case "complianceCenter":
-      if (role === "superadmin") rolePages.renderComplianceCenter?.(appEl, ...args);
-      else renderWelcome(appEl);
-      break;
+      return role === "superadmin"
+        ? rolePages.renderComplianceCenter?.(appEl, ...args)
+        : renderWelcome(appEl);
+
     case "billing":
-      if (role === "superadmin") rolePages.renderBilling?.(appEl, ...args);
-      else renderWelcome(appEl);
-      break;
+      return role === "superadmin"
+        ? rolePages.renderBilling?.(appEl, ...args)
+        : renderWelcome(appEl);
+
     case "settings":
-      if (role === "superadmin") rolePages.renderSettings?.(appEl, ...args);
-      else renderWelcome(appEl);
-      break;
+      return role === "superadmin"
+        ? rolePages.renderSettings?.(appEl, ...args)
+        : renderWelcome(appEl);
+
     case "permissions":
-      if (role === "superadmin") rolePages.renderPermissions?.(appEl, ...args);
-      else renderWelcome(appEl);
-      break;
+      return role === "superadmin"
+        ? rolePages.renderPermissions?.(appEl, ...args)
+        : renderWelcome(appEl);
+
     case "logs":
-      if (role === "superadmin") rolePages.renderLogs?.(appEl, ...args);
-      else renderWelcome(appEl);
-      break;
+      return role === "superadmin"
+        ? rolePages.renderLogs?.(appEl, ...args)
+        : renderWelcome(appEl);
 
     // --- ADMIN ROUTES ---
     case "admin-dashboard":
-      if (role === "admin") rolePages.renderAdminDashboard?.(appEl, ...args);
-      else renderWelcome(appEl);
-      break;
-    // Add more admin routes as you expand
+      return role === "admin"
+        ? rolePages.renderAdminDashboard?.(appEl, ...args)
+        : renderWelcome(appEl);
+
+    // ...add more admin routes as needed...
 
     // --- COMMON ROLE ROUTES ---
     case "dashboard":
-      rolePages.renderDashboard?.(appEl, ...args) || renderWelcome(appEl);
-      break;
+      if (NAV_DEBUG) console.log("[NAV] → dashboard with:", rolePages.renderDashboard);
+      return rolePages.renderDashboard?.(appEl, ...args) || renderWelcome(appEl);
+
     case "profile":
-      rolePages.renderProfile?.(appEl, ...args) || renderWelcome(appEl);
-      break;
+      return rolePages.renderProfile?.(appEl, ...args) || renderWelcome(appEl);
+
     case "checklists":
-      rolePages.renderChecklists?.(appEl, ...args) || renderWelcome(appEl);
-      break;
+      return rolePages.renderChecklists?.(appEl, ...args) || renderWelcome(appEl);
+
     case "practiceTests":
-      rolePages.renderPracticeTests?.(appEl, ...args) || renderWelcome(appEl);
-      break;
+      return rolePages.renderPracticeTests?.(appEl, ...args) || renderWelcome(appEl);
+
     case "flashcards":
-      rolePages.renderFlashcards?.(appEl, ...args) || renderWelcome(appEl);
-      break;
+      return rolePages.renderFlashcards?.(appEl, ...args) || renderWelcome(appEl);
+
     case "results":
-      rolePages.renderTestResults?.(appEl, ...args) || renderWelcome(appEl);
-      break;
+      return rolePages.renderTestResults?.(appEl, ...args) || renderWelcome(appEl);
+
     case "walkthrough":
-      rolePages.renderWalkthrough?.(appEl, ...args) || renderWelcome(appEl);
-      break;
+      return rolePages.renderWalkthrough?.(appEl, ...args) || renderWelcome(appEl);
+
     case "coach":
-      rolePages.renderAICoach?.(appEl, ...args) || renderWelcome(appEl);
-      break;
+      return rolePages.renderAICoach?.(appEl, ...args) || renderWelcome(appEl);
 
     // --- INSTRUCTOR-SPECIFIC ---
     case "checklistReview":
-      instructorPages.renderChecklistReviewForInstructor?.(...args) || renderWelcome(appEl);
-      break;
+      return instructorPages.renderChecklistReviewForInstructor?.(...args) || renderWelcome(appEl);
 
     // --- AUTH / PUBLIC PAGES ---
     case "login":
-      renderLogin(appEl, ...args); // args can include {schoolBrand} etc.
-      break;
+      return renderLogin(appEl, ...args);
+
     case "welcome":
     case "home":
-      renderWelcome(appEl, ...args);
-      break;
+      return renderWelcome(appEl, ...args);
 
     default:
-      // Fallback to dashboard of their role
-      rolePages.renderDashboard?.(appEl, ...args) || renderWelcome(appEl);
+      // Fallback to dashboard for current role
+      if (NAV_DEBUG) console.warn(`[NAV] Unknown route "${page}" – fallback to dashboard`);
+      return rolePages.renderDashboard?.(appEl, ...args) || renderWelcome(appEl);
   }
 }
 

@@ -1,16 +1,13 @@
 // ui-helpers.js
 
-// ─── FIREBASE IMPORTS ────────────────────────────────
+// --- FIREBASE IMPORTS -------------------------------------------------
 import { db, auth } from "./firebase.js";
 import {
   doc, getDoc, updateDoc, setDoc, collection, addDoc,
   serverTimestamp, increment
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// --- SCHOOL BRANDING IMPORT (if used globally; optional) ---
-// import { getCurrentSchoolBranding } from "./school-branding.js";
-
-// ─── TOAST MESSAGE SYSTEM (queue, accessible, dismissable) ──────────────
+// --- TOAST SYSTEM -----------------------------------------------------
 let toastQueue = [];
 let isToastVisible = false;
 
@@ -20,7 +17,7 @@ export function showToast(message, duration = 3000, type = "info") {
 }
 
 function showNextToast() {
-  if (toastQueue.length === 0) {
+  if (!toastQueue.length) {
     isToastVisible = false;
     return;
   }
@@ -67,11 +64,10 @@ function showNextToast() {
   }, duration);
 }
 
-// ─── SMART NAVIGATION (de-duped listeners) ───────────────────────────────
+// --- SMART NAVIGATION (barrel/compat) ----------------------------------
 export function setupNavigation() {
-  document.querySelectorAll("[data-nav]").forEach(btn => {
-    btn.replaceWith(btn.cloneNode(true));
-  });
+  // Remove duplicate listeners
+  document.querySelectorAll("[data-nav]").forEach(btn => btn.replaceWith(btn.cloneNode(true)));
   document.querySelectorAll("[data-nav]").forEach(btn => {
     btn.addEventListener("click", () => {
       const target = btn.getAttribute("data-nav");
@@ -83,7 +79,7 @@ export function setupNavigation() {
   });
 }
 
-// ─── PAGE TRANSITION LOADER ──────────────────────────
+// --- PAGE TRANSITION LOADER -------------------------------------------
 export function showPageTransitionLoader() {
   const overlay = document.getElementById("page-loader");
   if (overlay) {
@@ -96,7 +92,7 @@ export function hidePageTransitionLoader() {
   if (overlay) setTimeout(() => overlay.classList.add("hidden"), 400);
 }
 
-// ─── MODAL OVERLAY (single, ARIA, auto-close) ───────
+// --- MODAL OVERLAY (accessibility, auto-close) ------------------------
 export function showModal(html) {
   closeModal();
   const overlay = document.createElement("div");
@@ -110,7 +106,7 @@ export function closeModal() {
   document.querySelector(".modal-overlay")?.remove();
 }
 
-// ─── AI TIP OF THE DAY ───────────────────────────────
+// --- AI TIP OF THE DAY ------------------------------------------------
 export function getRandomAITip() {
   const tips = [
     "Remember to verbally state 'three-point brake check' word-for-word during your walkthrough exam!",
@@ -136,7 +132,7 @@ export async function getAITipOfTheDay() {
   return tips[Math.floor(Math.random() * tips.length)];
 }
 
-// ─── TYPEWRITER HEADLINE ─────────────────────────────
+// --- TYPEWRITER HEADLINE ----------------------------------------------
 const _headlines = [
   "CDL Buddy",
   "Your CDL Prep Coach",
@@ -160,7 +156,7 @@ export function startTypewriter(custom = null) {
   }
 }
 
-// ─── DEBOUNCE ────────────────────────────────────────
+// --- DEBOUNCE ---------------------------------------------------------
 export function debounce(func, wait) {
   let timeout;
   return function (...args) {
@@ -169,7 +165,7 @@ export function debounce(func, wait) {
   };
 }
 
-// ─── CHECKLIST ALERTS ────────────────────────────────
+// --- CHECKLIST ALERTS -------------------------------------------------
 export function getNextChecklistAlert(user = {}) {
   if (!user.cdlClass || !user.cdlPermit || !user.experience) {
     const missing = [];
@@ -197,7 +193,7 @@ export function getNextChecklistAlert(user = {}) {
   return "All required steps complete! 🎉";
 }
 
-// ─── FADE-IN ON SCROLL ───────────────────────────────
+// --- FADE-IN ON SCROLL ------------------------------------------------
 export function initFadeInOnScroll() {
   const observer = new window.IntersectionObserver(
     entries => {
@@ -212,7 +208,7 @@ export function initFadeInOnScroll() {
   document.querySelectorAll(".fade-in-on-scroll").forEach(el => observer.observe(el));
 }
 
-// ─── AVATAR RENDERING (user or school) ───────────────
+// --- AVATAR RENDERING -------------------------------------------------
 export function renderAvatar(photoURL, name = "", size = 46) {
   if (photoURL) {
     return `<img src="${photoURL}" alt="${name}'s photo" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:1.5px solid #b48aff;">`;
@@ -222,7 +218,7 @@ export function renderAvatar(photoURL, name = "", size = 46) {
   return `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#262647;color:#b48aff;font-weight:600;font-size:${Math.floor(size/2.2)}px;">${initials}</div>`;
 }
 
-// ─── FIRESTORE: PROGRESS HELPERS ─────────────────────
+// --- FIRESTORE: PROGRESS HELPERS --------------------------------------
 export async function updateELDTProgress(userId, fields, options = {}) {
   try {
     const { role = "student", logHistory = false } = options;
@@ -268,7 +264,7 @@ export async function getUserProgress(userId) {
   return snap.exists() ? snap.data() : {};
 }
 
-// ─── CHECKLIST FIELDS ────────────────────────────────
+// --- CHECKLIST FIELDS (per role) --------------------------------------
 export const studentChecklistFields = [
   { key: "profileComplete", label: "Profile Complete" },
   { key: "permitUploaded", label: "Permit Uploaded" },
@@ -287,7 +283,7 @@ export const adminChecklistFields = [
   { key: "adminFlagged", label: "Flagged for Review" }
 ];
 
-// ─── MILESTONE HELPERS ───────────────────────────────
+// --- MILESTONE HELPERS ------------------------------------------------
 export async function markStudentProfileComplete(studentEmail) {
   await updateELDTProgress(studentEmail, { profileComplete: true }, { role: "student" });
 }
@@ -343,7 +339,7 @@ export async function logStudySession(studentEmail, minutes, context = "") {
   });
 }
 
-// ─── "WHAT'S NEW" ANNOUNCEMENTS ──────────────────────
+// --- "WHAT'S NEW" ANNOUNCEMENTS ---------------------------------------
 import { getLatestUpdate } from "./firebase.js";
 
 export function formatDate(dateInput) {
@@ -371,7 +367,7 @@ export async function showLatestUpdate() {
   `;
 }
 
-// ─── ROLE BADGE (email or role) ──────────────────────
+// --- ROLE BADGE -------------------------------------------------------
 export function getRoleBadge(input) {
   const role = (input?.includes && input.includes("@"))
     ? input.includes("admin@") ? "admin"
@@ -383,7 +379,7 @@ export function getRoleBadge(input) {
   return `<span class="role-badge ${role}">${role.charAt(0).toUpperCase() + role.slice(1)}</span>`;
 }
 
-// ─── Infinite-carousel helper ─────────────────────────────── //
+// --- INFINITE CAROUSEL UTILS ------------------------------------------
 export function initInfiniteCarousel(trackSelector = ".features-inner") {
   const track = document.querySelector(trackSelector);
   if (!track || track.dataset.looped) return;
@@ -395,22 +391,18 @@ export function initInfiniteCarousel(trackSelector = ".features-inner") {
     else if (track.scrollLeft <= 0)   track.scrollLeft += max;
   });
 }
-
-// Auto-scroll helper: seamless drift, pauses on hover/touch //
 export function initCarousel() {
   const track = document.querySelector(".features-inner");
   if (!track) return;
   const half = () => track.scrollWidth / 2;
   let isPaused = false;
-  const speed  = 1.0; // px per frame
-
+  const speed  = 1.0;
   ["mouseenter", "touchstart"].forEach(evt =>
     track.addEventListener(evt, () => isPaused = true)
   );
   ["mouseleave", "touchend"].forEach(evt =>
     track.addEventListener(evt, () => isPaused = false)
   );
-
   function drift() {
     if (!isPaused) track.scrollLeft = (track.scrollLeft + speed) % half();
     requestAnimationFrame(drift);
@@ -418,7 +410,7 @@ export function initCarousel() {
   requestAnimationFrame(drift);
 }
 
-// ─── ASYNC LOADER UTILITY ─────────────────────────────
+// --- ASYNC LOADER UTILITY ---------------------------------------------
 export async function withLoader(taskFn, loaderId = "page-loader") {
   showPageTransitionLoader();
   try {
@@ -428,7 +420,7 @@ export async function withLoader(taskFn, loaderId = "page-loader") {
   }
 }
 
-// --- ROLE/ORG DETECTORS ---
+// --- ROLE/ORG DETECTORS -----------------------------------------------
 export function getCurrentUserRole(userObj = null) {
   return (
     userObj?.role ||
@@ -445,7 +437,7 @@ export function getCurrentSchoolId(userObj = null) {
   );
 }
 
-// --- ROLE-AWARE TOASTS ---
+// --- ROLE-AWARE TOASTS -----------------------------------------------
 export function showRoleToast(message, role = null, duration = 3200) {
   const type = role === "admin"
     ? "error"
@@ -455,7 +447,7 @@ export function showRoleToast(message, role = null, duration = 3200) {
   showToast(message, duration, type);
 }
 
-// --- CSV EXPORTER ---
+// --- CSV EXPORTER -----------------------------------------------------
 export function exportTableToCSV(tableId, filename = "export.csv") {
   const table = document.getElementById(tableId);
   if (!table) {
@@ -477,7 +469,7 @@ export function exportTableToCSV(tableId, filename = "export.csv") {
   link.click();
 }
 
-// --- POPSTATE NAVIGATION HANDLER ---
+// --- POPSTATE NAVIGATION HANDLER --------------------------------------
 export function handlePopStateNavigation(navigateFn) {
   window.addEventListener("popstate", (e) => {
     const page = (e.state && e.state.page) || (window.location.hash || "").replace(/^#/, "");

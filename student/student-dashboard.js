@@ -24,14 +24,12 @@ import { renderChecklists }     from './checklists.js';
 import { renderPracticeTests }  from './practice-tests.js';
 import { renderFlashcards }     from './flashcards.js';
 
-let currentUserEmail = null;
-
-// Main dashboard renderer
+// MAIN DASHBOARD RENDERER
 export async function renderStudentDashboard(container = document.getElementById("app")) {
   if (!container) return;
 
-  // Always resolve current user at runtime
-  currentUserEmail =
+  // --- Resolve user on every render (never cache old value) ---
+  const currentUserEmail =
     window.currentUserEmail ||
     localStorage.getItem("currentUserEmail") ||
     (auth.currentUser && auth.currentUser.email) ||
