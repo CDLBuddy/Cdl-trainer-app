@@ -5,165 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>CDL Trainer</title>
   <link rel="stylesheet" href="style.css" />
-
-  <!-- =======================
-       GLOBAL DEBUG SETTINGS
-       ======================= -->
-  <script>
-    // EARLY: Prove JS runs
-    alert("🟢 [debug] Inline JS executed at HEAD");
-    console.log("[debug] Inline JS executed at HEAD");
-    // Dev only: document.body.style.background = "#f00";
-  </script>
-  <script>
-    window.APP_DEBUG = {
-      htmlAlerts: true,
-      moduleAlerts: true,
-      fetchTest: true,
-      globalErrors: true,
-      verboseLogs: true,
-      navTracer: true,
-      authEvents: true,
-      featureFlags: true,
-      simulateLatency: true
-    };
-    window.FEATURE_BILLING_V2 = window.APP_DEBUG.featureFlags;
-  </script>
-  <script>
-    const D = window.APP_DEBUG || {};
-    if (D.htmlAlerts) {
-      alert("✅ [debug] HTML <head> parsed");
-      console.log("[debug] HTML <head> parsed");
-    }
-    if (D.moduleAlerts) {
-      window.addEventListener('DOMContentLoaded', () => {
-        alert("🧪 [debug] DOMContentLoaded - Module inline");
-        console.log("[debug] DOMContentLoaded - Module inline");
-      });
-    }
-    if (D.fetchTest) {
-      fetch('./app.js').then(r => {
-        alert("🔍 [debug] fetch app.js → " + r.status);
-        console.log("[debug] fetch app.js →", r.status);
-      }).catch(e => {
-        alert("❌ [debug] fetch app.js error: " + e.message);
-        console.error("[debug] fetch app.js error:", e);
-      });
-    }
-    if (D.globalErrors) {
-      window.addEventListener("error", e => {
-        alert("🚨 [debug] JS Global Error: " + e.message);
-        console.error("[debug] JS Global Error:", e);
-      });
-      window.addEventListener("unhandledrejection", e => {
-        alert("🚨 [debug] Promise Rejection: " + (e.reason && e.reason.message ? e.reason.message : e.reason));
-        console.error("[debug] Promise Rejection:", e.reason);
-      });
-    }
-    if (D.verboseLogs) {
-      const oldLog = console.log;
-      console.log = function (...args) {
-        oldLog.apply(console, args);
-        alert("[console.log] " + args.map(a=>typeof a==="object"?JSON.stringify(a):a).join(' '));
-      };
-    }
-  </script>
 </head>
 <body>
-  <script>
-    alert("🟢 [debug] <body> tag entered");
-    console.log("[debug] <body> tag entered");
-  </script>
-  <!-- Initial Boot Loader (ALWAYS first, always present!) -->
   <div id="app-loader">
-    <div class="loader-logo glow-shimmer">🚛 CDL&nbsp;Trainer</div>
+    <div class="loader-logo">🚛 CDL&nbsp;Trainer</div>
   </div>
 
-  <!-- App Content Mount Point: all dynamic app pages render here -->
-  <div class="screen-wrapper">
-    <div class="chatbot-container" id="app">
-      <!--
-        IMPORTANT: 
-        All your JS page renders (renderHome, renderLogin, renderDashboard, etc)
-        should now inject content wrapped like this:
-
-        <div class="centered-page">
-          <div class="main-card">
-            <!-- Your page content here (dashboard, login, profile, etc) -->
-          </div>
-        </div>
-      -->
-    </div>
+  <div id="app">
+    <!-- Dynamic app content will be injected here -->
   </div>
 
-  <!-- Page Transition Loader -->
-  <div id="page-loader" class="loader-overlay hidden">
-    <div class="truck-spinner">
-      <div class="truck-body">🚛</div>
-      <div class="trailers">
-        <div class="trailer"></div>
-        <div class="trailer"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Animated Dots Loader (for extra polish, can remove later) -->
-  <div class="dots"><span></span><span></span><span></span></div>
-
-  <!-- ==== DEV/DEBUG/UTILITIES - Optional for Future ==== -->
-  <script>
-    alert("🧪 [debug] Pre-app utility hooks running");
-    console.log("[debug] Pre-app utility hooks running");
-    window.simulateNetworkLatency = function (ms = 1200) {
-      if ((window.APP_DEBUG||{}).simulateLatency) {
-        alert("⏳ [debug] Simulate latency: "+ms+"ms");
-        console.log("[debug] Simulate latency:", ms);
-        return new Promise(res => setTimeout(res, ms));
-      } else {
-        return Promise.resolve();
-      }
-    };
-    window.traceNavigation = function(page, ...args) {
-      if ((window.APP_DEBUG||{}).navTracer) {
-        alert("➡️ [debug] Navigation Trace: "+page);
-        console.log("[debug] Navigation Trace:", { page, args });
-      }
-    };
-    window.logAuthEvent = function(event, data) {
-      if ((window.APP_DEBUG||{}).authEvents) {
-        alert("🔐 [debug] Auth Event: "+event);
-        console.log("[debug] Auth Event:", event, data);
-      }
-    };
-  </script>
-
-  <!-- Main App Entry (keep as type=module!) -->
   <script type="module">
-    alert("🟢 [debug] <script type=module> app.js entry");
-    console.log("[debug] <script type=module> app.js entry");
-    import("./app.js").then(()=> {
-      alert("✅ [debug] app.js module loaded");
-      console.log("[debug] app.js module loaded");
-    }).catch(e=>{
-      alert("❌ [debug] app.js module error: "+e.message);
-      console.error("[debug] app.js module error:", e);
-    });
-  </script>
-
-  <!-- Fallback Loader Debug: Show if JS fails to render the app -->
-  <script>
-    setTimeout(() => {
-      const loader = document.getElementById('app-loader');
-      if (loader && !loader.classList.contains('hide')) {
-        loader.classList.add('hide');
-        const appEl = document.getElementById('app');
-        if (appEl && !appEl.innerHTML.trim()) {
-          alert("⚠️ [debug] App fallback loader triggered");
-          console.log("[debug] App fallback loader triggered");
-          appEl.innerHTML = '<h2 style="color:white; text-align:center; margin-top:2em;">App loaded fallback!<br><span style="font-size:1.1em;color:#a3e063;">(No JS render)</span></h2>';
-        }
-      }
-    }, 3000);
+    import "./app.js";
   </script>
 </body>
 </html>
