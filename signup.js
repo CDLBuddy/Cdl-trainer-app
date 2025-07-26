@@ -16,6 +16,7 @@ import { showToast } from "./ui-helpers.js";
 import { renderLogin } from "./login.js";
 import { renderWelcome } from "./welcome.js";
 import { getCurrentSchoolBranding, setCurrentSchool } from "./school-branding.js";
+import { getBlankUserProfile } from './utils/user-profile.js';
 
 // Accepts opts: { schoolBrand, inviteToken, schoolId }
 export function renderSignup(container = document.getElementById("app"), opts = {}) {
@@ -147,7 +148,6 @@ export function renderSignup(container = document.getElementById("app"), opts = 
           errD.style.display = "block";
           return;
         }
-        // Set current school and load branding for next pages
         setCurrentSchool(selectedSchoolId);
         schoolBrand = getCurrentSchoolBranding();
       }
@@ -184,18 +184,9 @@ export function renderSignup(container = document.getElementById("app"), opts = 
           try { await user.updateProfile({ displayName: name }); } catch (err) {}
         }
 
-        // Firestore profile: role/student, school, invite (if any)
-        const profileDoc = {
-          name,
-          email,
-          createdAt: serverTimestamp(),
-          role: "student",
-          schoolId: selectedSchoolId || undefined,
-          joinedVia: selectedSchoolId || undefined,
-        };
-        if (inviteToken) profileDoc.invitedBy = inviteToken;
-
-        await setDoc(doc(db, "users", user.email), profileDoc);
+        // --- Create blank profile doc for new user ---
+        const blankProfile = getBlankUserProfile({ user, userRole: "student", schoolIdVal: selectedSchoolId });
+        await setDoc(doc(db, "users", user.email), blankProfile);
 
         // Permissions/userRoles
         const roleDoc = {
