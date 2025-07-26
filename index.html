@@ -5,18 +5,92 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>CDL Trainer</title>
   <link rel="stylesheet" href="style.css" />
+
+  <!-- =======================
+       GLOBAL DEBUG SETTINGS
+       ======================= -->
+  <script>
+    // EARLY: Prove JS runs
+    alert("🟢 [debug] Inline JS executed at HEAD");
+    console.log("[debug] Inline JS executed at HEAD");
+    // Dev only: document.body.style.background = "#f00";
+  </script>
+  <script>
+    window.APP_DEBUG = {
+      htmlAlerts: true,
+      moduleAlerts: true,
+      fetchTest: true,
+      globalErrors: true,
+      verboseLogs: true,
+      navTracer: true,
+      authEvents: true,
+      featureFlags: true,
+      simulateLatency: true
+    };
+    window.FEATURE_BILLING_V2 = window.APP_DEBUG.featureFlags;
+  </script>
+  <script>
+    const D = window.APP_DEBUG || {};
+    if (D.htmlAlerts) {
+      alert("✅ [debug] HTML <head> parsed");
+      console.log("[debug] HTML <head> parsed");
+    }
+    if (D.moduleAlerts) {
+      window.addEventListener('DOMContentLoaded', () => {
+        alert("🧪 [debug] DOMContentLoaded - Module inline");
+        console.log("[debug] DOMContentLoaded - Module inline");
+      });
+    }
+    if (D.fetchTest) {
+      fetch('./app.js').then(r => {
+        alert("🔍 [debug] fetch app.js → " + r.status);
+        console.log("[debug] fetch app.js →", r.status);
+      }).catch(e => {
+        alert("❌ [debug] fetch app.js error: " + e.message);
+        console.error("[debug] fetch app.js error:", e);
+      });
+    }
+    if (D.globalErrors) {
+      window.addEventListener("error", e => {
+        alert("🚨 [debug] JS Global Error: " + e.message);
+        console.error("[debug] JS Global Error:", e);
+      });
+      window.addEventListener("unhandledrejection", e => {
+        alert("🚨 [debug] Promise Rejection: " + (e.reason && e.reason.message ? e.reason.message : e.reason));
+        console.error("[debug] Promise Rejection:", e.reason);
+      });
+    }
+    if (D.verboseLogs) {
+      const oldLog = console.log;
+      console.log = function (...args) {
+        oldLog.apply(console, args);
+        alert("[console.log] " + args.map(a=>typeof a==="object"?JSON.stringify(a):a).join(' '));
+      };
+    }
+  </script>
 </head>
 <body>
-  <div id="app-loader">
-    <div class="loader-logo">🚛 CDL&nbsp;Trainer</div>
+  <!-- Global Loader Overlay -->
+  <div id="app-loader" class="loader-overlay">
+    <div class="loading-spinner"></div>
+    <p>Loading…</p>
   </div>
 
-  <div id="app">
-    <!-- Dynamic app content will be injected here -->
+  <!-- Global JS Error Overlay -->
+  <div id="js-error" class="error-overlay hidden">
+    <p>JavaScript failed to load! Please refresh.</p>
   </div>
 
-  <script type="module">
-    import "./app.js";
-  </script>
+  <!-- Main App Loading Screen (for initial boot, not overlay) -->
+  <div id="loading-screen" class="screen-wrapper fade-in">
+    <div class="loading-spinner"></div>
+    <p>Loading CDL Trainer…</p>
+  </div>
+
+  <!-- Main App Root -->
+  <div id="app"></div>
+
+  <!-- App Entry -->
+  <script type="module" src="./app.js"></script>
 </body>
 </html>
