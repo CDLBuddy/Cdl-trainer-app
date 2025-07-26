@@ -25,6 +25,7 @@ import * as instructorPages from "./instructor/index.js";
 import * as adminPages      from "./admin/index.js";
 import * as superadminPages from "./superadmin/index.js";
 import { getCurrentSchoolBranding, setCurrentSchool } from "./school-branding.js";
+import { getBlankUserProfile } from './utils/user-profile.js';
 
 // --- GLOBAL STATE ---
 console.log("🌐 Setting global state...");
@@ -117,7 +118,6 @@ onAuthStateChanged(auth, async user => {
       const snap     = await getDocs(query(usersRef, where("email", "==", user.email)));
       if (!snap.empty) {
         userData = snap.docs[0].data();
-        console.log("✅ Found user profile:", userData);
         // Ensure role is synced in profile
         if (!userData.role || userData.role !== userRole) {
           userData.role = userRole;
@@ -127,17 +127,10 @@ onAuthStateChanged(auth, async user => {
         if (userData.schoolId) schoolIdVal = userData.schoolId;
         localStorage.setItem("fullName", userData.name || "CDL User");
       } else {
-        // Create user profile if missing
-        console.log("➕ No user profile found, creating...");
-        userData = {
-          uid:      user.uid,
-          email:    user.email,
-          name:     user.displayName || "CDL User",
-          role:     userRole,
-          schoolId: schoolIdVal,
-          createdAt: new Date().toISOString(),
-        };
-        await setDoc(doc(db, "users", user.email), userData);
+        // --- BLANK PROFILE SAFETY: Create a blank profile doc ---
+        const blankProfile = getBlankUserProfile({ user, userRole, schoolIdVal });
+        await setDoc(doc(db, "users", user.email), blankProfile);
+        userData = blankProfile;
         localStorage.setItem("fullName", userData.name);
       }
 
