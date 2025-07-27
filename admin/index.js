@@ -1,14 +1,21 @@
 // admin/index.js
 
-// === ADMIN MODULE BARREL EXPORTS ===
-export { renderAdminDashboard } from './admin-dashboard.js';
-export { renderAdminProfile } from './admin-profile.js';
-export { renderAdminUsers } from './admin-users.js';
-export { renderAdminCompanies } from './admin-companies.js';
-export { renderAdminReports } from './admin-reports.js';
+// === ADMIN MODULE BARREL IMPORTS ===
+import { renderAdminDashboard, currentUserEmail } from './admin-dashboard.js';
+import { renderAdminProfile }   from './admin-profile.js';
+import { renderAdminUsers }     from './admin-users.js';
+import { renderAdminCompanies } from './admin-companies.js';
+import { renderAdminReports }   from './admin-reports.js';
 
-// Optionally: Export shared helpers or state (if needed elsewhere)
-export { currentUserEmail } from './admin-dashboard.js';
+// --- Export all admin pages for navigation.js barrel import ---
+export {
+  renderAdminDashboard,
+  renderAdminProfile,
+  renderAdminUsers,
+  renderAdminCompanies,
+  renderAdminReports,
+  currentUserEmail, // Shared helper/state if needed
+};
 
 // === ADMIN NAVIGATION HANDLER ===
 export function handleAdminNav(page, ...args) {
@@ -34,7 +41,6 @@ export function handleAdminNav(page, ...args) {
 }
 
 // --- (Optional) Standalone admin entry for direct page loads ---
-// Only runs if admin section is directly accessed (rare, but futureproof)
 window.addEventListener("DOMContentLoaded", () => {
   if (location.hash.startsWith("#admin")) {
     // Example: #admin-users, #admin-companies, #admin-profile, etc.
