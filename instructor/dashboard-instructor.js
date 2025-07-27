@@ -262,7 +262,7 @@ export async function renderInstructorDashboard(
       `"${
         testResultsByStudent[s.email]
           ? testResultsByStudent[s.email].testName +
-            ' – ' +
+            ' - ' +
             testResultsByStudent[s.email].pct +
             '% on ' +
             testResultsByStudent[s.email].date
