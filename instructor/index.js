@@ -1,7 +1,7 @@
 // instructor/index.js
 
 // --- Imports ---
-import { renderInstructorDashboard } from './dashboard-instructor.js';
+import { renderInstructorDashboard } from '../dashboard-instructor.js';
 import { renderInstructorProfile } from './instructor-profile.js';
 import { renderChecklistReviewForInstructor } from './instructor-checklist.js';
 import { renderStudentProfileForInstructor } from './student-profile.js'; // NEW
