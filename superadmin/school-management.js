@@ -63,7 +63,7 @@ function showSchoolProfile(school) {
 export async function renderSchoolManagement(container = document.getElementById("app")) {
   if (!container) return;
 
-  // --- UI Loading State ---
+  // ——- UI Loading State ——-
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="max-width:980px;margin:0 auto;">
       <h2 class="dash-head">🏫 School Management <span class="role-badge superadmin">Super Admin</span></h2>
@@ -99,7 +99,7 @@ export async function renderSchoolManagement(container = document.getElementById
   `;
 
   setupNavigation();
-
+  
   // --- Fetch and Render Schools ---
   let schools = [];
   try {
