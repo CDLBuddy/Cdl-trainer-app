@@ -5,7 +5,7 @@ import { renderInstructorDashboard } from './dashboard-instructor.js';
 import { renderInstructorProfile } from './instructor-profile.js';
 import { renderChecklistReviewForInstructor } from './instructor-checklist.js';
 import { renderStudentProfileForInstructor } from './student-profile.js'; // NEW
-import { setupNavigation } from "../ui-helpers.js";
+import { setupNavigation } from '../ui-helpers.js';
 
 // --- Exports for barrel-style import in navigation.js ---
 export {
