@@ -1,21 +1,34 @@
-# Logs
+# ========================================
+# ✅ CORE GITIGNORE FOR CDL BUDDY APP
+# ========================================
+
+# ----------------------------------------
+# 🗂 LOGS
+# ----------------------------------------
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Dependency directories
+# ----------------------------------------
+# 📦 DEPENDENCIES
+# ----------------------------------------
 node_modules/
 bower_components/
 
-# Firebase config & local emulators
+# ----------------------------------------
+# 🔥 FIREBASE LOCAL FILES
+# ----------------------------------------
 .firebase/
 .firebaserc
 firebase-debug.log
 firebase-debug.*
 firebase-emulator-*
+firebase.json     # Optional: comment this out if you want to track it
 
-# Build outputs
+# ----------------------------------------
+# 📦 BUILD OUTPUTS
+# ----------------------------------------
 dist/
 build/
 out/
@@ -23,7 +36,9 @@ public/build/
 public/dist/
 coverage/
 
-# Environment variable files
+# ----------------------------------------
+# 🔐 ENVIRONMENT VARIABLES
+# ----------------------------------------
 .env
 .env.*
 .env.local
@@ -31,21 +46,31 @@ coverage/
 .env.development.local
 .env.production.local
 
-# Mac system files
+# ----------------------------------------
+# 🍎 MAC OS SYSTEM FILES
+# ----------------------------------------
 .DS_Store
 
-# Windows system files
+# 🪟 WINDOWS SYSTEM FILES
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# IDE and editor settings
-.vscode/
+# ----------------------------------------
+# 🛠️ IDE + EDITOR SETTINGS
+# ----------------------------------------
+# Ignore all IDE config except VS Code settings
 .idea/
 *.sublime-workspace
 *.sublime-project
 
-# Backup & cache files
+# VS Code: track only settings.json
+.vscode/*
+!.vscode/settings.json
+
+# ----------------------------------------
+# 🧹 BACKUPS + TEMP FILES
+# ----------------------------------------
 *.bak
 *.tmp
 *.swp
@@ -55,13 +80,17 @@ Desktop.ini
 *.seed
 *.orig
 
-# Zip & archive files
+# ----------------------------------------
+# 📦 ARCHIVES
+# ----------------------------------------
 *.zip
 *.tar.gz
 *.tgz
 *.rar
 
-# Local test & coverage results
+# ----------------------------------------
+# ✅ TEST + COVERAGE
+# ----------------------------------------
 *.spec.js
 *.test.js
 *.test.html
@@ -71,10 +100,9 @@ nyc_output/
 .jest-cache/
 .jest-config/
 
-# Ignore GitHub Pages CNAME override if used
-CNAME
-
-# Optional: Frontend tool caches (Parcel, Vite, Next, etc)
+# ----------------------------------------
+# 🧪 FRONTEND TOOLING (OPTIONAL)
+# ----------------------------------------
 .parcel-cache/
 .next/
 out/
@@ -85,15 +113,18 @@ out/
 .npm/
 .pnpm-debug.log
 
-# Firebase Hosting preview
-firebase.json
+# ----------------------------------------
+# 🚫 GITHUB PAGES (Optional)
+CNAME
 
-# Ignore local user scripts or utility files
+# ----------------------------------------
+# 📁 USER/DEV FILES
 local.*
 scripts/
 tools/
 
-# Ignore image thumbnails, generated icons, and design exports
+# ----------------------------------------
+# 🎨 DESIGN EXPORTS & TEMP IMAGES
 *.sketch
 *.ai
 *.psd
@@ -102,7 +133,8 @@ tools/
 *Icon?*.png
 *Logo?*.png
 
-# Ignore temp uploads and user-uploaded files (customize as needed)
+# ----------------------------------------
+# 📤 TEMP UPLOADS
 uploads/
 tmp/
 temp/
