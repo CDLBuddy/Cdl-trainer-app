@@ -1,6 +1,6 @@
 // admin/admin-companies.js
 
-import { db } from "../firebase.js";
+import { db } from '../firebase.js';
 import {
   collection,
   getDocs,
@@ -10,17 +10,17 @@ import {
   doc,
   query,
   where,
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { showToast, setupNavigation } from "../ui-helpers.js";
-import { getCurrentSchoolBranding } from "../school-branding.js";
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import { showToast, setupNavigation } from '../ui-helpers.js';
+import { getCurrentSchoolBranding } from '../school-branding.js';
 
 // --- Helper to fetch companies from both users & companies collections (unique list) ---
 async function fetchCompanyList() {
   const seen = new Set();
   let companies = [];
   // From 'users'
-  const usersSnap = await getDocs(collection(db, "users"));
-  usersSnap.forEach(docSnap => {
+  const usersSnap = await getDocs(collection(db, 'users'));
+  usersSnap.forEach((docSnap) => {
     const c = docSnap.data().assignedCompany;
     if (c && !seen.has(c)) {
       companies.push({ name: c });
@@ -28,8 +28,8 @@ async function fetchCompanyList() {
     }
   });
   // From 'companies' collection (support future fields)
-  const companiesSnap = await getDocs(collection(db, "companies"));
-  companiesSnap.forEach(docSnap => {
+  const companiesSnap = await getDocs(collection(db, 'companies'));
+  companiesSnap.forEach((docSnap) => {
     const c = docSnap.data();
     if (c.name && !seen.has(c.name)) {
       companies.push({ name: c.name });
@@ -41,16 +41,18 @@ async function fetchCompanyList() {
 }
 
 /** Render the Admin Companies Management page */
-export async function renderAdminCompanies(container = document.getElementById("app")) {
-  if (!container) container = document.getElementById("app");
+export async function renderAdminCompanies(
+  container = document.getElementById('app')
+) {
+  if (!container) container = document.getElementById('app');
 
   // --- School Branding (header, color, logo) ---
   const brand = getCurrentSchoolBranding?.() || {};
   const headerLogo = brand.logoUrl
     ? `<img src="${brand.logoUrl}" alt="School Logo" class="dashboard-logo" style="max-width:90px;vertical-align:middle;margin-bottom:3px;">`
-    : "";
-  const schoolName = brand.schoolName || "CDL Trainer";
-  const accent = brand.primaryColor || "#b48aff";
+    : '';
+  const schoolName = brand.schoolName || 'CDL Trainer';
+  const accent = brand.primaryColor || '#b48aff';
 
   // --- Companies ---
   let companies = [];
@@ -58,8 +60,8 @@ export async function renderAdminCompanies(container = document.getElementById("
     companies = await fetchCompanyList();
   } catch (e) {
     companies = [];
-    showToast("Failed to load companies.", 4200, "error");
-    console.error("Admin companies fetch error", e);
+    showToast('Failed to load companies.', 4200, 'error');
+    console.error('Admin companies fetch error', e);
   }
 
   // --- Render company management UI ---
@@ -83,7 +85,9 @@ export async function renderAdminCompanies(container = document.getElementById("
             </tr>
           </thead>
           <tbody>
-            ${companies.map(c => `
+            ${companies
+              .map(
+                (c) => `
               <tr data-company="${c.name}">
                 <td>
                   <input class="company-name-input" value="${c.name}" style="width:90%;padding:2px 7px;" />
@@ -93,7 +97,9 @@ export async function renderAdminCompanies(container = document.getElementById("
                   <button class="btn outline btn-remove-company" data-company="${c.name}" style="margin-left:6px;">Remove</button>
                 </td>
               </tr>
-            `).join("")}
+            `
+              )
+              .join('')}
           </tbody>
         </table>
       </div>
@@ -104,72 +110,86 @@ export async function renderAdminCompanies(container = document.getElementById("
   setupNavigation();
 
   // --- Add company handler ---
-  container.querySelector("#add-company-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const companyName = form.companyName.value.trim();
-    if (!companyName) return showToast("Enter a company name.");
-    try {
-      // Check for duplicates
-      const q = query(collection(db, "companies"), where("name", "==", companyName));
-      const snap = await getDocs(q);
-      if (!snap.empty) return showToast("Company already exists.", 3000, "error");
-      await addDoc(collection(db, "companies"), { name: companyName, createdAt: new Date().toISOString() });
-      showToast("Company added!", 2200, "success");
-      renderAdminCompanies(container); // Refresh
-    } catch (err) {
-      showToast("Failed to add company.", 3200, "error");
-    }
-  });
+  container
+    .querySelector('#add-company-form')
+    ?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const companyName = form.companyName.value.trim();
+      if (!companyName) return showToast('Enter a company name.');
+      try {
+        // Check for duplicates
+        const q = query(
+          collection(db, 'companies'),
+          where('name', '==', companyName)
+        );
+        const snap = await getDocs(q);
+        if (!snap.empty)
+          return showToast('Company already exists.', 3000, 'error');
+        await addDoc(collection(db, 'companies'), {
+          name: companyName,
+          createdAt: new Date().toISOString(),
+        });
+        showToast('Company added!', 2200, 'success');
+        renderAdminCompanies(container); // Refresh
+      } catch (err) {
+        showToast('Failed to add company.', 3200, 'error');
+      }
+    });
 
   // --- Save company (rename, future fields) ---
-  container.querySelectorAll(".btn-save-company").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
+  container.querySelectorAll('.btn-save-company').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
       e.preventDefault();
       const oldName = btn.dataset.company;
-      const row = btn.closest("tr");
-      const input = row.querySelector(".company-name-input");
+      const row = btn.closest('tr');
+      const input = row.querySelector('.company-name-input');
       const newName = input.value.trim();
-      if (!newName) return showToast("Company name cannot be empty.");
+      if (!newName) return showToast('Company name cannot be empty.');
       if (newName === oldName) return;
       try {
         // Find company doc by oldName
-        const q = query(collection(db, "companies"), where("name", "==", oldName));
+        const q = query(
+          collection(db, 'companies'),
+          where('name', '==', oldName)
+        );
         const snap = await getDocs(q);
         if (!snap.empty) {
           const companyDoc = snap.docs[0];
           await updateDoc(companyDoc.ref, { name: newName });
-          showToast("Company updated.", 2200, "success");
+          showToast('Company updated.', 2200, 'success');
           renderAdminCompanies(container);
         }
       } catch (err) {
-        showToast("Failed to update company.", 3000, "error");
+        showToast('Failed to update company.', 3000, 'error');
       }
     });
   });
 
   // --- Remove company (deletes from companies collection) ---
-  container.querySelectorAll(".btn-remove-company").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
+  container.querySelectorAll('.btn-remove-company').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
       e.preventDefault();
       const name = btn.dataset.company;
       if (!confirm(`Remove company "${name}"? This cannot be undone.`)) return;
       try {
-        const q = query(collection(db, "companies"), where("name", "==", name));
+        const q = query(collection(db, 'companies'), where('name', '==', name));
         const snap = await getDocs(q);
         if (!snap.empty) {
-          await deleteDoc(doc(db, "companies", snap.docs[0].id));
-          showToast(`Company "${name}" removed.`, 2400, "success");
+          await deleteDoc(doc(db, 'companies', snap.docs[0].id));
+          showToast(`Company "${name}" removed.`, 2400, 'success');
           renderAdminCompanies(container);
         }
       } catch (err) {
-        showToast("Failed to remove company.", 3000, "error");
+        showToast('Failed to remove company.', 3000, 'error');
       }
     });
   });
 
   // --- Back to Dashboard ---
-  container.querySelector("#back-to-admin-dashboard-btn")?.addEventListener("click", () => {
-    import("./admin-dashboard.js").then(mod => mod.renderAdminDashboard());
-  });
+  container
+    .querySelector('#back-to-admin-dashboard-btn')
+    ?.addEventListener('click', () => {
+      import('./admin-dashboard.js').then((mod) => mod.renderAdminDashboard());
+    });
 }

@@ -8,6 +8,7 @@ function getStatusBadge(status) {
     "Active":   '<span class="badge badge-active">Active</span>',
     "Pending":  '<span class="badge badge-pending">Pending</span>',
     "Suspended":'<span class="badge badge-suspended">Suspended</span>',
+    // eslint-disable-next-line prettier/prettier
     "Expired":  '<span class="badge badge-expired">Expired</span>'
   };
   return statusMap[status] || `<span class="badge badge-neutral">${status||"Unknown"}</span>`;

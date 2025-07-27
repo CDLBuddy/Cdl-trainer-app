@@ -5,8 +5,8 @@ import {
   collection,
   query,
   where,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+  getDocs,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import {
   showToast,
   setupNavigation,
@@ -14,61 +14,62 @@ import {
   incrementStudentStudyMinutes,
   logStudySession,
   markStudentWalkthroughComplete,
-  getUserProgress
+  getUserProgress,
 } from '../ui-helpers.js';
 import { renderProfile } from './profile.js';
 import { renderDashboard as renderStudentDashboard } from './student-dashboard.js';
 
 // --- Data for drills ---
 const brakeCheckFull = [
-  "With the engine off and key on, I will release the parking brake, hold the service brake pedal for 1 minute, and check for air loss no more than 3 PSI.",
-  "Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI.",
-  "Finally, I will fan the brakes to trigger the spring brake pop-out between 20–45 PSI."
+  'With the engine off and key on, I will release the parking brake, hold the service brake pedal for 1 minute, and check for air loss no more than 3 PSI.',
+  'Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI.',
+  'Finally, I will fan the brakes to trigger the spring brake pop-out between 20–45 PSI.',
 ];
 const brakeCheckBlanks = [
   {
-    text: "With the engine ___ and key on, I will release the ___ brake, hold the ___ brake pedal for 1 minute, and check for air loss no more than ___ PSI.",
-    answers: ["off", "parking", "service", "3"]
+    text: 'With the engine ___ and key on, I will release the ___ brake, hold the ___ brake pedal for 1 minute, and check for air loss no more than ___ PSI.',
+    answers: ['off', 'parking', 'service', '3'],
   },
   {
-    text: "Then I will perform a low air warning check, fan the brakes to make sure the warning activates before ___ PSI.",
-    answers: ["60"]
+    text: 'Then I will perform a low air warning check, fan the brakes to make sure the warning activates before ___ PSI.',
+    answers: ['60'],
   },
   {
-    text: "Finally, I will fan the brakes to trigger the spring brake pop-out between ___–___ PSI.",
-    answers: ["20", "45"]
-  }
+    text: 'Finally, I will fan the brakes to trigger the spring brake pop-out between ___–___ PSI.',
+    answers: ['20', '45'],
+  },
 ];
 const brakeCheckSteps = [
-  "Release the parking brake",
-  "Hold the service brake pedal for 1 minute, check for air loss no more than 3 PSI",
-  "Perform low air warning check--fan brakes, warning should activate before 60 PSI",
-  "Fan brakes to trigger spring brake pop-out between 20–45 PSI"
+  'Release the parking brake',
+  'Hold the service brake pedal for 1 minute, check for air loss no more than 3 PSI',
+  'Perform low air warning check--fan brakes, warning should activate before 60 PSI',
+  'Fan brakes to trigger spring brake pop-out between 20–45 PSI',
 ];
 const visualRecall = [
   {
-    img: "brake-gauge.png",
-    question: "At what PSI should the low air warning activate?",
-    answer: "before 60"
-  }
+    img: 'brake-gauge.png',
+    question: 'At what PSI should the low air warning activate?',
+    answer: 'before 60',
+  },
 ];
 
 // --- Walkthrough Page ---
-export async function renderWalkthrough(container = document.getElementById("app")) {
+export async function renderWalkthrough(
+  container = document.getElementById('app')
+) {
   if (!container) return;
 
   // Always re-resolve user context for latest login/session state
-  const currentUserEmail = (
+  const currentUserEmail =
     window.currentUserEmail ||
-    localStorage.getItem("currentUserEmail") ||
+    localStorage.getItem('currentUserEmail') ||
     (auth.currentUser && auth.currentUser.email) ||
-    ""
-  );
-  const userRole = localStorage.getItem("userRole") || "student";
-  const schoolId = localStorage.getItem("schoolId") || "";
+    '';
+  const userRole = localStorage.getItem('userRole') || 'student';
+  const schoolId = localStorage.getItem('schoolId') || '';
 
   if (!currentUserEmail) {
-    container.innerHTML = "<p>You must be logged in to view this page.</p>";
+    container.innerHTML = '<p>You must be logged in to view this page.</p>';
     setupNavigation();
     return;
   }
@@ -76,36 +77,38 @@ export async function renderWalkthrough(container = document.getElementById("app
   // Fetch user profile (CDL class, school)
   let userData = {};
   try {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", currentUserEmail));
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', currentUserEmail));
     const snap = await getDocs(q);
     userData = snap.empty ? {} : snap.docs[0].data();
   } catch (e) {
-    container.innerHTML = "<p>Error loading user profile.</p>";
+    container.innerHTML = '<p>Error loading user profile.</p>';
     setupNavigation();
     return;
   }
   const cdlClass = userData?.cdlClass || null;
-  const school   = userData?.schoolName || schoolId || "N/A";
+  const school = userData?.schoolName || schoolId || 'N/A';
 
   // Fetch Drill Progress
   let progress = {};
   try {
-    progress = await getUserProgress(currentUserEmail) || {};
-  } catch (e) { progress = {}; }
+    progress = (await getUserProgress(currentUserEmail)) || {};
+  } catch (e) {
+    progress = {};
+  }
   const completedDrills = {
     fill: !!progress.drills?.fill,
     order: !!progress.drills?.order,
     type: !!progress.drills?.type,
-    visual: !!progress.drills?.visual
+    visual: !!progress.drills?.visual,
   };
 
-  let currentDrill = "fill";
+  let currentDrill = 'fill';
 
   // --- Main HTML ---
   let content = `
     <div class="screen-wrapper walkthrough-page fade-in" tabindex="0">
-      <h2>🧭 CDL Walkthrough Practice ${school !== "N/A" ? `<span class="school-badge">${school}</span>` : ""}</h2>
+      <h2>🧭 CDL Walkthrough Practice ${school !== 'N/A' ? `<span class="school-badge">${school}</span>` : ''}</h2>
   `;
 
   if (!cdlClass) {
@@ -123,7 +126,7 @@ export async function renderWalkthrough(container = document.getElementById("app
       <div class="walkthrough-script" aria-label="Walkthrough script">
         <h3>🚨 Three-Point Brake Check <span style="color:var(--accent);">(Must Memorize Word-for-Word)</span></h3>
         <div class="highlight-section" aria-live="polite">
-          ${brakeCheckFull.map(line => `<p>${line}</p>`).join("")}
+          ${brakeCheckFull.map((line) => `<p>${line}</p>`).join('')}
         </div>
         <h3>✅ Entering the Vehicle</h3>
         <p>Say: <strong>"Getting in using three points of contact."</strong></p>
@@ -153,28 +156,38 @@ export async function renderWalkthrough(container = document.getElementById("app
   `;
   container.innerHTML = content;
 
-  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    renderStudentDashboard();
-  });
-  container.querySelector('[data-nav="profile"]')?.addEventListener("click", () => {
-    renderProfile();
-  });
+  document
+    .getElementById('back-to-dashboard-btn')
+    ?.addEventListener('click', () => {
+      renderStudentDashboard();
+    });
+  container
+    .querySelector('[data-nav="profile"]')
+    ?.addEventListener('click', () => {
+      renderProfile();
+    });
 
   // --- Confetti ---
   function showConfetti() {
     const canvas = document.getElementById('drill-confetti');
     if (!canvas) return;
-    canvas.style.display = "block";
-    const ctx = canvas.getContext("2d");
+    canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     for (let i = 0; i < 80; i++) {
       ctx.beginPath();
-      ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*7+3, 0, 2*Math.PI);
-      ctx.fillStyle = `hsl(${Math.random()*360},95%,70%)`;
+      ctx.arc(
+        Math.random() * canvas.width,
+        Math.random() * canvas.height,
+        Math.random() * 7 + 3,
+        0,
+        2 * Math.PI
+      );
+      ctx.fillStyle = `hsl(${Math.random() * 360},95%,70%)`;
       ctx.fill();
     }
-    setTimeout(() => canvas.style.display = "none", 1800);
+    setTimeout(() => (canvas.style.display = 'none'), 1800);
   }
 
   // --- Mark Drill Complete ---
@@ -184,33 +197,37 @@ export async function renderWalkthrough(container = document.getElementById("app
     try {
       await updateELDTProgress(currentUserEmail, {
         [`drills.${type}`]: true,
-        [`drills.${type}CompletedAt`]: new Date().toISOString()
+        [`drills.${type}CompletedAt`]: new Date().toISOString(),
       });
-      const completedCount = Object.values(completedDrills).filter(Boolean).length;
-      document.querySelector("progress").value = completedCount;
-      document.querySelector("progress").nextElementSibling.textContent = `${completedCount}/4 drills completed`;
-      document.querySelector(`[data-drill='${type}']`).innerHTML += " ✅";
-      document.querySelector(`[data-drill='${type}']`).classList.add("drill-done");
+      const completedCount =
+        Object.values(completedDrills).filter(Boolean).length;
+      document.querySelector('progress').value = completedCount;
+      document.querySelector('progress').nextElementSibling.textContent =
+        `${completedCount}/4 drills completed`;
+      document.querySelector(`[data-drill='${type}']`).innerHTML += ' ✅';
+      document
+        .querySelector(`[data-drill='${type}']`)
+        .classList.add('drill-done');
       if (Object.values(completedDrills).every(Boolean)) {
         showConfetti();
-        showToast("🎉 All drills complete! Walkthrough milestone saved.");
+        showToast('🎉 All drills complete! Walkthrough milestone saved.');
         await markStudentWalkthroughComplete(currentUserEmail);
       }
     } catch (err) {
-      showToast("❌ Error saving progress. Try again.", 3200, "error");
+      showToast('❌ Error saving progress. Try again.', 3200, 'error');
     }
   }
 
   // --- Drill Renderers & Events ---
   function renderDrill(drillType, drillsContainer) {
-    let html = "";
-    if (drillType === "fill") {
+    let html = '';
+    if (drillType === 'fill') {
       html += `<h3>Fill in the Blanks</h3>`;
       brakeCheckBlanks.forEach((item, idx) => {
         let blanks = 0;
         const text = item.text.replace(/___/g, () => {
           blanks++;
-          return `<input type="text" size="5" class="blank-input" data-answer="${item.answers[blanks-1]}" required style="margin:0 3px;" aria-label="Blank" />`;
+          return `<input type="text" size="5" class="blank-input" data-answer="${item.answers[blanks - 1]}" required style="margin:0 3px;" aria-label="Blank" />`;
         });
         html += `<form class="drill-blank" data-idx="${idx}" style="margin-bottom:1.2rem;">
                   <div>${text}</div>
@@ -218,19 +235,20 @@ export async function renderWalkthrough(container = document.getElementById("app
                   <div class="drill-result" style="margin-top:0.3rem;" aria-live="polite"></div>
                 </form>`;
       });
-    } else if (drillType === "order") {
+    } else if (drillType === 'order') {
       html += `<h3>Put the Steps in Order</h3>
         <ul id="order-list" style="list-style:none;padding:0;">`;
-      let shuffled = brakeCheckSteps.map((v, i) => ({v, sort: Math.random()}))
-                                   .sort((a, b) => a.sort - b.sort)
-                                   .map((o) => o.v);
+      let shuffled = brakeCheckSteps
+        .map((v, i) => ({ v, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map((o) => o.v);
       shuffled.forEach((step, idx) => {
         html += `<li draggable="true" class="order-step" data-idx="${idx}" style="background:#222;padding:7px 11px;border-radius:8px;margin:7px 0;cursor:grab;" tabindex="0" aria-label="Step">${step}</li>`;
       });
       html += `</ul>
         <button class="btn" id="check-order-btn">Check Order</button>
         <div class="drill-result" style="margin-top:0.3rem;" aria-live="polite"></div>`;
-    } else if (drillType === "type") {
+    } else if (drillType === 'type') {
       html += `<h3>Type the Brake Check Phrase Word-for-Word</h3>
         <form id="typing-challenge">
           <textarea rows="4" style="width:100%;" placeholder="Type the full phrase here" aria-label="Type phrase"></textarea>
@@ -238,7 +256,7 @@ export async function renderWalkthrough(container = document.getElementById("app
           <div class="drill-result" style="margin-top:0.3rem;" aria-live="polite"></div>
         </form>
         <div style="font-size:0.95em;margin-top:0.6rem;opacity:0.6;">Hint: ${brakeCheckFull[0]}</div>`;
-    } else if (drillType === "visual") {
+    } else if (drillType === 'visual') {
       html += `<h3>Visual Recall</h3>
         <div style="margin-bottom:1rem;">
           <img src="${visualRecall[0].img}" alt="Brake Gauge" style="max-width:160px;display:block;margin-bottom:0.7rem;">
@@ -251,35 +269,38 @@ export async function renderWalkthrough(container = document.getElementById("app
     drillsContainer.innerHTML = html;
 
     // Fill-in-the-Blank Handler
-    drillsContainer.querySelectorAll(".drill-blank").forEach((form, formIdx) => {
-      form.onsubmit = (e) => {
-        e.preventDefault();
-        let correct = true;
-        form.querySelectorAll(".blank-input").forEach((input, idx) => {
-          const answer = input.dataset.answer.toLowerCase().trim();
-          if (input.value.toLowerCase().trim() !== answer) {
-            correct = false;
-            input.style.background = "#ffcccc";
+    drillsContainer
+      .querySelectorAll('.drill-blank')
+      .forEach((form, formIdx) => {
+        form.onsubmit = (e) => {
+          e.preventDefault();
+          let correct = true;
+          form.querySelectorAll('.blank-input').forEach((input, idx) => {
+            const answer = input.dataset.answer.toLowerCase().trim();
+            if (input.value.toLowerCase().trim() !== answer) {
+              correct = false;
+              input.style.background = '#ffcccc';
+            } else {
+              input.style.background = '#caffcb';
+            }
+          });
+          const res = form.querySelector('.drill-result');
+          if (correct) {
+            res.innerHTML = '✅ Correct!';
+            markDrillComplete('fill');
           } else {
-            input.style.background = "#caffcb";
+            res.innerHTML = '❌ Try again!';
           }
-        });
-        const res = form.querySelector(".drill-result");
-        if (correct) {
-          res.innerHTML = "✅ Correct!";
-          markDrillComplete("fill");
-        } else {
-          res.innerHTML = "❌ Try again!";
-        }
-      };
-    });
+        };
+      });
 
     // Ordered Steps Handler (Drag & Drop)
-    if (drillType === "order") {
-      const list = drillsContainer.querySelector("#order-list");
-      let draggingEl = null, dragIdx = null;
+    if (drillType === 'order') {
+      const list = drillsContainer.querySelector('#order-list');
+      let draggingEl = null,
+        dragIdx = null;
 
-      list.querySelectorAll(".order-step").forEach((li, idx) => {
+      list.querySelectorAll('.order-step').forEach((li, idx) => {
         li.draggable = true;
 
         li.ondragstart = (e) => {
@@ -301,49 +322,59 @@ export async function renderWalkthrough(container = document.getElementById("app
         };
       });
 
-      drillsContainer.querySelector("#check-order-btn").onclick = () => {
-        const order = Array.from(list.children).map(li => li.textContent.trim());
+      drillsContainer.querySelector('#check-order-btn').onclick = () => {
+        const order = Array.from(list.children).map((li) =>
+          li.textContent.trim()
+        );
         let correct = true;
         for (let i = 0; i < brakeCheckSteps.length; i++) {
           if (order[i] !== brakeCheckSteps[i]) correct = false;
         }
-        const res = drillsContainer.querySelector(".drill-result");
+        const res = drillsContainer.querySelector('.drill-result');
         if (correct) {
-          res.innerHTML = "✅ Correct order!";
-          markDrillComplete("order");
+          res.innerHTML = '✅ Correct order!';
+          markDrillComplete('order');
         } else {
-          res.innerHTML = "❌ Try again! Drag the steps into the correct order.";
+          res.innerHTML =
+            '❌ Try again! Drag the steps into the correct order.';
         }
       };
     }
 
     // Typing Challenge Handler
-    if (drillType === "type") {
-      drillsContainer.querySelector("#typing-challenge").onsubmit = (e) => {
+    if (drillType === 'type') {
+      drillsContainer.querySelector('#typing-challenge').onsubmit = (e) => {
         e.preventDefault();
-        const val = drillsContainer.querySelector("textarea").value.trim().replace(/\s+/g, " ").toLowerCase();
-        const ans = brakeCheckFull[0].trim().replace(/\s+/g, " ").toLowerCase();
-        const res = drillsContainer.querySelector(".drill-result");
+        const val = drillsContainer
+          .querySelector('textarea')
+          .value.trim()
+          .replace(/\s+/g, ' ')
+          .toLowerCase();
+        const ans = brakeCheckFull[0].trim().replace(/\s+/g, ' ').toLowerCase();
+        const res = drillsContainer.querySelector('.drill-result');
         if (val === ans) {
-          res.innerHTML = "✅ Perfect! You memorized it.";
-          markDrillComplete("type");
+          res.innerHTML = '✅ Perfect! You memorized it.';
+          markDrillComplete('type');
         } else {
-          res.innerHTML = "❌ Not quite right. Try again!";
+          res.innerHTML = '❌ Not quite right. Try again!';
         }
       };
     }
 
     // Visual Recall Handler
-    if (drillType === "visual") {
-      drillsContainer.querySelector("#check-visual-btn").onclick = () => {
-        const input = drillsContainer.querySelector(".visual-answer").value.trim().toLowerCase();
+    if (drillType === 'visual') {
+      drillsContainer.querySelector('#check-visual-btn').onclick = () => {
+        const input = drillsContainer
+          .querySelector('.visual-answer')
+          .value.trim()
+          .toLowerCase();
         const ans = visualRecall[0].answer.trim().toLowerCase();
-        const res = drillsContainer.querySelector(".drill-result");
+        const res = drillsContainer.querySelector('.drill-result');
         if (input.includes(ans)) {
-          res.innerHTML = "✅ Correct!";
-          markDrillComplete("visual");
+          res.innerHTML = '✅ Correct!';
+          markDrillComplete('visual');
         } else {
-          res.innerHTML = "❌ Try again!";
+          res.innerHTML = '❌ Try again!';
         }
       };
     }
@@ -351,7 +382,7 @@ export async function renderWalkthrough(container = document.getElementById("app
 
   // Setup drill nav
   function setupDrillsNav(drillNavBar, drillsContainer) {
-    ["fill", "order", "type", "visual"].forEach(type => {
+    ['fill', 'order', 'type', 'visual'].forEach((type) => {
       const btn = drillNavBar.querySelector(`[data-drill="${type}"]`);
       btn.onclick = () => {
         currentDrill = type;
@@ -361,8 +392,8 @@ export async function renderWalkthrough(container = document.getElementById("app
   }
 
   // --- Init drills on load (default to first drill) ---
-  const drillsContainer = document.getElementById("drills-container");
-  const drillsNav = document.querySelector(".drills-nav");
+  const drillsContainer = document.getElementById('drills-container');
+  const drillsNav = document.querySelector('.drills-nav');
   if (drillsContainer && drillsNav) {
     renderDrill(currentDrill, drillsContainer);
     setupDrillsNav(drillsNav, drillsContainer);

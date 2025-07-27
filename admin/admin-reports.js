@@ -11,12 +11,20 @@
  * @param {Array} users - Array of user objects.
  */
 export function exportUsersToCSV(users) {
-  if (!users?.length) return alert("No users to export.");
+  if (!users?.length) return alert('No users to export.');
   const headers = [
-    "Name", "Email", "Role", "Assigned Instructor", "Company", "Profile Progress", 
-    "Permit Expiry", "MedCard Expiry", "Payment Status", "Compliance"
+    'Name',
+    'Email',
+    'Role',
+    'Assigned Instructor',
+    'Company',
+    'Profile Progress',
+    'Permit Expiry',
+    'MedCard Expiry',
+    'Payment Status',
+    'Compliance',
   ];
-  const rows = users.map(u => [
+  const rows = users.map((u) => [
     `"${u.name || ''}"`,
     `"${u.email || ''}"`,
     `"${u.role || ''}"`,
@@ -26,18 +34,18 @@ export function exportUsersToCSV(users) {
     `"${u.permitExpiry || ''}"`,
     `"${u.medCardExpiry || ''}"`,
     `"${u.paymentStatus || ''}"`,
-    `"${u.compliance || ''}"`
+    `"${u.compliance || ''}"`,
   ]);
   const csvContent = [
-    headers.join(","),
-    ...rows.map(row => row.join(","))
-  ].join("\r\n");
+    headers.join(','),
+    ...rows.map((row) => row.join(',')),
+  ].join('\r\n');
 
-  const blob = new Blob([csvContent], { type: "text/csv" });
+  const blob = new Blob([csvContent], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
-  a.download = "cdl-users-export.csv";
+  a.download = 'cdl-users-export.csv';
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -49,52 +57,61 @@ export function exportUsersToCSV(users) {
  * @param {Array} users - Array of user objects.
  */
 export function exportUsersToPDF(users) {
-  if (!users?.length) return alert("No users to export.");
+  if (!users?.length) return alert('No users to export.');
   // Ensure jsPDF is available
   const { jsPDF } = window.jspdf || {};
   if (!jsPDF) {
-    alert("PDF export requires jsPDF. Please include it in your HTML.");
+    alert('PDF export requires jsPDF. Please include it in your HTML.');
     return;
   }
 
   const doc = new jsPDF();
   const colHeaders = [
-    "Name", "Email", "Role", "Instructor", "Company", 
-    "Profile %", "Permit Exp.", "Med Exp.", "Payment", "Compliance"
+    'Name',
+    'Email',
+    'Role',
+    'Instructor',
+    'Company',
+    'Profile %',
+    'Permit Exp.',
+    'Med Exp.',
+    'Payment',
+    'Compliance',
   ];
-  const rows = users.map(u => [
+  const rows = users.map((u) => [
     u.name || '',
     u.email || '',
     u.role || '',
     u.assignedInstructor || '',
     u.assignedCompany || '',
-    (u.profileProgress || 0) + "%",
+    (u.profileProgress || 0) + '%',
     u.permitExpiry || '',
     u.medCardExpiry || '',
     u.paymentStatus || '',
-    u.compliance || ''
+    u.compliance || '',
   ]);
 
   doc.setFontSize(16);
-  doc.text("CDL User Export", 14, 18);
+  doc.text('CDL User Export', 14, 18);
   doc.setFontSize(10);
 
   // Simple auto-table logic
   let y = 28;
   colHeaders.forEach((h, i) => doc.text(h, 14 + i * 26, y));
   y += 7;
-  rows.forEach(row => {
+  rows.forEach((row) => {
     row.forEach((cell, i) => {
       doc.text(String(cell), 14 + i * 26, y, { maxWidth: 26 });
     });
     y += 7;
-    if (y > 270) { // Page break
+    if (y > 270) {
+      // Page break
       doc.addPage();
       y = 20;
     }
   });
 
-  doc.save("cdl-users-export.pdf");
+  doc.save('cdl-users-export.pdf');
 }
 
 /**
@@ -102,7 +119,7 @@ export function exportUsersToPDF(users) {
  * @param {Array} companies - Array of company objects.
  */
 export function exportCompaniesToCSV(companies) {
-  alert("Company CSV export coming soon!");
+  alert('Company CSV export coming soon!');
 }
 
 /**
@@ -110,7 +127,7 @@ export function exportCompaniesToCSV(companies) {
  * @param {Array} companies - Array of company objects.
  */
 export function exportCompaniesToPDF(companies) {
-  alert("Company PDF export coming soon!");
+  alert('Company PDF export coming soon!');
 }
 
 /**

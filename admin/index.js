@@ -13,19 +13,19 @@ export { currentUserEmail } from './admin-dashboard.js';
 // === ADMIN NAVIGATION HANDLER ===
 export function handleAdminNav(page, ...args) {
   switch (page) {
-    case "dashboard":
+    case 'dashboard':
       renderAdminDashboard(...args);
       break;
-    case "profile":
+    case 'profile':
       renderAdminProfile(...args);
       break;
-    case "users":
+    case 'users':
       renderAdminUsers(...args);
       break;
-    case "companies":
+    case 'companies':
       renderAdminCompanies(...args);
       break;
-    case "reports":
+    case 'reports':
       renderAdminReports(...args);
       break;
     default:
@@ -35,19 +35,19 @@ export function handleAdminNav(page, ...args) {
 
 // --- (Optional) Standalone admin entry for direct page loads ---
 // Only runs if admin section is directly accessed (rare, but futureproof)
-window.addEventListener("DOMContentLoaded", () => {
-  if (location.hash.startsWith("#admin")) {
+window.addEventListener('DOMContentLoaded', () => {
+  if (location.hash.startsWith('#admin')) {
     // Example: #admin-users, #admin-companies, #admin-profile, etc.
     const match = location.hash.match(/^#admin-([a-z]+)/);
-    const page = match ? match[1] : "dashboard";
+    const page = match ? match[1] : 'dashboard';
     handleAdminNav(page);
   }
 });
 
 // --- (Optional) Admin-specific popstate handling (not required if global nav already works) ---
-window.addEventListener("popstate", () => {
-  if (!location.hash.startsWith("#admin")) return;
+window.addEventListener('popstate', () => {
+  if (!location.hash.startsWith('#admin')) return;
   const match = location.hash.match(/^#admin-([a-z]+)/);
-  const page = match ? match[1] : "dashboard";
+  const page = match ? match[1] : 'dashboard';
   handleAdminNav(page);
 });

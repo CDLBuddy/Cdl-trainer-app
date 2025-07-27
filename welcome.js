@@ -4,28 +4,32 @@ import {
   initInfiniteCarousel,
   initCarousel,
   initFadeInOnScroll,
-  startTypewriter
-} from "./ui-helpers.js";
-import { handleNavigation } from "./navigation.js";
+  startTypewriter,
+} from './ui-helpers.js';
+import { handleNavigation } from './navigation.js';
 import {
   getCurrentSchoolBranding,
   setCurrentSchool,
-  getAllSchools
-} from "./school-branding.js";
+  getAllSchools,
+} from './school-branding.js';
 
 // Renders school selector modal/dialog
 function renderSchoolSelector(container, onSelect) {
   const schools = getAllSchools();
-  const modal = document.createElement("div");
-  modal.className = "modal-overlay fade-in";
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay fade-in';
   modal.innerHTML = `
     <div class="modal-card school-select-modal" style="max-width:410px;">
       <h2>Select Your School</h2>
       <div style="margin-bottom:1.2rem;">
         <select id="school-select-dropdown" class="school-select-dropdown" style="width:90%;padding:8px 10px;font-size:1em;">
-          ${schools.map(s => `
+          ${schools
+            .map(
+              (s) => `
             <option value="${s.id}">${s.schoolName}</option>
-          `).join("")}
+          `
+            )
+            .join('')}
         </select>
       </div>
       <button class="btn primary" id="select-school-btn" style="width:100%;">Continue</button>
@@ -34,27 +38,33 @@ function renderSchoolSelector(container, onSelect) {
   document.body.appendChild(modal);
 
   // Set up selector event
-  modal.querySelector("#select-school-btn").onclick = () => {
-    const schoolId = modal.querySelector("#school-select-dropdown").value;
+  modal.querySelector('#select-school-btn').onclick = () => {
+    const schoolId = modal.querySelector('#school-select-dropdown').value;
     setCurrentSchool(schoolId);
     modal.remove();
     if (onSelect) onSelect();
   };
   // Optional: close on outside click/esc
-  modal.addEventListener("click", e => {
+  modal.addEventListener('click', (e) => {
     if (e.target === modal) modal.remove();
   });
 }
 
 // ---- MAIN WELCOME RENDER ----
-export function renderWelcome(container = document.getElementById("app"), opts = {}) {
+export function renderWelcome(
+  container = document.getElementById('app'),
+  opts = {}
+) {
   if (!container) return;
 
   // Get school branding config
   const brand = getCurrentSchoolBranding();
 
   // Set CSS variable for theme color
-  document.documentElement.style.setProperty("--brand-primary", brand.primaryColor);
+  document.documentElement.style.setProperty(
+    '--brand-primary',
+    brand.primaryColor
+  );
 
   // Welcome Screen HTML
   container.innerHTML = `
@@ -108,7 +118,7 @@ export function renderWelcome(container = document.getElementById("app"), opts =
   `;
 
   // Show school selector modal if no school is set in storage (or always show, up to you)
-  if (!localStorage.getItem("schoolId")) {
+  if (!localStorage.getItem('schoolId')) {
     setTimeout(() => {
       renderSchoolSelector(container, () => renderWelcome(container));
     }, 10);
@@ -124,31 +134,49 @@ export function renderWelcome(container = document.getElementById("app"), opts =
   }
 
   // Navigation handlers
-  document.getElementById("login-btn")?.addEventListener("click", () => handleNavigation("login"));
-  document.getElementById("demo-btn")?.addEventListener("click", () => handleNavigation("demo"));
-  document.getElementById("contact-btn")?.addEventListener("click", () => handleNavigation("contact"));
+  document
+    .getElementById('login-btn')
+    ?.addEventListener('click', () => handleNavigation('login'));
+  document
+    .getElementById('demo-btn')
+    ?.addEventListener('click', () => handleNavigation('demo'));
+  document
+    .getElementById('contact-btn')
+    ?.addEventListener('click', () => handleNavigation('contact'));
 
   // Keyboard accessibility
-  ["login-btn", "demo-btn", "contact-btn"].forEach(id => {
-    document.getElementById(id)?.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " ") handleNavigation(e.target.getAttribute("data-nav"));
+  ['login-btn', 'demo-btn', 'contact-btn'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ')
+        handleNavigation(e.target.getAttribute('data-nav'));
     });
   });
 
   // "Switch School" handler
-  document.getElementById("switch-school-btn")?.addEventListener("click", () => {
-    renderSchoolSelector(container, () => renderWelcome(container));
-  });
+  document
+    .getElementById('switch-school-btn')
+    ?.addEventListener('click', () => {
+      renderSchoolSelector(container, () => renderWelcome(container));
+    });
 
   // Mobile swipe support for features carousel
-  let touchStartX = 0, touchEndX = 0;
-  const featuresTrack = document.querySelector(".features-inner");
+  let touchStartX = 0,
+    touchEndX = 0;
+  const featuresTrack = document.querySelector('.features-inner');
   if (featuresTrack) {
-    featuresTrack.addEventListener("touchstart", e => touchStartX = e.changedTouches[0].screenX, {passive:true});
-    featuresTrack.addEventListener("touchend", e => {
-      touchEndX = e.changedTouches[0].screenX;
-      if (touchStartX - touchEndX > 40) featuresTrack.scrollLeft += 120;
-      if (touchEndX - touchStartX > 40) featuresTrack.scrollLeft -= 120;
-    }, {passive:true});
+    featuresTrack.addEventListener(
+      'touchstart',
+      (e) => (touchStartX = e.changedTouches[0].screenX),
+      { passive: true }
+    );
+    featuresTrack.addEventListener(
+      'touchend',
+      (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        if (touchStartX - touchEndX > 40) featuresTrack.scrollLeft += 120;
+        if (touchEndX - touchStartX > 40) featuresTrack.scrollLeft -= 120;
+      },
+      { passive: true }
+    );
   }
 }

@@ -1,28 +1,34 @@
 // login.js
 
-import { auth } from "./firebase.js";
+import { auth } from './firebase.js';
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
   sendPasswordResetEmail,
   signOut,
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import { showToast, setupNavigation } from "./ui-helpers.js";
-import { renderSignup } from "./signup.js";
-import { renderWelcome } from "./welcome.js";
-import { getCurrentSchoolBranding, setCurrentSchool } from "./school-branding.js";
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+import { showToast, setupNavigation } from './ui-helpers.js';
+import { renderSignup } from './signup.js';
+import { renderWelcome } from './welcome.js';
+import {
+  getCurrentSchoolBranding,
+  setCurrentSchool,
+} from './school-branding.js';
 
-export function renderLogin(container = document.getElementById("app"), opts = {}) {
+export function renderLogin(
+  container = document.getElementById('app'),
+  opts = {}
+) {
   if (!container) return;
 
   // --- Branding ---
   const schoolBrand = getCurrentSchoolBranding();
-  const schoolLogo = schoolBrand.logoUrl || "/default-logo.svg";
-  const schoolName = schoolBrand.schoolName || "CDL Trainer";
-  const accentColor = schoolBrand.primaryColor || "#b48aff";
-  const supportEmail = schoolBrand.contactEmail || "support@cdltrainerapp.com";
-  document.documentElement.style.setProperty("--brand-primary", accentColor);
+  const schoolLogo = schoolBrand.logoUrl || '/default-logo.svg';
+  const schoolName = schoolBrand.schoolName || 'CDL Trainer';
+  const accentColor = schoolBrand.primaryColor || '#b48aff';
+  const supportEmail = schoolBrand.contactEmail || 'support@cdltrainerapp.com';
+  document.documentElement.style.setProperty('--brand-primary', accentColor);
 
   container.innerHTML = `
     <div class="login-card fade-in" role="main" aria-label="Login Page" style="--accent:${accentColor};">
@@ -68,111 +74,129 @@ export function renderLogin(container = document.getElementById("app"), opts = {
   `;
 
   // Go to Sign Up
-  container.querySelector("#go-signup")?.addEventListener("click", () => {
+  container.querySelector('#go-signup')?.addEventListener('click', () => {
     renderSignup(container, { schoolBrand });
   });
 
   // Password toggle
-  const pwdInput = container.querySelector("#login-password");
-  const togglePwd = container.querySelector("#toggle-password");
+  const pwdInput = container.querySelector('#login-password');
+  const togglePwd = container.querySelector('#toggle-password');
   if (pwdInput && togglePwd) {
     togglePwd.onclick = () => {
-      pwdInput.type = pwdInput.type === "password" ? "text" : "password";
-      togglePwd.textContent = pwdInput.type === "password" ? "👁" : "🙈";
+      pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
+      togglePwd.textContent = pwdInput.type === 'password' ? '👁' : '🙈';
     };
-    togglePwd.onkeydown = e => {
-      if (e.key === "Enter" || e.key === " ") togglePwd.click();
+    togglePwd.onkeydown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') togglePwd.click();
     };
   }
 
   setupNavigation();
 
   // Email/password login
-  const loginForm = container.querySelector("#login-form");
+  const loginForm = container.querySelector('#login-form');
   if (loginForm) {
-    loginForm.onsubmit = async e => {
+    loginForm.onsubmit = async (e) => {
       e.preventDefault();
-      const email = container.querySelector("#email").value.trim();
-      const pwd   = pwdInput.value;
-      const errD  = container.querySelector("#error-msg");
-      const btn   = container.querySelector("#login-submit");
-      errD.style.display = "none";
+      const email = container.querySelector('#email').value.trim();
+      const pwd = pwdInput.value;
+      const errD = container.querySelector('#error-msg');
+      const btn = container.querySelector('#login-submit');
+      errD.style.display = 'none';
       btn.disabled = true;
-      btn.textContent = "Logging in…";
+      btn.textContent = 'Logging in…';
       if (!email || !pwd) {
-        errD.textContent = "Please enter both email and password.";
-        errD.style.display = "block";
+        errD.textContent = 'Please enter both email and password.';
+        errD.style.display = 'block';
         btn.disabled = false;
-        btn.textContent = "Log In";
+        btn.textContent = 'Log In';
         return;
       }
       try {
         await signInWithEmailAndPassword(auth, email, pwd);
         // onAuthStateChanged in app.js will handle navigation
       } catch (err) {
-        if (err.code === "auth/user-not-found") {
-          errD.textContent = "No user found. Please sign up first!";
-        } else if (err.code === "auth/wrong-password") {
-          errD.textContent = "Incorrect password. Try again or reset.";
+        if (err.code === 'auth/user-not-found') {
+          errD.textContent = 'No user found. Please sign up first!';
+        } else if (err.code === 'auth/wrong-password') {
+          errD.textContent = 'Incorrect password. Try again or reset.';
         } else {
-          errD.textContent = err.message || "Login failed. Try again.";
+          errD.textContent = err.message || 'Login failed. Try again.';
         }
-        errD.style.display = "block";
+        errD.style.display = 'block';
       }
       btn.disabled = false;
-      btn.textContent = "Log In";
+      btn.textContent = 'Log In';
     };
   }
 
   // Google sign-in
-  container.querySelector("#google-login")?.addEventListener("click", async () => {
-    try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
-      // UI will auto-redirect onAuthStateChanged
-    } catch (err) {
-      showToast("Google Sign-In failed: " + err.message, 3200, "error");
-    }
-  });
+  container
+    .querySelector('#google-login')
+    ?.addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, new GoogleAuthProvider());
+        // UI will auto-redirect onAuthStateChanged
+      } catch (err) {
+        showToast('Google Sign-In failed: ' + err.message, 3200, 'error');
+      }
+    });
 
   // Reset password
-  container.querySelector("#reset-password")?.addEventListener("click", async e => {
-    e.preventDefault();
-    const email = container.querySelector("#email").value.trim();
-    if (!email) {
-      showToast("Enter your email to receive a reset link.", 3200, "error");
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      showToast("📬 Reset link sent!");
-    } catch (err) {
-      showToast("Error: " + err.message, 4000, "error");
-    }
-  });
+  container
+    .querySelector('#reset-password')
+    ?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = container.querySelector('#email').value.trim();
+      if (!email) {
+        showToast('Enter your email to receive a reset link.', 3200, 'error');
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        showToast('📬 Reset link sent!');
+      } catch (err) {
+        showToast('Error: ' + err.message, 4000, 'error');
+      }
+    });
 
   // Demo/Test login
-  container.querySelector("#demo-login")?.addEventListener("click", async () => {
-    try {
-      await signInWithEmailAndPassword(auth, "demo@cdltrainerapp.com", "test1234");
-    } catch (err) {
-      showToast("Demo login unavailable.", 3000, "error");
-    }
-  });
+  container
+    .querySelector('#demo-login')
+    ?.addEventListener('click', async () => {
+      try {
+        await signInWithEmailAndPassword(
+          auth,
+          'demo@cdltrainerapp.com',
+          'test1234'
+        );
+      } catch (err) {
+        showToast('Demo login unavailable.', 3000, 'error');
+      }
+    });
 
   // Back to welcome page
-  container.querySelector("#back-to-welcome-btn")?.addEventListener("click", async () => {
-    if (auth.currentUser) {
-      try { await signOut(auth); } catch (err) {/* ignore */ }
-    }
-    renderWelcome();
-  });
+  container
+    .querySelector('#back-to-welcome-btn')
+    ?.addEventListener('click', async () => {
+      if (auth.currentUser) {
+        try {
+          await signOut(auth);
+        } catch (err) {
+          /* ignore */
+        }
+      }
+      renderWelcome();
+    });
 
   // School Switch Logic
-  container.querySelector("#switch-school-btn")?.addEventListener("click", () => {
-    localStorage.removeItem("schoolId");
-    renderWelcome();
-  });
+  container
+    .querySelector('#switch-school-btn')
+    ?.addEventListener('click', () => {
+      localStorage.removeItem('schoolId');
+      renderWelcome();
+    });
 
   // Accessibility: focus management
-  container.querySelector("#email")?.focus();
+  container.querySelector('#email')?.focus();
 }

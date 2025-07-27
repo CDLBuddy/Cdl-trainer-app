@@ -1,17 +1,17 @@
 // instructor/instructor-dashboard.js
 
 import { db, auth } from '../firebase.js';
-import { signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { signOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {
   collection,
   query,
   where,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+  getDocs,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import {
   showToast,
   setupNavigation,
-  getNextChecklistAlert
+  getNextChecklistAlert,
 } from '../ui-helpers.js';
 
 // Barrel import for all instructor/role-based pages:
@@ -19,32 +19,35 @@ import * as instructorPages from './index.js';
 import { renderWelcome } from '../welcome.js';
 
 // Main instructor dashboard
-export async function renderInstructorDashboard(container = document.getElementById("app")) {
+export async function renderInstructorDashboard(
+  container = document.getElementById('app')
+) {
   if (!container) return;
-  let currentUserEmail = window.currentUserEmail || localStorage.getItem("currentUserEmail") || null;
+  let currentUserEmail =
+    window.currentUserEmail || localStorage.getItem('currentUserEmail') || null;
   if (!currentUserEmail) {
-    showToast("No user found. Please log in again.");
+    showToast('No user found. Please log in again.');
     renderWelcome();
     return;
   }
 
   // Role check
   let userData = {};
-  let userRole = localStorage.getItem("userRole") || "instructor";
+  let userRole = localStorage.getItem('userRole') || 'instructor';
   try {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", currentUserEmail));
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', currentUserEmail));
     const snap = await getDocs(q);
     if (!snap.empty) {
       userData = snap.docs[0].data();
       userRole = userData.role || userRole;
-      localStorage.setItem("userRole", userRole);
+      localStorage.setItem('userRole', userRole);
     }
   } catch (e) {
     userData = {};
   }
-  if (userRole !== "instructor") {
-    showToast("Access denied: Instructor role required.");
+  if (userRole !== 'instructor') {
+    showToast('Access denied: Instructor role required.');
     if (instructorPages.renderDashboard) instructorPages.renderDashboard();
     return;
   }
@@ -53,18 +56,21 @@ export async function renderInstructorDashboard(container = document.getElementB
   let assignedStudents = [];
   try {
     const assignSnap = await getDocs(
-      query(collection(db, "users"), where("assignedInstructor", "==", currentUserEmail))
+      query(
+        collection(db, 'users'),
+        where('assignedInstructor', '==', currentUserEmail)
+      )
     );
-    assignSnap.forEach(doc => {
+    assignSnap.forEach((doc) => {
       const d = doc.data();
       assignedStudents.push({
-        name: d.name || "Student",
+        name: d.name || 'Student',
         email: d.email,
-        cdlClass: d.cdlClass || "Not set",
-        experience: d.experience || "Unknown",
-        cdlPermit: d.cdlPermit || "no",
-        permitPhotoUrl: d.permitPhotoUrl || "",
-        medicalCardUrl: d.medicalCardUrl || "",
+        cdlClass: d.cdlClass || 'Not set',
+        experience: d.experience || 'Unknown',
+        cdlPermit: d.cdlPermit || 'no',
+        permitPhotoUrl: d.permitPhotoUrl || '',
+        medicalCardUrl: d.medicalCardUrl || '',
         profileProgress: d.profileProgress || 0,
         checklistAlerts: getNextChecklistAlert(d),
         id: doc.id,
@@ -72,7 +78,7 @@ export async function renderInstructorDashboard(container = document.getElementB
     });
   } catch (e) {
     assignedStudents = [];
-    console.error("Assigned students fetch error", e);
+    console.error('Assigned students fetch error', e);
   }
 
   // === Fetch Latest Test Results per Student ===
@@ -80,16 +86,17 @@ export async function renderInstructorDashboard(container = document.getElementB
   try {
     for (const student of assignedStudents) {
       const testsSnap = await getDocs(
-        query(collection(db, "testResults"), where("studentId", "==", student.email))
+        query(
+          collection(db, 'testResults'),
+          where('studentId', '==', student.email)
+        )
       );
       let latest = null;
-      testsSnap.forEach(doc => {
+      testsSnap.forEach((doc) => {
         const t = doc.data();
         if (
           !latest ||
-          (t.timestamp?.toDate
-            ? t.timestamp.toDate()
-            : new Date(t.timestamp)) >
+          (t.timestamp?.toDate ? t.timestamp.toDate() : new Date(t.timestamp)) >
             (latest?.timestamp?.toDate
               ? latest.timestamp.toDate()
               : new Date(latest?.timestamp))
@@ -109,7 +116,7 @@ export async function renderInstructorDashboard(container = document.getElementB
     }
   } catch (e) {
     testResultsByStudent = {};
-    console.error("Instructor test results error", e);
+    console.error('Instructor test results error', e);
   }
 
   // === Dashboard Layout HTML ===
@@ -133,8 +140,8 @@ export async function renderInstructorDashboard(container = document.getElementB
                         <div>Email: ${student.email}</div>
                         <div>CDL Class: ${student.cdlClass}</div>
                         <div>Experience: ${student.experience}</div>
-                        <div>Permit: ${student.cdlPermit === "yes" && student.permitPhotoUrl ? "✔️ Uploaded" : "❌ Not Uploaded"}</div>
-                        <div>Med Card: ${student.medicalCardUrl ? "✔️ Uploaded" : "❌ Not Uploaded"}</div>
+                        <div>Permit: ${student.cdlPermit === 'yes' && student.permitPhotoUrl ? '✔️ Uploaded' : '❌ Not Uploaded'}</div>
+                        <div>Med Card: ${student.medicalCardUrl ? '✔️ Uploaded' : '❌ Not Uploaded'}</div>
                         <div>
                           Profile Completion:
                           <div class="progress-bar" style="width:120px;display:inline-block;">
@@ -143,15 +150,18 @@ export async function renderInstructorDashboard(container = document.getElementB
                           <span style="font-size:.95em;">${student.profileProgress}%</span>
                         </div>
                         <div style="color:#f47373;min-height:20px;">
-                          ${student.checklistAlerts !== "All required steps complete! 🎉"
-                            ? `⚠️ ${student.checklistAlerts}`
-                            : `<span style="color:#56b870">✔️ All requirements met</span>`}
+                          ${
+                            student.checklistAlerts !==
+                            'All required steps complete! 🎉'
+                              ? `⚠️ ${student.checklistAlerts}`
+                              : `<span style="color:#56b870">✔️ All requirements met</span>`
+                          }
                         </div>
                         <div>
                           Last Test: ${
                             testResultsByStudent[student.email]
                               ? `${testResultsByStudent[student.email].testName} – ${testResultsByStudent[student.email].pct}% on ${testResultsByStudent[student.email].date}`
-                              : "No recent test"
+                              : 'No recent test'
                           }
                         </div>
                         <button class="btn" data-student="${student.email}" data-nav="viewStudentProfile">View Profile</button>
@@ -159,7 +169,7 @@ export async function renderInstructorDashboard(container = document.getElementB
                       </div>
                     `
                     )
-                    .join("")}
+                    .join('')}
                 </div>`
           }
         </div>
@@ -186,74 +196,93 @@ export async function renderInstructorDashboard(container = document.getElementB
   setupNavigation();
 
   // === Profile Edit ===
-  document.getElementById("edit-instructor-profile-btn")?.addEventListener("click", () => {
-    if (instructorPages.renderInstructorProfile) instructorPages.renderInstructorProfile();
-  });
+  document
+    .getElementById('edit-instructor-profile-btn')
+    ?.addEventListener('click', () => {
+      if (instructorPages.renderInstructorProfile)
+        instructorPages.renderInstructorProfile();
+    });
 
   // === Logout ===
-  document.getElementById("logout-btn")?.addEventListener("click", async () => {
+  document.getElementById('logout-btn')?.addEventListener('click', async () => {
     await signOut(auth);
     localStorage.clear();
     renderWelcome();
   });
 
   // === View Student Profile (click name or button) ===
-  container.querySelectorAll('.student-name, button[data-nav="viewStudentProfile"]').forEach((el) => {
-    el.addEventListener("click", () => {
-      const studentEmail = el.getAttribute("data-email") || el.getAttribute("data-student");
-      if (instructorPages.renderStudentProfileForInstructor) {
-        instructorPages.renderStudentProfileForInstructor(studentEmail);
-      }
+  container
+    .querySelectorAll('.student-name, button[data-nav="viewStudentProfile"]')
+    .forEach((el) => {
+      el.addEventListener('click', () => {
+        const studentEmail =
+          el.getAttribute('data-email') || el.getAttribute('data-student');
+        if (instructorPages.renderStudentProfileForInstructor) {
+          instructorPages.renderStudentProfileForInstructor(studentEmail);
+        }
+      });
     });
-  });
 
   // === Checklist Review modal ===
-  container.querySelectorAll('button[data-nav="reviewChecklist"]').forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const studentEmail = btn.getAttribute("data-student");
-      if (instructorPages.renderChecklistReviewForInstructor) {
-        instructorPages.renderChecklistReviewForInstructor(studentEmail);
-      }
+  container
+    .querySelectorAll('button[data-nav="reviewChecklist"]')
+    .forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const studentEmail = btn.getAttribute('data-student');
+        if (instructorPages.renderChecklistReviewForInstructor) {
+          instructorPages.renderChecklistReviewForInstructor(studentEmail);
+        }
+      });
     });
-  });
 
   // === CSV Export ===
-  document.getElementById("export-csv-btn")?.addEventListener("click", () => {
+  document.getElementById('export-csv-btn')?.addEventListener('click', () => {
     // CSV headers
     const headers = [
-      "Name", "Email", "CDL Class", "Experience",
-      "Permit", "Med Card", "Profile Completion", "Checklist Alerts", "Last Test"
+      'Name',
+      'Email',
+      'CDL Class',
+      'Experience',
+      'Permit',
+      'Med Card',
+      'Profile Completion',
+      'Checklist Alerts',
+      'Last Test',
     ];
     // Build rows
-    const rows = assignedStudents.map(s => [
+    const rows = assignedStudents.map((s) => [
       `"${s.name}"`,
       `"${s.email}"`,
       `"${s.cdlClass}"`,
       `"${s.experience}"`,
-      `"${s.cdlPermit === "yes" && s.permitPhotoUrl ? "Uploaded" : "Not Uploaded"}"`,
-      `"${s.medicalCardUrl ? "Uploaded" : "Not Uploaded"}"`,
+      `"${s.cdlPermit === 'yes' && s.permitPhotoUrl ? 'Uploaded' : 'Not Uploaded'}"`,
+      `"${s.medicalCardUrl ? 'Uploaded' : 'Not Uploaded'}"`,
       `"${s.profileProgress}%"`,
       `"${s.checklistAlerts.replace(/"/g, "'")}"`,
-      `"${testResultsByStudent[s.email]
-        ? testResultsByStudent[s.email].testName + " – " +
-          testResultsByStudent[s.email].pct + "% on " +
-          testResultsByStudent[s.email].date
-        : "No recent test"}"`
+      `"${
+        testResultsByStudent[s.email]
+          ? testResultsByStudent[s.email].testName +
+            ' – ' +
+            testResultsByStudent[s.email].pct +
+            '% on ' +
+            testResultsByStudent[s.email].date
+          : 'No recent test'
+      }"`,
     ]);
     // CSV string
-    const csv = [headers, ...rows].map(row => row.join(",")).join("\r\n");
+    const csv = [headers, ...rows].map((row) => row.join(',')).join('\r\n');
     // Download
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url  = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
     link.href = url;
-    link.download = "assigned-students.csv";
+    link.download = 'assigned-students.csv';
     document.body.appendChild(link);
     link.click();
     setTimeout(() => {
       URL.revokeObjectURL(url);
       link.remove();
     }, 300);
-    showToast("CSV export downloaded.", 2600, "success");
+    showToast('CSV export downloaded.', 2600, 'success');
   });
 }
