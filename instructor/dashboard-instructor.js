@@ -1,4 +1,4 @@
-// instructor/instructor-dashboard.js
+// instructor/dashboard-instructor.js
 
 import { db, auth } from '../firebase.js';
 import { signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
