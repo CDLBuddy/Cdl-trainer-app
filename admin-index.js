@@ -1,11 +1,11 @@
 // admin-index.js
 
 // === ADMIN MODULE BARREL EXPORTS ===
-export { renderAdminDashboard, currentUserEmail } from './admin-dashboard.js';
-export { renderAdminProfile } from './admin-profile.js';
-export { renderAdminUsers } from './admin-users.js';
-export { renderAdminCompanies } from './admin-companies.js';
-export { renderAdminReports } from './admin-reports.js';
+export { renderAdminDashboard, currentUserEmail } from './admin/admin-dashboard.js';
+export { renderAdminProfile } from './admin/admin-profile.js';
+export { renderAdminUsers } from './admin/admin-users.js';
+export { renderAdminCompanies } from './admin/admin-companies.js';
+export { renderAdminReports } from './admin/admin-reports.js';
 
 // === ADMIN NAVIGATION HANDLER ===
 export function handleAdminNav(page, ...args) {
@@ -16,23 +16,18 @@ export function handleAdminNav(page, ...args) {
     case 'dashboard':
       renderAdminDashboard(container);
       break;
-
     case 'profile':
       renderAdminProfile(container);
       break;
-
     case 'users':
       renderAdminUsers(container);
       break;
-
     case 'companies':
       renderAdminCompanies(container);
       break;
-
     case 'reports':
       renderAdminReports(container);
       break;
-
     default:
       renderAdminDashboard(container);
       break;

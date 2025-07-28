@@ -1,10 +1,10 @@
 // instructor-index.js
 
 // === INSTRUCTOR MODULE BARREL EXPORTS ===
-export { renderInstructorDashboard } from './dashboard-instructor.js';
-export { renderInstructorProfile } from './instructor-profile.js';
-export { renderChecklistReviewForInstructor } from './instructor-checklist.js';
-export { renderStudentProfileForInstructor } from './student-profile.js'; // ✅ Add this
+export { renderInstructorDashboard } from './instructor/dashboard-instructor.js';
+export { renderInstructorProfile } from './instructor/instructor-profile.js';
+export { renderChecklistReviewForInstructor } from './instructor/instructor-checklist.js';
+export { renderStudentProfileForInstructor } from './instructor/student-profile.js';
 
 // === INSTRUCTOR NAVIGATION HANDLER ===
 export function handleInstructorNav(page, ...args) {
@@ -15,19 +15,15 @@ export function handleInstructorNav(page, ...args) {
     case 'dashboard':
       renderInstructorDashboard(container);
       break;
-
     case 'profile':
       renderInstructorProfile(container);
       break;
-
     case 'checklistreview':
       renderChecklistReviewForInstructor(args[0], container);
       break;
-
     case 'studentprofile':
-      renderStudentProfileForInstructor(args[0], container); // 👈 use new export
+      renderStudentProfileForInstructor(args[0], container);
       break;
-
     default:
       renderInstructorDashboard(container);
       break;

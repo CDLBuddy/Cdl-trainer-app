@@ -1,14 +1,14 @@
 // superadmin-index.js
 
 // === SUPERADMIN MODULE BARREL EXPORTS ===
-export { renderSuperadminDashboard } from './superadmin-dashboard.js';
-export { renderSchoolManagement } from './school-management.js';
-export { renderUserManagement } from './user-management.js';
-export { renderComplianceCenter } from './compliance.js';
-export { renderBilling } from './billing.js';
-export { renderSettings } from './settings.js';
-export { renderPermissions } from './permissions.js';
-export { renderLogs } from './logs.js';
+export { renderSuperadminDashboard } from './superadmin/superadmin-dashboard.js';
+export { renderSchoolManagement } from './superadmin/school-management.js';
+export { renderUserManagement } from './superadmin/user-management.js';
+export { renderComplianceCenter } from './superadmin/compliance.js';
+export { renderBilling } from './superadmin/billing.js';
+export { renderSettings } from './superadmin/settings.js';
+export { renderPermissions } from './superadmin/permissions.js';
+export { renderLogs } from './superadmin/logs.js';
 // Add new exports as needed...
 
 // === SUPERADMIN NAVIGATION HANDLER ===

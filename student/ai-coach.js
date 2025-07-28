@@ -125,7 +125,7 @@ export function renderAICoach(container = document.getElementById('app')) {
         <div class="ai-msg ai-msg--${msg.role}">
           ${
             msg.role === 'user'
-              ? `<div class="ai-user-avatar">${getUserInitials()}</div>`
+              ? `<div class="ai-user-avatar">${getUserInitials(name)}</div>`
               : `<div class="ai-coach-avatar-mini">
                   <svg viewBox="0 0 32 32" width="28" height="28">
                     <rect x="2" y="5" width="28" height="18" rx="5" fill="#3f1784" stroke="#b6f0f7" stroke-width="2" />

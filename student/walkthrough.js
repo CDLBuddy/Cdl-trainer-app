@@ -19,7 +19,7 @@ import {
 import { renderProfile } from './profile.js';
 import { renderDashboard as renderStudentDashboard } from './student-dashboard.js';
 
-// --- Data for drills ---
+// --- Walkthrough Drill Data ---
 const brakeCheckFull = [
   'With the engine off and key on, I will release the parking brake, hold the service brake pedal for 1 minute, and check for air loss no more than 3 PSI.',
   'Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI.',
@@ -53,13 +53,11 @@ const visualRecall = [
   },
 ];
 
-// --- Walkthrough Page ---
-export async function renderWalkthrough(
-  container = document.getElementById('app')
-) {
+// --- Main Walkthrough Renderer ---
+export async function renderWalkthrough(container = document.getElementById('app')) {
   if (!container) return;
 
-  // Always re-resolve user context for latest login/session state
+  // User/session validation
   const currentUserEmail =
     window.currentUserEmail ||
     localStorage.getItem('currentUserEmail') ||
@@ -102,10 +100,9 @@ export async function renderWalkthrough(
     type: !!progress.drills?.type,
     visual: !!progress.drills?.visual,
   };
-
   let currentDrill = 'fill';
 
-  // --- Main HTML ---
+  // --- Main Content HTML ---
   let content = `
     <div class="screen-wrapper walkthrough-page fade-in" tabindex="0">
       <h2>🧭 CDL Walkthrough Practice ${school !== 'N/A' ? `<span class="school-badge">${school}</span>` : ''}</h2>
@@ -156,16 +153,12 @@ export async function renderWalkthrough(
   `;
   container.innerHTML = content;
 
-  document
-    .getElementById('back-to-dashboard-btn')
-    ?.addEventListener('click', () => {
-      renderStudentDashboard();
-    });
-  container
-    .querySelector('[data-nav="profile"]')
-    ?.addEventListener('click', () => {
-      renderProfile();
-    });
+  document.getElementById('back-to-dashboard-btn')?.addEventListener('click', () => {
+    renderStudentDashboard();
+  });
+  container.querySelector('[data-nav="profile"]')?.addEventListener('click', () => {
+    renderProfile();
+  });
 
   // --- Confetti ---
   function showConfetti() {
@@ -199,15 +192,13 @@ export async function renderWalkthrough(
         [`drills.${type}`]: true,
         [`drills.${type}CompletedAt`]: new Date().toISOString(),
       });
-      const completedCount =
-        Object.values(completedDrills).filter(Boolean).length;
+      const completedCount = Object.values(completedDrills).filter(Boolean).length;
       document.querySelector('progress').value = completedCount;
       document.querySelector('progress').nextElementSibling.textContent =
         `${completedCount}/4 drills completed`;
-      document.querySelector(`[data-drill='${type}']`).innerHTML += ' ✅';
-      document
-        .querySelector(`[data-drill='${type}']`)
-        .classList.add('drill-done');
+      document.querySelector(`[data-drill='${type}']`).classList.add('drill-done');
+      document.querySelector(`[data-drill='${type}']`).innerHTML = document
+        .querySelector(`[data-drill='${type}']`).innerHTML.replace('✅', '') + ' ✅';
       if (Object.values(completedDrills).every(Boolean)) {
         showConfetti();
         showToast('🎉 All drills complete! Walkthrough milestone saved.');
@@ -297,12 +288,9 @@ export async function renderWalkthrough(
     // Ordered Steps Handler (Drag & Drop)
     if (drillType === 'order') {
       const list = drillsContainer.querySelector('#order-list');
-      let draggingEl = null,
-        dragIdx = null;
-
+      let draggingEl = null, dragIdx = null;
       list.querySelectorAll('.order-step').forEach((li, idx) => {
         li.draggable = true;
-
         li.ondragstart = (e) => {
           draggingEl = li;
           dragIdx = idx;
@@ -321,11 +309,8 @@ export async function renderWalkthrough(
           }
         };
       });
-
       drillsContainer.querySelector('#check-order-btn').onclick = () => {
-        const order = Array.from(list.children).map((li) =>
-          li.textContent.trim()
-        );
+        const order = Array.from(list.children).map((li) => li.textContent.trim());
         let correct = true;
         for (let i = 0; i < brakeCheckSteps.length; i++) {
           if (order[i] !== brakeCheckSteps[i]) correct = false;
@@ -335,8 +320,7 @@ export async function renderWalkthrough(
           res.innerHTML = '✅ Correct order!';
           markDrillComplete('order');
         } else {
-          res.innerHTML =
-            '❌ Try again! Drag the steps into the correct order.';
+          res.innerHTML = '❌ Try again! Drag the steps into the correct order.';
         }
       };
     }

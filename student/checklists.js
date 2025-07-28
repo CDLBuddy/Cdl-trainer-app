@@ -12,7 +12,7 @@ import {
 import { renderProfile } from './profile.js';
 import { renderWalkthrough } from './walkthrough.js';
 import { renderPracticeTests } from './practice-tests.js';
-import { renderStudentDashboard } from './student-dashboard.js'; // <-- Corrected
+import { renderStudentDashboard } from './student-dashboard.js'; // <-- Correct
 
 // ==== Checklist Template (static structure only) ====
 export const studentChecklistSectionsTemplate = [
@@ -260,7 +260,8 @@ export async function renderChecklists(
                         </li>
                       `
                         )
-                        .join('')}
+                        .join('')
+                    }
                     </ul>
                   `
                       : ''
