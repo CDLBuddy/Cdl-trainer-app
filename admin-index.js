@@ -1,59 +1,57 @@
 // admin-index.js
 
-// === ADMIN MODULE BARREL IMPORTS ===
-import { renderAdminDashboard, currentUserEmail } from './admin-dashboard.js';
-import { renderAdminProfile } from './admin-profile.js';
-import { renderAdminUsers } from './admin-users.js';
-import { renderAdminCompanies } from './admin-companies.js';
-import { renderAdminReports } from './admin-reports.js';
-
-// — Export all admin pages for navigation.js barrel import —
-export {
-  renderAdminDashboard,
-  renderAdminProfile,
-  renderAdminUsers,
-  renderAdminCompanies,
-  renderAdminReports,
-  currentUserEmail, // Shared helper/state if needed
-};
+// === ADMIN MODULE BARREL EXPORTS ===
+export { renderAdminDashboard, currentUserEmail } from './admin-dashboard.js';
+export { renderAdminProfile } from './admin-profile.js';
+export { renderAdminUsers } from './admin-users.js';
+export { renderAdminCompanies } from './admin-companies.js';
+export { renderAdminReports } from './admin-reports.js';
 
 // === ADMIN NAVIGATION HANDLER ===
 export function handleAdminNav(page, ...args) {
-  switch (page) {
+  const container = args[1] || document.getElementById('app');
+  window.currentUserRole = 'admin';
+
+  switch (page?.toLowerCase()) {
     case 'dashboard':
-      renderAdminDashboard(...args);
+      renderAdminDashboard(container);
       break;
+
     case 'profile':
-      renderAdminProfile(...args);
+      renderAdminProfile(container);
       break;
+
     case 'users':
-      renderAdminUsers(...args);
+      renderAdminUsers(container);
       break;
+
     case 'companies':
-      renderAdminCompanies(...args);
+      renderAdminCompanies(container);
       break;
+
     case 'reports':
-      renderAdminReports(...args);
+      renderAdminReports(container);
       break;
+
     default:
-      renderAdminDashboard(...args);
+      renderAdminDashboard(container);
+      break;
   }
 }
 
-// — (Optional) Standalone admin entry for direct page loads —
+// --- (Optional) Standalone admin entry for direct page loads ---
 window.addEventListener('DOMContentLoaded', () => {
   if (location.hash.startsWith('#admin')) {
-    // Example: #admin-users, #admin-companies, #admin-profile, etc.
-    const match = location.hash.match(/^#admin-([a-z]+)/);
+    const match = location.hash.match(/^#admin-([a-zA-Z]+)/);
     const page = match ? match[1] : 'dashboard';
     handleAdminNav(page);
   }
 });
 
-// — (Optional) Admin-specific popstate handling (not required if global nav already works) —
+// --- (Optional) Admin-specific popstate handling ---
 window.addEventListener('popstate', () => {
   if (!location.hash.startsWith('#admin')) return;
-  const match = location.hash.match(/^#admin-([a-z]+)/);
+  const match = location.hash.match(/^#admin-([a-zA-Z]+)/);
   const page = match ? match[1] : 'dashboard';
   handleAdminNav(page);
 });

@@ -1,54 +1,51 @@
 // instructor-index.js
 
-// --- Imports ---
-import { renderInstructorDashboard } from '../dashboard-instructor.js';
-import { renderInstructorProfile } from './instructor-profile.js';
-import { renderChecklistReviewForInstructor } from './instructor-checklist.js';
-import { renderStudentProfileForInstructor } from './student-profile.js'; // NEW
-import { setupNavigation } from '../ui-helpers.js';
+// === INSTRUCTOR MODULE BARREL EXPORTS ===
+export { renderInstructorDashboard } from './dashboard-instructor.js';
+export { renderInstructorProfile } from './instructor-profile.js';
+export { renderChecklistReviewForInstructor } from './instructor-checklist.js';
+export { renderStudentProfileForInstructor } from './student-profile.js'; // ✅ Add this
 
-// — Exports for barrel-style import in navigation.js —
-export {
-  renderInstructorDashboard,
-  renderInstructorProfile,
-  renderChecklistReviewForInstructor,
-  renderStudentProfileForInstructor, // NEW
-};
-
-// — Simple navigation handling —
+// === INSTRUCTOR NAVIGATION HANDLER ===
 export function handleInstructorNav(page, ...args) {
   const container = args[1] || document.getElementById('app');
-  window.currentUserRole = 'instructor'; // Role context for helpers
+  window.currentUserRole = 'instructor';
 
-  switch (page) {
+  switch (page?.toLowerCase()) {
     case 'dashboard':
       renderInstructorDashboard(container);
       break;
+
     case 'profile':
       renderInstructorProfile(container);
       break;
-    case 'checklistReview':
-      // args[0] should be student email
+
+    case 'checklistreview':
       renderChecklistReviewForInstructor(args[0], container);
       break;
-    case 'viewStudentProfile':
-      // args[0] should be student email
-      renderStudentProfileForInstructor(args[0], container);
+
+    case 'studentprofile':
+      renderStudentProfileForInstructor(args[0], container); // 👈 use new export
       break;
+
     default:
       renderInstructorDashboard(container);
+      break;
   }
-
-  setupNavigation(); // Set up nav for instructor pages (if using [data-nav])
 }
 
-// — Optionally, auto-load dashboard on DOMContentLoaded (only if direct nav, not from app.js) —
-if (!window.appHasBooted) {
-  window.addEventListener('DOMContentLoaded', () => {
-    handleInstructorNav('dashboard');
-  });
-  window.addEventListener('popstate', () => {
-    const page = location.hash.replace('#', '') || 'dashboard';
+// --- Standalone hash route support ---
+window.addEventListener('DOMContentLoaded', () => {
+  if (location.hash.startsWith('#instructor')) {
+    const match = location.hash.match(/^#instructor-([a-zA-Z]+)/);
+    const page = match ? match[1] : 'dashboard';
     handleInstructorNav(page);
-  });
-}
+  }
+});
+
+window.addEventListener('popstate', () => {
+  if (!location.hash.startsWith('#instructor')) return;
+  const match = location.hash.match(/^#instructor-([a-zA-Z]+)/);
+  const page = match ? match[1] : 'dashboard';
+  handleInstructorNav(page);
+});
