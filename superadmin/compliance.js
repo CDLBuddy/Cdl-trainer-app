@@ -1,6 +1,6 @@
 // superadmin/compliance.js
 
-import { db, storage } from '../firebase.js'; // Add your storage
+import { db, storage } from '../firebase.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 

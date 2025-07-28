@@ -1,12 +1,12 @@
 // instructor-index.js
 
 // === INSTRUCTOR MODULE BARREL IMPORTS ===
-import { renderInstructorDashboard } from './instructor/dashboard-instructor.js';
-import { renderInstructorProfile } from './instructor/instructor-profile.js';
+import { renderInstructorDashboard }         from './instructor/dashboard-instructor.js';
+import { renderInstructorProfile }           from './instructor/instructor-profile.js';
 import { renderChecklistReviewForInstructor } from './instructor/instructor-checklist.js';
-import { renderStudentProfileForInstructor } from './instructor/student-profile.js';
+import { renderStudentProfileForInstructor }  from './instructor/student-profile.js';
 
-// === INSTRUCTOR MODULE BARREL EXPORTS ===
+// === BARREL EXPORTS ===
 export {
   renderInstructorDashboard,
   renderInstructorProfile,
@@ -19,17 +19,17 @@ export function handleInstructorNav(page, ...args) {
   const container = args[1] || document.getElementById('app');
   window.currentUserRole = 'instructor';
 
-  switch ((page || '').toLowerCase()) {
-    case 'dashboard':
+  switch (page) {
+    case 'instructor-dashboard':
       renderInstructorDashboard(container);
       break;
-    case 'profile':
+    case 'instructor-profile':
       renderInstructorProfile(container);
       break;
-    case 'checklistreview':
+    case 'instructor-checklistreview':
       renderChecklistReviewForInstructor(args[0], container);
       break;
-    case 'studentprofile':
+    case 'instructor-studentprofile':
       renderStudentProfileForInstructor(args[0], container);
       break;
     default:
@@ -38,19 +38,19 @@ export function handleInstructorNav(page, ...args) {
   }
 }
 
-// --- (Optional) Standalone instructor entry for direct page loads ---
+// --- Standalone instructor entry for direct page loads ---
 window.addEventListener('DOMContentLoaded', () => {
-  if (location.hash.startsWith('#instructor')) {
+  if (location.hash.startsWith('#instructor-')) {
     const match = location.hash.match(/^#instructor-([a-zA-Z]+)/);
-    const page = match ? match[1] : 'dashboard';
+    const page = match ? `instructor-${match[1]}` : 'instructor-dashboard';
     handleInstructorNav(page);
   }
 });
 
-// --- (Optional) Instructor-specific popstate handling ---
+// --- Instructor-specific popstate handling ---
 window.addEventListener('popstate', () => {
-  if (!location.hash.startsWith('#instructor')) return;
+  if (!location.hash.startsWith('#instructor-')) return;
   const match = location.hash.match(/^#instructor-([a-zA-Z]+)/);
-  const page = match ? match[1] : 'dashboard';
+  const page = match ? `instructor-${match[1]}` : 'instructor-dashboard';
   handleInstructorNav(page);
 });

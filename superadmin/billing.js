@@ -4,7 +4,7 @@ import { db } from '../firebase.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 
-// Utility for date
+// Utility for date formatting
 function formatDate(d) {
   if (!d) return '-';
   try {
@@ -14,15 +14,14 @@ function formatDate(d) {
   }
 }
 
-// MAIN BILLING PAGE
-export async function renderBilling(
-  container = document.getElementById('app')
-) {
+// === MAIN BILLING PAGE ===
+export async function renderBilling(container = document.getElementById('app')) {
   if (!container) return;
 
   // Fetch all schools and their billing info
   let schools = [];
   try {
+    // Firestore v9 compat (modular syntax for future-proofing, but keep as is for now)
     const schoolsSnap = await db.collection('schools').get();
     schools = schoolsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
@@ -62,8 +61,7 @@ export async function renderBilling(
                     .map((school) => {
                       // --- Overdue badges ---
                       const overdue =
-                        school.renewalDate &&
-                        new Date(school.renewalDate) < new Date();
+                        school.renewalDate && new Date(school.renewalDate) < new Date();
                       return `
                 <tr>
                   <td>${school.name || '-'}</td>
@@ -124,7 +122,7 @@ export async function renderBilling(
 
   setupNavigation();
 
-  // --- CSV Export handler (basic, upgrade to server-side for big datasets) ---
+  // --- CSV Export handler ---
   document
     .getElementById('export-billing-csv')
     ?.addEventListener('click', () => {
@@ -197,7 +195,7 @@ export async function renderBilling(
   });
 }
 
-// Billing modal, upgraded for invoices, docs, manual override, and notes
+// --- Billing modal for View/Edit (with invoices, docs, manual override, and notes) ---
 function showBillingModal(school, mode = 'view', container) {
   const modalRoot =
     document.getElementById('billing-modal-root') || document.body;

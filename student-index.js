@@ -37,34 +37,34 @@ export function handleStudentNav(page, ...args) {
   window.currentUserRole = 'student';
 
   switch (page) {
-    case 'dashboard':
+    case 'student-dashboard':
       renderStudentDashboard(container);
       break;
-    case 'profile':
+    case 'student-profile':
       renderProfile(container);
       break;
-    case 'coach':
+    case 'student-coach':
       renderAICoach(container);
       break;
-    case 'walkthrough':
+    case 'student-walkthrough':
       renderWalkthrough(container);
       break;
-    case 'checklists':
+    case 'student-checklists':
       renderChecklists(container);
       break;
-    case 'practice-tests':
+    case 'student-practice-tests':
       renderPracticeTests(container);
       break;
-    case 'test-review':
+    case 'student-test-review':
       renderTestReview(container);
       break;
-    case 'flashcards':
+    case 'student-flashcards':
       renderFlashcards(container);
       break;
-    case 'results':
+    case 'student-results':
       renderTestResults(container);
       break;
-    case 'test-engine':
+    case 'student-test-engine':
       renderTestEngine(container);
       break;
     default:
@@ -72,19 +72,19 @@ export function handleStudentNav(page, ...args) {
   }
 }
 
-// --- (Optional) Standalone student entry for direct page loads ---
+// --- Standalone student entry for direct page loads ---
 window.addEventListener('DOMContentLoaded', () => {
-  if (location.hash.startsWith('#student')) {
+  if (location.hash.startsWith('#student-')) {
     const match = location.hash.match(/^#student-([a-zA-Z-]+)/);
-    const page = match ? match[1] : 'dashboard';
+    const page = match ? `student-${match[1]}` : 'student-dashboard';
     handleStudentNav(page);
   }
 });
 
-// --- (Optional) Student-specific popstate handling ---
+// --- Student-specific popstate handling ---
 window.addEventListener('popstate', () => {
-  if (!location.hash.startsWith('#student')) return;
+  if (!location.hash.startsWith('#student-')) return;
   const match = location.hash.match(/^#student-([a-zA-Z-]+)/);
-  const page = match ? match[1] : 'dashboard';
+  const page = match ? `student-${match[1]}` : 'student-dashboard';
   handleStudentNav(page);
 });

@@ -2,13 +2,13 @@
 
 // === SUPERADMIN MODULE BARREL IMPORTS ===
 import { renderSuperadminDashboard } from './superadmin/superadmin-dashboard.js';
-import { renderSchoolManagement } from './superadmin/school-management.js';
-import { renderUserManagement } from './superadmin/user-management.js';
-import { renderComplianceCenter } from './superadmin/compliance.js';
-import { renderBilling } from './superadmin/billing.js';
-import { renderSettings } from './superadmin/settings.js';
-import { renderPermissions } from './superadmin/permissions.js';
-import { renderLogs } from './superadmin/logs.js';
+import { renderSchoolManagement }    from './superadmin/school-management.js';
+import { renderUserManagement }      from './superadmin/user-management.js';
+import { renderComplianceCenter }    from './superadmin/compliance.js';
+import { renderBilling }             from './superadmin/billing.js';
+import { renderSettings }            from './superadmin/settings.js';
+import { renderPermissions }         from './superadmin/permissions.js';
+import { renderLogs }                from './superadmin/logs.js';
 // Add new imports as needed...
 
 // === SUPERADMIN MODULE BARREL EXPORTS ===
@@ -29,29 +29,30 @@ export function handleSuperadminNav(page, ...args) {
   const container = args[1] || document.getElementById('app');
   window.currentUserRole = 'superadmin';
 
+  // Route only via explicit role-prefixed route names!
   switch ((page || '').toLowerCase()) {
-    case 'dashboard':
+    case 'superadmin-dashboard':
       renderSuperadminDashboard(container);
       break;
-    case 'schools':
+    case 'superadmin-schools':
       renderSchoolManagement(container);
       break;
-    case 'users':
+    case 'superadmin-users':
       renderUserManagement(container);
       break;
-    case 'compliance':
+    case 'superadmin-compliance':
       renderComplianceCenter(container);
       break;
-    case 'billing':
+    case 'superadmin-billing':
       renderBilling(container);
       break;
-    case 'settings':
+    case 'superadmin-settings':
       renderSettings(container);
       break;
-    case 'permissions':
+    case 'superadmin-permissions':
       renderPermissions(container);
       break;
-    case 'logs':
+    case 'superadmin-logs':
       renderLogs(container);
       break;
     default:
@@ -63,15 +64,15 @@ export function handleSuperadminNav(page, ...args) {
 // --- Standalone hash route support ---
 window.addEventListener('DOMContentLoaded', () => {
   if (location.hash.startsWith('#superadmin')) {
-    const match = location.hash.match(/^#superadmin-([a-zA-Z]+)/);
-    const page = match ? match[1] : 'dashboard';
+    const match = location.hash.match(/^#superadmin-([a-zA-Z-]+)/);
+    const page = match ? `superadmin-${match[1]}` : 'superadmin-dashboard';
     handleSuperadminNav(page);
   }
 });
 
 window.addEventListener('popstate', () => {
   if (!location.hash.startsWith('#superadmin')) return;
-  const match = location.hash.match(/^#superadmin-([a-zA-Z]+)/);
-  const page = match ? match[1] : 'dashboard';
+  const match = location.hash.match(/^#superadmin-([a-zA-Z-]+)/);
+  const page = match ? `superadmin-${match[1]}` : 'superadmin-dashboard';
   handleSuperadminNav(page);
 });

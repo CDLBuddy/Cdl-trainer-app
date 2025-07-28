@@ -4,7 +4,7 @@ import { db } from '../firebase.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 
-// Static list of system-wide permissions
+// --- System-wide permissions (expand as needed) ---
 const PERMISSIONS_LIST = [
   'manage_users',
   'manage_schools',
@@ -51,7 +51,7 @@ async function fetchAuditLog(userId) {
   }
 }
 
-// --- Invite New User (shows modal) ---
+// --- Invite New User Modal ---
 function showInviteUserModal(container, schools) {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay fade-in';
@@ -82,8 +82,7 @@ function showInviteUserModal(container, schools) {
 
   modal.querySelector('#invite-user-form').onsubmit = async (e) => {
     e.preventDefault();
-    const fd = new FormData(e.target);
-    // Backend invite logic here (e.g., send email, create stub user)
+    // Your backend invite logic here!
     showToast('Invite sent (stub only)!');
     modal.remove();
   };
@@ -135,8 +134,6 @@ export async function renderPermissions(
   // Fetch schools and users for multi-school assignment
   const [schools, users] = await Promise.all([fetchSchools(), fetchUsers()]);
 
-  // Search/filter UI (future: real filter logic)
-  let searchTerm = '';
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="max-width:1080px;margin:0 auto;">
       <h2 class="dash-head">🔑 Permissions & Roles <span class="role-badge superadmin">Super Admin</span></h2>
@@ -144,7 +141,6 @@ export async function renderPermissions(
         <div style="display:flex;flex-wrap:wrap;align-items:center;gap:1.4em;">
           <button class="btn outline" id="invite-user-btn">+ Invite User</button>
           <input type="search" id="user-search" placeholder="Search users..." style="flex:1 1 250px;min-width:180px;">
-          <!-- Future: Bulk action buttons here -->
         </div>
       </div>
       <div class="dashboard-card" style="overflow-x:auto;">
@@ -176,13 +172,7 @@ export async function renderPermissions(
                       <td><span class="role-badge ${user.role || 'student'}">${user.role || 'student'}</span></td>
                       <td>
                         <select class="role-select" data-user-id="${user.id}">
-                          ${[
-                            'superadmin',
-                            'admin',
-                            'instructor',
-                            'student',
-                            'custom',
-                          ]
+                          ${['superadmin','admin','instructor','student','custom']
                             .map(
                               (role) =>
                                 `<option value="${role}" ${user.role === role ? 'selected' : ''}>${role.charAt(0).toUpperCase() + role.slice(1)}</option>`
@@ -327,8 +317,6 @@ export async function renderPermissions(
   document
     .getElementById('user-search')
     ?.addEventListener('input', async (e) => {
-      // For now, reloads page. Upgrade later for live filter!
-      // Could call fetchUsers(e.target.value) and rerender table
       showToast('Search/filter coming soon!');
     });
 }
