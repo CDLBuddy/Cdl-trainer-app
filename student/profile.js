@@ -1,6 +1,6 @@
 // student/profile.js
 
-import { db, storage, app } from '../firebase.js';
+import { db, storage } from '../firebase.js';
 import {
   showToast,
   setupNavigation,
@@ -19,6 +19,7 @@ import {
   where,
   getDocs,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+
 import {
   ref,
   uploadBytes,
@@ -27,7 +28,7 @@ import {
 
 import { renderDashboard as renderStudentDashboard } from './student-dashboard.js';
 
-// DRY user email getter
+// --- DRY: Get current user email ---
 function getCurrentUserEmail() {
   return (
     window.currentUserEmail ||
@@ -37,7 +38,7 @@ function getCurrentUserEmail() {
   );
 }
 
-// Utility: fetch school name from schoolId
+// --- Utility: Fetch school name ---
 async function fetchSchoolName(schoolId) {
   if (!schoolId) return '';
   try {
@@ -48,7 +49,7 @@ async function fetchSchoolName(schoolId) {
   }
 }
 
-// Utility: HTML-escape for security
+// --- Utility: HTML-escape ---
 function escapeHTML(str) {
   return (str || '').replace(
     /[&<>"'`]/g,

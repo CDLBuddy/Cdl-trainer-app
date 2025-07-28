@@ -24,13 +24,11 @@ import { renderChecklists } from './checklists.js';
 import { renderPracticeTests } from './practice-tests.js';
 import { renderFlashcards } from './flashcards.js';
 
-// MAIN DASHBOARD RENDERER
-export async function renderStudentDashboard(
-  container = document.getElementById('app')
-) {
+// ========== MAIN DASHBOARD RENDERER ==========
+export async function renderStudentDashboard(container = document.getElementById('app')) {
   if (!container) return;
 
-  // --- Resolve user on every render (never cache old value) ---
+  // --- Always resolve user (never cache old) ---
   const currentUserEmail =
     window.currentUserEmail ||
     localStorage.getItem('currentUserEmail') ||
@@ -43,10 +41,9 @@ export async function renderStudentDashboard(
     return;
   }
 
-  // --- FETCH DATA ---------------------------------------------------
+  // --- Fetch User Data ---
   let userData = {};
   let userRole = localStorage.getItem('userRole') || 'student';
-
   try {
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', currentUserEmail));
@@ -59,17 +56,16 @@ export async function renderStudentDashboard(
   } catch (e) {
     userData = {};
   }
-
   if (userRole !== 'student') {
     showToast('Access denied: Student dashboard only.');
     window.location.reload();
     return;
   }
 
-  // Checklist Progress
+  // --- Checklist Progress ---
   let checklistPct = userData.profileProgress || 0;
 
-  // Last-test summary
+  // --- Last Test Summary ---
   let lastTestStr = 'No tests taken yet.';
   try {
     const snap = await getDocs(
@@ -102,11 +98,11 @@ export async function renderStudentDashboard(
     console.error('TestResults fetch error', e);
   }
 
-  // License & Experience
+  // --- License & Experience ---
   let license = userData.cdlClass || 'Not selected';
   let experience = userData.experience || 'Unknown';
 
-  // 7-day Study Streak
+  // --- 7-day Study Streak ---
   let streak = 0;
   try {
     const today = new Date().toDateString();
@@ -125,7 +121,7 @@ export async function renderStudentDashboard(
   const name = localStorage.getItem('fullName') || 'CDL User';
   const roleBadge = `<span class="role-badge student">Student</span>`;
 
-  // DASHBOARD LAYOUT (HTML)
+  // ========== DASHBOARD LAYOUT ==========
   container.innerHTML = `
     <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
     <button class="btn" id="edit-student-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
@@ -215,48 +211,28 @@ export async function renderStudentDashboard(
     </button>
   `;
 
-  // Show latest update card (news/alerts from Firestore)
+  // --- Show latest update card (news/alerts) ---
   showLatestUpdate();
   setupNavigation();
 
-  // --- Button Event Listeners ---
-  document
-    .getElementById('edit-student-profile-btn')
-    ?.addEventListener('click', renderProfile);
-
-  // Rail navigation
-  container
-    .querySelector('.rail-btn.profile')
-    ?.addEventListener('click', renderProfile);
-  container
-    .querySelector('.rail-btn.checklist')
-    ?.addEventListener('click', renderChecklists);
-  container
-    .querySelector('.rail-btn.testing')
-    ?.addEventListener('click', renderPracticeTests);
-  container
-    .querySelector('.rail-btn.flashcards')
-    ?.addEventListener('click', renderFlashcards);
+  // ========== EVENT HANDLERS ==========
+  document.getElementById('edit-student-profile-btn')?.addEventListener('click', renderProfile);
+  container.querySelector('.rail-btn.profile')?.addEventListener('click', renderProfile);
+  container.querySelector('.rail-btn.checklist')?.addEventListener('click', renderChecklists);
+  container.querySelector('.rail-btn.testing')?.addEventListener('click', renderPracticeTests);
+  container.querySelector('.rail-btn.flashcards')?.addEventListener('click', renderFlashcards);
 
   // Walkthrough button
-  container
-    .querySelector('button[data-nav="walkthrough"]')
-    ?.addEventListener('click', renderWalkthrough);
+  container.querySelector('button[data-nav="walkthrough"]')?.addEventListener('click', renderWalkthrough);
 
   // AI Tip of the Day
-  document
-    .getElementById('ai-tip-btn')
-    ?.addEventListener('click', renderAICoach);
+  document.getElementById('ai-tip-btn')?.addEventListener('click', renderAICoach);
 
   // Last Test Card
-  container
-    .querySelector('.last-test-card button[data-nav="practiceTests"]')
-    ?.addEventListener('click', renderPracticeTests);
+  container.querySelector('.last-test-card button[data-nav="practiceTests"]')?.addEventListener('click', renderPracticeTests);
 
   // AI Coach Floating Button
-  document
-    .getElementById('ai-coach-fab')
-    ?.addEventListener('click', renderAICoach);
+  document.getElementById('ai-coach-fab')?.addEventListener('click', renderAICoach);
 
   // Logout
   document.getElementById('logout-btn')?.addEventListener('click', async () => {

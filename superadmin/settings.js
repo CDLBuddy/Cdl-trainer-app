@@ -12,6 +12,7 @@ import {
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
+import { renderSuperadminDashboard } from '../superadmin/superadmin-dashboard.js';
 
 // Utility: Get all schools for dropdown
 async function getAllSchools() {
@@ -64,7 +65,7 @@ async function getApiKeys() {
 
 // Utility: Create/rotate/revoke API Key
 async function createApiKey(label, schoolId = null) {
-  const key = crypto.randomUUID(); // Simple key gen, can use more secure lib in prod
+  const key = crypto.randomUUID();
   await setDoc(doc(collection(db, 'apiKeys')), {
     key,
     label,
@@ -180,6 +181,7 @@ export async function renderSettings(
           (Loading logs...)
         </div>
       </details>
+      <button class="btn outline" id="back-to-superadmin-dashboard-btn" style="margin-top:2.2rem;">⬅ Dashboard</button>
     </div>
   `;
 
@@ -238,8 +240,7 @@ export async function renderSettings(
             renderSettings(container);
           });
       } else {
-        container.querySelector('#school-settings-form-container').innerHTML =
-          '';
+        container.querySelector('#school-settings-form-container').innerHTML = '';
       }
     });
 
@@ -276,4 +277,9 @@ export async function renderSettings(
             `<div>[${l.data().changedAt?.toDate?.().toLocaleString?.() || '-'}] <strong>${l.data().changedBy || ''}</strong>: ${JSON.stringify(l.data().newSettings)}</div>`
         )
         .join('');
+
+  // --- Routing: Back to dashboard with hash ---
+  container.querySelector('#back-to-superadmin-dashboard-btn')?.addEventListener('click', () => {
+    window.location.hash = '#superadmin-dashboard';
+  });
 }

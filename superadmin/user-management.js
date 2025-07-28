@@ -19,6 +19,7 @@ import {
   showModal,
   closeModal,
 } from '../ui-helpers.js';
+import { renderSuperadminDashboard } from './superadmin-dashboard.js'; // <-- For dashboard back button
 
 // ==== Data Helpers ====
 
@@ -188,8 +189,16 @@ export async function renderUserManagement(
       ${renderFilterBar()}
       ${renderTable(filterUsers(users))}
       <div style="margin-top:1.7em; font-size:1em; color:#999;">Total users: ${users.length}</div>
+      <button class="btn outline" id="back-to-superadmin-dashboard-btn" style="margin-top:2.2rem;">⬅ Dashboard</button>
     </div>
   `;
+
+  // Back to dashboard
+  container
+    .querySelector('#back-to-superadmin-dashboard-btn')
+    ?.addEventListener('click', () => {
+      renderSuperadminDashboard(container);
+    });
 
   // ====== Filter/Sort/Event Handlers (update table only) ======
   container.querySelector('#user-search').addEventListener('input', (e) => {

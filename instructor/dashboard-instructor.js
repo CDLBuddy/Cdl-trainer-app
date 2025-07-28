@@ -15,7 +15,7 @@ import {
 } from '../ui-helpers.js';
 
 // Barrel import for all instructor/role-based pages:
-import * as instructorPages from './index.js';
+import * as instructorPages from '../index.js';
 import { renderWelcome } from '../welcome.js';
 
 // Main instructor dashboard
