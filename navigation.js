@@ -136,6 +136,7 @@ export function handleNavigation(page, direction = 'forward', ...args) {
       );
 
     case 'test-review':
+      // ROUTES TO NEW SPLIT TEST REVIEW
       return (
         rolePages.renderTestReview?.(appEl, ...args) || renderWelcome(appEl)
       );

@@ -29,10 +29,10 @@ export function getCurrentSchoolBranding() {
   return SCHOOL_BRANDS.find((s) => s.id === id) || SCHOOL_BRANDS[0];
 }
 
-// === Save school selection, update CSS var for themeing ===
+// === Save school selection, update CSS var for theming ===
 export function setCurrentSchool(schoolId) {
   localStorage.setItem('schoolId', schoolId);
-  const brand = getCurrentSchoolBranding();
+  const brand = SCHOOL_BRANDS.find((s) => s.id === schoolId) || SCHOOL_BRANDS[0];
   if (brand.primaryColor)
     document.documentElement.style.setProperty(
       '--brand-primary',
