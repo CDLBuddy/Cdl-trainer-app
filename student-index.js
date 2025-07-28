@@ -1,4 +1,4 @@
-// student/index.js
+// student-index.js
 
 import { renderStudentDashboard } from ‘./student-dashboard.js’;
 import { renderProfile }         from ‘./profile.js’;
