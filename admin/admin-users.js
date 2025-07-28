@@ -1,51 +1,55 @@
 // admin/admin-users.js
 
-import { db } from "../firebase.js";
+import { db } from '../firebase.js';
 import {
   collection,
   getDocs,
   setDoc,
   doc,
-  deleteDoc
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { showToast, setupNavigation } from "../ui-helpers.js";
+  deleteDoc,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import { showToast, setupNavigation } from '../ui-helpers.js';
 
 /**
  * Renders the main admin users management page.
  * @param {HTMLElement} container
  */
-export async function renderAdminUsers(container = document.getElementById("app")) {
+export async function renderAdminUsers(
+  container = document.getElementById('app')
+) {
   if (!container) return;
 
   // --- Fetch all users ---
   let allUsers = [];
   try {
-    const usersSnap = await getDocs(collection(db, "users"));
-    usersSnap.forEach(doc => {
+    const usersSnap = await getDocs(collection(db, 'users'));
+    usersSnap.forEach((doc) => {
       const d = doc.data();
       allUsers.push({
-        name: d.name || "User",
+        name: d.name || 'User',
         email: d.email,
-        role: d.role || "student",
-        assignedInstructor: d.assignedInstructor || "",
-        assignedCompany: d.assignedCompany || "",
+        role: d.role || 'student',
+        assignedInstructor: d.assignedInstructor || '',
+        assignedCompany: d.assignedCompany || '',
         id: doc.id,
         profileProgress: d.profileProgress || 0,
-        permitExpiry: d.permitExpiry || "",
-        medCardExpiry: d.medCardExpiry || "",
-        paymentStatus: d.paymentStatus || "",
-        compliance: d.compliance || "",
+        permitExpiry: d.permitExpiry || '',
+        medCardExpiry: d.medCardExpiry || '',
+        paymentStatus: d.paymentStatus || '',
+        compliance: d.compliance || '',
       });
     });
   } catch (e) {
     allUsers = [];
-    showToast("Failed to load users.", 4200);
-    console.error("Admin user fetch error", e);
+    showToast('Failed to load users.', 4200);
+    console.error('Admin user fetch error', e);
   }
 
   // --- Instructor & Company lists ---
-  const instructorList = allUsers.filter(u => u.role === "instructor");
-  const companyList = Array.from(new Set(allUsers.map(u => u.assignedCompany).filter(Boolean)));
+  const instructorList = allUsers.filter((u) => u.role === 'instructor');
+  const companyList = Array.from(
+    new Set(allUsers.map((u) => u.assignedCompany).filter(Boolean))
+  );
 
   // --- Render UI ---
   container.innerHTML = `
@@ -64,7 +68,7 @@ export async function renderAdminUsers(container = document.getElementById("app"
           <label style="margin-left:1em;">Company:
             <select id="user-company-filter">
               <option value="">All</option>
-              ${companyList.map(c => `<option value="${c}">${c}</option>`).join("")}
+              ${companyList.map((c) => `<option value="${c}">${c}</option>`).join('')}
             </select>
           </label>
         </div>
@@ -85,37 +89,45 @@ export async function renderAdminUsers(container = document.getElementById("app"
               </tr>
             </thead>
             <tbody id="user-table-body">
-              ${allUsers.map(user => `
+              ${allUsers
+                .map(
+                  (user) => `
                 <tr data-user="${user.email}">
                   <td>${user.name}</td>
                   <td>${user.email}</td>
                   <td>
                     <select class="role-select" data-user="${user.email}">
-                      <option value="student" ${user.role === "student" ? "selected" : ""}>Student</option>
-                      <option value="instructor" ${user.role === "instructor" ? "selected" : ""}>Instructor</option>
-                      <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+                      <option value="student" ${user.role === 'student' ? 'selected' : ''}>Student</option>
+                      <option value="instructor" ${user.role === 'instructor' ? 'selected' : ''}>Instructor</option>
+                      <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
                     </select>
                   </td>
                   <td>
-                    <input type="text" class="company-input" data-user="${user.email}" value="${user.assignedCompany || ""}" placeholder="(Company)" style="width:100px;"/>
+                    <input type="text" class="company-input" data-user="${user.email}" value="${user.assignedCompany || ''}" placeholder="(Company)" style="width:100px;"/>
                   </td>
                   <td>
                     <select class="instructor-select" data-user="${user.email}">
                       <option value="">(None)</option>
-                      ${instructorList.map(inst => `
-                        <option value="${inst.email}" ${user.assignedInstructor === inst.email ? "selected" : ""}>${inst.name}</option>
-                      `).join("")}
+                      ${instructorList
+                        .map(
+                          (inst) => `
+                        <option value="${inst.email}" ${user.assignedInstructor === inst.email ? 'selected' : ''}>${inst.name}</option>
+                      `
+                        )
+                        .join('')}
                     </select>
                   </td>
                   <td>${user.profileProgress || 0}%</td>
-                  <td>${user.permitExpiry || ""}</td>
-                  <td>${user.medCardExpiry || ""}</td>
-                  <td>${user.paymentStatus || ""}</td>
+                  <td>${user.permitExpiry || ''}</td>
+                  <td>${user.medCardExpiry || ''}</td>
+                  <td>${user.paymentStatus || ''}</td>
                   <td>
                     <button class="btn outline btn-remove-user" data-user="${user.email}">Remove</button>
                   </td>
                 </tr>
-              `).join("")}
+              `
+                )
+                .join('')}
             </tbody>
           </table>
         </div>
@@ -127,88 +139,106 @@ export async function renderAdminUsers(container = document.getElementById("app"
   setupNavigation();
 
   // --- Filtering ---
-  const roleFilter = container.querySelector("#user-role-filter");
-  const companyFilter = container.querySelector("#user-company-filter");
-  roleFilter?.addEventListener("change", filterUserTable);
-  companyFilter?.addEventListener("change", filterUserTable);
+  const roleFilter = container.querySelector('#user-role-filter');
+  const companyFilter = container.querySelector('#user-company-filter');
+  roleFilter?.addEventListener('change', filterUserTable);
+  companyFilter?.addEventListener('change', filterUserTable);
 
   function filterUserTable() {
     const roleVal = roleFilter.value;
     const companyVal = companyFilter.value;
-    const rows = container.querySelectorAll("#user-table-body tr");
-    rows.forEach(row => {
-      const roleCell = row.querySelector(".role-select")?.value || "";
-      const companyCell = row.querySelector(".company-input")?.value || "";
+    const rows = container.querySelectorAll('#user-table-body tr');
+    rows.forEach((row) => {
+      const roleCell = row.querySelector('.role-select')?.value || '';
+      const companyCell = row.querySelector('.company-input')?.value || '';
       let show = true;
       if (roleVal && roleCell !== roleVal) show = false;
       if (companyVal && companyCell !== companyVal) show = false;
-      row.style.display = show ? "" : "none";
+      row.style.display = show ? '' : 'none';
     });
   }
 
   // --- Role Change Handler ---
-  container.querySelectorAll(".role-select").forEach(select => {
-    select.addEventListener("change", async () => {
-      const userEmail = select.getAttribute("data-user");
+  container.querySelectorAll('.role-select').forEach((select) => {
+    select.addEventListener('change', async () => {
+      const userEmail = select.getAttribute('data-user');
       const newRole = select.value;
       try {
-        await setDoc(doc(db, "users", userEmail), { role: newRole }, { merge: true });
-        await setDoc(doc(db, "userRoles", userEmail), { role: newRole }, { merge: true });
+        await setDoc(
+          doc(db, 'users', userEmail),
+          { role: newRole },
+          { merge: true }
+        );
+        await setDoc(
+          doc(db, 'userRoles', userEmail),
+          { role: newRole },
+          { merge: true }
+        );
         showToast(`Role updated for ${userEmail}`);
         renderAdminUsers(container); // Refresh UI
       } catch (err) {
-        showToast("Failed to update role.");
+        showToast('Failed to update role.');
       }
     });
   });
 
   // --- Company Assignment Handler ---
-  container.querySelectorAll(".company-input").forEach(input => {
-    input.addEventListener("blur", async () => {
-      const userEmail = input.getAttribute("data-user");
+  container.querySelectorAll('.company-input').forEach((input) => {
+    input.addEventListener('blur', async () => {
+      const userEmail = input.getAttribute('data-user');
       const newCompany = input.value.trim();
       try {
-        await setDoc(doc(db, "users", userEmail), { assignedCompany: newCompany }, { merge: true });
+        await setDoc(
+          doc(db, 'users', userEmail),
+          { assignedCompany: newCompany },
+          { merge: true }
+        );
         showToast(`Company assigned to ${userEmail}`);
       } catch (err) {
-        showToast("Failed to assign company.");
+        showToast('Failed to assign company.');
       }
     });
   });
 
   // --- Instructor Assignment Handler ---
-  container.querySelectorAll(".instructor-select").forEach(select => {
-    select.addEventListener("change", async () => {
-      const userEmail = select.getAttribute("data-user");
+  container.querySelectorAll('.instructor-select').forEach((select) => {
+    select.addEventListener('change', async () => {
+      const userEmail = select.getAttribute('data-user');
       const newInstructor = select.value;
       try {
-        await setDoc(doc(db, "users", userEmail), { assignedInstructor: newInstructor }, { merge: true });
+        await setDoc(
+          doc(db, 'users', userEmail),
+          { assignedInstructor: newInstructor },
+          { merge: true }
+        );
         showToast(`Instructor assigned to ${userEmail}`);
         renderAdminUsers(container); // Refresh UI
       } catch (err) {
-        showToast("Failed to assign instructor.");
+        showToast('Failed to assign instructor.');
       }
     });
   });
 
   // --- Remove User Handler ---
-  container.querySelectorAll(".btn-remove-user").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const userEmail = btn.getAttribute("data-user");
+  container.querySelectorAll('.btn-remove-user').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const userEmail = btn.getAttribute('data-user');
       if (!confirm(`Remove user: ${userEmail}? This cannot be undone.`)) return;
       try {
-        await deleteDoc(doc(db, "users", userEmail));
-        await deleteDoc(doc(db, "userRoles", userEmail));
+        await deleteDoc(doc(db, 'users', userEmail));
+        await deleteDoc(doc(db, 'userRoles', userEmail));
         showToast(`User ${userEmail} removed`);
         renderAdminUsers(container); // Refresh UI
       } catch (err) {
-        showToast("Failed to remove user.");
+        showToast('Failed to remove user.');
       }
     });
   });
 
   // --- Back to Dashboard ---
-  container.querySelector("#back-to-admin-dashboard-btn")?.addEventListener("click", () => {
-    import("./admin-dashboard.js").then(mod => mod.renderAdminDashboard());
-  });
+  container
+    .querySelector('#back-to-admin-dashboard-btn')
+    ?.addEventListener('click', () => {
+      import('./admin-dashboard.js').then((mod) => mod.renderAdminDashboard());
+    });
 }

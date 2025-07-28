@@ -11,40 +11,47 @@ import {
   deleteDoc,
   serverTimestamp,
   query,
-  where
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { showToast, setupNavigation, showModal, closeModal } from '../ui-helpers.js';
+  where,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import {
+  showToast,
+  setupNavigation,
+  showModal,
+  closeModal,
+} from '../ui-helpers.js';
 
 // ==== Data Helpers ====
 
 // Get all users (optionally filter by school or role)
 async function getAllUsers() {
-  const snap = await getDocs(collection(db, "users"));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const snap = await getDocs(collection(db, 'users'));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 async function getAllSchools() {
-  const snap = await getDocs(collection(db, "schools"));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const snap = await getDocs(collection(db, 'schools'));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 async function logUserAction(userId, action, details = {}) {
-  await setDoc(doc(collection(db, "userLogs")), {
+  await setDoc(doc(collection(db, 'userLogs')), {
     userId,
     action,
     details,
-    changedBy: localStorage.getItem("currentUserEmail"),
-    changedAt: serverTimestamp()
+    changedBy: localStorage.getItem('currentUserEmail'),
+    changedAt: serverTimestamp(),
   });
 }
 
 // ==== Main Renderer ====
 
-export async function renderUserManagement(container = document.getElementById("app")) {
+export async function renderUserManagement(
+  container = document.getElementById('app')
+) {
   if (!container) return;
   setupNavigation();
 
   // Fetch all users and schools (data state)
   let [users, schools] = await Promise.all([getAllUsers(), getAllSchools()]);
-  let filter = { search: "", role: "", school: "", active: "all" };
+  let filter = { search: '', role: '', school: '', active: 'all' };
 
   // ====== Render Filter Bar ======
   function renderFilterBar() {
@@ -60,7 +67,7 @@ export async function renderUserManagement(container = document.getElementById("
         </select>
         <select id="user-school-filter" aria-label="Filter by school">
           <option value="">All schools</option>
-          ${schools.map(s => `<option value="${s.id}">${s.name}</option>`).join("")}
+          ${schools.map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}
         </select>
         <select id="user-status-filter" aria-label="Filter by status">
           <option value="all">All</option>
@@ -77,14 +84,20 @@ export async function renderUserManagement(container = document.getElementById("
 
   // ====== Table Render (filter + display) ======
   function filterUsers(users) {
-    return users.filter(u =>
-      (filter.search === "" ||
-        (u.name && u.name.toLowerCase().includes(filter.search)) ||
-        (u.email && u.email.toLowerCase().includes(filter.search))) &&
-      (filter.role === "" || u.role === filter.role) &&
-      (filter.school === "" || (Array.isArray(u.schools) ? u.schools.includes(filter.school) : u.assignedSchool === filter.school)) &&
-      (filter.active === "all" ||
-        (filter.active === "locked" ? u.locked === true : !!u.active === (filter.active === "active")))
+    return users.filter(
+      (u) =>
+        (filter.search === '' ||
+          (u.name && u.name.toLowerCase().includes(filter.search)) ||
+          (u.email && u.email.toLowerCase().includes(filter.search))) &&
+        (filter.role === '' || u.role === filter.role) &&
+        (filter.school === '' ||
+          (Array.isArray(u.schools)
+            ? u.schools.includes(filter.school)
+            : u.assignedSchool === filter.school)) &&
+        (filter.active === 'all' ||
+          (filter.active === 'locked'
+            ? u.locked === true
+            : !!u.active === (filter.active === 'active')))
     );
   }
 
@@ -103,31 +116,41 @@ export async function renderUserManagement(container = document.getElementById("
             </tr>
           </thead>
           <tbody>
-            ${users.map(u => `
+            ${users
+              .map(
+                (u) => `
               <tr>
-                <td>${u.name || ""}</td>
+                <td>${u.name || ''}</td>
                 <td>${u.email}</td>
                 <td>${u.role}</td>
                 <td>
                   ${
                     Array.isArray(u.schools)
-                      ? u.schools.map(sid => schools.find(s => s.id === sid)?.name || "").join(", ")
-                      : schools.find(s => s.id === u.assignedSchool)?.name || "-"
+                      ? u.schools
+                          .map(
+                            (sid) =>
+                              schools.find((s) => s.id === sid)?.name || ''
+                          )
+                          .join(', ')
+                      : schools.find((s) => s.id === u.assignedSchool)?.name ||
+                        '-'
                   }
                 </td>
                 <td>
-                  ${u.locked ? "<span style='color:#e67c7c'>Locked</span>" : u.active !== false ? "Active" : "<span style='color:#c44'>Inactive</span>"}
+                  ${u.locked ? "<span style='color:#e67c7c'>Locked</span>" : u.active !== false ? 'Active' : "<span style='color:#c44'>Inactive</span>"}
                 </td>
                 <td>
                   <button class="btn outline btn-sm" data-userid="${u.id}" data-action="view" aria-label="View details">View</button>
                   <button class="btn outline btn-sm" data-userid="${u.id}" data-action="edit" aria-label="Edit user">Edit</button>
-                  <button class="btn outline btn-sm" data-userid="${u.id}" data-action="${u.active !== false ? "deactivate" : "activate"}">${u.active !== false ? "Deactivate" : "Reactivate"}</button>
+                  <button class="btn outline btn-sm" data-userid="${u.id}" data-action="${u.active !== false ? 'deactivate' : 'activate'}">${u.active !== false ? 'Deactivate' : 'Reactivate'}</button>
                   <button class="btn outline btn-sm" data-userid="${u.id}" data-action="impersonate">Impersonate</button>
-                  <button class="btn outline btn-sm" data-userid="${u.id}" data-action="lock">${u.locked ? "Unlock" : "Lock"}</button>
+                  <button class="btn outline btn-sm" data-userid="${u.id}" data-action="lock">${u.locked ? 'Unlock' : 'Lock'}</button>
                   <button class="btn outline btn-sm btn-danger" data-userid="${u.id}" data-action="delete" aria-label="Delete user">Delete</button>
                 </td>
               </tr>
-            `).join("")}
+            `
+              )
+              .join('')}
           </tbody>
         </table>
       </div>
@@ -140,18 +163,19 @@ export async function renderUserManagement(container = document.getElementById("
     if (tbodyWrap) {
       tbodyWrap.innerHTML = renderTable(filterUsers(users));
       // Reattach row action listeners:
-      tbodyWrap.querySelectorAll("button[data-userid]").forEach(btn => {
-        btn.addEventListener("click", () => {
+      tbodyWrap.querySelectorAll('button[data-userid]').forEach((btn) => {
+        btn.addEventListener('click', () => {
           const userId = btn.dataset.userid;
           const action = btn.dataset.action;
-          const user = users.find(u => u.id === userId);
+          const user = users.find((u) => u.id === userId);
           if (!user) return;
-          if (action === "view" || action === "edit") showUserModal(user, action === "edit");
-          else if (action === "deactivate") updateUserStatus(user, false);
-          else if (action === "activate") updateUserStatus(user, true);
-          else if (action === "impersonate") impersonateUser(user);
-          else if (action === "lock") lockUser(user, !user.locked);
-          else if (action === "delete") deleteUser(user);
+          if (action === 'view' || action === 'edit')
+            showUserModal(user, action === 'edit');
+          else if (action === 'deactivate') updateUserStatus(user, false);
+          else if (action === 'activate') updateUserStatus(user, true);
+          else if (action === 'impersonate') impersonateUser(user);
+          else if (action === 'lock') lockUser(user, !user.locked);
+          else if (action === 'delete') deleteUser(user);
         });
       });
     }
@@ -168,25 +192,37 @@ export async function renderUserManagement(container = document.getElementById("
   `;
 
   // ====== Filter/Sort/Event Handlers (update table only) ======
-  container.querySelector("#user-search").addEventListener("input", e => {
+  container.querySelector('#user-search').addEventListener('input', (e) => {
     filter.search = e.target.value.toLowerCase();
     updateUsersTable();
   });
-  container.querySelector("#user-role-filter").addEventListener("change", e => {
-    filter.role = e.target.value;
-    updateUsersTable();
-  });
-  container.querySelector("#user-school-filter").addEventListener("change", e => {
-    filter.school = e.target.value;
-    updateUsersTable();
-  });
-  container.querySelector("#user-status-filter").addEventListener("change", e => {
-    filter.active = e.target.value;
-    updateUsersTable();
-  });
-  container.querySelector("#create-user-btn").addEventListener("click", () => showUserModal());
-  container.querySelector("#bulk-actions-btn").addEventListener("click", showBulkModal);
-  container.querySelector("#export-users-btn").addEventListener("click", () => exportUsers(filterUsers(users)));
+  container
+    .querySelector('#user-role-filter')
+    .addEventListener('change', (e) => {
+      filter.role = e.target.value;
+      updateUsersTable();
+    });
+  container
+    .querySelector('#user-school-filter')
+    .addEventListener('change', (e) => {
+      filter.school = e.target.value;
+      updateUsersTable();
+    });
+  container
+    .querySelector('#user-status-filter')
+    .addEventListener('change', (e) => {
+      filter.active = e.target.value;
+      updateUsersTable();
+    });
+  container
+    .querySelector('#create-user-btn')
+    .addEventListener('click', () => showUserModal());
+  container
+    .querySelector('#bulk-actions-btn')
+    .addEventListener('click', showBulkModal);
+  container
+    .querySelector('#export-users-btn')
+    .addEventListener('click', () => exportUsers(filterUsers(users)));
 
   // ====== Row Actions (first render) ======
   updateUsersTable();
@@ -198,84 +234,90 @@ export async function renderUserManagement(container = document.getElementById("
     showModal(`
       <div class="modal-card user-modal">
         <button class="modal-close" aria-label="Close" onclick="document.querySelector('.modal-overlay').remove()">&times;</button>
-        <h2>${user.id ? (editable ? "Edit" : "User Details") : "Create New User"}</h2>
+        <h2>${user.id ? (editable ? 'Edit' : 'User Details') : 'Create New User'}</h2>
         <form id="user-modal-form" style="display:flex;flex-direction:column;gap:1.1em;">
-          <label>Name: <input name="name" type="text" value="${user.name || ""}" required ${!editable ? "readonly" : ""}/></label>
-          <label>Email: <input name="email" type="email" value="${user.email || ""}" required ${!editable ? "readonly" : ""}/></label>
+          <label>Name: <input name="name" type="text" value="${user.name || ''}" required ${!editable ? 'readonly' : ''}/></label>
+          <label>Email: <input name="email" type="email" value="${user.email || ''}" required ${!editable ? 'readonly' : ''}/></label>
           <label>Role:
-            <select name="role" ${!editable ? "disabled" : ""}>
-              <option value="student" ${user.role === "student" ? "selected" : ""}>Student</option>
-              <option value="instructor" ${user.role === "instructor" ? "selected" : ""}>Instructor</option>
-              <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
-              <option value="superadmin" ${user.role === "superadmin" ? "selected" : ""}>Super Admin</option>
+            <select name="role" ${!editable ? 'disabled' : ''}>
+              <option value="student" ${user.role === 'student' ? 'selected' : ''}>Student</option>
+              <option value="instructor" ${user.role === 'instructor' ? 'selected' : ''}>Instructor</option>
+              <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+              <option value="superadmin" ${user.role === 'superadmin' ? 'selected' : ''}>Super Admin</option>
             </select>
           </label>
           <label>Assigned Schools:
-            <select name="schools" multiple size="4" ${!editable ? "disabled" : ""}>
-              ${schools.map(s => `<option value="${s.id}" ${(user.schools||[user.assignedSchool]).includes?.(s.id) ? "selected" : ""}>${s.name}</option>`).join("")}
+            <select name="schools" multiple size="4" ${!editable ? 'disabled' : ''}>
+              ${schools.map((s) => `<option value="${s.id}" ${(user.schools || [user.assignedSchool]).includes?.(s.id) ? 'selected' : ''}>${s.name}</option>`).join('')}
             </select>
             <small>(Ctrl/Cmd+click for multi-select)</small>
           </label>
           <label>Status:
-            <select name="active" ${!editable ? "disabled" : ""}>
-              <option value="true" ${user.active !== false ? "selected" : ""}>Active</option>
-              <option value="false" ${user.active === false ? "selected" : ""}>Inactive</option>
+            <select name="active" ${!editable ? 'disabled' : ''}>
+              <option value="true" ${user.active !== false ? 'selected' : ''}>Active</option>
+              <option value="false" ${user.active === false ? 'selected' : ''}>Inactive</option>
             </select>
           </label>
           <label>
-            <input type="checkbox" name="locked" ${user.locked ? "checked" : ""} ${!editable ? "disabled" : ""}/> Account Locked
+            <input type="checkbox" name="locked" ${user.locked ? 'checked' : ''} ${!editable ? 'disabled' : ''}/> Account Locked
           </label>
-          ${user.apiKey ? `<div><strong>API Key:</strong> <code>${user.apiKey}</code></div>` : ""}
-          ${user.id && editable ? `
+          ${user.apiKey ? `<div><strong>API Key:</strong> <code>${user.apiKey}</code></div>` : ''}
+          ${
+            user.id && editable
+              ? `
             <button class="btn" id="reset-password-btn" type="button">Reset Password</button>
             <button class="btn outline" id="audit-log-btn" type="button">View Audit Log</button>
-          ` : ""}
-          <button class="btn primary" type="submit">${user.id ? "Save" : "Create User"}</button>
+          `
+              : ''
+          }
+          <button class="btn primary" type="submit">${user.id ? 'Save' : 'Create User'}</button>
         </form>
       </div>
     `);
 
-    document.getElementById("user-modal-form").onsubmit = async e => {
+    document.getElementById('user-modal-form').onsubmit = async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const selectedSchools = [...e.target.schools.selectedOptions].map(o => o.value);
+      const selectedSchools = [...e.target.schools.selectedOptions].map(
+        (o) => o.value
+      );
       const formUser = {
-        name: fd.get("name"),
-        email: fd.get("email").toLowerCase(),
-        role: fd.get("role"),
+        name: fd.get('name'),
+        email: fd.get('email').toLowerCase(),
+        role: fd.get('role'),
         schools: selectedSchools,
-        active: fd.get("active") === "true",
-        locked: fd.get("locked") === "on"
+        active: fd.get('active') === 'true',
+        locked: fd.get('locked') === 'on',
       };
       try {
         if (user.id) {
-          await updateDoc(doc(db, "users", user.id), formUser);
-          logUserAction(user.id, "update", formUser);
-          showToast("User updated!");
+          await updateDoc(doc(db, 'users', user.id), formUser);
+          logUserAction(user.id, 'update', formUser);
+          showToast('User updated!');
         } else {
-          await setDoc(doc(collection(db, "users")), formUser);
-          showToast("User created!");
+          await setDoc(doc(collection(db, 'users')), formUser);
+          showToast('User created!');
         }
         closeModal();
         renderUserManagement(container); // Full reload after create/update
       } catch (err) {
-        showToast("Failed to save user: " + err.message);
+        showToast('Failed to save user: ' + err.message);
       }
     };
 
-    if (user.id && document.getElementById("reset-password-btn")) {
-      document.getElementById("reset-password-btn").onclick = async () => {
+    if (user.id && document.getElementById('reset-password-btn')) {
+      document.getElementById('reset-password-btn').onclick = async () => {
         try {
           await auth.sendPasswordResetEmail(user.email);
-          showToast("Password reset email sent!");
-          logUserAction(user.id, "reset_password");
+          showToast('Password reset email sent!');
+          logUserAction(user.id, 'reset_password');
         } catch (err) {
-          showToast("Failed to send reset email: " + err.message);
+          showToast('Failed to send reset email: ' + err.message);
         }
       };
     }
-    if (user.id && document.getElementById("audit-log-btn")) {
-      document.getElementById("audit-log-btn").onclick = async () => {
+    if (user.id && document.getElementById('audit-log-btn')) {
+      document.getElementById('audit-log-btn').onclick = async () => {
         showUserAuditLog(user.id, user.email);
       };
     }
@@ -294,70 +336,78 @@ export async function renderUserManagement(container = document.getElementById("
 
   // ====== Export ======
   function exportUsers(users) {
-    const header = ["Name", "Email", "Role", "Schools", "Status"];
-    const rows = users.map(u => [
-      `"${u.name || ""}"`,
+    const header = ['Name', 'Email', 'Role', 'Schools', 'Status'];
+    const rows = users.map((u) => [
+      `"${u.name || ''}"`,
       `"${u.email}"`,
       `"${u.role}"`,
-      `"${(u.schools||[u.assignedSchool]).map(sid => schools.find(s => s.id === sid)?.name).join(";")}"`,
-      `"${u.locked ? "Locked" : (u.active !== false ? "Active" : "Inactive")}"`
+      `"${(u.schools || [u.assignedSchool]).map((sid) => schools.find((s) => s.id === sid)?.name).join(';')}"`,
+      `"${u.locked ? 'Locked' : u.active !== false ? 'Active' : 'Inactive'}"`,
     ]);
-    const csv = [header, ...rows].map(r => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    const csv = [header, ...rows].map((r) => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = "cdl-users.csv";
+    a.download = 'cdl-users.csv';
     a.click();
     URL.revokeObjectURL(url);
-    showToast("Users exported.");
+    showToast('Users exported.');
   }
 
   // ====== Helpers ======
   async function updateUserStatus(user, active) {
-    await updateDoc(doc(db, "users", user.id), { active });
-    logUserAction(user.id, active ? "activate" : "deactivate");
-    showToast(`User ${active ? "activated" : "deactivated"}.`);
+    await updateDoc(doc(db, 'users', user.id), { active });
+    logUserAction(user.id, active ? 'activate' : 'deactivate');
+    showToast(`User ${active ? 'activated' : 'deactivated'}.`);
     renderUserManagement(container); // Full reload for accuracy
   }
   async function lockUser(user, locked) {
-    await updateDoc(doc(db, "users", user.id), { locked });
-    logUserAction(user.id, locked ? "lock" : "unlock");
-    showToast(`User ${locked ? "locked" : "unlocked"}.`);
+    await updateDoc(doc(db, 'users', user.id), { locked });
+    logUserAction(user.id, locked ? 'lock' : 'unlock');
+    showToast(`User ${locked ? 'locked' : 'unlocked'}.`);
     renderUserManagement(container);
   }
   async function deleteUser(user) {
     if (!confirm(`Delete user ${user.email}? This cannot be undone!`)) return;
-    await deleteDoc(doc(db, "users", user.id));
-    logUserAction(user.id, "delete");
-    showToast("User deleted.");
+    await deleteDoc(doc(db, 'users', user.id));
+    logUserAction(user.id, 'delete');
+    showToast('User deleted.');
     renderUserManagement(container);
   }
   async function impersonateUser(user) {
     // Save impersonation state in local/session storage for next page load
-    sessionStorage.setItem("impersonateUserId", user.id);
+    sessionStorage.setItem('impersonateUserId', user.id);
     showToast(`Now impersonating ${user.name || user.email} (dev mode).`);
     // Redirect or reload for effect (implement real logic as needed)
     location.reload();
   }
   async function showUserAuditLog(userId, email) {
     const logSnap = await getDocs(
-      query(collection(db, "userLogs"), where("userId", "==", userId))
+      query(collection(db, 'userLogs'), where('userId', '==', userId))
     );
-    const logs = logSnap.docs.map(d => d.data());
+    const logs = logSnap.docs.map((d) => d.data());
     showModal(`
       <div class="modal-card audit-log-modal">
         <button class="modal-close" aria-label="Close" onclick="document.querySelector('.modal-overlay').remove()">&times;</button>
         <h2>Audit Log for ${email}</h2>
         <div style="max-height:340px;overflow:auto;">
-          ${logs.length ? logs.map(l => `
+          ${
+            logs.length
+              ? logs
+                  .map(
+                    (l) => `
             <div>
-              <strong>${l.action}</strong> -- ${l.changedAt?.toDate?.().toLocaleString() || ""}<br/>
+              <strong>${l.action}</strong> -- ${l.changedAt?.toDate?.().toLocaleString() || ''}<br/>
               <span style="font-size:0.96em;color:#666">${JSON.stringify(l.details)}</span>
-              <span style="font-size:0.92em;color:#aaa;float:right">${l.changedBy || ""}</span>
+              <span style="font-size:0.92em;color:#aaa;float:right">${l.changedBy || ''}</span>
             </div>
             <hr>
-          `).join("") : "<div>No log entries for this user yet.</div>"}
+          `
+                  )
+                  .join('')
+              : '<div>No log entries for this user yet.</div>'
+          }
         </div>
       </div>
     `);

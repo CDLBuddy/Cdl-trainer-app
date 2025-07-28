@@ -5,62 +5,75 @@ import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 // --- Status badge helper ---
 function getStatusBadge(status) {
   const statusMap = {
-    "Active":   '<span class="badge badge-active">Active</span>',
-    "Pending":  '<span class="badge badge-pending">Pending</span>',
-    "Suspended":'<span class="badge badge-suspended">Suspended</span>',
+    Active: '<span class="badge badge-active">Active</span>',
+    Pending: '<span class="badge badge-pending">Pending</span>',
+    Suspended: '<span class="badge badge-suspended">Suspended</span>',
+    // eslint-disable-next-line prettier/prettier
     "Expired":  '<span class="badge badge-expired">Expired</span>'
   };
-  return statusMap[status] || `<span class="badge badge-neutral">${status||"Unknown"}</span>`;
+  return (
+    statusMap[status] ||
+    `<span class="badge badge-neutral">${status || 'Unknown'}</span>`
+  );
 }
 
 // --- CSV Export Helper ---
 function schoolsToCSV(schools) {
-  if (!schools.length) return "";
+  if (!schools.length) return '';
   const keys = Object.keys(schools[0]);
-  const escape = s => `"${String(s||"").replace(/"/g,'""')}"`;
-  const header = keys.join(",");
-  const rows = schools.map(s =>
-    keys.map(k => escape(typeof s[k]==="object" ? JSON.stringify(s[k]) : s[k])).join(",")
+  const escape = (s) => `"${String(s || '').replace(/"/g, '""')}"`;
+  const header = keys.join(',');
+  const rows = schools.map((s) =>
+    keys
+      .map((k) =>
+        escape(typeof s[k] === 'object' ? JSON.stringify(s[k]) : s[k])
+      )
+      .join(',')
   );
-  return [header, ...rows].join("\n");
+  return [header, ...rows].join('\n');
 }
 
 // --- School Profile Modal ---
 function showSchoolProfile(school) {
-  const modal = document.createElement("div");
-  modal.className = "modal-overlay fade-in";
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay fade-in';
   modal.innerHTML = `
     <div class="modal-card" style="max-width:560px;">
       <button class="modal-close" aria-label="Close">&times;</button>
       <h3>School Profile</h3>
       <div><strong>Name:</strong> ${school.name}</div>
       <div><strong>Location:</strong> ${school.location}</div>
-      <div><strong>Address:</strong> ${school.address || "-"}</div>
+      <div><strong>Address:</strong> ${school.address || '-'}</div>
       <div><strong>TPR ID:</strong> ${school.tprId}</div>
       <div><strong>Status:</strong> ${getStatusBadge(school.status)}</div>
-      <div><strong>Expiry:</strong> ${school.tprExpiry || "-"}</div>
-      <div><strong>Contact:</strong> ${school.contactName || "-"}, ${school.contactEmail || "-"}, ${school.contactPhone || "-"}</div>
-      <div><strong>Range:</strong> ${school.rangeAddress || "-"}</div>
-      <div><strong>Assigned Instructors:</strong> ${(school.instructors||[]).join(", ") || "-"}</div>
-      <div><strong>Notes:</strong> ${school.notes||"-"}</div>
+      <div><strong>Expiry:</strong> ${school.tprExpiry || '-'}</div>
+      <div><strong>Contact:</strong> ${school.contactName || '-'}, ${school.contactEmail || '-'}, ${school.contactPhone || '-'}</div>
+      <div><strong>Range:</strong> ${school.rangeAddress || '-'}</div>
+      <div><strong>Assigned Instructors:</strong> ${(school.instructors || []).join(', ') || '-'}</div>
+      <div><strong>Notes:</strong> ${school.notes || '-'}</div>
       <div><strong>Change Log:</strong>
         <ul style="font-size:0.97em;">
           ${
             Array.isArray(school.changeLog) && school.changeLog.length
-              ? school.changeLog.map(l =>
-                  `<li>${l.date || ""}: ${l.change || ""} by ${l.by || "?"}</li>`
-                ).join("")
-              : "<li>No history yet</li>"
+              ? school.changeLog
+                  .map(
+                    (l) =>
+                      `<li>${l.date || ''}: ${l.change || ''} by ${l.by || '?'}</li>`
+                  )
+                  .join('')
+              : '<li>No history yet</li>'
           }
         </ul>
       </div>
     </div>
   `;
-  modal.querySelector(".modal-close").onclick = () => modal.remove();
+  modal.querySelector('.modal-close').onclick = () => modal.remove();
   document.body.appendChild(modal);
 }
 
-export async function renderSchoolManagement(container = document.getElementById("app")) {
+export async function renderSchoolManagement(
+  container = document.getElementById('app')
+) {
   if (!container) return;
 
   // ——- UI Loading State ——-
@@ -99,49 +112,53 @@ export async function renderSchoolManagement(container = document.getElementById
   `;
 
   setupNavigation();
-  
+
   // --- Fetch and Render Schools ---
   let schools = [];
   try {
-    const snap = await db.collection("schools").orderBy("name").get();
-    schools = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const snap = await db.collection('schools').orderBy('name').get();
+    schools = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
-    showToast("Failed to load schools.");
+    showToast('Failed to load schools.');
     schools = [];
   }
 
   // --- Render Table with Search/Filter ---
-  function renderSchoolsTable(filter = "") {
+  function renderSchoolsTable(filter = '') {
     let filtered = schools;
     if (filter) {
       const f = filter.toLowerCase();
-      filtered = schools.filter(s =>
-        [s.name, s.tprId, s.location, s.status, s.address].some(val =>
-          (val||"").toLowerCase().includes(f)
+      filtered = schools.filter((s) =>
+        [s.name, s.tprId, s.location, s.status, s.address].some((val) =>
+          (val || '').toLowerCase().includes(f)
         )
       );
     }
     const tbody = filtered.length
-      ? filtered.map(school => `
+      ? filtered
+          .map(
+            (school) => `
         <tr data-school-id="${school.id}">
           <td><input type="checkbox" class="school-select" value="${school.id}"></td>
-          <td><a href="#" class="school-profile-link" data-school-id="${school.id}">${school.name || "-"}</a></td>
-          <td>${school.location || "-"}</td>
-          <td>${school.address || "-"}</td>
-          <td>${school.tprId || "-"}</td>
+          <td><a href="#" class="school-profile-link" data-school-id="${school.id}">${school.name || '-'}</a></td>
+          <td>${school.location || '-'}</td>
+          <td>${school.address || '-'}</td>
+          <td>${school.tprId || '-'}</td>
           <td>${getStatusBadge(school.status)}</td>
-          <td>${school.tprExpiry || "-"}</td>
-          <td>${school.contactName || "-"}</td>
-          <td>${school.contactEmail || "-"}</td>
-          <td>${school.contactPhone || "-"}</td>
+          <td>${school.tprExpiry || '-'}</td>
+          <td>${school.contactName || '-'}</td>
+          <td>${school.contactEmail || '-'}</td>
+          <td>${school.contactPhone || '-'}</td>
           <td>
             <button class="btn outline edit-school-btn" data-school-id="${school.id}">Edit</button>
             <button class="btn danger delete-school-btn" data-school-id="${school.id}">Delete</button>
           </td>
         </tr>
-      `).join("")
+      `
+          )
+          .join('')
       : `<tr><td colspan="11" style="text-align:center;">No schools found.</td></tr>`;
-    document.getElementById("schools-table-wrap").innerHTML = `
+    document.getElementById('schools-table-wrap').innerHTML = `
       <table class="user-table" style="width:100%;margin-top:0.8em;">
         <thead>
           <tr>
@@ -162,184 +179,207 @@ export async function renderSchoolManagement(container = document.getElementById
       </table>
     `;
     // Enable row click/view, edit/delete
-    document.querySelectorAll(".school-profile-link").forEach(link => {
-      link.onclick = e => {
+    document.querySelectorAll('.school-profile-link').forEach((link) => {
+      link.onclick = (e) => {
         e.preventDefault();
         const schoolId = link.dataset.schoolId;
-        const school = schools.find(s => s.id === schoolId);
+        const school = schools.find((s) => s.id === schoolId);
         if (school) showSchoolProfile(school);
       };
     });
-    document.querySelectorAll(".edit-school-btn").forEach(btn => {
+    document.querySelectorAll('.edit-school-btn').forEach((btn) => {
       btn.onclick = async () => {
         const schoolId = btn.dataset.schoolId;
-        const school = schools.find(s => s.id === schoolId);
+        const school = schools.find((s) => s.id === schoolId);
         if (!school) return;
-        const modal = document.getElementById("edit-school-modal");
-        modal.style.display = "block";
+        const modal = document.getElementById('edit-school-modal');
+        modal.style.display = 'block';
         modal.innerHTML = `
           <div class="modal-overlay fade-in">
             <div class="modal-card" style="max-width:480px;">
               <button class="modal-close" aria-label="Close">&times;</button>
               <h3>Edit School / Provider</h3>
               <form id="edit-school-form">
-                <input name="name" type="text" value="${school.name || ""}" required>
-                <input name="location" type="text" value="${school.location || ""}" required>
-                <input name="address" type="text" value="${school.address || ""}">
-                <input name="tprId" type="text" value="${school.tprId || ""}" required>
-                <input name="status" type="text" value="${school.status || ""}">
-                <input name="tprExpiry" type="date" value="${school.tprExpiry || ""}">
-                <input name="rangeAddress" type="text" value="${school.rangeAddress || ""}">
-                <input name="contactName" type="text" value="${school.contactName || ""}">
-                <input name="contactEmail" type="email" value="${school.contactEmail || ""}">
-                <input name="contactPhone" type="tel" value="${school.contactPhone || ""}">
-                <textarea name="notes" rows="2">${school.notes || ""}</textarea>
+                <input name="name" type="text" value="${school.name || ''}" required>
+                <input name="location" type="text" value="${school.location || ''}" required>
+                <input name="address" type="text" value="${school.address || ''}">
+                <input name="tprId" type="text" value="${school.tprId || ''}" required>
+                <input name="status" type="text" value="${school.status || ''}">
+                <input name="tprExpiry" type="date" value="${school.tprExpiry || ''}">
+                <input name="rangeAddress" type="text" value="${school.rangeAddress || ''}">
+                <input name="contactName" type="text" value="${school.contactName || ''}">
+                <input name="contactEmail" type="email" value="${school.contactEmail || ''}">
+                <input name="contactPhone" type="tel" value="${school.contactPhone || ''}">
+                <textarea name="notes" rows="2">${school.notes || ''}</textarea>
                 <button class="btn primary" type="submit" style="margin-top:1em;">Save Changes</button>
               </form>
             </div>
           </div>
         `;
         // Close modal
-        modal.querySelector(".modal-close").onclick = () => {
-          modal.style.display = "none";
-          modal.innerHTML = "";
+        modal.querySelector('.modal-close').onclick = () => {
+          modal.style.display = 'none';
+          modal.innerHTML = '';
         };
         // Edit submit
-        modal.querySelector("#edit-school-form").onsubmit = async e => {
+        modal.querySelector('#edit-school-form').onsubmit = async (e) => {
           e.preventDefault();
           const fd = new FormData(e.target);
           const updates = {
-            name: fd.get("name").trim(),
-            location: fd.get("location").trim(),
-            address: fd.get("address")?.trim() || "",
-            tprId: fd.get("tprId").trim(),
-            status: fd.get("status")?.trim() || "Active",
-            tprExpiry: fd.get("tprExpiry") || "",
-            rangeAddress: fd.get("rangeAddress")?.trim() || "",
-            contactName: fd.get("contactName")?.trim() || "",
-            contactEmail: fd.get("contactEmail")?.trim() || "",
-            contactPhone: fd.get("contactPhone")?.trim() || "",
-            notes: fd.get("notes")?.trim() || "",
+            name: fd.get('name').trim(),
+            location: fd.get('location').trim(),
+            address: fd.get('address')?.trim() || '',
+            tprId: fd.get('tprId').trim(),
+            status: fd.get('status')?.trim() || 'Active',
+            tprExpiry: fd.get('tprExpiry') || '',
+            rangeAddress: fd.get('rangeAddress')?.trim() || '',
+            contactName: fd.get('contactName')?.trim() || '',
+            contactEmail: fd.get('contactEmail')?.trim() || '',
+            contactPhone: fd.get('contactPhone')?.trim() || '',
+            notes: fd.get('notes')?.trim() || '',
             updatedAt: new Date().toISOString(),
             // Add to change log
             changeLog: [
               ...(school.changeLog || []),
-              { date: new Date().toISOString(), change: "School updated", by: "Superadmin" }
-            ]
+              {
+                date: new Date().toISOString(),
+                change: 'School updated',
+                by: 'Superadmin',
+              },
+            ],
           };
           try {
-            await db.collection("schools").doc(schoolId).update(updates);
-            showToast("School updated!");
-            modal.style.display = "none";
-            modal.innerHTML = "";
+            await db.collection('schools').doc(schoolId).update(updates);
+            showToast('School updated!');
+            modal.style.display = 'none';
+            modal.innerHTML = '';
             // Reload schools
-            schools = schools.map(s => s.id === schoolId ? { ...s, ...updates } : s);
-            renderSchoolsTable(document.getElementById("school-search").value);
+            schools = schools.map((s) =>
+              s.id === schoolId ? { ...s, ...updates } : s
+            );
+            renderSchoolsTable(document.getElementById('school-search').value);
           } catch (e) {
-            showToast("Failed to update school.");
+            showToast('Failed to update school.');
           }
         };
       };
     });
-    document.querySelectorAll(".delete-school-btn").forEach(btn => {
+    document.querySelectorAll('.delete-school-btn').forEach((btn) => {
       btn.onclick = async () => {
         const schoolId = btn.dataset.schoolId;
         // Modal confirm (more modern than alert)
-        if (!window.confirm("Are you sure you want to delete this school/provider? This action cannot be undone.")) return;
+        if (
+          !window.confirm(
+            'Are you sure you want to delete this school/provider? This action cannot be undone.'
+          )
+        )
+          return;
         try {
-          await db.collection("schools").doc(schoolId).delete();
-          showToast("School deleted.");
-          schools = schools.filter(s => s.id !== schoolId);
-          renderSchoolsTable(document.getElementById("school-search").value);
+          await db.collection('schools').doc(schoolId).delete();
+          showToast('School deleted.');
+          schools = schools.filter((s) => s.id !== schoolId);
+          renderSchoolsTable(document.getElementById('school-search').value);
         } catch (e) {
-          showToast("Failed to delete school.");
+          showToast('Failed to delete school.');
         }
       };
     });
 
     // Bulk select/delete
-    const selectAll = document.getElementById("select-all-schools");
-    const allBoxes = document.querySelectorAll(".school-select");
+    const selectAll = document.getElementById('select-all-schools');
+    const allBoxes = document.querySelectorAll('.school-select');
     selectAll.onclick = () => {
-      allBoxes.forEach(box => box.checked = selectAll.checked);
-      document.getElementById("bulk-delete-btn").disabled = !selectAll.checked && !Array.from(allBoxes).some(b=>b.checked);
+      allBoxes.forEach((box) => (box.checked = selectAll.checked));
+      document.getElementById('bulk-delete-btn').disabled =
+        !selectAll.checked && !Array.from(allBoxes).some((b) => b.checked);
     };
-    allBoxes.forEach(box => {
+    allBoxes.forEach((box) => {
       box.onchange = () => {
-        document.getElementById("bulk-delete-btn").disabled = !Array.from(allBoxes).some(b=>b.checked);
+        document.getElementById('bulk-delete-btn').disabled = !Array.from(
+          allBoxes
+        ).some((b) => b.checked);
       };
     });
 
-    document.getElementById("bulk-delete-btn").onclick = async () => {
-      const ids = Array.from(document.querySelectorAll(".school-select:checked")).map(b => b.value);
+    document.getElementById('bulk-delete-btn').onclick = async () => {
+      const ids = Array.from(
+        document.querySelectorAll('.school-select:checked')
+      ).map((b) => b.value);
       if (!ids.length) return;
-      if (!window.confirm(`Delete ${ids.length} schools? This cannot be undone.`)) return;
+      if (
+        !window.confirm(`Delete ${ids.length} schools? This cannot be undone.`)
+      )
+        return;
       try {
         for (const id of ids) {
-          await db.collection("schools").doc(id).delete();
-          schools = schools.filter(s => s.id !== id);
+          await db.collection('schools').doc(id).delete();
+          schools = schools.filter((s) => s.id !== id);
         }
         showToast(`${ids.length} school(s) deleted.`);
-        renderSchoolsTable(document.getElementById("school-search").value);
+        renderSchoolsTable(document.getElementById('school-search').value);
       } catch (e) {
-        showToast("Bulk delete failed.");
+        showToast('Bulk delete failed.');
       }
     };
   }
 
   // --- Search ---
-  document.getElementById("school-search").oninput = e => {
+  document.getElementById('school-search').oninput = (e) => {
     renderSchoolsTable(e.target.value);
   };
 
   // --- Download CSV ---
-  document.getElementById("download-csv-btn").onclick = () => {
+  document.getElementById('download-csv-btn').onclick = () => {
     const csv = schoolsToCSV(schools);
-    const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = "cdl_schools.csv";
+    a.download = 'cdl_schools.csv';
     document.body.appendChild(a);
     a.click();
     a.remove();
   };
 
   // --- Add New School ---
-  document.getElementById("school-form").onsubmit = async (e) => {
+  document.getElementById('school-form').onsubmit = async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
     const newSchool = {
-      name: fd.get("name").trim(),
-      location: fd.get("location").trim(),
-      address: fd.get("address")?.trim() || "",
-      tprId: fd.get("tprId").trim(),
-      status: fd.get("status")?.trim() || "Active",
-      tprExpiry: fd.get("tprExpiry") || "",
-      rangeAddress: fd.get("rangeAddress")?.trim() || "",
-      contactName: fd.get("contactName")?.trim() || "",
-      contactEmail: fd.get("contactEmail")?.trim() || "",
-      contactPhone: fd.get("contactPhone")?.trim() || "",
-      notes: fd.get("notes")?.trim() || "",
+      name: fd.get('name').trim(),
+      location: fd.get('location').trim(),
+      address: fd.get('address')?.trim() || '',
+      tprId: fd.get('tprId').trim(),
+      status: fd.get('status')?.trim() || 'Active',
+      tprExpiry: fd.get('tprExpiry') || '',
+      rangeAddress: fd.get('rangeAddress')?.trim() || '',
+      contactName: fd.get('contactName')?.trim() || '',
+      contactEmail: fd.get('contactEmail')?.trim() || '',
+      contactPhone: fd.get('contactPhone')?.trim() || '',
+      notes: fd.get('notes')?.trim() || '',
       createdAt: new Date().toISOString(),
       changeLog: [
-        { date: new Date().toISOString(), change: "School created", by: "Superadmin" }
-      ]
+        {
+          date: new Date().toISOString(),
+          change: 'School created',
+          by: 'Superadmin',
+        },
+      ],
     };
     try {
-      await db.collection("schools").add(newSchool);
-      showToast("School added!");
+      await db.collection('schools').add(newSchool);
+      showToast('School added!');
       // Refresh data
-      const snap = await db.collection("schools").orderBy("name").get();
-      schools = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderSchoolsTable(document.getElementById("school-search").value);
+      const snap = await db.collection('schools').orderBy('name').get();
+      schools = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      renderSchoolsTable(document.getElementById('school-search').value);
       e.target.reset();
     } catch (e) {
-      showToast("Failed to add school.");
+      showToast('Failed to add school.');
     }
   };
 
   // --- Back to dashboard ---
-  document.getElementById("back-to-superadmin-dashboard-btn").onclick = () => {
+  document.getElementById('back-to-superadmin-dashboard-btn').onclick = () => {
     renderSuperadminDashboard(container);
   };
 

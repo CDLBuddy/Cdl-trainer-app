@@ -1,77 +1,81 @@
 // student/test-engine.js
 
 import { db } from '../firebase.js';
-import { addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { setupNavigation, showToast } from '../ui-helpers.js';
 
 export async function renderTestEngine(
-  container = document.getElementById("app"),
+  container = document.getElementById('app'),
   testName,
   currentUserEmail
 ) {
   if (!container || !testName || !currentUserEmail) {
-    showToast("Missing required parameters for test engine.");
+    showToast('Missing required parameters for test engine.');
     return;
   }
 
   // --- 1. Question Banks (expandable, per-school future) --------------
   const questionBanks = {
-    "General Knowledge": [
+    'General Knowledge': [
       {
-        q: "What is the maximum allowed blood alcohol concentration for CDL drivers?",
-        choices: ["0.02%", "0.04%", "0.08%", "0.10%"],
-        answer: 1
+        q: 'What is the maximum allowed blood alcohol concentration for CDL drivers?',
+        choices: ['0.02%', '0.04%', '0.08%', '0.10%'],
+        answer: 1,
       },
       {
-        q: "When approaching a railroad crossing without gates, you should:",
+        q: 'When approaching a railroad crossing without gates, you should:',
         choices: [
-          "Stop, look, and listen",
-          "Slow down, look, and prepare to stop",
-          "Maintain speed if no train in sight",
-          "Honk your horn continuously"
+          'Stop, look, and listen',
+          'Slow down, look, and prepare to stop',
+          'Maintain speed if no train in sight',
+          'Honk your horn continuously',
         ],
-        answer: 1
-      }
+        answer: 1,
+      },
     ],
-    "Air Brakes": [
+    'Air Brakes': [
       {
-        q: "Before driving with air brakes, you must wait until the air pressure reaches at least:",
-        choices: ["60 psi", "80 psi", "100 psi", "120 psi"],
-        answer: 2
+        q: 'Before driving with air brakes, you must wait until the air pressure reaches at least:',
+        choices: ['60 psi', '80 psi', '100 psi', '120 psi'],
+        answer: 2,
       },
       {
-        q: "The air compressor governor controls:",
+        q: 'The air compressor governor controls:',
         choices: [
-          "When the compressor stops pumping air",
-          "How fast the compressor runs",
-          "The warning buzzer pressure",
-          "Brake chamber pressure"
+          'When the compressor stops pumping air',
+          'How fast the compressor runs',
+          'The warning buzzer pressure',
+          'Brake chamber pressure',
         ],
-        answer: 0
-      }
+        answer: 0,
+      },
     ],
-    "Combination Vehicles": [
+    'Combination Vehicles': [
       {
-        q: "The fifth-wheel locking jaws must completely surround the shank of the kingpin. This is called:",
+        q: 'The fifth-wheel locking jaws must completely surround the shank of the kingpin. This is called:',
         choices: [
-          "Coupling lock",
-          "Safety latch",
-          "Locking engagement",
-          "Full lock"
+          'Coupling lock',
+          'Safety latch',
+          'Locking engagement',
+          'Full lock',
         ],
-        answer: 3
+        answer: 3,
       },
       {
-        q: "When uncoupling a trailer you must:",
+        q: 'When uncoupling a trailer you must:',
         choices: [
-          "Raise the landing gear",
-          "Disengage the locking handle",
-          "Chock the trailer wheels",
-          "All of the above"
+          'Raise the landing gear',
+          'Disengage the locking handle',
+          'Chock the trailer wheels',
+          'All of the above',
         ],
-        answer: 2
-      }
-    ]
+        answer: 2,
+      },
+    ],
   };
 
   // --- 2. Question/Session State --------------------------------------
@@ -82,9 +86,10 @@ export async function renderTestEngine(
 
   // Shuffle questions (per session)
   function shuffleArray(arr) {
-    return arr.map(q => ({ ...q, _rand: Math.random() }))
-              .sort((a, b) => a._rand - b._rand)
-              .map(({ _rand, ...q }) => q);
+    return arr
+      .map((q) => ({ ...q, _rand: Math.random() }))
+      .sort((a, b) => a._rand - b._rand)
+      .map(({ _rand, ...q }) => q);
   }
   questions = shuffleArray(questions);
 
@@ -97,27 +102,29 @@ export async function renderTestEngine(
         <p style="margin:16px 0;"><strong>${q}</strong></p>
         <ul style="list-style:none; padding:0;">
           ${choices
-            .map((c, i) => `<li style="margin:8px 0;">
+            .map(
+              (c, i) => `<li style="margin:8px 0;">
               <button class="choice-btn btn outline wide" data-choice="${i}" style="width:100%; padding:10px;" aria-label="${c}">
                 ${c}
               </button>
-            </li>`)
-            .join("")}
+            </li>`
+            )
+            .join('')}
         </ul>
       </div>
     `;
 
     // Keyboard/Accessibility: allow 1-4 keys
     window.onkeydown = (e) => {
-      if (e.key >= "1" && e.key <= String(choices.length)) {
+      if (e.key >= '1' && e.key <= String(choices.length)) {
         const idx = parseInt(e.key, 10) - 1;
         chooseAnswer(idx);
       }
     };
 
     // Choice button click handler
-    container.querySelectorAll(".choice-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
+    container.querySelectorAll('.choice-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
         const chosen = parseInt(btn.dataset.choice, 10);
         chooseAnswer(chosen);
       });
@@ -139,37 +146,41 @@ export async function renderTestEngine(
   // --- 4. Render Results, Review Answers --------------------------------
   async function showResults() {
     const total = questions.length;
-    const pct   = total ? Math.round((correctCount / total) * 100) : 0;
+    const pct = total ? Math.round((correctCount / total) * 100) : 0;
 
     // Save result to Firestore
     try {
-      await addDoc(collection(db, "testResults"), {
+      await addDoc(collection(db, 'testResults'), {
         studentId: currentUserEmail,
         testName,
         correct: correctCount,
         total,
         answers: userAnswers,
-        timestamp: serverTimestamp()
+        timestamp: serverTimestamp(),
       });
     } catch (e) {
-      console.error("❌ Failed to save test result:", e);
-      showToast("Error saving test result");
+      console.error('❌ Failed to save test result:', e);
+      showToast('Error saving test result');
     }
 
     // Build review HTML
-    let reviewHtml = "";
+    let reviewHtml = '';
     questions.forEach((q, i) => {
       const correct = userAnswers[i] === q.answer;
       reviewHtml += `
         <div class="review-q" style="margin-bottom:1em;">
           <div style="font-weight:600;">Q${i + 1}: ${q.q}</div>
           <ul style="list-style:none; padding:0; margin:0.3em 0;">
-            ${q.choices.map((c, idx) => {
-              let style = "";
-              if (idx === q.answer) style = "background:#caffcb; font-weight:700;";
-              if (idx === userAnswers[i] && !correct) style = "background:#ffdbdb;";
-              return `<li style="margin:3px 0;${style}">${c}${idx === userAnswers[i] ? (correct ? " ✅" : " ❌") : ""}</li>`;
-            }).join("")}
+            ${q.choices
+              .map((c, idx) => {
+                let style = '';
+                if (idx === q.answer)
+                  style = 'background:#caffcb; font-weight:700;';
+                if (idx === userAnswers[i] && !correct)
+                  style = 'background:#ffdbdb;';
+                return `<li style="margin:3px 0;${style}">${c}${idx === userAnswers[i] ? (correct ? ' ✅' : ' ❌') : ''}</li>`;
+              })
+              .join('')}
           </ul>
         </div>
       `;
@@ -193,12 +204,20 @@ export async function renderTestEngine(
     setupNavigation();
 
     // Dynamic imports to prevent circular dependency
-    container.querySelector('[data-nav="dashboard"]')?.addEventListener("click", () => {
-      import('./student-dashboard.js').then(mod => mod.renderDashboard(container));
-    });
-    container.querySelector('[data-nav="practiceTests"]')?.addEventListener("click", () => {
-      import('./practice-tests.js').then(mod => mod.renderPracticeTests(container));
-    });
+    container
+      .querySelector('[data-nav="dashboard"]')
+      ?.addEventListener('click', () => {
+        import('./student-dashboard.js').then((mod) =>
+          mod.renderDashboard(container)
+        );
+      });
+    container
+      .querySelector('[data-nav="practiceTests"]')
+      ?.addEventListener('click', () => {
+        import('./practice-tests.js').then((mod) =>
+          mod.renderPracticeTests(container)
+        );
+      });
   }
 
   // --- 5. Start quiz or show empty-state message -----------------------

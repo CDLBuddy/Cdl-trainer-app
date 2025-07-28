@@ -6,60 +6,62 @@ import {
   setupNavigation,
   showLatestUpdate,
   getRandomAITip,
-  getNextChecklistAlert
+  getNextChecklistAlert,
 } from '../ui-helpers.js';
 
-import { signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { signOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {
   collection,
   query,
   where,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+  getDocs,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
-import { renderProfile }        from './profile.js';
-import { renderAICoach }        from './ai-coach.js';
-import { renderWalkthrough }    from './walkthrough.js';
-import { renderChecklists }     from './checklists.js';
-import { renderPracticeTests }  from './practice-tests.js';
-import { renderFlashcards }     from './flashcards.js';
+import { renderProfile } from './profile.js';
+import { renderAICoach } from './ai-coach.js';
+import { renderWalkthrough } from './walkthrough.js';
+import { renderChecklists } from './checklists.js';
+import { renderPracticeTests } from './practice-tests.js';
+import { renderFlashcards } from './flashcards.js';
 
 // MAIN DASHBOARD RENDERER
-export async function renderStudentDashboard(container = document.getElementById("app")) {
+export async function renderStudentDashboard(
+  container = document.getElementById('app')
+) {
   if (!container) return;
 
   // --- Resolve user on every render (never cache old value) ---
   const currentUserEmail =
     window.currentUserEmail ||
-    localStorage.getItem("currentUserEmail") ||
+    localStorage.getItem('currentUserEmail') ||
     (auth.currentUser && auth.currentUser.email) ||
     null;
 
   if (!currentUserEmail) {
-    showToast("No user found. Please log in again.");
+    showToast('No user found. Please log in again.');
     window.location.reload();
     return;
   }
 
   // --- FETCH DATA ---------------------------------------------------
   let userData = {};
-  let userRole = localStorage.getItem("userRole") || "student";
+  let userRole = localStorage.getItem('userRole') || 'student';
 
   try {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", currentUserEmail));
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', currentUserEmail));
     const snap = await getDocs(q);
     if (!snap.empty) {
       userData = snap.docs[0].data();
-      userRole = userData.role || userRole || "student";
-      localStorage.setItem("userRole", userRole);
+      userRole = userData.role || userRole || 'student';
+      localStorage.setItem('userRole', userRole);
     }
   } catch (e) {
     userData = {};
   }
 
-  if (userRole !== "student") {
-    showToast("Access denied: Student dashboard only.");
+  if (userRole !== 'student') {
+    showToast('Access denied: Student dashboard only.');
     window.location.reload();
     return;
   }
@@ -68,22 +70,23 @@ export async function renderStudentDashboard(container = document.getElementById
   let checklistPct = userData.profileProgress || 0;
 
   // Last-test summary
-  let lastTestStr = "No tests taken yet.";
+  let lastTestStr = 'No tests taken yet.';
   try {
     const snap = await getDocs(
-      query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
+      query(
+        collection(db, 'testResults'),
+        where('studentId', '==', currentUserEmail)
+      )
     );
     let latest = null;
     snap.forEach((d) => {
       const t = d.data();
       if (
         !latest ||
-        (t.timestamp?.toDate
-          ? t.timestamp.toDate()
-          : new Date(t.timestamp)) >
-        (latest?.timestamp?.toDate
-          ? latest.timestamp.toDate()
-          : new Date(latest?.timestamp))
+        (t.timestamp?.toDate ? t.timestamp.toDate() : new Date(t.timestamp)) >
+          (latest?.timestamp?.toDate
+            ? latest.timestamp.toDate()
+            : new Date(latest?.timestamp))
       ) {
         latest = t;
       }
@@ -96,30 +99,30 @@ export async function renderStudentDashboard(container = document.getElementById
       lastTestStr = `${latest.testName} – ${pct}% on ${dateStr}`;
     }
   } catch (e) {
-    console.error("TestResults fetch error", e);
+    console.error('TestResults fetch error', e);
   }
 
   // License & Experience
-  let license = userData.cdlClass || "Not selected";
-  let experience = userData.experience || "Unknown";
+  let license = userData.cdlClass || 'Not selected';
+  let experience = userData.experience || 'Unknown';
 
   // 7-day Study Streak
   let streak = 0;
   try {
     const today = new Date().toDateString();
-    let log = JSON.parse(localStorage.getItem("studyLog") || "[]");
+    let log = JSON.parse(localStorage.getItem('studyLog') || '[]');
     if (!log.includes(today)) {
       log.push(today);
-      localStorage.setItem("studyLog", JSON.stringify(log));
+      localStorage.setItem('studyLog', JSON.stringify(log));
     }
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 6);
     streak = log.filter((d) => new Date(d) >= cutoff).length;
   } catch (e) {
-    console.error("Streak calc error", e);
+    console.error('Streak calc error', e);
   }
 
-  const name = localStorage.getItem("fullName") || "CDL User";
+  const name = localStorage.getItem('fullName') || 'CDL User';
   const roleBadge = `<span class="role-badge student">Student</span>`;
 
   // DASHBOARD LAYOUT (HTML)
@@ -148,7 +151,7 @@ export async function renderStudentDashboard(container = document.getElementById
         </div>
         <div class="glass-card metric">
           <h3>🔥 Study Streak</h3>
-          <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? "s" : ""} active this week</p>
+          <p><span class="big-num" id="streak-days">${streak}</span> day${streak !== 1 ? 's' : ''} active this week</p>
         </div>
         <div class="dashboard-card ai-tip-card">
           <div class="ai-tip-title" style="font-weight:600; font-size:1.12em; color:var(--accent); margin-bottom:0.5em;">
@@ -217,31 +220,49 @@ export async function renderStudentDashboard(container = document.getElementById
   setupNavigation();
 
   // --- Button Event Listeners ---
-  document.getElementById("edit-student-profile-btn")?.addEventListener("click", renderProfile);
+  document
+    .getElementById('edit-student-profile-btn')
+    ?.addEventListener('click', renderProfile);
 
   // Rail navigation
-  container.querySelector('.rail-btn.profile')?.addEventListener('click', renderProfile);
-  container.querySelector('.rail-btn.checklist')?.addEventListener('click', renderChecklists);
-  container.querySelector('.rail-btn.testing')?.addEventListener('click', renderPracticeTests);
-  container.querySelector('.rail-btn.flashcards')?.addEventListener('click', renderFlashcards);
+  container
+    .querySelector('.rail-btn.profile')
+    ?.addEventListener('click', renderProfile);
+  container
+    .querySelector('.rail-btn.checklist')
+    ?.addEventListener('click', renderChecklists);
+  container
+    .querySelector('.rail-btn.testing')
+    ?.addEventListener('click', renderPracticeTests);
+  container
+    .querySelector('.rail-btn.flashcards')
+    ?.addEventListener('click', renderFlashcards);
 
   // Walkthrough button
-  container.querySelector('button[data-nav="walkthrough"]')?.addEventListener('click', renderWalkthrough);
+  container
+    .querySelector('button[data-nav="walkthrough"]')
+    ?.addEventListener('click', renderWalkthrough);
 
   // AI Tip of the Day
-  document.getElementById("ai-tip-btn")?.addEventListener("click", renderAICoach);
+  document
+    .getElementById('ai-tip-btn')
+    ?.addEventListener('click', renderAICoach);
 
   // Last Test Card
-  container.querySelector('.last-test-card button[data-nav="practiceTests"]')?.addEventListener('click', renderPracticeTests);
+  container
+    .querySelector('.last-test-card button[data-nav="practiceTests"]')
+    ?.addEventListener('click', renderPracticeTests);
 
   // AI Coach Floating Button
-  document.getElementById("ai-coach-fab")?.addEventListener("click", renderAICoach);
+  document
+    .getElementById('ai-coach-fab')
+    ?.addEventListener('click', renderAICoach);
 
   // Logout
-  document.getElementById("logout-btn")?.addEventListener("click", async () => {
+  document.getElementById('logout-btn')?.addEventListener('click', async () => {
     await signOut(auth);
-    localStorage.removeItem("fullName");
-    localStorage.removeItem("userRole");
+    localStorage.removeItem('fullName');
+    localStorage.removeItem('userRole');
     window.location.reload();
   });
 }

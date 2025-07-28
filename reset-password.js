@@ -1,20 +1,26 @@
 // reset-password.js
 
-import { auth } from "./firebase.js";
-import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import { showToast, setupNavigation } from "./ui-helpers.js";
-import { renderLogin } from "./login.js";
-import { renderWelcome } from "./welcome.js";
+import { auth } from './firebase.js';
+import { sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+import { showToast, setupNavigation } from './ui-helpers.js';
+import { renderLogin } from './login.js';
+import { renderWelcome } from './welcome.js';
 
-export function renderResetPassword(container = document.getElementById("app"), opts = {}) {
+export function renderResetPassword(
+  container = document.getElementById('app'),
+  opts = {}
+) {
   if (!container) return;
 
   // --- Branding (white label/ELDT school support) ---
-  const schoolBrand = opts.schoolBrand || JSON.parse(localStorage.getItem("schoolBrand") || "{}") || {};
-  const schoolLogo = schoolBrand.logo || "logo-default.svg";
-  const schoolName = schoolBrand.name || "CDL Trainer";
-  const accentColor = schoolBrand.accent || "#b48aff";
-  const supportEmail = schoolBrand.supportEmail || "support@cdltrainerapp.com";
+  const schoolBrand =
+    opts.schoolBrand ||
+    JSON.parse(localStorage.getItem('schoolBrand') || '{}') ||
+    {};
+  const schoolLogo = schoolBrand.logo || 'logo-default.svg';
+  const schoolName = schoolBrand.name || 'CDL Trainer';
+  const accentColor = schoolBrand.accent || '#b48aff';
+  const supportEmail = schoolBrand.supportEmail || 'support@cdltrainerapp.com';
 
   container.innerHTML = `
     <div class="login-card fade-in" role="main" aria-label="Reset Password Page" style="--accent:${accentColor};">
@@ -43,41 +49,43 @@ export function renderResetPassword(container = document.getElementById("app"), 
   setupNavigation();
 
   // --- Form Handler ---
-  const resetForm = container.querySelector("#reset-form");
+  const resetForm = container.querySelector('#reset-form');
   if (resetForm) {
-    resetForm.onsubmit = async e => {
+    resetForm.onsubmit = async (e) => {
       e.preventDefault();
-      const email = container.querySelector("#reset-email").value.trim();
-      const errD  = container.querySelector("#reset-error-msg");
-      const btn   = container.querySelector("#reset-submit");
-      errD.style.display = "none";
+      const email = container.querySelector('#reset-email').value.trim();
+      const errD = container.querySelector('#reset-error-msg');
+      const btn = container.querySelector('#reset-submit');
+      errD.style.display = 'none';
       btn.disabled = true;
-      btn.textContent = "Sending…";
+      btn.textContent = 'Sending…';
       if (!email) {
-        errD.textContent = "Please enter your email.";
-        errD.style.display = "block";
+        errD.textContent = 'Please enter your email.';
+        errD.style.display = 'block';
         btn.disabled = false;
-        btn.textContent = "Send Reset Link";
+        btn.textContent = 'Send Reset Link';
         return;
       }
       try {
         await sendPasswordResetEmail(auth, email);
-        showToast("📬 Reset link sent!");
+        showToast('📬 Reset link sent!');
         setTimeout(() => renderLogin(container, { schoolBrand }), 1800);
       } catch (err) {
-        errD.textContent = err.message || "Error sending reset email.";
-        errD.style.display = "block";
+        errD.textContent = err.message || 'Error sending reset email.';
+        errD.style.display = 'block';
       }
       btn.disabled = false;
-      btn.textContent = "Send Reset Link";
+      btn.textContent = 'Send Reset Link';
     };
   }
 
   // --- Back button ---
-  container.querySelector("#back-to-login-btn")?.addEventListener("click", () => {
-    renderLogin(container, { schoolBrand });
-  });
+  container
+    .querySelector('#back-to-login-btn')
+    ?.addEventListener('click', () => {
+      renderLogin(container, { schoolBrand });
+    });
 
   // Accessibility: focus management
-  container.querySelector("#reset-email")?.focus();
+  container.querySelector('#reset-email')?.focus();
 }

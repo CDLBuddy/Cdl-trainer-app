@@ -1,23 +1,27 @@
 // school-switching.js
 
-import { db, auth } from "./firebase.js";
+import { db, auth } from './firebase.js';
 import {
   collection,
   query,
   where,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { showToast, setupNavigation } from "./ui-helpers.js";
-import { handleNavigation } from "./navigation.js";
-import { renderWelcome } from "./welcome.js";
+  getDocs,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import { showToast, setupNavigation } from './ui-helpers.js';
+import { handleNavigation } from './navigation.js';
+import { renderWelcome } from './welcome.js';
 
-export async function renderSchoolSwitching(container = document.getElementById("app")) {
+export async function renderSchoolSwitching(
+  container = document.getElementById('app')
+) {
   if (!container) return;
 
   // Current user
-  const userEmail = (auth.currentUser && auth.currentUser.email) || localStorage.getItem("currentUserEmail");
+  const userEmail =
+    (auth.currentUser && auth.currentUser.email) ||
+    localStorage.getItem('currentUserEmail');
   if (!userEmail) {
-    showToast("You must be logged in to switch schools.");
+    showToast('You must be logged in to switch schools.');
     renderWelcome();
     return;
   }
@@ -26,11 +30,11 @@ export async function renderSchoolSwitching(container = document.getElementById(
   let userSchools = [];
   try {
     const userDocSnap = await getDocs(
-      query(collection(db, "userRoles"), where("email", "==", userEmail))
+      query(collection(db, 'userRoles'), where('email', '==', userEmail))
     );
     if (!userDocSnap.empty) {
       // If your schema allows multiple school assignments, set as array; otherwise, single:
-      userDocSnap.forEach(doc => {
+      userDocSnap.forEach((doc) => {
         const d = doc.data();
         // Accepts array or string (backwards compatibility)
         if (Array.isArray(d.schools)) userSchools = d.schools;
@@ -38,33 +42,38 @@ export async function renderSchoolSwitching(container = document.getElementById(
       });
     }
   } catch (e) {
-    showToast("Error fetching assigned schools.");
+    showToast('Error fetching assigned schools.');
   }
 
   // Fetch all school brands for select
   let schoolBrandList = [];
   try {
-    const schoolsSnap = await getDocs(collection(db, "schools"));
-    schoolBrandList = schoolsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const schoolsSnap = await getDocs(collection(db, 'schools'));
+    schoolBrandList = schoolsSnap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
   } catch (e) {
-    showToast("Error loading school list.");
+    showToast('Error loading school list.');
   }
 
   // Filter the list to only those user is assigned (if not superadmin)
   let allowedSchools = schoolBrandList;
-  if (!userSchools.includes("all") && userSchools.length > 0) {
-    allowedSchools = schoolBrandList.filter(s => userSchools.includes(s.id));
+  if (!userSchools.includes('all') && userSchools.length > 0) {
+    allowedSchools = schoolBrandList.filter((s) => userSchools.includes(s.id));
   }
 
   // Find current school
-  const currentSchoolId = localStorage.getItem("schoolId") || allowedSchools[0]?.id || "";
-  const currentBrand = allowedSchools.find(s => s.id === currentSchoolId) || {};
+  const currentSchoolId =
+    localStorage.getItem('schoolId') || allowedSchools[0]?.id || '';
+  const currentBrand =
+    allowedSchools.find((s) => s.id === currentSchoolId) || {};
 
   // Render UI
   container.innerHTML = `
     <div class="school-switch-card fade-in" style="max-width:500px;margin:40px auto 0 auto;">
       <h2 style="text-align:center;">
-        <img src="${currentBrand.logo || "logo-default.svg"}"
+        <img src="${currentBrand.logo || 'logo-default.svg'}"
              alt="Current School Logo"
              style="height:46px;max-width:96px;margin-bottom:0.3em;border-radius:7px;box-shadow:0 1px 8px #22115533;">
         <br>Switch School
@@ -72,17 +81,21 @@ export async function renderSchoolSwitching(container = document.getElementById(
       <form id="school-switch-form" style="display:flex;flex-direction:column;gap:1.3rem;">
         <label for="school-select" style="font-weight:500;font-size:1.06em;">Select Your School:</label>
         <select id="school-select" required>
-          ${allowedSchools.map(s =>
-            `<option value="${s.id}" ${s.id === currentSchoolId ? "selected" : ""}>
+          ${allowedSchools
+            .map(
+              (s) =>
+                `<option value="${s.id}" ${s.id === currentSchoolId ? 'selected' : ''}>
               ${s.name || s.id}
-            </option>`).join("")}
+            </option>`
+            )
+            .join('')}
         </select>
         <button class="btn primary" type="submit">Switch School</button>
         <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Back</button>
       </form>
       <div style="margin-top:1em;text-align:center;font-size:.96em;">
-        Need help? <a href="mailto:${currentBrand.supportEmail || "support@cdltrainerapp.com"}"
-          style="color:${currentBrand.accent || "#b48aff"};text-decoration:underline;">Contact Support</a>
+        Need help? <a href="mailto:${currentBrand.supportEmail || 'support@cdltrainerapp.com'}"
+          style="color:${currentBrand.accent || '#b48aff'};text-decoration:underline;">Contact Support</a>
       </div>
     </div>
   `;
@@ -90,30 +103,35 @@ export async function renderSchoolSwitching(container = document.getElementById(
   setupNavigation();
 
   // Handle switching
-  document.getElementById("school-switch-form").onsubmit = async e => {
+  document.getElementById('school-switch-form').onsubmit = async (e) => {
     e.preventDefault();
-    const schoolId = document.getElementById("school-select").value;
-    const school = allowedSchools.find(s => s.id === schoolId);
+    const schoolId = document.getElementById('school-select').value;
+    const school = allowedSchools.find((s) => s.id === schoolId);
     if (!school) {
-      showToast("Invalid school selected.", 2000, "error");
+      showToast('Invalid school selected.', 2000, 'error');
       return;
     }
     // Save to localStorage
-    localStorage.setItem("schoolId", schoolId);
-    localStorage.setItem("schoolBrand", JSON.stringify({
-      id: school.id,
-      name: school.name || "",
-      logo: school.logo || "",
-      accent: school.accent || "#b48aff",
-      supportEmail: school.supportEmail || "support@cdltrainerapp.com"
-    }));
-    showToast(`Switched to: ${school.name || school.id}`, 1700, "success");
+    localStorage.setItem('schoolId', schoolId);
+    localStorage.setItem(
+      'schoolBrand',
+      JSON.stringify({
+        id: school.id,
+        name: school.name || '',
+        logo: school.logo || '',
+        accent: school.accent || '#b48aff',
+        supportEmail: school.supportEmail || 'support@cdltrainerapp.com',
+      })
+    );
+    showToast(`Switched to: ${school.name || school.id}`, 1700, 'success');
     // Optionally: reload/re-render with new brand
-    setTimeout(() => handleNavigation("dashboard"), 500);
+    setTimeout(() => handleNavigation('dashboard'), 500);
   };
 
   // Back to dashboard
-  document.getElementById("back-to-dashboard-btn")?.addEventListener("click", () => {
-    handleNavigation("dashboard");
-  });
+  document
+    .getElementById('back-to-dashboard-btn')
+    ?.addEventListener('click', () => {
+      handleNavigation('dashboard');
+    });
 }
