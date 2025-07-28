@@ -28,9 +28,6 @@ export {
   askCDLAI,
 };
 
-// Alias for navigation compatibility
-export { renderStudentDashboard as renderDashboard };
-
 // === STUDENT NAVIGATION HANDLER ===
 export function handleStudentNav(page, ...args) {
   const container = args[1] || document.getElementById('app');

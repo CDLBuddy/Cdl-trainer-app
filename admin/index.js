@@ -1,4 +1,4 @@
-// admin-index.js
+// admin/index.js
 
 // === ADMIN MODULE BARREL IMPORTS ===
 import {

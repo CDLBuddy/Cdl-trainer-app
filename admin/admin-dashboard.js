@@ -12,7 +12,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderWelcome } from '../welcome.js';
-import { renderDashboard } from '../student/index.js'; // Fallback for non-admins, now barrel import
+import { renderStudentDashboard } from '../student/index.js'; // Fallback for non-admins, now barrel import
 import { renderAdminProfile } from './admin-profile.js';
 import { getCurrentSchoolBranding } from '../school-branding.js'; // Branding support
 
