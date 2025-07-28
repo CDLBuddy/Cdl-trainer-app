@@ -1,11 +1,11 @@
 // admin-index.js
 
 // === ADMIN MODULE BARREL IMPORTS ===
-import { renderAdminDashboard, currentUserEmail } from ‘./admin-dashboard.js’;
-import { renderAdminProfile }   from ‘./admin-profile.js’;
-import { renderAdminUsers }     from ‘./admin-users.js’;
-import { renderAdminCompanies } from ‘./admin-companies.js’;
-import { renderAdminReports }   from ‘./admin-reports.js’;
+import { renderAdminDashboard, currentUserEmail } from './admin-dashboard.js';
+import { renderAdminProfile } from './admin-profile.js';
+import { renderAdminUsers } from './admin-users.js';
+import { renderAdminCompanies } from './admin-companies.js';
+import { renderAdminReports } from './admin-reports.js';
 
 // — Export all admin pages for navigation.js barrel import —
 export {
@@ -20,19 +20,19 @@ export {
 // === ADMIN NAVIGATION HANDLER ===
 export function handleAdminNav(page, ...args) {
   switch (page) {
-    case “dashboard”:
+    case 'dashboard':
       renderAdminDashboard(...args);
       break;
-    case “profile”:
+    case 'profile':
       renderAdminProfile(...args);
       break;
-    case “users”:
+    case 'users':
       renderAdminUsers(...args);
       break;
-    case “companies”:
+    case 'companies':
       renderAdminCompanies(...args);
       break;
-    case “reports”:
+    case 'reports':
       renderAdminReports(...args);
       break;
     default:
@@ -41,19 +41,19 @@ export function handleAdminNav(page, ...args) {
 }
 
 // — (Optional) Standalone admin entry for direct page loads —
-window.addEventListener(“DOMContentLoaded”, () => {
-  if (location.hash.startsWith(“#admin”)) {
+window.addEventListener('DOMContentLoaded', () => {
+  if (location.hash.startsWith('#admin')) {
     // Example: #admin-users, #admin-companies, #admin-profile, etc.
     const match = location.hash.match(/^#admin-([a-z]+)/);
-    const page = match ? match[1] : “dashboard”;
+    const page = match ? match[1] : 'dashboard';
     handleAdminNav(page);
   }
 });
 
 // — (Optional) Admin-specific popstate handling (not required if global nav already works) —
-window.addEventListener(“popstate”, () => {
-  if (!location.hash.startsWith(“#admin”)) return;
+window.addEventListener('popstate', () => {
+  if (!location.hash.startsWith('#admin')) return;
   const match = location.hash.match(/^#admin-([a-z]+)/);
-  const page = match ? match[1] : “dashboard”;
+  const page = match ? match[1] : 'dashboard';
   handleAdminNav(page);
 });
