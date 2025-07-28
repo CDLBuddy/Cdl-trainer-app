@@ -1,18 +1,19 @@
 // navigation.js
 
 // === ROLE-BASED BARREL IMPORTS ===
-import * as studentPages    from “./student-index.js”;
-import * as instructorPages from “./instructor-index.js”;
-import * as adminPages      from “./admin-index.js”;
-import * as superadminPages from “./superadmin-index.js”;
->>>>>>>-main
-MPORTS =import * as studentPages from './student/index.js';
-import * as instructorPages from './instructor/index.js';
-import * as adminPages from './admin/index.js';
-import * as superadminPages from './superadmin/index.js';
+import * as studentPages from './student-index.js';
+import * as instructorPages from './instructor-index.js';
+import * as adminPages from './admin-index.js';
+import * as superadminPages from './superadmin-index.js';
 
->>>>>>>+origin/main
-) || 'student'
+// === COMMON PAGE IMPORTS ===
+import { renderLogin } from './login.js';
+import { renderWelcome } from './welcome.js';
+
+// === ROLE DETECTOR (universal, robust) ===
+function getCurrentRole() {
+  return (
+    window.currentUserRole || localStorage.getItem('userRole') || 'student'
   );
 }
 
@@ -24,26 +25,36 @@ export function handleNavigation(page, direction = 'forward', ...args) {
   const appEl = document.getElementById('app');
   if (!appEl) return;
 
-  // Accessibility: Remove any modal overlays
+  // Accessibility: Remove any open modals
   document.querySelectorAll('.modal-overlay').forEach((el) => el.remove());
 
-  // Role selection
+  // Determine role and page map
   const role = getCurrentRole();
   let rolePages;
-  if (role === 'superadmin') rolePages = superadminPages;
-  else if (role === 'admin') rolePages = adminPages;
-  else if (role === 'instructor') rolePages = instructorPages;
-  else if (role === 'student') rolePages = studentPages;
-  else rolePages = {};
-
-  // Optional: log for debugging
-  if (NAV_DEBUG) {
-    console.log(`[NAV] Routing "${page}" as role "${role}"`, rolePages);
+  switch (role) {
+    case 'superadmin':
+      rolePages = superadminPages;
+      break;
+    case 'admin':
+      rolePages = adminPages;
+      break;
+    case 'instructor':
+      rolePages = instructorPages;
+      break;
+    case 'student':
+      rolePages = studentPages;
+      break;
+    default:
+      rolePages = {};
   }
 
-  // --- SMART ROUTER SWITCH ---
+  if (NAV_DEBUG) {
+    console.log(`[NAV] Routing to "${page}" as "${role}"`, { args });
+  }
+
+  // === SMART ROUTER SWITCH ===
   switch (page) {
-    // --- SUPERADMIN ROUTES ---
+    // === SUPERADMIN ROUTES ===
     case 'superadmin-dashboard':
       return role === 'superadmin'
         ? rolePages.renderSuperadminDashboard?.(appEl, ...args)
@@ -84,24 +95,35 @@ export function handleNavigation(page, direction = 'forward', ...args) {
         ? rolePages.renderLogs?.(appEl, ...args)
         : renderWelcome(appEl);
 
-    // --- ADMIN ROUTES ---
+    // === ADMIN ROUTES ===
     case 'admin-dashboard':
       return role === 'admin'
         ? rolePages.renderAdminDashboard?.(appEl, ...args)
         : renderWelcome(appEl);
 
-    // ...add more admin routes as needed...
+    case 'users':
+      return role === 'admin'
+        ? rolePages.renderAdminUsers?.(appEl, ...args)
+        : renderWelcome(appEl);
 
-    // --- COMMON ROLE ROUTES ---
-    case 'dashboard':
-      if (NAV_DEBUG)
-        console.log('[NAV] → dashboard with:', rolePages.renderDashboard);
-      return (
-        rolePages.renderDashboard?.(appEl, ...args) || renderWelcome(appEl)
-      );
+    case 'companies':
+      return role === 'admin'
+        ? rolePages.renderAdminCompanies?.(appEl, ...args)
+        : renderWelcome(appEl);
+
+    case 'reports':
+      return role === 'admin'
+        ? rolePages.renderAdminReports?.(appEl, ...args)
+        : renderWelcome(appEl);
 
     case 'profile':
       return rolePages.renderProfile?.(appEl, ...args) || renderWelcome(appEl);
+
+    // === STUDENT / INSTRUCTOR SHARED ROUTES ===
+    case 'dashboard':
+      return (
+        rolePages.renderDashboard?.(appEl, ...args) || renderWelcome(appEl)
+      );
 
     case 'checklists':
       return (
@@ -111,6 +133,11 @@ export function handleNavigation(page, direction = 'forward', ...args) {
     case 'practiceTests':
       return (
         rolePages.renderPracticeTests?.(appEl, ...args) || renderWelcome(appEl)
+      );
+
+    case 'test-review':
+      return (
+        rolePages.renderTestReview?.(appEl, ...args) || renderWelcome(appEl)
       );
 
     case 'flashcards':
@@ -131,14 +158,24 @@ export function handleNavigation(page, direction = 'forward', ...args) {
     case 'coach':
       return rolePages.renderAICoach?.(appEl, ...args) || renderWelcome(appEl);
 
-    // --- INSTRUCTOR-SPECIFIC ---
+    case 'test-engine':
+      return (
+        rolePages.renderTestEngine?.(appEl, ...args) || renderWelcome(appEl)
+      );
+
+    case 'studentprofile':
+      return (
+        instructorPages.renderStudentProfileForInstructor?.(...args) ||
+        renderWelcome(appEl)
+      );
+
     case 'checklistReview':
       return (
         instructorPages.renderChecklistReviewForInstructor?.(...args) ||
         renderWelcome(appEl)
       );
 
-    // --- AUTH / PUBLIC PAGES ---
+    // === AUTH / PUBLIC PAGES ===
     case 'login':
       return renderLogin(appEl, ...args);
 
@@ -146,8 +183,8 @@ export function handleNavigation(page, direction = 'forward', ...args) {
     case 'home':
       return renderWelcome(appEl, ...args);
 
+    // === DEFAULT FALLBACK ===
     default:
-      // Fallback to dashboard for current role
       if (NAV_DEBUG)
         console.warn(`[NAV] Unknown route "${page}" – fallback to dashboard`);
       return (
@@ -162,7 +199,7 @@ window.addEventListener('popstate', () => {
   handleNavigation(page, 'back');
 });
 
-// === INITIAL LOAD SUPPORT (auto-login redirect) ===
+// === INITIAL LOAD SUPPORT ===
 window.addEventListener('DOMContentLoaded', () => {
   if (!window.currentUserEmail) {
     handleNavigation('welcome');
