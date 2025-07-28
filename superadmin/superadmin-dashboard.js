@@ -10,31 +10,24 @@ import {
   renderBilling,
   renderSettings,
   renderLogs,
-  // ...add new imports as you add more features
-} from './index.js';
+} from '../superadmin-index.js'; // <-- Barrel import: from root!
 
 import { showToast, setupNavigation } from '../ui-helpers.js';
 
-// --- Helper: Fetch platform stats (stub, you can make async for live counts) ---
+// --- Helper: Fetch platform stats ---
 async function getSuperadminStats() {
-  // Replace these with Firestore queries if you want live data
-  let schools = 0,
-    users = 0,
-    complianceAlerts = 0;
+  let schools = 0, users = 0, complianceAlerts = 0;
   try {
     const schoolsSnap = await db.collection('schools').get();
     schools = schoolsSnap.size;
     const usersSnap = await db.collection('users').get();
     users = usersSnap.size;
-    // For compliance alerts, you could flag schools/users with missing/expiring compliance
     const alertsSnap = await db
       .collection('complianceAlerts')
       .where('resolved', '==', false)
       .get();
     complianceAlerts = alertsSnap.size;
-  } catch (e) {
-    // fallback: just show zero if query fails
-  }
+  } catch (e) {}
   return { schools, users, complianceAlerts };
 }
 
@@ -44,9 +37,8 @@ export async function renderSuperadminDashboard(
 ) {
   if (!container) return;
 
-  // --- Authentication check (strict superadmin role) ---
-  const currentUserRole =
-    localStorage.getItem('userRole') || window.currentUserRole;
+  // --- Authentication check ---
+  const currentUserRole = localStorage.getItem('userRole') || window.currentUserRole;
   if (currentUserRole !== 'superadmin') {
     showToast('Access denied: Super Admins only.');
     renderWelcome();
@@ -54,16 +46,13 @@ export async function renderSuperadminDashboard(
   }
 
   // --- Fetch superadmin info ---
-  const currentUserEmail =
-    localStorage.getItem('currentUserEmail') || window.currentUserEmail || null;
+  const currentUserEmail = localStorage.getItem('currentUserEmail') || window.currentUserEmail || null;
   let userData = {};
   try {
     const usersRef = db.collection('users');
     const snap = await usersRef.where('email', '==', currentUserEmail).get();
     if (!snap.empty) userData = snap.docs[0].data();
-  } catch (e) {
-    userData = {};
-  }
+  } catch (e) { userData = {}; }
 
   // --- Fetch stats (live) ---
   const { schools, users, complianceAlerts } = await getSuperadminStats();
@@ -121,7 +110,6 @@ export async function renderSuperadminDashboard(
           <p>View platform activity logs, user actions, and system events for security or troubleshooting.</p>
           <button class="btn wide" id="logs-btn">View Logs</button>
         </div>
-        <!-- Add more feature cards here as your app grows -->
       </div>
       <button class="btn outline wide" id="logout-btn" style="margin-top:2.2rem;">
         🚪 Logout
@@ -131,29 +119,24 @@ export async function renderSuperadminDashboard(
 
   setupNavigation();
 
-  // --- Button Event Handlers ---
-  document
-    .getElementById('manage-schools-btn')
-    ?.addEventListener('click', () => {
-      renderSchoolManagement(container);
-    });
-  document.getElementById('manage-users-btn')?.addEventListener('click', () => {
-    renderUserManagement(container);
+  // --- Navigation: use hashes for SPA routing ---
+  document.getElementById('manage-schools-btn')?.addEventListener('click', () => {
+    window.location.hash = '#superadmin-schools';
   });
-  document
-    .getElementById('compliance-center-btn')
-    ?.addEventListener('click', () => {
-      renderComplianceCenter(container);
-    });
+  document.getElementById('manage-users-btn')?.addEventListener('click', () => {
+    window.location.hash = '#superadmin-users';
+  });
+  document.getElementById('compliance-center-btn')?.addEventListener('click', () => {
+    window.location.hash = '#superadmin-compliance';
+  });
   document.getElementById('billing-btn')?.addEventListener('click', () => {
-    renderBilling(container);
+    window.location.hash = '#superadmin-billing';
   });
   document.getElementById('settings-btn')?.addEventListener('click', () => {
-    renderSettings(container);
+    window.location.hash = '#superadmin-settings';
   });
   document.getElementById('logs-btn')?.addEventListener('click', () => {
-    if (typeof renderLogs === 'function') renderLogs(container);
-    else showToast('Logs module coming soon!');
+    window.location.hash = '#superadmin-logs';
   });
   document.getElementById('logout-btn')?.addEventListener('click', async () => {
     await signOut(auth);
