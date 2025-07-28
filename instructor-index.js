@@ -1,17 +1,25 @@
 // instructor-index.js
 
+// === INSTRUCTOR MODULE BARREL IMPORTS ===
+import { renderInstructorDashboard } from './instructor/dashboard-instructor.js';
+import { renderInstructorProfile } from './instructor/instructor-profile.js';
+import { renderChecklistReviewForInstructor } from './instructor/instructor-checklist.js';
+import { renderStudentProfileForInstructor } from './instructor/student-profile.js';
+
 // === INSTRUCTOR MODULE BARREL EXPORTS ===
-export { renderInstructorDashboard } from './instructor/dashboard-instructor.js';
-export { renderInstructorProfile } from './instructor/instructor-profile.js';
-export { renderChecklistReviewForInstructor } from './instructor/instructor-checklist.js';
-export { renderStudentProfileForInstructor } from './instructor/student-profile.js';
+export {
+  renderInstructorDashboard,
+  renderInstructorProfile,
+  renderChecklistReviewForInstructor,
+  renderStudentProfileForInstructor,
+};
 
 // === INSTRUCTOR NAVIGATION HANDLER ===
 export function handleInstructorNav(page, ...args) {
   const container = args[1] || document.getElementById('app');
   window.currentUserRole = 'instructor';
 
-  switch (page?.toLowerCase()) {
+  switch ((page || '').toLowerCase()) {
     case 'dashboard':
       renderInstructorDashboard(container);
       break;
@@ -30,7 +38,7 @@ export function handleInstructorNav(page, ...args) {
   }
 }
 
-// --- Standalone hash route support ---
+// --- (Optional) Standalone instructor entry for direct page loads ---
 window.addEventListener('DOMContentLoaded', () => {
   if (location.hash.startsWith('#instructor')) {
     const match = location.hash.match(/^#instructor-([a-zA-Z]+)/);
@@ -39,6 +47,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// --- (Optional) Instructor-specific popstate handling ---
 window.addEventListener('popstate', () => {
   if (!location.hash.startsWith('#instructor')) return;
   const match = location.hash.match(/^#instructor-([a-zA-Z]+)/);

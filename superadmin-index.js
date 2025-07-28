@@ -1,22 +1,35 @@
 // superadmin-index.js
 
+// === SUPERADMIN MODULE BARREL IMPORTS ===
+import { renderSuperadminDashboard } from './superadmin/superadmin-dashboard.js';
+import { renderSchoolManagement } from './superadmin/school-management.js';
+import { renderUserManagement } from './superadmin/user-management.js';
+import { renderComplianceCenter } from './superadmin/compliance.js';
+import { renderBilling } from './superadmin/billing.js';
+import { renderSettings } from './superadmin/settings.js';
+import { renderPermissions } from './superadmin/permissions.js';
+import { renderLogs } from './superadmin/logs.js';
+// Add new imports as needed...
+
 // === SUPERADMIN MODULE BARREL EXPORTS ===
-export { renderSuperadminDashboard } from './superadmin/superadmin-dashboard.js';
-export { renderSchoolManagement } from './superadmin/school-management.js';
-export { renderUserManagement } from './superadmin/user-management.js';
-export { renderComplianceCenter } from './superadmin/compliance.js';
-export { renderBilling } from './superadmin/billing.js';
-export { renderSettings } from './superadmin/settings.js';
-export { renderPermissions } from './superadmin/permissions.js';
-export { renderLogs } from './superadmin/logs.js';
-// Add new exports as needed...
+export {
+  renderSuperadminDashboard,
+  renderSchoolManagement,
+  renderUserManagement,
+  renderComplianceCenter,
+  renderBilling,
+  renderSettings,
+  renderPermissions,
+  renderLogs,
+  // Add new exports as needed...
+};
 
 // === SUPERADMIN NAVIGATION HANDLER ===
 export function handleSuperadminNav(page, ...args) {
   const container = args[1] || document.getElementById('app');
   window.currentUserRole = 'superadmin';
 
-  switch (page) {
+  switch ((page || '').toLowerCase()) {
     case 'dashboard':
       renderSuperadminDashboard(container);
       break;
@@ -43,10 +56,11 @@ export function handleSuperadminNav(page, ...args) {
       break;
     default:
       renderSuperadminDashboard(container);
+      break;
   }
 }
 
-// --- (Optional) Standalone superadmin entry for direct page loads ---
+// --- Standalone hash route support ---
 window.addEventListener('DOMContentLoaded', () => {
   if (location.hash.startsWith('#superadmin')) {
     const match = location.hash.match(/^#superadmin-([a-zA-Z]+)/);
@@ -55,7 +69,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// --- (Optional) Superadmin-specific popstate handling ---
 window.addEventListener('popstate', () => {
   if (!location.hash.startsWith('#superadmin')) return;
   const match = location.hash.match(/^#superadmin-([a-zA-Z]+)/);
