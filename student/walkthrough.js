@@ -54,7 +54,9 @@ const visualRecall = [
 ];
 
 // --- Main Walkthrough Renderer ---
-export async function renderWalkthrough(container = document.getElementById('app')) {
+export async function renderWalkthrough(
+  container = document.getElementById('app')
+) {
   if (!container) return;
 
   // User/session validation
@@ -153,12 +155,16 @@ export async function renderWalkthrough(container = document.getElementById('app
   `;
   container.innerHTML = content;
 
-  document.getElementById('back-to-dashboard-btn')?.addEventListener('click', () => {
-    renderStudentDashboard();
-  });
-  container.querySelector('[data-nav="profile"]')?.addEventListener('click', () => {
-    renderProfile();
-  });
+  document
+    .getElementById('back-to-dashboard-btn')
+    ?.addEventListener('click', () => {
+      renderStudentDashboard();
+    });
+  container
+    .querySelector('[data-nav="profile"]')
+    ?.addEventListener('click', () => {
+      renderProfile();
+    });
 
   // --- Confetti ---
   function showConfetti() {
@@ -192,13 +198,18 @@ export async function renderWalkthrough(container = document.getElementById('app
         [`drills.${type}`]: true,
         [`drills.${type}CompletedAt`]: new Date().toISOString(),
       });
-      const completedCount = Object.values(completedDrills).filter(Boolean).length;
+      const completedCount =
+        Object.values(completedDrills).filter(Boolean).length;
       document.querySelector('progress').value = completedCount;
       document.querySelector('progress').nextElementSibling.textContent =
         `${completedCount}/4 drills completed`;
-      document.querySelector(`[data-drill='${type}']`).classList.add('drill-done');
-      document.querySelector(`[data-drill='${type}']`).innerHTML = document
-        .querySelector(`[data-drill='${type}']`).innerHTML.replace('✅', '') + ' ✅';
+      document
+        .querySelector(`[data-drill='${type}']`)
+        .classList.add('drill-done');
+      document.querySelector(`[data-drill='${type}']`).innerHTML =
+        document
+          .querySelector(`[data-drill='${type}']`)
+          .innerHTML.replace('✅', '') + ' ✅';
       if (Object.values(completedDrills).every(Boolean)) {
         showConfetti();
         showToast('🎉 All drills complete! Walkthrough milestone saved.');
@@ -288,7 +299,8 @@ export async function renderWalkthrough(container = document.getElementById('app
     // Ordered Steps Handler (Drag & Drop)
     if (drillType === 'order') {
       const list = drillsContainer.querySelector('#order-list');
-      let draggingEl = null, dragIdx = null;
+      let draggingEl = null,
+        dragIdx = null;
       list.querySelectorAll('.order-step').forEach((li, idx) => {
         li.draggable = true;
         li.ondragstart = (e) => {
@@ -310,7 +322,9 @@ export async function renderWalkthrough(container = document.getElementById('app
         };
       });
       drillsContainer.querySelector('#check-order-btn').onclick = () => {
-        const order = Array.from(list.children).map((li) => li.textContent.trim());
+        const order = Array.from(list.children).map((li) =>
+          li.textContent.trim()
+        );
         let correct = true;
         for (let i = 0; i < brakeCheckSteps.length; i++) {
           if (order[i] !== brakeCheckSteps[i]) correct = false;
@@ -320,7 +334,8 @@ export async function renderWalkthrough(container = document.getElementById('app
           res.innerHTML = '✅ Correct order!';
           markDrillComplete('order');
         } else {
-          res.innerHTML = '❌ Try again! Drag the steps into the correct order.';
+          res.innerHTML =
+            '❌ Try again! Drag the steps into the correct order.';
         }
       };
     }

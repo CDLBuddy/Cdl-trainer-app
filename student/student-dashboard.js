@@ -18,14 +18,16 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
 import { renderProfile } from './profile.js';
-import { renderAICoach } from './ai-coach.js';
+import { renderAICoach } from './a-i-coach.js';
 import { renderWalkthrough } from './walkthrough.js';
 import { renderChecklists } from './checklists.js';
 import { renderPracticeTests } from './practice-tests.js';
 import { renderFlashcards } from './flashcards.js';
 
 // ========== MAIN DASHBOARD RENDERER ==========
-export async function renderStudentDashboard(container = document.getElementById('app')) {
+export async function renderStudentDashboard(
+  container = document.getElementById('app')
+) {
   if (!container) return;
 
   // --- Always resolve user (never cache old) ---
@@ -216,23 +218,41 @@ export async function renderStudentDashboard(container = document.getElementById
   setupNavigation();
 
   // ========== EVENT HANDLERS ==========
-  document.getElementById('edit-student-profile-btn')?.addEventListener('click', renderProfile);
-  container.querySelector('.rail-btn.profile')?.addEventListener('click', renderProfile);
-  container.querySelector('.rail-btn.checklist')?.addEventListener('click', renderChecklists);
-  container.querySelector('.rail-btn.testing')?.addEventListener('click', renderPracticeTests);
-  container.querySelector('.rail-btn.flashcards')?.addEventListener('click', renderFlashcards);
+  document
+    .getElementById('edit-student-profile-btn')
+    ?.addEventListener('click', renderProfile);
+  container
+    .querySelector('.rail-btn.profile')
+    ?.addEventListener('click', renderProfile);
+  container
+    .querySelector('.rail-btn.checklist')
+    ?.addEventListener('click', renderChecklists);
+  container
+    .querySelector('.rail-btn.testing')
+    ?.addEventListener('click', renderPracticeTests);
+  container
+    .querySelector('.rail-btn.flashcards')
+    ?.addEventListener('click', renderFlashcards);
 
   // Walkthrough button
-  container.querySelector('button[data-nav="walkthrough"]')?.addEventListener('click', renderWalkthrough);
+  container
+    .querySelector('button[data-nav="walkthrough"]')
+    ?.addEventListener('click', renderWalkthrough);
 
   // AI Tip of the Day
-  document.getElementById('ai-tip-btn')?.addEventListener('click', renderAICoach);
+  document
+    .getElementById('ai-tip-btn')
+    ?.addEventListener('click', renderAICoach);
 
   // Last Test Card
-  container.querySelector('.last-test-card button[data-nav="practiceTests"]')?.addEventListener('click', renderPracticeTests);
+  container
+    .querySelector('.last-test-card button[data-nav="practiceTests"]')
+    ?.addEventListener('click', renderPracticeTests);
 
   // AI Coach Floating Button
-  document.getElementById('ai-coach-fab')?.addEventListener('click', renderAICoach);
+  document
+    .getElementById('ai-coach-fab')
+    ?.addEventListener('click', renderAICoach);
 
   // Logout
   document.getElementById('logout-btn')?.addEventListener('click', async () => {

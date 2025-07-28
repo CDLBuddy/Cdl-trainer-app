@@ -42,28 +42,28 @@ export async function renderTestResults(
     </div>
   `;
 
-// --- FETCH RESULTS FOR CURRENT USER (student) OR ALL STUDENTS (admin/instructor) ---
-let results = [];
-let students = {}; // email => profile map for instructors/admins
-let isStaff =
-  userRole === 'admin' ||
-  userRole === 'instructor' ||
-  userRole === 'superadmin';
+  // --- FETCH RESULTS FOR CURRENT USER (student) OR ALL STUDENTS (admin/instructor) ---
+  let results = [];
+  let students = {}; // email => profile map for instructors/admins
+  let isStaff =
+    userRole === 'admin' ||
+    userRole === 'instructor' ||
+    userRole === 'superadmin';
 
-try {
-  // For instructors/admins: fetch all visible students, else fetch self
-  let studentFilterEmails = [currentUserEmail];
+  try {
+    // For instructors/admins: fetch all visible students, else fetch self
+    let studentFilterEmails = [currentUserEmail];
 
-  if (isStaff) {
-    // For now, get ALL students (upgrade to filter for assigned students when you implement it!)
-    const userSnap = await getDocs(
-      query(collection(db, 'users'), where('role', '==', 'student'))
-    );
-    userSnap.docs.forEach((doc) => {
-      students[doc.data().email] = doc.data();
-    });
-    studentFilterEmails = Object.keys(students);
-  }
+    if (isStaff) {
+      // For now, get ALL students (upgrade to filter for assigned students when you implement it!)
+      const userSnap = await getDocs(
+        query(collection(db, 'users'), where('role', '==', 'student'))
+      );
+      userSnap.docs.forEach((doc) => {
+        students[doc.data().email] = doc.data();
+      });
+      studentFilterEmails = Object.keys(students);
+    }
 
     // Get test results for these users
     let allResults = [];

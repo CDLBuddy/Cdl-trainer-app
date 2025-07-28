@@ -16,7 +16,9 @@ import { showToast, setupNavigation } from '../ui-helpers.js';
 
 // --- Helper: Fetch platform stats ---
 async function getSuperadminStats() {
-  let schools = 0, users = 0, complianceAlerts = 0;
+  let schools = 0,
+    users = 0,
+    complianceAlerts = 0;
   try {
     const schoolsSnap = await db.collection('schools').get();
     schools = schoolsSnap.size;
@@ -38,7 +40,8 @@ export async function renderSuperadminDashboard(
   if (!container) return;
 
   // --- Authentication check ---
-  const currentUserRole = localStorage.getItem('userRole') || window.currentUserRole;
+  const currentUserRole =
+    localStorage.getItem('userRole') || window.currentUserRole;
   if (currentUserRole !== 'superadmin') {
     showToast('Access denied: Super Admins only.');
     renderWelcome();
@@ -46,13 +49,16 @@ export async function renderSuperadminDashboard(
   }
 
   // --- Fetch superadmin info ---
-  const currentUserEmail = localStorage.getItem('currentUserEmail') || window.currentUserEmail || null;
+  const currentUserEmail =
+    localStorage.getItem('currentUserEmail') || window.currentUserEmail || null;
   let userData = {};
   try {
     const usersRef = db.collection('users');
     const snap = await usersRef.where('email', '==', currentUserEmail).get();
     if (!snap.empty) userData = snap.docs[0].data();
-  } catch (e) { userData = {}; }
+  } catch (e) {
+    userData = {};
+  }
 
   // --- Fetch stats (live) ---
   const { schools, users, complianceAlerts } = await getSuperadminStats();
@@ -120,15 +126,19 @@ export async function renderSuperadminDashboard(
   setupNavigation();
 
   // --- Navigation: use hashes for SPA routing ---
-  document.getElementById('manage-schools-btn')?.addEventListener('click', () => {
-    window.location.hash = '#superadmin-schools';
-  });
+  document
+    .getElementById('manage-schools-btn')
+    ?.addEventListener('click', () => {
+      window.location.hash = '#superadmin-schools';
+    });
   document.getElementById('manage-users-btn')?.addEventListener('click', () => {
     window.location.hash = '#superadmin-users';
   });
-  document.getElementById('compliance-center-btn')?.addEventListener('click', () => {
-    window.location.hash = '#superadmin-compliance';
-  });
+  document
+    .getElementById('compliance-center-btn')
+    ?.addEventListener('click', () => {
+      window.location.hash = '#superadmin-compliance';
+    });
   document.getElementById('billing-btn')?.addEventListener('click', () => {
     window.location.hash = '#superadmin-billing';
   });

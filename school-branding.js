@@ -32,7 +32,8 @@ export function getCurrentSchoolBranding() {
 // === Save school selection, update CSS var for theming ===
 export function setCurrentSchool(schoolId) {
   localStorage.setItem('schoolId', schoolId);
-  const brand = SCHOOL_BRANDS.find((s) => s.id === schoolId) || SCHOOL_BRANDS[0];
+  const brand =
+    SCHOOL_BRANDS.find((s) => s.id === schoolId) || SCHOOL_BRANDS[0];
   if (brand.primaryColor)
     document.documentElement.style.setProperty(
       '--brand-primary',

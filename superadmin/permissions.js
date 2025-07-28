@@ -172,7 +172,13 @@ export async function renderPermissions(
                       <td><span class="role-badge ${user.role || 'student'}">${user.role || 'student'}</span></td>
                       <td>
                         <select class="role-select" data-user-id="${user.id}">
-                          ${['superadmin','admin','instructor','student','custom']
+                          ${[
+                            'superadmin',
+                            'admin',
+                            'instructor',
+                            'student',
+                            'custom',
+                          ]
                             .map(
                               (role) =>
                                 `<option value="${role}" ${user.role === role ? 'selected' : ''}>${role.charAt(0).toUpperCase() + role.slice(1)}</option>`

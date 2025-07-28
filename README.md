@@ -10,6 +10,7 @@ CDL Trainer is a next-generation, multi-school platform for CDL students, instru
 Built with a modern modular ES module architecture and premium glassmorphism UI.
 
 **Key Features:**
+
 - 🔒 Secure, multi-role login (student, instructor, admin)
 - 🎨 Brand-customizable for any CDL school (logos, colors, subheadline)
 - 📝 Automated checklists & real-time progress tracking
@@ -36,28 +37,32 @@ Built with a modern modular ES module architecture and premium glassmorphism UI.
 ## Quick Start (Local Dev)
 
 1. **Clone the repo:**
-    ```sh
-    git clone https://github.com/your-org/cdl-trainer.git
-    cd cdl-trainer
-    ```
+
+   ```sh
+   git clone https://github.com/your-org/cdl-trainer.git
+   cd cdl-trainer
+   ```
 
 2. **Install and configure:**
-    - Copy your Firebase config to `firebase.js`
-    - (Optional) Update `school-branding.js` with your school’s info
+   - Copy your Firebase config to `firebase.js`
+   - (Optional) Update `school-branding.js` with your school’s info
 
 3. **Serve locally (with any static server):**
-    ```sh
-    npx serve .
-    ```
-    or open `index.html` directly if your browser supports ES modules.
+
+   ```sh
+   npx serve .
+   ```
+
+   or open `index.html` directly if your browser supports ES modules.
 
 4. **Deploy:**
-    - Push to GitHub + connect to Vercel/Netlify (recommended for CI/CD)
-    - Or host on your own server
+   - Push to GitHub + connect to Vercel/Netlify (recommended for CI/CD)
+   - Or host on your own server
 
 —
 
 ## Project Structure
+
 public
 ├── index.html
 ├── style.css
@@ -67,9 +72,9 @@ public
 ├── navigation.js
 ├── school-branding.js
 ├── dashboard/
-│     ├── student-dashboard.js
-│     ├── instructor-dashboard.js
-│     └── admin-dashboard.js
+│ ├── student-dashboard.js
+│ ├── instructor-dashboard.js
+│ └── admin-dashboard.js
 ├── checklists.js
 ├── walkthrough.js
 ├── flashcards.js

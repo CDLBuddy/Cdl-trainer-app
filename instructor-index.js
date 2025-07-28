@@ -1,10 +1,10 @@
 // instructor-index.js
 
 // === INSTRUCTOR MODULE BARREL IMPORTS ===
-import { renderInstructorDashboard }         from './instructor/dashboard-instructor.js';
-import { renderInstructorProfile }           from './instructor/instructor-profile.js';
+import { renderInstructorDashboard } from './instructor/instructor-dashboard.js';
+import { renderInstructorProfile } from './instructor/instructor-profile.js';
 import { renderChecklistReviewForInstructor } from './instructor/instructor-checklist.js';
-import { renderStudentProfileForInstructor }  from './instructor/student-profile.js';
+import { renderStudentProfileForInstructor } from './instructor/student-profile.js';
 
 // === BARREL EXPORTS ===
 export {

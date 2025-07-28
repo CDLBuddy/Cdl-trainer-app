@@ -15,7 +15,9 @@ function formatDate(d) {
 }
 
 // === MAIN BILLING PAGE ===
-export async function renderBilling(container = document.getElementById('app')) {
+export async function renderBilling(
+  container = document.getElementById('app')
+) {
   if (!container) return;
 
   // Fetch all schools and their billing info
@@ -61,7 +63,8 @@ export async function renderBilling(container = document.getElementById('app')) 
                     .map((school) => {
                       // --- Overdue badges ---
                       const overdue =
-                        school.renewalDate && new Date(school.renewalDate) < new Date();
+                        school.renewalDate &&
+                        new Date(school.renewalDate) < new Date();
                       return `
                 <tr>
                   <td>${school.name || '-'}</td>

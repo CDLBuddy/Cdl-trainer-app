@@ -240,7 +240,8 @@ export async function renderSettings(
             renderSettings(container);
           });
       } else {
-        container.querySelector('#school-settings-form-container').innerHTML = '';
+        container.querySelector('#school-settings-form-container').innerHTML =
+          '';
       }
     });
 
@@ -279,7 +280,9 @@ export async function renderSettings(
         .join('');
 
   // --- Routing: Back to dashboard with hash ---
-  container.querySelector('#back-to-superadmin-dashboard-btn')?.addEventListener('click', () => {
-    window.location.hash = '#superadmin-dashboard';
-  });
+  container
+    .querySelector('#back-to-superadmin-dashboard-btn')
+    ?.addEventListener('click', () => {
+      window.location.hash = '#superadmin-dashboard';
+    });
 }

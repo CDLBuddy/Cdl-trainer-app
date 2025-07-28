@@ -2,16 +2,16 @@
 
 // === STUDENT MODULE BARREL IMPORTS ===
 import { renderStudentDashboard } from './student/student-dashboard.js';
-import { renderProfile }          from './student/profile.js';
-import { renderAICoach }         from './student/ai-coach.js';
-import { renderWalkthrough }     from './student/walkthrough.js';
-import { renderChecklists }      from './student/checklists.js';
-import { renderPracticeTests }   from './student/practice-tests.js';
-import { renderTestReview }      from './student/test-review.js';
-import { renderFlashcards }      from './student/flashcards.js';
-import { renderTestResults }     from './student/test-results.js';
-import { renderTestEngine }      from './student/test-engine.js';
-import { askCDLAI }              from './student/ai-api.js';
+import { renderProfile } from './student/profile.js';
+import { renderAICoach } from './student/a-i-coach.js';
+import { renderWalkthrough } from './student/walkthrough.js';
+import { renderChecklists } from './student/checklists.js';
+import { renderPracticeTests } from './student/practice-tests.js';
+import { renderTestReview } from './student/test-review.js';
+import { renderFlashcards } from './student/flashcards.js';
+import { renderTestResults } from './student/test-results.js';
+import { renderTestEngine } from './student/test-engine.js';
+import { askCDLAI } from './student/ai-api.js';
 
 // === BARREL EXPORTS ===
 export {

@@ -2,13 +2,13 @@
 
 // === SUPERADMIN MODULE BARREL IMPORTS ===
 import { renderSuperadminDashboard } from './superadmin/superadmin-dashboard.js';
-import { renderSchoolManagement }    from './superadmin/school-management.js';
-import { renderUserManagement }      from './superadmin/user-management.js';
-import { renderComplianceCenter }    from './superadmin/compliance.js';
-import { renderBilling }             from './superadmin/billing.js';
-import { renderSettings }            from './superadmin/settings.js';
-import { renderPermissions }         from './superadmin/permissions.js';
-import { renderLogs }                from './superadmin/logs.js';
+import { renderSchoolManagement } from './superadmin/school-management.js';
+import { renderUserManagement } from './superadmin/user-management.js';
+import { renderComplianceCenter } from './superadmin/compliance-center.js';
+import { renderBilling } from './superadmin/billing.js';
+import { renderSettings } from './superadmin/settings.js';
+import { renderPermissions } from './superadmin/permissions.js';
+import { renderLogs } from './superadmin/logs.js';
 // Add new imports as needed...
 
 // === SUPERADMIN MODULE BARREL EXPORTS ===

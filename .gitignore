@@ -138,3 +138,8 @@ tools/
 uploads/
 tmp/
 temp/
+
+# ----------------------------------------
+# 🧪 LOCAL DIAGNOSTIC SCRIPTS (DEV ONLY)
+# ----------------------------------------
+route-diagnostic-checker.js

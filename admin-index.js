@@ -1,11 +1,14 @@
 // admin-index.js
 
 // === ADMIN MODULE BARREL IMPORTS ===
-import { renderAdminDashboard, currentUserEmail } from './admin/admin-dashboard.js';
-import { renderAdminProfile }   from './admin/admin-profile.js';
-import { renderAdminUsers }     from './admin/admin-users.js';
+import {
+  renderAdminDashboard,
+  currentUserEmail,
+} from './admin/admin-dashboard.js';
+import { renderAdminProfile } from './admin/admin-profile.js';
+import { renderAdminUsers } from './admin/admin-users.js';
 import { renderAdminCompanies } from './admin/admin-companies.js';
-import { renderAdminReports }   from './admin/admin-reports.js';
+import { renderAdminReports } from './admin/admin-reports.js';
 
 // === ADMIN MODULE BARREL EXPORTS ===
 export {

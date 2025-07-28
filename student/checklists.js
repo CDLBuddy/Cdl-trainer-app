@@ -260,8 +260,7 @@ export async function renderChecklists(
                         </li>
                       `
                         )
-                        .join('')
-                    }
+                        .join('')}
                     </ul>
                   `
                       : ''

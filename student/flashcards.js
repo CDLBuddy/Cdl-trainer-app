@@ -29,7 +29,7 @@ const defaultFlashcards = [
   },
   {
     q: 'What triggers the spring brake pop-out?',
-    a: 'Low air pressure (between 20–45 PSI).',
+    a: 'Low air pressure (between 20-45 PSI).',
   },
 ];
 

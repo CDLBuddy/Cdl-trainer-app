@@ -10,6 +10,27 @@
  * Export user data as CSV.
  * @param {Array} users - Array of user objects.
  */
+// Renders the Admin Reports page (stub - replace with your real logic)
+export function renderAdminReports(container = document.getElementById('app')) {
+  if (!container) return;
+  container.innerHTML = `
+    <div class="screen-wrapper fade-in" style="max-width:860px;margin:0 auto;">
+      <h2 class="dash-head">📄 Admin Reports</h2>
+      <p>Use the buttons below to export user or company data as CSV or PDF.<br>
+      (Feature: Export more reports coming soon!)</p>
+      <div style="display:flex;gap:1em;flex-wrap:wrap;margin:1.5em 0;">
+        <button class="btn wide" onclick="window.exportUsersToCSV && exportUsersToCSV(window.adminUserList)">Export Users (CSV)</button>
+        <button class="btn wide" onclick="window.exportUsersToPDF && exportUsersToPDF(window.adminUserList)">Export Users (PDF)</button>
+        <button class="btn wide" onclick="window.exportCompaniesToCSV && exportCompaniesToCSV(window.adminCompanyList)">Export Companies (CSV)</button>
+        <button class="btn wide" onclick="window.exportCompaniesToPDF && exportCompaniesToPDF(window.adminCompanyList)">Export Companies (PDF)</button>
+      </div>
+      <div class="dashboard-card">
+        <b>Tips:</b> Make sure user and company data is loaded before exporting. Only users with admin privileges can export reports.
+      </div>
+    </div>
+  `;
+}
+
 export function exportUsersToCSV(users) {
   if (!users?.length) return alert('No users to export.');
   const headers = [
