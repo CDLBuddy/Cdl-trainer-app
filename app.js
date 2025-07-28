@@ -1,4 +1,3 @@
-// app.js
 // ======== DEBUG/DEV TRAP ========
 console.log('✅ app.js loaded!');
 window.onerror = function (msg, src, lineno, col, error) {
@@ -28,10 +27,11 @@ import { handleNavigation } from './navigation.js';
 import { renderWelcome } from './welcome.js';
 import { renderLogin } from './login.js';
 import { renderSignup } from './signup.js';
-import * as studentPages from './student/index.js';
-import * as instructorPages from './instructor/index.js';
-import * as adminPages from './admin/index.js';
-import * as superadminPages from './superadmin/index.js';
+// === ROLE INDEX IMPORTS (UPDATED for root) ===
+import * as studentPages from './student-index.js';
+import * as instructorPages from './instructor-index.js';
+import * as adminPages from './admin-index.js';
+import * as superadminPages from './superadmin-index.js';
 import {
   getCurrentSchoolBranding,
   setCurrentSchool,
