@@ -1,10 +1,10 @@
 // navigation.js
 
 // === ROLE-BASED BARREL IMPORTS ===
-import * as studentPages from './student-index.js';
-import * as instructorPages from './instructor-index.js';
-import * as adminPages from './admin-index.js';
-import * as superadminPages from './superadmin-index.js';
+import * as studentPages from './student/index.js';
+import * as instructorPages from './instructor/index.js';
+import * as adminPages from './admin/index.js';
+import * as superadminPages from './superadmin/index.js';
 
 // === COMMON PAGE IMPORTS ===
 import { renderLogin } from './login.js';
