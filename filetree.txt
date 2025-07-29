@@ -1,0 +1,2317 @@
+Folder PATH listing
+Volume serial number is 941B-6EDC
+C:.
+¦   .gitignore
+¦   .prettierrc
+¦   app.js
+¦   Cdl-trainer-app.code-workspace
+¦   eslint.config.mjs
+¦   filetree.txt
+¦   firebase.js
+¦   index.html
+¦   login.js
+¦   navigation.js
+¦   package-lock.json
+¦   package.json
+¦   README.md
+¦   reset-password.js
+¦   route-diagnostic-checker.js
+¦   school-branding.js
+¦   school-switching.js
+¦   signup.js
+¦   style.css
+¦   ui-helpers.js
+¦   welcome.js
+¦   
++---admin
+¦       admin-companies.js
+¦       admin-dashboard.js
+¦       admin-profile.js
+¦       admin-reports.js
+¦       admin-users.js
+¦       index.js
+¦       
++---instructor
+¦       checklist-review-for-instructor.js
+¦       index.js
+¦       instructor-dashboard.js
+¦       instructor-profile.js
+¦       student-profile-for-instructor.js
+¦       
++---node_modules
+¦   ¦   .package-lock.json
+¦   ¦   
+¦   +---.bin
+¦   ¦       acorn
+¦   ¦       acorn.cmd
+¦   ¦       acorn.ps1
+¦   ¦       eslint
+¦   ¦       eslint-config-prettier
+¦   ¦       eslint-config-prettier.cmd
+¦   ¦       eslint-config-prettier.ps1
+¦   ¦       eslint.cmd
+¦   ¦       eslint.ps1
+¦   ¦       js-yaml
+¦   ¦       js-yaml.cmd
+¦   ¦       js-yaml.ps1
+¦   ¦       node-which
+¦   ¦       node-which.cmd
+¦   ¦       node-which.ps1
+¦   ¦       prettier
+¦   ¦       prettier.cmd
+¦   ¦       prettier.ps1
+¦   ¦       
+¦   +---.cache
+¦   ¦   +---prettier
+¦   +---@eslint
+¦   ¦   +---config-array
+¦   ¦   ¦   ¦   LICENSE
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---dist
+¦   ¦   ¦       +---cjs
+¦   ¦   ¦       ¦   ¦   index.cjs
+¦   ¦   ¦       ¦   ¦   index.d.cts
+¦   ¦   ¦       ¦   ¦   types.ts
+¦   ¦   ¦       ¦   ¦   
+¦   ¦   ¦       ¦   +---std__path
+¦   ¦   ¦       ¦           posix.cjs
+¦   ¦   ¦       ¦           windows.cjs
+¦   ¦   ¦       ¦           
+¦   ¦   ¦       +---esm
+¦   ¦   ¦           ¦   index.d.ts
+¦   ¦   ¦           ¦   index.js
+¦   ¦   ¦           ¦   types.d.ts
+¦   ¦   ¦           ¦   types.ts
+¦   ¦   ¦           ¦   
+¦   ¦   ¦           +---std__path
+¦   ¦   ¦                   posix.js
+¦   ¦   ¦                   windows.js
+¦   ¦   ¦                   
+¦   ¦   +---config-helpers
+¦   ¦   ¦   ¦   LICENSE
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---dist
+¦   ¦   ¦       +---cjs
+¦   ¦   ¦       ¦       index.cjs
+¦   ¦   ¦       ¦       index.d.cts
+¦   ¦   ¦       ¦       types.cts
+¦   ¦   ¦       ¦       
+¦   ¦   ¦       +---esm
+¦   ¦   ¦               index.d.ts
+¦   ¦   ¦               index.js
+¦   ¦   ¦               types.d.ts
+¦   ¦   ¦               types.ts
+¦   ¦   ¦               
+¦   ¦   +---core
+¦   ¦   ¦   ¦   LICENSE
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---dist
+¦   ¦   ¦       +---cjs
+¦   ¦   ¦       ¦       types.d.cts
+¦   ¦   ¦       ¦       
+¦   ¦   ¦       +---esm
+¦   ¦   ¦               types.d.ts
+¦   ¦   ¦               
+¦   ¦   +---css
+¦   ¦   ¦   ¦   LICENSE
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---dist
+¦   ¦   ¦   ¦   +---cjs
+¦   ¦   ¦   ¦   ¦       index.cjs
+¦   ¦   ¦   ¦   ¦       index.d.cts
+¦   ¦   ¦   ¦   ¦       types.cts
+¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   +---esm
+¦   ¦   ¦   ¦           index.d.ts
+¦   ¦   ¦   ¦           index.js
+¦   ¦   ¦   ¦           types.d.ts
+¦   ¦   ¦   ¦           types.ts
+¦   ¦   ¦   ¦           
+¦   ¦   ¦   +---node_modules
+¦   ¦   ¦       +---@eslint
+¦   ¦   ¦           +---core
+¦   ¦   ¦               ¦   LICENSE
+¦   ¦   ¦               ¦   package.json
+¦   ¦   ¦               ¦   README.md
+¦   ¦   ¦               ¦   
+¦   ¦   ¦               +---dist
+¦   ¦   ¦                   +---cjs
+¦   ¦   ¦                   ¦       types.d.cts
+¦   ¦   ¦                   ¦       
+¦   ¦   ¦                   +---esm
+¦   ¦   ¦                           types.d.ts
+¦   ¦   ¦                           
+¦   ¦   +---css-tree
+¦   ¦   ¦   ¦   LICENSE
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---cjs
+¦   ¦   ¦   ¦   ¦   data-patch.cjs
+¦   ¦   ¦   ¦   ¦   data.cjs
+¦   ¦   ¦   ¦   ¦   index.cjs
+¦   ¦   ¦   ¦   ¦   version.cjs
+¦   ¦   ¦   ¦   ¦   
+¦   ¦   ¦   ¦   +---convertor
+¦   ¦   ¦   ¦   ¦       create.cjs
+¦   ¦   ¦   ¦   ¦       index.cjs
+¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   +---definition-syntax
+¦   ¦   ¦   ¦   ¦       generate.cjs
+¦   ¦   ¦   ¦   ¦       index.cjs
+¦   ¦   ¦   ¦   ¦       parse.cjs
+¦   ¦   ¦   ¦   ¦       scanner.cjs
+¦   ¦   ¦   ¦   ¦       SyntaxError.cjs
+¦   ¦   ¦   ¦   ¦       walk.cjs
+¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   +---generator
+¦   ¦   ¦   ¦   ¦       create.cjs
+¦   ¦   ¦   ¦   ¦       index.cjs
+¦   ¦   ¦   ¦   ¦       sourceMap.cjs
+¦   ¦   ¦   ¦   ¦       token-before.cjs
+¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   +---lexer
+¦   ¦   ¦   ¦   ¦       error.cjs
+¦   ¦   ¦   ¦   ¦       generic-an-plus-b.cjs
+¦   ¦   ¦   ¦   ¦       generic-const.cjs
+¦   ¦   ¦   ¦   ¦       generic-urange.cjs
+¦   ¦   ¦   ¦   ¦       generic.cjs
+¦   ¦   ¦   ¦   ¦       index.cjs
+¦   ¦   ¦   ¦   ¦       Lexer.cjs
+¦   ¦   ¦   ¦   ¦       match-graph.cjs
+¦   ¦   ¦   ¦   ¦       match.cjs
+¦   ¦   ¦   ¦   ¦       prepare-tokens.cjs
+¦   ¦   ¦   ¦   ¦       search.cjs
+¦   ¦   ¦   ¦   ¦       structure.cjs
+¦   ¦   ¦   ¦   ¦       trace.cjs
+¦   ¦   ¦   ¦   ¦       units.cjs
+¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   +---parser
+¦   ¦   ¦   ¦   ¦       create.cjs
+¦   ¦   ¦   ¦   ¦       index.cjs
+¦   ¦   ¦   ¦   ¦       parse-selector.cjs
+¦   ¦   ¦   ¦   ¦       sequence.cjs
+¦   ¦   ¦   ¦   ¦       SyntaxError.cjs
+¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   +---syntax
+¦   ¦   ¦   ¦   ¦   ¦   create.cjs
+¦   ¦   ¦   ¦   ¦   ¦   index.cjs
+¦   ¦   ¦   ¦   ¦   ¦   
+¦   ¦   ¦   ¦   ¦   +---atrule
+¦   ¦   ¦   ¦   ¦   ¦       container.cjs
+¦   ¦   ¦   ¦   ¦   ¦       font-face.cjs
+¦   ¦   ¦   ¦   ¦   ¦       import.cjs
+¦   ¦   ¦   ¦   ¦   ¦       index.cjs
+¦   ¦   ¦   ¦   ¦   ¦       layer.cjs
+¦   ¦   ¦   ¦   ¦   ¦       media.cjs
+¦   ¦   ¦   ¦   ¦   ¦       nest.cjs
+¦   ¦   ¦   ¦   ¦   ¦       page.cjs
+¦   ¦   ¦   ¦   ¦   ¦       scope.cjs
+¦   ¦   ¦   ¦   ¦   ¦       starting-style.cjs
+¦   ¦   ¦   ¦   ¦   ¦       supports.cjs
+¦   ¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   ¦   +---config
+¦   ¦   ¦   ¦   ¦   ¦       generator.cjs
+¦   ¦   ¦   ¦   ¦   ¦       lexer.cjs
+¦   ¦   ¦   ¦   ¦   ¦       mix.cjs
+¦   ¦   ¦   ¦   ¦   ¦       parser-selector.cjs
+¦   ¦   ¦   ¦   ¦   ¦       parser.cjs
+¦   ¦   ¦   ¦   ¦   ¦       walker.cjs
+¦   ¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   ¦   +---function
+¦   ¦   ¦   ¦   ¦   ¦       expression.cjs
+¦   ¦   ¦   ¦   ¦   ¦       var.cjs
+¦   ¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   ¦   +---node
+¦   ¦   ¦   ¦   ¦   ¦       AnPlusB.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Atrule.cjs
+¦   ¦   ¦   ¦   ¦   ¦       AtrulePrelude.cjs
+¦   ¦   ¦   ¦   ¦   ¦       AttributeSelector.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Block.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Brackets.cjs
+¦   ¦   ¦   ¦   ¦   ¦       CDC.cjs
+¦   ¦   ¦   ¦   ¦   ¦       CDO.cjs
+¦   ¦   ¦   ¦   ¦   ¦       ClassSelector.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Combinator.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Comment.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Condition.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Declaration.cjs
+¦   ¦   ¦   ¦   ¦   ¦       DeclarationList.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Dimension.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Feature.cjs
+¦   ¦   ¦   ¦   ¦   ¦       FeatureFunction.cjs
+¦   ¦   ¦   ¦   ¦   ¦       FeatureRange.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Function.cjs
+¦   ¦   ¦   ¦   ¦   ¦       GeneralEnclosed.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Hash.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Identifier.cjs
+¦   ¦   ¦   ¦   ¦   ¦       IdSelector.cjs
+¦   ¦   ¦   ¦   ¦   ¦       index-generate.cjs
+¦   ¦   ¦   ¦   ¦   ¦       index-parse-selector.cjs
+¦   ¦   ¦   ¦   ¦   ¦       index-parse.cjs
+¦   ¦   ¦   ¦   ¦   ¦       index.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Layer.cjs
+¦   ¦   ¦   ¦   ¦   ¦       LayerList.cjs
+¦   ¦   ¦   ¦   ¦   ¦       MediaQuery.cjs
+¦   ¦   ¦   ¦   ¦   ¦       MediaQueryList.cjs
+¦   ¦   ¦   ¦   ¦   ¦       NestingSelector.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Nth.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Number.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Operator.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Parentheses.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Percentage.cjs
+¦   ¦   ¦   ¦   ¦   ¦       PseudoClassSelector.cjs
+¦   ¦   ¦   ¦   ¦   ¦       PseudoElementSelector.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Ratio.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Raw.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Rule.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Scope.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Selector.cjs
+¦   ¦   ¦   ¦   ¦   ¦       SelectorList.cjs
+¦   ¦   ¦   ¦   ¦   ¦       String.cjs
+¦   ¦   ¦   ¦   ¦   ¦       StyleSheet.cjs
+¦   ¦   ¦   ¦   ¦   ¦       SupportsDeclaration.cjs
+¦   ¦   ¦   ¦   ¦   ¦       TypeSelector.cjs
+¦   ¦   ¦   ¦   ¦   ¦       UnicodeRange.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Url.cjs
+¦   ¦   ¦   ¦   ¦   ¦       Value.cjs
+¦   ¦   ¦   ¦   ¦   ¦       WhiteSpace.cjs
+¦   ¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   ¦   +---pseudo
+¦   ¦   ¦   ¦   ¦   ¦       index.cjs
+¦   ¦   ¦   ¦   ¦   ¦       lang.cjs
+¦   ¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   ¦   +---scope
+¦   ¦   ¦   ¦   ¦           atrulePrelude.cjs
+¦   ¦   ¦   ¦   ¦           default.cjs
+¦   ¦   ¦   ¦   ¦           index.cjs
+¦   ¦   ¦   ¦   ¦           selector.cjs
+¦   ¦   ¦   ¦   ¦           value.cjs
+¦   ¦   ¦   ¦   ¦           
+¦   ¦   ¦   ¦   +---tokenizer
+¦   ¦   ¦   ¦   ¦       adopt-buffer.cjs
+¦   ¦   ¦   ¦   ¦       char-code-definitions.cjs
+¦   ¦   ¦   ¦   ¦       index.cjs
+¦   ¦   ¦   ¦   ¦       names.cjs
+¦   ¦   ¦   ¦   ¦       OffsetToLocation.cjs
+¦   ¦   ¦   ¦   ¦       TokenStream.cjs
+¦   ¦   ¦   ¦   ¦       types.cjs
+¦   ¦   ¦   ¦   ¦       utils.cjs
+¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   +---utils
+¦   ¦   ¦   ¦   ¦       clone.cjs
+¦   ¦   ¦   ¦   ¦       create-custom-error.cjs
+¦   ¦   ¦   ¦   ¦       get-tokenizer.cjs
+¦   ¦   ¦   ¦   ¦       ident.cjs
+¦   ¦   ¦   ¦   ¦       index.cjs
+¦   ¦   ¦   ¦   ¦       List.cjs
+¦   ¦   ¦   ¦   ¦       names.cjs
+¦   ¦   ¦   ¦   ¦       string.cjs
+¦   ¦   ¦   ¦   ¦       url.cjs
+¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   +---walker
+¦   ¦   ¦   ¦           create.cjs
+¦   ¦   ¦   ¦           index.cjs
+¦   ¦   ¦   ¦           
+¦   ¦   ¦   +---data
+¦   ¦   ¦   ¦       patch.json
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---dist
+¦   ¦   ¦   ¦       csstree.esm.js
+¦   ¦   ¦   ¦       csstree.js
+¦   ¦   ¦   ¦       data.cjs
+¦   ¦   ¦   ¦       data.js
+¦   ¦   ¦   ¦       version.cjs
+¦   ¦   ¦   ¦       version.js
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---lib
+¦   ¦   ¦       ¦   data-patch.js
+¦   ¦   ¦       ¦   data.d.ts
+¦   ¦   ¦       ¦   data.js
+¦   ¦   ¦       ¦   index.d.ts
+¦   ¦   ¦       ¦   index.js
+¦   ¦   ¦       ¦   version.js
+¦   ¦   ¦       ¦   
+¦   ¦   ¦       +---convertor
+¦   ¦   ¦       ¦       create.js
+¦   ¦   ¦       ¦       index.js
+¦   ¦   ¦       ¦       
+¦   ¦   ¦       +---definition-syntax
+¦   ¦   ¦       ¦       generate.js
+¦   ¦   ¦       ¦       index.js
+¦   ¦   ¦       ¦       parse.js
+¦   ¦   ¦       ¦       scanner.js
+¦   ¦   ¦       ¦       SyntaxError.js
+¦   ¦   ¦       ¦       walk.js
+¦   ¦   ¦       ¦       
+¦   ¦   ¦       +---generator
+¦   ¦   ¦       ¦       create.js
+¦   ¦   ¦       ¦       index.js
+¦   ¦   ¦       ¦       sourceMap.js
+¦   ¦   ¦       ¦       token-before.js
+¦   ¦   ¦       ¦       
+¦   ¦   ¦       +---lexer
+¦   ¦   ¦       ¦       error.js
+¦   ¦   ¦       ¦       generic-an-plus-b.js
+¦   ¦   ¦       ¦       generic-const.js
+¦   ¦   ¦       ¦       generic-urange.js
+¦   ¦   ¦       ¦       generic.js
+¦   ¦   ¦       ¦       index.js
+¦   ¦   ¦       ¦       Lexer.js
+¦   ¦   ¦       ¦       match-graph.js
+¦   ¦   ¦       ¦       match.js
+¦   ¦   ¦       ¦       prepare-tokens.js
+¦   ¦   ¦       ¦       search.js
+¦   ¦   ¦       ¦       structure.js
+¦   ¦   ¦       ¦       trace.js
+¦   ¦   ¦       ¦       units.js
+¦   ¦   ¦       ¦       
+¦   ¦   ¦       +---parser
+¦   ¦   ¦       ¦       create.js
+¦   ¦   ¦       ¦       index.js
+¦   ¦   ¦       ¦       parse-selector.js
+¦   ¦   ¦       ¦       sequence.js
+¦   ¦   ¦       ¦       SyntaxError.js
+¦   ¦   ¦       ¦       
+¦   ¦   ¦       +---syntax
+¦   ¦   ¦       ¦   ¦   create.js
+¦   ¦   ¦       ¦   ¦   index.js
+¦   ¦   ¦       ¦   ¦   
+¦   ¦   ¦       ¦   +---atrule
+¦   ¦   ¦       ¦   ¦       container.js
+¦   ¦   ¦       ¦   ¦       font-face.js
+¦   ¦   ¦       ¦   ¦       import.js
+¦   ¦   ¦       ¦   ¦       index.js
+¦   ¦   ¦       ¦   ¦       layer.js
+¦   ¦   ¦       ¦   ¦       media.js
+¦   ¦   ¦       ¦   ¦       nest.js
+¦   ¦   ¦       ¦   ¦       page.js
+¦   ¦   ¦       ¦   ¦       scope.js
+¦   ¦   ¦       ¦   ¦       starting-style.js
+¦   ¦   ¦       ¦   ¦       supports.js
+¦   ¦   ¦       ¦   ¦       
+¦   ¦   ¦       ¦   +---config
+¦   ¦   ¦       ¦   ¦       generator.js
+¦   ¦   ¦       ¦   ¦       lexer.js
+¦   ¦   ¦       ¦   ¦       mix.js
+¦   ¦   ¦       ¦   ¦       parser-selector.js
+¦   ¦   ¦       ¦   ¦       parser.js
+¦   ¦   ¦       ¦   ¦       walker.js
+¦   ¦   ¦       ¦   ¦       
+¦   ¦   ¦       ¦   +---function
+¦   ¦   ¦       ¦   ¦       expression.js
+¦   ¦   ¦       ¦   ¦       var.js
+¦   ¦   ¦       ¦   ¦       
+¦   ¦   ¦       ¦   +---node
+¦   ¦   ¦       ¦   ¦       AnPlusB.js
+¦   ¦   ¦       ¦   ¦       Atrule.js
+¦   ¦   ¦       ¦   ¦       AtrulePrelude.js
+¦   ¦   ¦       ¦   ¦       AttributeSelector.js
+¦   ¦   ¦       ¦   ¦       Block.js
+¦   ¦   ¦       ¦   ¦       Brackets.js
+¦   ¦   ¦       ¦   ¦       CDC.js
+¦   ¦   ¦       ¦   ¦       CDO.js
+¦   ¦   ¦       ¦   ¦       ClassSelector.js
+¦   ¦   ¦       ¦   ¦       Combinator.js
+¦   ¦   ¦       ¦   ¦       Comment.js
+¦   ¦   ¦       ¦   ¦       Condition.js
+¦   ¦   ¦       ¦   ¦       Declaration.js
+¦   ¦   ¦       ¦   ¦       DeclarationList.js
+¦   ¦   ¦       ¦   ¦       Dimension.js
+¦   ¦   ¦       ¦   ¦       Feature.js
+¦   ¦   ¦       ¦   ¦       FeatureFunction.js
+¦   ¦   ¦       ¦   ¦       FeatureRange.js
+¦   ¦   ¦       ¦   ¦       Function.js
+¦   ¦   ¦       ¦   ¦       GeneralEnclosed.js
+¦   ¦   ¦       ¦   ¦       Hash.js
+¦   ¦   ¦       ¦   ¦       Identifier.js
+¦   ¦   ¦       ¦   ¦       IdSelector.js
+¦   ¦   ¦       ¦   ¦       index-generate.js
+¦   ¦   ¦       ¦   ¦       index-parse-selector.js
+¦   ¦   ¦       ¦   ¦       index-parse.js
+¦   ¦   ¦       ¦   ¦       index.js
+¦   ¦   ¦       ¦   ¦       Layer.js
+¦   ¦   ¦       ¦   ¦       LayerList.js
+¦   ¦   ¦       ¦   ¦       MediaQuery.js
+¦   ¦   ¦       ¦   ¦       MediaQueryList.js
+¦   ¦   ¦       ¦   ¦       NestingSelector.js
+¦   ¦   ¦       ¦   ¦       Nth.js
+¦   ¦   ¦       ¦   ¦       Number.js
+¦   ¦   ¦       ¦   ¦       Operator.js
+¦   ¦   ¦       ¦   ¦       Parentheses.js
+¦   ¦   ¦       ¦   ¦       Percentage.js
+¦   ¦   ¦       ¦   ¦       PseudoClassSelector.js
+¦   ¦   ¦       ¦   ¦       PseudoElementSelector.js
+¦   ¦   ¦       ¦   ¦       Ratio.js
+¦   ¦   ¦       ¦   ¦       Raw.js
+¦   ¦   ¦       ¦   ¦       Rule.js
+¦   ¦   ¦       ¦   ¦       Scope.js
+¦   ¦   ¦       ¦   ¦       Selector.js
+¦   ¦   ¦       ¦   ¦       SelectorList.js
+¦   ¦   ¦       ¦   ¦       String.js
+¦   ¦   ¦       ¦   ¦       StyleSheet.js
+¦   ¦   ¦       ¦   ¦       SupportsDeclaration.js
+¦   ¦   ¦       ¦   ¦       TypeSelector.js
+¦   ¦   ¦       ¦   ¦       UnicodeRange.js
+¦   ¦   ¦       ¦   ¦       Url.js
+¦   ¦   ¦       ¦   ¦       Value.js
+¦   ¦   ¦       ¦   ¦       WhiteSpace.js
+¦   ¦   ¦       ¦   ¦       
+¦   ¦   ¦       ¦   +---pseudo
+¦   ¦   ¦       ¦   ¦       index.js
+¦   ¦   ¦       ¦   ¦       lang.js
+¦   ¦   ¦       ¦   ¦       
+¦   ¦   ¦       ¦   +---scope
+¦   ¦   ¦       ¦           atrulePrelude.js
+¦   ¦   ¦       ¦           default.js
+¦   ¦   ¦       ¦           index.js
+¦   ¦   ¦       ¦           selector.js
+¦   ¦   ¦       ¦           value.js
+¦   ¦   ¦       ¦           
+¦   ¦   ¦       +---tokenizer
+¦   ¦   ¦       ¦       adopt-buffer.js
+¦   ¦   ¦       ¦       char-code-definitions.js
+¦   ¦   ¦       ¦       index.js
+¦   ¦   ¦       ¦       names.js
+¦   ¦   ¦       ¦       OffsetToLocation.js
+¦   ¦   ¦       ¦       TokenStream.js
+¦   ¦   ¦       ¦       types.js
+¦   ¦   ¦       ¦       utils.js
+¦   ¦   ¦       ¦       
+¦   ¦   ¦       +---utils
+¦   ¦   ¦       ¦       clone.js
+¦   ¦   ¦       ¦       create-custom-error.js
+¦   ¦   ¦       ¦       get-tokenizer.js
+¦   ¦   ¦       ¦       ident.js
+¦   ¦   ¦       ¦       index.js
+¦   ¦   ¦       ¦       List.js
+¦   ¦   ¦       ¦       names.js
+¦   ¦   ¦       ¦       string.js
+¦   ¦   ¦       ¦       url.js
+¦   ¦   ¦       ¦       
+¦   ¦   ¦       +---walker
+¦   ¦   ¦               create.js
+¦   ¦   ¦               index.js
+¦   ¦   ¦               
+¦   ¦   +---eslintrc
+¦   ¦   ¦   ¦   LICENSE
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   universal.js
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---conf
+¦   ¦   ¦   ¦       config-schema.js
+¦   ¦   ¦   ¦       environments.js
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---dist
+¦   ¦   ¦   ¦       eslintrc-universal.cjs
+¦   ¦   ¦   ¦       eslintrc-universal.cjs.map
+¦   ¦   ¦   ¦       eslintrc.cjs
+¦   ¦   ¦   ¦       eslintrc.cjs.map
+¦   ¦   ¦   ¦       eslintrc.d.cts
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---lib
+¦   ¦   ¦   ¦   ¦   cascading-config-array-factory.js
+¦   ¦   ¦   ¦   ¦   config-array-factory.js
+¦   ¦   ¦   ¦   ¦   flat-compat.js
+¦   ¦   ¦   ¦   ¦   index-universal.js
+¦   ¦   ¦   ¦   ¦   index.js
+¦   ¦   ¦   ¦   ¦   
+¦   ¦   ¦   ¦   +---config-array
+¦   ¦   ¦   ¦   ¦       config-array.js
+¦   ¦   ¦   ¦   ¦       config-dependency.js
+¦   ¦   ¦   ¦   ¦       extracted-config.js
+¦   ¦   ¦   ¦   ¦       ignore-pattern.js
+¦   ¦   ¦   ¦   ¦       index.js
+¦   ¦   ¦   ¦   ¦       override-tester.js
+¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   +---shared
+¦   ¦   ¦   ¦   ¦       ajv.js
+¦   ¦   ¦   ¦   ¦       config-ops.js
+¦   ¦   ¦   ¦   ¦       config-validator.js
+¦   ¦   ¦   ¦   ¦       deep-merge-arrays.js
+¦   ¦   ¦   ¦   ¦       deprecation-warnings.js
+¦   ¦   ¦   ¦   ¦       naming.js
+¦   ¦   ¦   ¦   ¦       relative-module-resolver.js
+¦   ¦   ¦   ¦   ¦       types.js
+¦   ¦   ¦   ¦   ¦       
+¦   ¦   ¦   ¦   +---types
+¦   ¦   ¦   ¦           index.d.ts
+¦   ¦   ¦   ¦           
+¦   ¦   ¦   +---node_modules
+¦   ¦   ¦       +---globals
+¦   ¦   ¦               globals.json
+¦   ¦   ¦               index.d.ts
+¦   ¦   ¦               index.js
+¦   ¦   ¦               license
+¦   ¦   ¦               package.json
+¦   ¦   ¦               readme.md
+¦   ¦   ¦               
+¦   ¦   +---js
+¦   ¦   ¦   ¦   LICENSE
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---src
+¦   ¦   ¦   ¦   ¦   index.js
+¦   ¦   ¦   ¦   ¦   
+¦   ¦   ¦   ¦   +---configs
+¦   ¦   ¦   ¦           eslint-all.js
+¦   ¦   ¦   ¦           eslint-recommended.js
+¦   ¦   ¦   ¦           
+¦   ¦   ¦   +---types
+¦   ¦   ¦           index.d.ts
+¦   ¦   ¦           
+¦   ¦   +---json
+¦   ¦   ¦   ¦   LICENSE
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---dist
+¦   ¦   ¦       +---cjs
+¦   ¦   ¦       ¦       index.cjs
+¦   ¦   ¦       ¦       index.d.cts
+¦   ¦   ¦       ¦       types.cts
+¦   ¦   ¦       ¦       
+¦   ¦   ¦       +---esm
+¦   ¦   ¦               index.d.ts
+¦   ¦   ¦               index.js
+¦   ¦   ¦               types.d.ts
+¦   ¦   ¦               types.ts
+¦   ¦   ¦               
+¦   ¦   +---object-schema
+¦   ¦   ¦   ¦   LICENSE
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---dist
+¦   ¦   ¦       +---cjs
+¦   ¦   ¦       ¦       index.cjs
+¦   ¦   ¦       ¦       index.d.cts
+¦   ¦   ¦       ¦       types.ts
+¦   ¦   ¦       ¦       
+¦   ¦   ¦       +---esm
+¦   ¦   ¦               index.d.ts
+¦   ¦   ¦               index.js
+¦   ¦   ¦               types.d.ts
+¦   ¦   ¦               types.ts
+¦   ¦   ¦               
+¦   ¦   +---plugin-kit
+¦   ¦       ¦   LICENSE
+¦   ¦       ¦   package.json
+¦   ¦       ¦   README.md
+¦   ¦       ¦   
+¦   ¦       +---dist
+¦   ¦           +---cjs
+¦   ¦           ¦       index.cjs
+¦   ¦           ¦       index.d.cts
+¦   ¦           ¦       types.cts
+¦   ¦           ¦       
+¦   ¦           +---esm
+¦   ¦                   index.d.ts
+¦   ¦                   index.js
+¦   ¦                   types.d.ts
+¦   ¦                   types.ts
+¦   ¦                   
+¦   +---@eslint-community
+¦   ¦   +---eslint-utils
+¦   ¦   ¦   ¦   index.d.mts
+¦   ¦   ¦   ¦   index.d.ts
+¦   ¦   ¦   ¦   index.js
+¦   ¦   ¦   ¦   index.js.map
+¦   ¦   ¦   ¦   index.mjs
+¦   ¦   ¦   ¦   index.mjs.map
+¦   ¦   ¦   ¦   LICENSE
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---node_modules
+¦   ¦   ¦       +---eslint-visitor-keys
+¦   ¦   ¦           ¦   LICENSE
+¦   ¦   ¦           ¦   package.json
+¦   ¦   ¦           ¦   README.md
+¦   ¦   ¦           ¦   
+¦   ¦   ¦           +---dist
+¦   ¦   ¦           ¦       eslint-visitor-keys.cjs
+¦   ¦   ¦           ¦       eslint-visitor-keys.d.cts
+¦   ¦   ¦           ¦       index.d.ts
+¦   ¦   ¦           ¦       visitor-keys.d.ts
+¦   ¦   ¦           ¦       
+¦   ¦   ¦           +---lib
+¦   ¦   ¦                   index.js
+¦   ¦   ¦                   visitor-keys.js
+¦   ¦   ¦                   
+¦   ¦   +---regexpp
+¦   ¦           index.d.ts
+¦   ¦           index.js
+¦   ¦           index.js.map
+¦   ¦           index.mjs
+¦   ¦           index.mjs.map
+¦   ¦           LICENSE
+¦   ¦           package.json
+¦   ¦           README.md
+¦   ¦           
+¦   +---@humanfs
+¦   ¦   +---core
+¦   ¦   ¦   ¦   LICENSE
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---dist
+¦   ¦   ¦   ¦       errors.d.ts
+¦   ¦   ¦   ¦       fsx.d.ts
+¦   ¦   ¦   ¦       hfs.d.ts
+¦   ¦   ¦   ¦       index.d.ts
+¦   ¦   ¦   ¦       path.d.ts
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---src
+¦   ¦   ¦           errors.js
+¦   ¦   ¦           hfs.js
+¦   ¦   ¦           index.js
+¦   ¦   ¦           path.js
+¦   ¦   ¦           
+¦   ¦   +---node
+¦   ¦       ¦   LICENSE
+¦   ¦       ¦   package.json
+¦   ¦       ¦   README.md
+¦   ¦       ¦   
+¦   ¦       +---dist
+¦   ¦       ¦       index.d.ts
+¦   ¦       ¦       node-fsx.d.ts
+¦   ¦       ¦       node-hfs.d.ts
+¦   ¦       ¦       
+¦   ¦       +---node_modules
+¦   ¦       ¦   +---@humanwhocodes
+¦   ¦       ¦       +---retry
+¦   ¦       ¦           ¦   LICENSE
+¦   ¦       ¦           ¦   package.json
+¦   ¦       ¦           ¦   README.md
+¦   ¦       ¦           ¦   
+¦   ¦       ¦           +---dist
+¦   ¦       ¦                   retrier.cjs
+¦   ¦       ¦                   retrier.d.cts
+¦   ¦       ¦                   retrier.d.ts
+¦   ¦       ¦                   retrier.js
+¦   ¦       ¦                   retrier.min.js
+¦   ¦       ¦                   retrier.mjs
+¦   ¦       ¦                   
+¦   ¦       +---src
+¦   ¦               index.js
+¦   ¦               node-hfs.js
+¦   ¦               
+¦   +---@humanwhocodes
+¦   ¦   +---module-importer
+¦   ¦   ¦   ¦   CHANGELOG.md
+¦   ¦   ¦   ¦   LICENSE
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---dist
+¦   ¦   ¦   ¦       module-importer.cjs
+¦   ¦   ¦   ¦       module-importer.d.cts
+¦   ¦   ¦   ¦       module-importer.d.ts
+¦   ¦   ¦   ¦       module-importer.js
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---src
+¦   ¦   ¦           module-importer.cjs
+¦   ¦   ¦           module-importer.js
+¦   ¦   ¦           
+¦   ¦   +---momoa
+¦   ¦   ¦   ¦   package.json
+¦   ¦   ¦   ¦   README.md
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---dist
+¦   ¦   ¦           momoa.cjs
+¦   ¦   ¦           momoa.d.cts
+¦   ¦   ¦           momoa.d.ts
+¦   ¦   ¦           momoa.js
+¦   ¦   ¦           typedefs.d.cts
+¦   ¦   ¦           typedefs.d.ts
+¦   ¦   ¦           typedefs.ts
+¦   ¦   ¦           
+¦   ¦   +---retry
+¦   ¦       ¦   LICENSE
+¦   ¦       ¦   package.json
+¦   ¦       ¦   README.md
+¦   ¦       ¦   
+¦   ¦       +---dist
+¦   ¦               retrier.cjs
+¦   ¦               retrier.d.cts
+¦   ¦               retrier.d.ts
+¦   ¦               retrier.js
+¦   ¦               retrier.min.js
+¦   ¦               retrier.mjs
+¦   ¦               
+¦   +---@pkgr
+¦   ¦   +---core
+¦   ¦       ¦   index.d.cts
+¦   ¦       ¦   package.json
+¦   ¦       ¦   
+¦   ¦       +---lib
+¦   ¦               constants.d.ts
+¦   ¦               constants.js
+¦   ¦               constants.js.map
+¦   ¦               helpers.d.ts
+¦   ¦               helpers.js
+¦   ¦               helpers.js.map
+¦   ¦               index.cjs
+¦   ¦               index.d.ts
+¦   ¦               index.js
+¦   ¦               index.js.map
+¦   ¦               
+¦   +---@types
+¦   ¦   +---estree
+¦   ¦   ¦       flow.d.ts
+¦   ¦   ¦       index.d.ts
+¦   ¦   ¦       LICENSE
+¦   ¦   ¦       package.json
+¦   ¦   ¦       README.md
+¦   ¦   ¦       
+¦   ¦   +---json-schema
+¦   ¦           index.d.ts
+¦   ¦           LICENSE
+¦   ¦           package.json
+¦   ¦           README.md
+¦   ¦           
+¦   +---acorn
+¦   ¦   ¦   CHANGELOG.md
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---bin
+¦   ¦   ¦       acorn
+¦   ¦   ¦       
+¦   ¦   +---dist
+¦   ¦           acorn.d.mts
+¦   ¦           acorn.d.ts
+¦   ¦           acorn.js
+¦   ¦           acorn.mjs
+¦   ¦           bin.js
+¦   ¦           
+¦   +---acorn-jsx
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       LICENSE
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       xhtml.js
+¦   ¦       
+¦   +---ajv
+¦   ¦   ¦   .tonic_example.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---dist
+¦   ¦   ¦       ajv.bundle.js
+¦   ¦   ¦       ajv.min.js
+¦   ¦   ¦       ajv.min.js.map
+¦   ¦   ¦       
+¦   ¦   +---lib
+¦   ¦   ¦   ¦   ajv.d.ts
+¦   ¦   ¦   ¦   ajv.js
+¦   ¦   ¦   ¦   cache.js
+¦   ¦   ¦   ¦   data.js
+¦   ¦   ¦   ¦   definition_schema.js
+¦   ¦   ¦   ¦   keyword.js
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---compile
+¦   ¦   ¦   ¦       async.js
+¦   ¦   ¦   ¦       equal.js
+¦   ¦   ¦   ¦       error_classes.js
+¦   ¦   ¦   ¦       formats.js
+¦   ¦   ¦   ¦       index.js
+¦   ¦   ¦   ¦       resolve.js
+¦   ¦   ¦   ¦       rules.js
+¦   ¦   ¦   ¦       schema_obj.js
+¦   ¦   ¦   ¦       ucs2length.js
+¦   ¦   ¦   ¦       util.js
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---dot
+¦   ¦   ¦   ¦       allOf.jst
+¦   ¦   ¦   ¦       anyOf.jst
+¦   ¦   ¦   ¦       coerce.def
+¦   ¦   ¦   ¦       comment.jst
+¦   ¦   ¦   ¦       const.jst
+¦   ¦   ¦   ¦       contains.jst
+¦   ¦   ¦   ¦       custom.jst
+¦   ¦   ¦   ¦       defaults.def
+¦   ¦   ¦   ¦       definitions.def
+¦   ¦   ¦   ¦       dependencies.jst
+¦   ¦   ¦   ¦       enum.jst
+¦   ¦   ¦   ¦       errors.def
+¦   ¦   ¦   ¦       format.jst
+¦   ¦   ¦   ¦       if.jst
+¦   ¦   ¦   ¦       items.jst
+¦   ¦   ¦   ¦       missing.def
+¦   ¦   ¦   ¦       multipleOf.jst
+¦   ¦   ¦   ¦       not.jst
+¦   ¦   ¦   ¦       oneOf.jst
+¦   ¦   ¦   ¦       pattern.jst
+¦   ¦   ¦   ¦       properties.jst
+¦   ¦   ¦   ¦       propertyNames.jst
+¦   ¦   ¦   ¦       ref.jst
+¦   ¦   ¦   ¦       required.jst
+¦   ¦   ¦   ¦       uniqueItems.jst
+¦   ¦   ¦   ¦       validate.jst
+¦   ¦   ¦   ¦       _limit.jst
+¦   ¦   ¦   ¦       _limitItems.jst
+¦   ¦   ¦   ¦       _limitLength.jst
+¦   ¦   ¦   ¦       _limitProperties.jst
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---dotjs
+¦   ¦   ¦   ¦       allOf.js
+¦   ¦   ¦   ¦       anyOf.js
+¦   ¦   ¦   ¦       comment.js
+¦   ¦   ¦   ¦       const.js
+¦   ¦   ¦   ¦       contains.js
+¦   ¦   ¦   ¦       custom.js
+¦   ¦   ¦   ¦       dependencies.js
+¦   ¦   ¦   ¦       enum.js
+¦   ¦   ¦   ¦       format.js
+¦   ¦   ¦   ¦       if.js
+¦   ¦   ¦   ¦       index.js
+¦   ¦   ¦   ¦       items.js
+¦   ¦   ¦   ¦       multipleOf.js
+¦   ¦   ¦   ¦       not.js
+¦   ¦   ¦   ¦       oneOf.js
+¦   ¦   ¦   ¦       pattern.js
+¦   ¦   ¦   ¦       properties.js
+¦   ¦   ¦   ¦       propertyNames.js
+¦   ¦   ¦   ¦       README.md
+¦   ¦   ¦   ¦       ref.js
+¦   ¦   ¦   ¦       required.js
+¦   ¦   ¦   ¦       uniqueItems.js
+¦   ¦   ¦   ¦       validate.js
+¦   ¦   ¦   ¦       _limit.js
+¦   ¦   ¦   ¦       _limitItems.js
+¦   ¦   ¦   ¦       _limitLength.js
+¦   ¦   ¦   ¦       _limitProperties.js
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---refs
+¦   ¦   ¦           data.json
+¦   ¦   ¦           json-schema-draft-04.json
+¦   ¦   ¦           json-schema-draft-06.json
+¦   ¦   ¦           json-schema-draft-07.json
+¦   ¦   ¦           json-schema-secure.json
+¦   ¦   ¦           
+¦   ¦   +---scripts
+¦   ¦           .eslintrc.yml
+¦   ¦           bundle.js
+¦   ¦           compile-dots.js
+¦   ¦           info
+¦   ¦           prepare-tests
+¦   ¦           publish-built-version
+¦   ¦           travis-gh-pages
+¦   ¦           
+¦   +---ansi-styles
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---argparse
+¦   ¦   ¦   argparse.js
+¦   ¦   ¦   CHANGELOG.md
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---lib
+¦   ¦           sub.js
+¦   ¦           textwrap.js
+¦   ¦           
+¦   +---balanced-match
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE.md
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---.github
+¦   ¦           FUNDING.yml
+¦   ¦           
+¦   +---brace-expansion
+¦   ¦       index.js
+¦   ¦       LICENSE
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---callsites
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---chalk
+¦   ¦   ¦   index.d.ts
+¦   ¦   ¦   license
+¦   ¦   ¦   package.json
+¦   ¦   ¦   readme.md
+¦   ¦   ¦   
+¦   ¦   +---source
+¦   ¦           index.js
+¦   ¦           templates.js
+¦   ¦           util.js
+¦   ¦           
+¦   +---color-convert
+¦   ¦       CHANGELOG.md
+¦   ¦       conversions.js
+¦   ¦       index.js
+¦   ¦       LICENSE
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       route.js
+¦   ¦       
+¦   +---color-name
+¦   ¦       index.js
+¦   ¦       LICENSE
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---concat-map
+¦   ¦   ¦   .travis.yml
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.markdown
+¦   ¦   ¦   
+¦   ¦   +---example
+¦   ¦   ¦       map.js
+¦   ¦   ¦       
+¦   ¦   +---test
+¦   ¦           map.js
+¦   ¦           
+¦   +---cross-spawn
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---lib
+¦   ¦       ¦   enoent.js
+¦   ¦       ¦   parse.js
+¦   ¦       ¦   
+¦   ¦       +---util
+¦   ¦               escape.js
+¦   ¦               readShebang.js
+¦   ¦               resolveCommand.js
+¦   ¦               
+¦   +---debug
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---src
+¦   ¦           browser.js
+¦   ¦           common.js
+¦   ¦           index.js
+¦   ¦           node.js
+¦   ¦           
+¦   +---deep-is
+¦   ¦   ¦   .travis.yml
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.markdown
+¦   ¦   ¦   
+¦   ¦   +---example
+¦   ¦   ¦       cmp.js
+¦   ¦   ¦       
+¦   ¦   +---test
+¦   ¦           cmp.js
+¦   ¦           NaN.js
+¦   ¦           neg-vs-pos-0.js
+¦   ¦           
+¦   +---escape-string-regexp
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---eslint
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---bin
+¦   ¦   ¦       eslint.js
+¦   ¦   ¦       
+¦   ¦   +---conf
+¦   ¦   ¦       default-cli-options.js
+¦   ¦   ¦       ecma-version.js
+¦   ¦   ¦       globals.js
+¦   ¦   ¦       replacements.json
+¦   ¦   ¦       rule-type-list.json
+¦   ¦   ¦       
+¦   ¦   +---lib
+¦   ¦   ¦   ¦   api.js
+¦   ¦   ¦   ¦   cli.js
+¦   ¦   ¦   ¦   config-api.js
+¦   ¦   ¦   ¦   options.js
+¦   ¦   ¦   ¦   universal.js
+¦   ¦   ¦   ¦   unsupported-api.js
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---cli-engine
+¦   ¦   ¦   ¦   ¦   cli-engine.js
+¦   ¦   ¦   ¦   ¦   file-enumerator.js
+¦   ¦   ¦   ¦   ¦   hash.js
+¦   ¦   ¦   ¦   ¦   index.js
+¦   ¦   ¦   ¦   ¦   lint-result-cache.js
+¦   ¦   ¦   ¦   ¦   load-rules.js
+¦   ¦   ¦   ¦   ¦   
+¦   ¦   ¦   ¦   +---formatters
+¦   ¦   ¦   ¦           formatters-meta.json
+¦   ¦   ¦   ¦           html.js
+¦   ¦   ¦   ¦           json-with-metadata.js
+¦   ¦   ¦   ¦           json.js
+¦   ¦   ¦   ¦           stylish.js
+¦   ¦   ¦   ¦           
+¦   ¦   ¦   +---config
+¦   ¦   ¦   ¦       config-loader.js
+¦   ¦   ¦   ¦       config.js
+¦   ¦   ¦   ¦       default-config.js
+¦   ¦   ¦   ¦       flat-config-array.js
+¦   ¦   ¦   ¦       flat-config-schema.js
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---eslint
+¦   ¦   ¦   ¦       eslint-helpers.js
+¦   ¦   ¦   ¦       eslint.js
+¦   ¦   ¦   ¦       index.js
+¦   ¦   ¦   ¦       legacy-eslint.js
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---languages
+¦   ¦   ¦   ¦   +---js
+¦   ¦   ¦   ¦       ¦   index.js
+¦   ¦   ¦   ¦       ¦   validate-language-options.js
+¦   ¦   ¦   ¦       ¦   
+¦   ¦   ¦   ¦       +---source-code
+¦   ¦   ¦   ¦           ¦   index.js
+¦   ¦   ¦   ¦           ¦   source-code.js
+¦   ¦   ¦   ¦           ¦   
+¦   ¦   ¦   ¦           +---token-store
+¦   ¦   ¦   ¦                   backward-token-comment-cursor.js
+¦   ¦   ¦   ¦                   backward-token-cursor.js
+¦   ¦   ¦   ¦                   cursor.js
+¦   ¦   ¦   ¦                   cursors.js
+¦   ¦   ¦   ¦                   decorative-cursor.js
+¦   ¦   ¦   ¦                   filter-cursor.js
+¦   ¦   ¦   ¦                   forward-token-comment-cursor.js
+¦   ¦   ¦   ¦                   forward-token-cursor.js
+¦   ¦   ¦   ¦                   index.js
+¦   ¦   ¦   ¦                   limit-cursor.js
+¦   ¦   ¦   ¦                   padded-token-cursor.js
+¦   ¦   ¦   ¦                   skip-cursor.js
+¦   ¦   ¦   ¦                   utils.js
+¦   ¦   ¦   ¦                   
+¦   ¦   ¦   +---linter
+¦   ¦   ¦   ¦   ¦   apply-disable-directives.js
+¦   ¦   ¦   ¦   ¦   esquery.js
+¦   ¦   ¦   ¦   ¦   file-context.js
+¦   ¦   ¦   ¦   ¦   file-report.js
+¦   ¦   ¦   ¦   ¦   index.js
+¦   ¦   ¦   ¦   ¦   interpolate.js
+¦   ¦   ¦   ¦   ¦   linter.js
+¦   ¦   ¦   ¦   ¦   rule-fixer.js
+¦   ¦   ¦   ¦   ¦   rules.js
+¦   ¦   ¦   ¦   ¦   source-code-fixer.js
+¦   ¦   ¦   ¦   ¦   source-code-traverser.js
+¦   ¦   ¦   ¦   ¦   source-code-visitor.js
+¦   ¦   ¦   ¦   ¦   timing.js
+¦   ¦   ¦   ¦   ¦   vfile.js
+¦   ¦   ¦   ¦   ¦   
+¦   ¦   ¦   ¦   +---code-path-analysis
+¦   ¦   ¦   ¦           code-path-analyzer.js
+¦   ¦   ¦   ¦           code-path-segment.js
+¦   ¦   ¦   ¦           code-path-state.js
+¦   ¦   ¦   ¦           code-path.js
+¦   ¦   ¦   ¦           debug-helpers.js
+¦   ¦   ¦   ¦           fork-context.js
+¦   ¦   ¦   ¦           id-generator.js
+¦   ¦   ¦   ¦           
+¦   ¦   ¦   +---rule-tester
+¦   ¦   ¦   ¦       index.js
+¦   ¦   ¦   ¦       rule-tester.js
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---rules
+¦   ¦   ¦   ¦   ¦   accessor-pairs.js
+¦   ¦   ¦   ¦   ¦   array-bracket-newline.js
+¦   ¦   ¦   ¦   ¦   array-bracket-spacing.js
+¦   ¦   ¦   ¦   ¦   array-callback-return.js
+¦   ¦   ¦   ¦   ¦   array-element-newline.js
+¦   ¦   ¦   ¦   ¦   arrow-body-style.js
+¦   ¦   ¦   ¦   ¦   arrow-parens.js
+¦   ¦   ¦   ¦   ¦   arrow-spacing.js
+¦   ¦   ¦   ¦   ¦   block-scoped-var.js
+¦   ¦   ¦   ¦   ¦   block-spacing.js
+¦   ¦   ¦   ¦   ¦   brace-style.js
+¦   ¦   ¦   ¦   ¦   callback-return.js
+¦   ¦   ¦   ¦   ¦   camelcase.js
+¦   ¦   ¦   ¦   ¦   capitalized-comments.js
+¦   ¦   ¦   ¦   ¦   class-methods-use-this.js
+¦   ¦   ¦   ¦   ¦   comma-dangle.js
+¦   ¦   ¦   ¦   ¦   comma-spacing.js
+¦   ¦   ¦   ¦   ¦   comma-style.js
+¦   ¦   ¦   ¦   ¦   complexity.js
+¦   ¦   ¦   ¦   ¦   computed-property-spacing.js
+¦   ¦   ¦   ¦   ¦   consistent-return.js
+¦   ¦   ¦   ¦   ¦   consistent-this.js
+¦   ¦   ¦   ¦   ¦   constructor-super.js
+¦   ¦   ¦   ¦   ¦   curly.js
+¦   ¦   ¦   ¦   ¦   default-case-last.js
+¦   ¦   ¦   ¦   ¦   default-case.js
+¦   ¦   ¦   ¦   ¦   default-param-last.js
+¦   ¦   ¦   ¦   ¦   dot-location.js
+¦   ¦   ¦   ¦   ¦   dot-notation.js
+¦   ¦   ¦   ¦   ¦   eol-last.js
+¦   ¦   ¦   ¦   ¦   eqeqeq.js
+¦   ¦   ¦   ¦   ¦   for-direction.js
+¦   ¦   ¦   ¦   ¦   func-call-spacing.js
+¦   ¦   ¦   ¦   ¦   func-name-matching.js
+¦   ¦   ¦   ¦   ¦   func-names.js
+¦   ¦   ¦   ¦   ¦   func-style.js
+¦   ¦   ¦   ¦   ¦   function-call-argument-newline.js
+¦   ¦   ¦   ¦   ¦   function-paren-newline.js
+¦   ¦   ¦   ¦   ¦   generator-star-spacing.js
+¦   ¦   ¦   ¦   ¦   getter-return.js
+¦   ¦   ¦   ¦   ¦   global-require.js
+¦   ¦   ¦   ¦   ¦   grouped-accessor-pairs.js
+¦   ¦   ¦   ¦   ¦   guard-for-in.js
+¦   ¦   ¦   ¦   ¦   handle-callback-err.js
+¦   ¦   ¦   ¦   ¦   id-blacklist.js
+¦   ¦   ¦   ¦   ¦   id-denylist.js
+¦   ¦   ¦   ¦   ¦   id-length.js
+¦   ¦   ¦   ¦   ¦   id-match.js
+¦   ¦   ¦   ¦   ¦   implicit-arrow-linebreak.js
+¦   ¦   ¦   ¦   ¦   indent-legacy.js
+¦   ¦   ¦   ¦   ¦   indent.js
+¦   ¦   ¦   ¦   ¦   index.js
+¦   ¦   ¦   ¦   ¦   init-declarations.js
+¦   ¦   ¦   ¦   ¦   jsx-quotes.js
+¦   ¦   ¦   ¦   ¦   key-spacing.js
+¦   ¦   ¦   ¦   ¦   keyword-spacing.js
+¦   ¦   ¦   ¦   ¦   line-comment-position.js
+¦   ¦   ¦   ¦   ¦   linebreak-style.js
+¦   ¦   ¦   ¦   ¦   lines-around-comment.js
+¦   ¦   ¦   ¦   ¦   lines-around-directive.js
+¦   ¦   ¦   ¦   ¦   lines-between-class-members.js
+¦   ¦   ¦   ¦   ¦   logical-assignment-operators.js
+¦   ¦   ¦   ¦   ¦   max-classes-per-file.js
+¦   ¦   ¦   ¦   ¦   max-depth.js
+¦   ¦   ¦   ¦   ¦   max-len.js
+¦   ¦   ¦   ¦   ¦   max-lines-per-function.js
+¦   ¦   ¦   ¦   ¦   max-lines.js
+¦   ¦   ¦   ¦   ¦   max-nested-callbacks.js
+¦   ¦   ¦   ¦   ¦   max-params.js
+¦   ¦   ¦   ¦   ¦   max-statements-per-line.js
+¦   ¦   ¦   ¦   ¦   max-statements.js
+¦   ¦   ¦   ¦   ¦   multiline-comment-style.js
+¦   ¦   ¦   ¦   ¦   multiline-ternary.js
+¦   ¦   ¦   ¦   ¦   new-cap.js
+¦   ¦   ¦   ¦   ¦   new-parens.js
+¦   ¦   ¦   ¦   ¦   newline-after-var.js
+¦   ¦   ¦   ¦   ¦   newline-before-return.js
+¦   ¦   ¦   ¦   ¦   newline-per-chained-call.js
+¦   ¦   ¦   ¦   ¦   no-alert.js
+¦   ¦   ¦   ¦   ¦   no-array-constructor.js
+¦   ¦   ¦   ¦   ¦   no-async-promise-executor.js
+¦   ¦   ¦   ¦   ¦   no-await-in-loop.js
+¦   ¦   ¦   ¦   ¦   no-bitwise.js
+¦   ¦   ¦   ¦   ¦   no-buffer-constructor.js
+¦   ¦   ¦   ¦   ¦   no-caller.js
+¦   ¦   ¦   ¦   ¦   no-case-declarations.js
+¦   ¦   ¦   ¦   ¦   no-catch-shadow.js
+¦   ¦   ¦   ¦   ¦   no-class-assign.js
+¦   ¦   ¦   ¦   ¦   no-compare-neg-zero.js
+¦   ¦   ¦   ¦   ¦   no-cond-assign.js
+¦   ¦   ¦   ¦   ¦   no-confusing-arrow.js
+¦   ¦   ¦   ¦   ¦   no-console.js
+¦   ¦   ¦   ¦   ¦   no-const-assign.js
+¦   ¦   ¦   ¦   ¦   no-constant-binary-expression.js
+¦   ¦   ¦   ¦   ¦   no-constant-condition.js
+¦   ¦   ¦   ¦   ¦   no-constructor-return.js
+¦   ¦   ¦   ¦   ¦   no-continue.js
+¦   ¦   ¦   ¦   ¦   no-control-regex.js
+¦   ¦   ¦   ¦   ¦   no-debugger.js
+¦   ¦   ¦   ¦   ¦   no-delete-var.js
+¦   ¦   ¦   ¦   ¦   no-div-regex.js
+¦   ¦   ¦   ¦   ¦   no-dupe-args.js
+¦   ¦   ¦   ¦   ¦   no-dupe-class-members.js
+¦   ¦   ¦   ¦   ¦   no-dupe-else-if.js
+¦   ¦   ¦   ¦   ¦   no-dupe-keys.js
+¦   ¦   ¦   ¦   ¦   no-duplicate-case.js
+¦   ¦   ¦   ¦   ¦   no-duplicate-imports.js
+¦   ¦   ¦   ¦   ¦   no-else-return.js
+¦   ¦   ¦   ¦   ¦   no-empty-character-class.js
+¦   ¦   ¦   ¦   ¦   no-empty-function.js
+¦   ¦   ¦   ¦   ¦   no-empty-pattern.js
+¦   ¦   ¦   ¦   ¦   no-empty-static-block.js
+¦   ¦   ¦   ¦   ¦   no-empty.js
+¦   ¦   ¦   ¦   ¦   no-eq-null.js
+¦   ¦   ¦   ¦   ¦   no-eval.js
+¦   ¦   ¦   ¦   ¦   no-ex-assign.js
+¦   ¦   ¦   ¦   ¦   no-extend-native.js
+¦   ¦   ¦   ¦   ¦   no-extra-bind.js
+¦   ¦   ¦   ¦   ¦   no-extra-boolean-cast.js
+¦   ¦   ¦   ¦   ¦   no-extra-label.js
+¦   ¦   ¦   ¦   ¦   no-extra-parens.js
+¦   ¦   ¦   ¦   ¦   no-extra-semi.js
+¦   ¦   ¦   ¦   ¦   no-fallthrough.js
+¦   ¦   ¦   ¦   ¦   no-floating-decimal.js
+¦   ¦   ¦   ¦   ¦   no-func-assign.js
+¦   ¦   ¦   ¦   ¦   no-global-assign.js
+¦   ¦   ¦   ¦   ¦   no-implicit-coercion.js
+¦   ¦   ¦   ¦   ¦   no-implicit-globals.js
+¦   ¦   ¦   ¦   ¦   no-implied-eval.js
+¦   ¦   ¦   ¦   ¦   no-import-assign.js
+¦   ¦   ¦   ¦   ¦   no-inline-comments.js
+¦   ¦   ¦   ¦   ¦   no-inner-declarations.js
+¦   ¦   ¦   ¦   ¦   no-invalid-regexp.js
+¦   ¦   ¦   ¦   ¦   no-invalid-this.js
+¦   ¦   ¦   ¦   ¦   no-irregular-whitespace.js
+¦   ¦   ¦   ¦   ¦   no-iterator.js
+¦   ¦   ¦   ¦   ¦   no-label-var.js
+¦   ¦   ¦   ¦   ¦   no-labels.js
+¦   ¦   ¦   ¦   ¦   no-lone-blocks.js
+¦   ¦   ¦   ¦   ¦   no-lonely-if.js
+¦   ¦   ¦   ¦   ¦   no-loop-func.js
+¦   ¦   ¦   ¦   ¦   no-loss-of-precision.js
+¦   ¦   ¦   ¦   ¦   no-magic-numbers.js
+¦   ¦   ¦   ¦   ¦   no-misleading-character-class.js
+¦   ¦   ¦   ¦   ¦   no-mixed-operators.js
+¦   ¦   ¦   ¦   ¦   no-mixed-requires.js
+¦   ¦   ¦   ¦   ¦   no-mixed-spaces-and-tabs.js
+¦   ¦   ¦   ¦   ¦   no-multi-assign.js
+¦   ¦   ¦   ¦   ¦   no-multi-spaces.js
+¦   ¦   ¦   ¦   ¦   no-multi-str.js
+¦   ¦   ¦   ¦   ¦   no-multiple-empty-lines.js
+¦   ¦   ¦   ¦   ¦   no-native-reassign.js
+¦   ¦   ¦   ¦   ¦   no-negated-condition.js
+¦   ¦   ¦   ¦   ¦   no-negated-in-lhs.js
+¦   ¦   ¦   ¦   ¦   no-nested-ternary.js
+¦   ¦   ¦   ¦   ¦   no-new-func.js
+¦   ¦   ¦   ¦   ¦   no-new-native-nonconstructor.js
+¦   ¦   ¦   ¦   ¦   no-new-object.js
+¦   ¦   ¦   ¦   ¦   no-new-require.js
+¦   ¦   ¦   ¦   ¦   no-new-symbol.js
+¦   ¦   ¦   ¦   ¦   no-new-wrappers.js
+¦   ¦   ¦   ¦   ¦   no-new.js
+¦   ¦   ¦   ¦   ¦   no-nonoctal-decimal-escape.js
+¦   ¦   ¦   ¦   ¦   no-obj-calls.js
+¦   ¦   ¦   ¦   ¦   no-object-constructor.js
+¦   ¦   ¦   ¦   ¦   no-octal-escape.js
+¦   ¦   ¦   ¦   ¦   no-octal.js
+¦   ¦   ¦   ¦   ¦   no-param-reassign.js
+¦   ¦   ¦   ¦   ¦   no-path-concat.js
+¦   ¦   ¦   ¦   ¦   no-plusplus.js
+¦   ¦   ¦   ¦   ¦   no-process-env.js
+¦   ¦   ¦   ¦   ¦   no-process-exit.js
+¦   ¦   ¦   ¦   ¦   no-promise-executor-return.js
+¦   ¦   ¦   ¦   ¦   no-proto.js
+¦   ¦   ¦   ¦   ¦   no-prototype-builtins.js
+¦   ¦   ¦   ¦   ¦   no-redeclare.js
+¦   ¦   ¦   ¦   ¦   no-regex-spaces.js
+¦   ¦   ¦   ¦   ¦   no-restricted-exports.js
+¦   ¦   ¦   ¦   ¦   no-restricted-globals.js
+¦   ¦   ¦   ¦   ¦   no-restricted-imports.js
+¦   ¦   ¦   ¦   ¦   no-restricted-modules.js
+¦   ¦   ¦   ¦   ¦   no-restricted-properties.js
+¦   ¦   ¦   ¦   ¦   no-restricted-syntax.js
+¦   ¦   ¦   ¦   ¦   no-return-assign.js
+¦   ¦   ¦   ¦   ¦   no-return-await.js
+¦   ¦   ¦   ¦   ¦   no-script-url.js
+¦   ¦   ¦   ¦   ¦   no-self-assign.js
+¦   ¦   ¦   ¦   ¦   no-self-compare.js
+¦   ¦   ¦   ¦   ¦   no-sequences.js
+¦   ¦   ¦   ¦   ¦   no-setter-return.js
+¦   ¦   ¦   ¦   ¦   no-shadow-restricted-names.js
+¦   ¦   ¦   ¦   ¦   no-shadow.js
+¦   ¦   ¦   ¦   ¦   no-spaced-func.js
+¦   ¦   ¦   ¦   ¦   no-sparse-arrays.js
+¦   ¦   ¦   ¦   ¦   no-sync.js
+¦   ¦   ¦   ¦   ¦   no-tabs.js
+¦   ¦   ¦   ¦   ¦   no-template-curly-in-string.js
+¦   ¦   ¦   ¦   ¦   no-ternary.js
+¦   ¦   ¦   ¦   ¦   no-this-before-super.js
+¦   ¦   ¦   ¦   ¦   no-throw-literal.js
+¦   ¦   ¦   ¦   ¦   no-trailing-spaces.js
+¦   ¦   ¦   ¦   ¦   no-unassigned-vars.js
+¦   ¦   ¦   ¦   ¦   no-undef-init.js
+¦   ¦   ¦   ¦   ¦   no-undef.js
+¦   ¦   ¦   ¦   ¦   no-undefined.js
+¦   ¦   ¦   ¦   ¦   no-underscore-dangle.js
+¦   ¦   ¦   ¦   ¦   no-unexpected-multiline.js
+¦   ¦   ¦   ¦   ¦   no-unmodified-loop-condition.js
+¦   ¦   ¦   ¦   ¦   no-unneeded-ternary.js
+¦   ¦   ¦   ¦   ¦   no-unreachable-loop.js
+¦   ¦   ¦   ¦   ¦   no-unreachable.js
+¦   ¦   ¦   ¦   ¦   no-unsafe-finally.js
+¦   ¦   ¦   ¦   ¦   no-unsafe-negation.js
+¦   ¦   ¦   ¦   ¦   no-unsafe-optional-chaining.js
+¦   ¦   ¦   ¦   ¦   no-unused-expressions.js
+¦   ¦   ¦   ¦   ¦   no-unused-labels.js
+¦   ¦   ¦   ¦   ¦   no-unused-private-class-members.js
+¦   ¦   ¦   ¦   ¦   no-unused-vars.js
+¦   ¦   ¦   ¦   ¦   no-use-before-define.js
+¦   ¦   ¦   ¦   ¦   no-useless-assignment.js
+¦   ¦   ¦   ¦   ¦   no-useless-backreference.js
+¦   ¦   ¦   ¦   ¦   no-useless-call.js
+¦   ¦   ¦   ¦   ¦   no-useless-catch.js
+¦   ¦   ¦   ¦   ¦   no-useless-computed-key.js
+¦   ¦   ¦   ¦   ¦   no-useless-concat.js
+¦   ¦   ¦   ¦   ¦   no-useless-constructor.js
+¦   ¦   ¦   ¦   ¦   no-useless-escape.js
+¦   ¦   ¦   ¦   ¦   no-useless-rename.js
+¦   ¦   ¦   ¦   ¦   no-useless-return.js
+¦   ¦   ¦   ¦   ¦   no-var.js
+¦   ¦   ¦   ¦   ¦   no-void.js
+¦   ¦   ¦   ¦   ¦   no-warning-comments.js
+¦   ¦   ¦   ¦   ¦   no-whitespace-before-property.js
+¦   ¦   ¦   ¦   ¦   no-with.js
+¦   ¦   ¦   ¦   ¦   nonblock-statement-body-position.js
+¦   ¦   ¦   ¦   ¦   object-curly-newline.js
+¦   ¦   ¦   ¦   ¦   object-curly-spacing.js
+¦   ¦   ¦   ¦   ¦   object-property-newline.js
+¦   ¦   ¦   ¦   ¦   object-shorthand.js
+¦   ¦   ¦   ¦   ¦   one-var-declaration-per-line.js
+¦   ¦   ¦   ¦   ¦   one-var.js
+¦   ¦   ¦   ¦   ¦   operator-assignment.js
+¦   ¦   ¦   ¦   ¦   operator-linebreak.js
+¦   ¦   ¦   ¦   ¦   padded-blocks.js
+¦   ¦   ¦   ¦   ¦   padding-line-between-statements.js
+¦   ¦   ¦   ¦   ¦   prefer-arrow-callback.js
+¦   ¦   ¦   ¦   ¦   prefer-const.js
+¦   ¦   ¦   ¦   ¦   prefer-destructuring.js
+¦   ¦   ¦   ¦   ¦   prefer-exponentiation-operator.js
+¦   ¦   ¦   ¦   ¦   prefer-named-capture-group.js
+¦   ¦   ¦   ¦   ¦   prefer-numeric-literals.js
+¦   ¦   ¦   ¦   ¦   prefer-object-has-own.js
+¦   ¦   ¦   ¦   ¦   prefer-object-spread.js
+¦   ¦   ¦   ¦   ¦   prefer-promise-reject-errors.js
+¦   ¦   ¦   ¦   ¦   prefer-reflect.js
+¦   ¦   ¦   ¦   ¦   prefer-regex-literals.js
+¦   ¦   ¦   ¦   ¦   prefer-rest-params.js
+¦   ¦   ¦   ¦   ¦   prefer-spread.js
+¦   ¦   ¦   ¦   ¦   prefer-template.js
+¦   ¦   ¦   ¦   ¦   quote-props.js
+¦   ¦   ¦   ¦   ¦   quotes.js
+¦   ¦   ¦   ¦   ¦   radix.js
+¦   ¦   ¦   ¦   ¦   require-atomic-updates.js
+¦   ¦   ¦   ¦   ¦   require-await.js
+¦   ¦   ¦   ¦   ¦   require-unicode-regexp.js
+¦   ¦   ¦   ¦   ¦   require-yield.js
+¦   ¦   ¦   ¦   ¦   rest-spread-spacing.js
+¦   ¦   ¦   ¦   ¦   semi-spacing.js
+¦   ¦   ¦   ¦   ¦   semi-style.js
+¦   ¦   ¦   ¦   ¦   semi.js
+¦   ¦   ¦   ¦   ¦   sort-imports.js
+¦   ¦   ¦   ¦   ¦   sort-keys.js
+¦   ¦   ¦   ¦   ¦   sort-vars.js
+¦   ¦   ¦   ¦   ¦   space-before-blocks.js
+¦   ¦   ¦   ¦   ¦   space-before-function-paren.js
+¦   ¦   ¦   ¦   ¦   space-in-parens.js
+¦   ¦   ¦   ¦   ¦   space-infix-ops.js
+¦   ¦   ¦   ¦   ¦   space-unary-ops.js
+¦   ¦   ¦   ¦   ¦   spaced-comment.js
+¦   ¦   ¦   ¦   ¦   strict.js
+¦   ¦   ¦   ¦   ¦   switch-colon-spacing.js
+¦   ¦   ¦   ¦   ¦   symbol-description.js
+¦   ¦   ¦   ¦   ¦   template-curly-spacing.js
+¦   ¦   ¦   ¦   ¦   template-tag-spacing.js
+¦   ¦   ¦   ¦   ¦   unicode-bom.js
+¦   ¦   ¦   ¦   ¦   use-isnan.js
+¦   ¦   ¦   ¦   ¦   valid-typeof.js
+¦   ¦   ¦   ¦   ¦   vars-on-top.js
+¦   ¦   ¦   ¦   ¦   wrap-iife.js
+¦   ¦   ¦   ¦   ¦   wrap-regex.js
+¦   ¦   ¦   ¦   ¦   yield-star-spacing.js
+¦   ¦   ¦   ¦   ¦   yoda.js
+¦   ¦   ¦   ¦   ¦   
+¦   ¦   ¦   ¦   +---utils
+¦   ¦   ¦   ¦       ¦   ast-utils.js
+¦   ¦   ¦   ¦       ¦   char-source.js
+¦   ¦   ¦   ¦       ¦   fix-tracker.js
+¦   ¦   ¦   ¦       ¦   keywords.js
+¦   ¦   ¦   ¦       ¦   lazy-loading-rule-map.js
+¦   ¦   ¦   ¦       ¦   regular-expressions.js
+¦   ¦   ¦   ¦       ¦   
+¦   ¦   ¦   ¦       +---unicode
+¦   ¦   ¦   ¦               index.js
+¦   ¦   ¦   ¦               is-combining-character.js
+¦   ¦   ¦   ¦               is-emoji-modifier.js
+¦   ¦   ¦   ¦               is-regional-indicator-symbol.js
+¦   ¦   ¦   ¦               is-surrogate-pair.js
+¦   ¦   ¦   ¦               
+¦   ¦   ¦   +---services
+¦   ¦   ¦   ¦       parser-service.js
+¦   ¦   ¦   ¦       processor-service.js
+¦   ¦   ¦   ¦       suppressions-service.js
+¦   ¦   ¦   ¦       warning-service.js
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---shared
+¦   ¦   ¦   ¦       ajv.js
+¦   ¦   ¦   ¦       assert.js
+¦   ¦   ¦   ¦       ast-utils.js
+¦   ¦   ¦   ¦       deep-merge-arrays.js
+¦   ¦   ¦   ¦       directives.js
+¦   ¦   ¦   ¦       flags.js
+¦   ¦   ¦   ¦       logging.js
+¦   ¦   ¦   ¦       naming.js
+¦   ¦   ¦   ¦       option-utils.js
+¦   ¦   ¦   ¦       relative-module-resolver.js
+¦   ¦   ¦   ¦       runtime-info.js
+¦   ¦   ¦   ¦       serialization.js
+¦   ¦   ¦   ¦       severity.js
+¦   ¦   ¦   ¦       stats.js
+¦   ¦   ¦   ¦       string-utils.js
+¦   ¦   ¦   ¦       text-table.js
+¦   ¦   ¦   ¦       traverser.js
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---types
+¦   ¦   ¦           config-api.d.ts
+¦   ¦   ¦           index.d.ts
+¦   ¦   ¦           rules.d.ts
+¦   ¦   ¦           universal.d.ts
+¦   ¦   ¦           use-at-your-own-risk.d.ts
+¦   ¦   ¦           
+¦   ¦   +---messages
+¦   ¦           all-files-ignored.js
+¦   ¦           all-matched-files-ignored.js
+¦   ¦           config-file-missing.js
+¦   ¦           config-plugin-missing.js
+¦   ¦           config-serialize-function.js
+¦   ¦           eslintrc-incompat.js
+¦   ¦           eslintrc-plugins.js
+¦   ¦           extend-config-missing.js
+¦   ¦           failed-to-read-json.js
+¦   ¦           file-not-found.js
+¦   ¦           invalid-rule-options.js
+¦   ¦           invalid-rule-severity.js
+¦   ¦           no-config-found.js
+¦   ¦           plugin-conflict.js
+¦   ¦           plugin-invalid.js
+¦   ¦           plugin-missing.js
+¦   ¦           print-config-with-directory-path.js
+¦   ¦           shared.js
+¦   ¦           whitespace-found.js
+¦   ¦           
+¦   +---eslint-config-prettier
+¦   ¦   ¦   flat.d.ts
+¦   ¦   ¦   flat.js
+¦   ¦   ¦   index.d.ts
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   prettier.d.ts
+¦   ¦   ¦   prettier.js
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---bin
+¦   ¦           cli.js
+¦   ¦           validators.js
+¦   ¦           
+¦   +---eslint-plugin-prettier
+¦   ¦       eslint-plugin-prettier.d.ts
+¦   ¦       eslint-plugin-prettier.js
+¦   ¦       LICENSE.md
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       recommended.d.ts
+¦   ¦       recommended.js
+¦   ¦       worker.mjs
+¦   ¦       
+¦   +---eslint-scope
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---dist
+¦   ¦   ¦       eslint-scope.cjs
+¦   ¦   ¦       
+¦   ¦   +---lib
+¦   ¦           assert.js
+¦   ¦           definition.js
+¦   ¦           index.js
+¦   ¦           pattern-visitor.js
+¦   ¦           reference.js
+¦   ¦           referencer.js
+¦   ¦           scope-manager.js
+¦   ¦           scope.js
+¦   ¦           variable.js
+¦   ¦           version.js
+¦   ¦           
+¦   +---eslint-visitor-keys
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---dist
+¦   ¦   ¦       eslint-visitor-keys.cjs
+¦   ¦   ¦       eslint-visitor-keys.d.cts
+¦   ¦   ¦       index.d.ts
+¦   ¦   ¦       visitor-keys.d.ts
+¦   ¦   ¦       
+¦   ¦   +---lib
+¦   ¦           index.js
+¦   ¦           visitor-keys.js
+¦   ¦           
+¦   +---espree
+¦   ¦   ¦   espree.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---dist
+¦   ¦   ¦       espree.cjs
+¦   ¦   ¦       
+¦   ¦   +---lib
+¦   ¦           espree.js
+¦   ¦           features.js
+¦   ¦           options.js
+¦   ¦           token-translator.js
+¦   ¦           version.js
+¦   ¦           
+¦   +---esquery
+¦   ¦   ¦   license.txt
+¦   ¦   ¦   package.json
+¦   ¦   ¦   parser.js
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---dist
+¦   ¦           esquery.esm.js
+¦   ¦           esquery.esm.min.js
+¦   ¦           esquery.esm.min.js.map
+¦   ¦           esquery.js
+¦   ¦           esquery.lite.js
+¦   ¦           esquery.lite.min.js
+¦   ¦           esquery.lite.min.js.map
+¦   ¦           esquery.min.js
+¦   ¦           esquery.min.js.map
+¦   ¦           
+¦   +---esrecurse
+¦   ¦       .babelrc
+¦   ¦       esrecurse.js
+¦   ¦       gulpfile.babel.js
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---estraverse
+¦   ¦       .jshintrc
+¦   ¦       estraverse.js
+¦   ¦       gulpfile.js
+¦   ¦       LICENSE.BSD
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---esutils
+¦   ¦   ¦   LICENSE.BSD
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---lib
+¦   ¦           ast.js
+¦   ¦           code.js
+¦   ¦           keyword.js
+¦   ¦           utils.js
+¦   ¦           
+¦   +---fast-deep-equal
+¦   ¦   ¦   index.d.ts
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   react.d.ts
+¦   ¦   ¦   react.js
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---es6
+¦   ¦           index.d.ts
+¦   ¦           index.js
+¦   ¦           react.d.ts
+¦   ¦           react.js
+¦   ¦           
+¦   +---fast-diff
+¦   ¦       diff.d.ts
+¦   ¦       diff.js
+¦   ¦       LICENSE
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---fast-json-stable-stringify
+¦   ¦   ¦   .eslintrc.yml
+¦   ¦   ¦   .travis.yml
+¦   ¦   ¦   index.d.ts
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---.github
+¦   ¦   ¦       FUNDING.yml
+¦   ¦   ¦       
+¦   ¦   +---benchmark
+¦   ¦   ¦       index.js
+¦   ¦   ¦       test.json
+¦   ¦   ¦       
+¦   ¦   +---example
+¦   ¦   ¦       key_cmp.js
+¦   ¦   ¦       nested.js
+¦   ¦   ¦       str.js
+¦   ¦   ¦       value_cmp.js
+¦   ¦   ¦       
+¦   ¦   +---test
+¦   ¦           cmp.js
+¦   ¦           nested.js
+¦   ¦           str.js
+¦   ¦           to-json.js
+¦   ¦           
+¦   +---fast-levenshtein
+¦   ¦       levenshtein.js
+¦   ¦       LICENSE.md
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---file-entry-cache
+¦   ¦       cache.js
+¦   ¦       LICENSE
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---find-up
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---flat-cache
+¦   ¦   ¦   changelog.md
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---src
+¦   ¦           cache.js
+¦   ¦           del.js
+¦   ¦           utils.js
+¦   ¦           
+¦   +---flatted
+¦   ¦   ¦   es.js
+¦   ¦   ¦   esm.js
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   min.js
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---cjs
+¦   ¦   ¦       index.js
+¦   ¦   ¦       package.json
+¦   ¦   ¦       
+¦   ¦   +---esm
+¦   ¦   ¦       index.js
+¦   ¦   ¦       
+¦   ¦   +---php
+¦   ¦   ¦       flatted.php
+¦   ¦   ¦       
+¦   ¦   +---python
+¦   ¦   ¦       flatted.py
+¦   ¦   ¦       
+¦   ¦   +---types
+¦   ¦           index.d.ts
+¦   ¦           
+¦   +---glob-parent
+¦   ¦       index.js
+¦   ¦       LICENSE
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---globals
+¦   ¦       globals.json
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---has-flag
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---ignore
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       legacy.js
+¦   ¦       LICENSE-MIT
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---import-fresh
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---imurmurhash
+¦   ¦       imurmurhash.js
+¦   ¦       imurmurhash.min.js
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---is-extglob
+¦   ¦       index.js
+¦   ¦       LICENSE
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---is-glob
+¦   ¦       index.js
+¦   ¦       LICENSE
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---isexe
+¦   ¦   ¦   .npmignore
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   mode.js
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   windows.js
+¦   ¦   ¦   
+¦   ¦   +---test
+¦   ¦           basic.js
+¦   ¦           
+¦   +---js-yaml
+¦   ¦   ¦   CHANGELOG.md
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---bin
+¦   ¦   ¦       js-yaml.js
+¦   ¦   ¦       
+¦   ¦   +---dist
+¦   ¦   ¦       js-yaml.js
+¦   ¦   ¦       js-yaml.min.js
+¦   ¦   ¦       js-yaml.mjs
+¦   ¦   ¦       
+¦   ¦   +---lib
+¦   ¦       ¦   common.js
+¦   ¦       ¦   dumper.js
+¦   ¦       ¦   exception.js
+¦   ¦       ¦   loader.js
+¦   ¦       ¦   schema.js
+¦   ¦       ¦   snippet.js
+¦   ¦       ¦   type.js
+¦   ¦       ¦   
+¦   ¦       +---schema
+¦   ¦       ¦       core.js
+¦   ¦       ¦       default.js
+¦   ¦       ¦       failsafe.js
+¦   ¦       ¦       json.js
+¦   ¦       ¦       
+¦   ¦       +---type
+¦   ¦               binary.js
+¦   ¦               bool.js
+¦   ¦               float.js
+¦   ¦               int.js
+¦   ¦               map.js
+¦   ¦               merge.js
+¦   ¦               null.js
+¦   ¦               omap.js
+¦   ¦               pairs.js
+¦   ¦               seq.js
+¦   ¦               set.js
+¦   ¦               str.js
+¦   ¦               timestamp.js
+¦   ¦               
+¦   +---json-buffer
+¦   ¦   ¦   .travis.yml
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---test
+¦   ¦           index.js
+¦   ¦           
+¦   +---json-schema-traverse
+¦   ¦   ¦   .eslintrc.yml
+¦   ¦   ¦   .travis.yml
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---spec
+¦   ¦       ¦   .eslintrc.yml
+¦   ¦       ¦   index.spec.js
+¦   ¦       ¦   
+¦   ¦       +---fixtures
+¦   ¦               schema.js
+¦   ¦               
+¦   +---json-stable-stringify-without-jsonify
+¦   ¦   ¦   .npmignore
+¦   ¦   ¦   .travis.yml
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   readme.markdown
+¦   ¦   ¦   
+¦   ¦   +---example
+¦   ¦   ¦       key_cmp.js
+¦   ¦   ¦       nested.js
+¦   ¦   ¦       str.js
+¦   ¦   ¦       value_cmp.js
+¦   ¦   ¦       
+¦   ¦   +---test
+¦   ¦           cmp.js
+¦   ¦           nested.js
+¦   ¦           replacer.js
+¦   ¦           space.js
+¦   ¦           str.js
+¦   ¦           to-json.js
+¦   ¦           
+¦   +---keyv
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---src
+¦   ¦           index.d.ts
+¦   ¦           index.js
+¦   ¦           
+¦   +---levn
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---lib
+¦   ¦           cast.js
+¦   ¦           index.js
+¦   ¦           parse-string.js
+¦   ¦           
+¦   +---locate-path
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---lodash.merge
+¦   ¦       index.js
+¦   ¦       LICENSE
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---mdn-data
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---api
+¦   ¦   ¦       index.js
+¦   ¦   ¦       inheritance.json
+¦   ¦   ¦       inheritance.schema.json
+¦   ¦   ¦       
+¦   ¦   +---css
+¦   ¦   ¦       at-rules.json
+¦   ¦   ¦       at-rules.schema.json
+¦   ¦   ¦       definitions.json
+¦   ¦   ¦       functions.json
+¦   ¦   ¦       functions.schema.json
+¦   ¦   ¦       index.js
+¦   ¦   ¦       properties.json
+¦   ¦   ¦       properties.schema.json
+¦   ¦   ¦       selectors.json
+¦   ¦   ¦       selectors.schema.json
+¦   ¦   ¦       syntaxes.json
+¦   ¦   ¦       syntaxes.schema.json
+¦   ¦   ¦       types.json
+¦   ¦   ¦       types.schema.json
+¦   ¦   ¦       units.json
+¦   ¦   ¦       units.schema.json
+¦   ¦   ¦       
+¦   ¦   +---l10n
+¦   ¦           css.json
+¦   ¦           index.js
+¦   ¦           
+¦   +---minimatch
+¦   ¦       LICENSE
+¦   ¦       minimatch.js
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---ms
+¦   ¦       index.js
+¦   ¦       license.md
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---natural-compare
+¦   ¦       index.js
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---optionator
+¦   ¦   ¦   CHANGELOG.md
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---lib
+¦   ¦           help.js
+¦   ¦           index.js
+¦   ¦           util.js
+¦   ¦           
+¦   +---p-limit
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---p-locate
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---parent-module
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---path-exists
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---path-key
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---prelude-ls
+¦   ¦   ¦   CHANGELOG.md
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---lib
+¦   ¦           Func.js
+¦   ¦           index.js
+¦   ¦           List.js
+¦   ¦           Num.js
+¦   ¦           Obj.js
+¦   ¦           Str.js
+¦   ¦           
+¦   +---prettier
+¦   ¦   ¦   doc.d.ts
+¦   ¦   ¦   doc.js
+¦   ¦   ¦   doc.mjs
+¦   ¦   ¦   index.cjs
+¦   ¦   ¦   index.d.ts
+¦   ¦   ¦   index.mjs
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   standalone.d.ts
+¦   ¦   ¦   standalone.js
+¦   ¦   ¦   standalone.mjs
+¦   ¦   ¦   THIRD-PARTY-NOTICES.md
+¦   ¦   ¦   
+¦   ¦   +---bin
+¦   ¦   ¦       prettier.cjs
+¦   ¦   ¦       
+¦   ¦   +---internal
+¦   ¦   ¦       experimental-cli-worker.mjs
+¦   ¦   ¦       experimental-cli.mjs
+¦   ¦   ¦       legacy-cli.mjs
+¦   ¦   ¦       
+¦   ¦   +---plugins
+¦   ¦           acorn.d.ts
+¦   ¦           acorn.js
+¦   ¦           acorn.mjs
+¦   ¦           angular.d.ts
+¦   ¦           angular.js
+¦   ¦           angular.mjs
+¦   ¦           babel.d.ts
+¦   ¦           babel.js
+¦   ¦           babel.mjs
+¦   ¦           estree.d.ts
+¦   ¦           estree.js
+¦   ¦           estree.mjs
+¦   ¦           flow.d.ts
+¦   ¦           flow.js
+¦   ¦           flow.mjs
+¦   ¦           glimmer.d.ts
+¦   ¦           glimmer.js
+¦   ¦           glimmer.mjs
+¦   ¦           graphql.d.ts
+¦   ¦           graphql.js
+¦   ¦           graphql.mjs
+¦   ¦           html.d.ts
+¦   ¦           html.js
+¦   ¦           html.mjs
+¦   ¦           markdown.d.ts
+¦   ¦           markdown.js
+¦   ¦           markdown.mjs
+¦   ¦           meriyah.d.ts
+¦   ¦           meriyah.js
+¦   ¦           meriyah.mjs
+¦   ¦           postcss.d.ts
+¦   ¦           postcss.js
+¦   ¦           postcss.mjs
+¦   ¦           typescript.d.ts
+¦   ¦           typescript.js
+¦   ¦           typescript.mjs
+¦   ¦           yaml.d.ts
+¦   ¦           yaml.js
+¦   ¦           yaml.mjs
+¦   ¦           
+¦   +---prettier-linter-helpers
+¦   ¦   ¦   .editorconfig
+¦   ¦   ¦   .eslintignore
+¦   ¦   ¦   .eslintrc.js
+¦   ¦   ¦   .prettierignore
+¦   ¦   ¦   .prettierrc
+¦   ¦   ¦   index.js
+¦   ¦   ¦   LICENSE.md
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---.github
+¦   ¦   ¦       CONTRIBUTING.md
+¦   ¦   ¦       
+¦   ¦   +---.vscode
+¦   ¦   ¦       settings.json
+¦   ¦   ¦       
+¦   ¦   +---test
+¦   ¦           index.test.js
+¦   ¦           
+¦   +---punycode
+¦   ¦       LICENSE-MIT.txt
+¦   ¦       package.json
+¦   ¦       punycode.es6.js
+¦   ¦       punycode.js
+¦   ¦       README.md
+¦   ¦       
+¦   +---resolve-from
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---shebang-command
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---shebang-regex
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---source-map-js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   source-map.d.ts
+¦   ¦   ¦   source-map.js
+¦   ¦   ¦   
+¦   ¦   +---lib
+¦   ¦           array-set.js
+¦   ¦           base64-vlq.js
+¦   ¦           base64.js
+¦   ¦           binary-search.js
+¦   ¦           mapping-list.js
+¦   ¦           quick-sort.js
+¦   ¦           source-map-consumer.d.ts
+¦   ¦           source-map-consumer.js
+¦   ¦           source-map-generator.d.ts
+¦   ¦           source-map-generator.js
+¦   ¦           source-node.d.ts
+¦   ¦           source-node.js
+¦   ¦           util.js
+¦   ¦           
+¦   +---strip-json-comments
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---supports-color
+¦   ¦       browser.js
+¦   ¦       index.js
+¦   ¦       license
+¦   ¦       package.json
+¦   ¦       readme.md
+¦   ¦       
+¦   +---synckit
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---lib
+¦   ¦           common.d.ts
+¦   ¦           common.js
+¦   ¦           common.js.map
+¦   ¦           constants.d.ts
+¦   ¦           constants.js
+¦   ¦           constants.js.map
+¦   ¦           helpers.d.ts
+¦   ¦           helpers.js
+¦   ¦           helpers.js.map
+¦   ¦           index.cjs
+¦   ¦           index.d.cts
+¦   ¦           index.d.ts
+¦   ¦           index.js
+¦   ¦           index.js.map
+¦   ¦           types.d.ts
+¦   ¦           types.js
+¦   ¦           types.js.map
+¦   ¦           
+¦   +---type-check
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   
+¦   ¦   +---lib
+¦   ¦           check.js
+¦   ¦           index.js
+¦   ¦           parse-type.js
+¦   ¦           
+¦   +---uri-js
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   yarn.lock
+¦   ¦   ¦   
+¦   ¦   +---dist
+¦   ¦       +---es5
+¦   ¦       ¦       uri.all.d.ts
+¦   ¦       ¦       uri.all.js
+¦   ¦       ¦       uri.all.js.map
+¦   ¦       ¦       uri.all.min.d.ts
+¦   ¦       ¦       uri.all.min.js
+¦   ¦       ¦       uri.all.min.js.map
+¦   ¦       ¦       
+¦   ¦       +---esnext
+¦   ¦           ¦   index.d.ts
+¦   ¦           ¦   index.js
+¦   ¦           ¦   index.js.map
+¦   ¦           ¦   regexps-iri.d.ts
+¦   ¦           ¦   regexps-iri.js
+¦   ¦           ¦   regexps-iri.js.map
+¦   ¦           ¦   regexps-uri.d.ts
+¦   ¦           ¦   regexps-uri.js
+¦   ¦           ¦   regexps-uri.js.map
+¦   ¦           ¦   uri.d.ts
+¦   ¦           ¦   uri.js
+¦   ¦           ¦   uri.js.map
+¦   ¦           ¦   util.d.ts
+¦   ¦           ¦   util.js
+¦   ¦           ¦   util.js.map
+¦   ¦           ¦   
+¦   ¦           +---schemes
+¦   ¦                   http.d.ts
+¦   ¦                   http.js
+¦   ¦                   http.js.map
+¦   ¦                   https.d.ts
+¦   ¦                   https.js
+¦   ¦                   https.js.map
+¦   ¦                   mailto.d.ts
+¦   ¦                   mailto.js
+¦   ¦                   mailto.js.map
+¦   ¦                   urn-uuid.d.ts
+¦   ¦                   urn-uuid.js
+¦   ¦                   urn-uuid.js.map
+¦   ¦                   urn.d.ts
+¦   ¦                   urn.js
+¦   ¦                   urn.js.map
+¦   ¦                   ws.d.ts
+¦   ¦                   ws.js
+¦   ¦                   ws.js.map
+¦   ¦                   wss.d.ts
+¦   ¦                   wss.js
+¦   ¦                   wss.js.map
+¦   ¦                   
+¦   +---which
+¦   ¦   ¦   CHANGELOG.md
+¦   ¦   ¦   LICENSE
+¦   ¦   ¦   package.json
+¦   ¦   ¦   README.md
+¦   ¦   ¦   which.js
+¦   ¦   ¦   
+¦   ¦   +---bin
+¦   ¦           node-which
+¦   ¦           
+¦   +---word-wrap
+¦   ¦       index.d.ts
+¦   ¦       index.js
+¦   ¦       LICENSE
+¦   ¦       package.json
+¦   ¦       README.md
+¦   ¦       
+¦   +---yocto-queue
+¦           index.d.ts
+¦           index.js
+¦           license
+¦           package.json
+¦           readme.md
+¦           
++---student
+¦       a-i-coach.js
+¦       ai-api.js
+¦       checklists.js
+¦       flashcards.js
+¦       index.js
+¦       practice-tests.js
+¦       profile.js
+¦       student-dashboard.js
+¦       test-engine.js
+¦       test-results.js
+¦       test-review.js
+¦       walkthrough.js
+¦       
++---superadmin
+¦       billing.js
+¦       compliance-center.js
+¦       index.js
+¦       logs.js
+¦       permissions.js
+¦       school-management.js
+¦       settings.js
+¦       superadmin-dashboard.js
+¦       user-management.js
+¦       
++---utils
+        user-profile.js
+        

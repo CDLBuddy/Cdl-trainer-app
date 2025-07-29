@@ -23,7 +23,7 @@ import {
 } from '../ui-helpers.js';
 
 import { renderInstructorDashboard } from './instructor-dashboard.js';
-import { renderChecklistReviewForInstructor } from './instructor-checklist.js';
+import { renderChecklistReviewForInstructor } from './checklist-review-for-instructor.js';
 
 export async function renderStudentProfileForInstructor(
   studentEmail,

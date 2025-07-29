@@ -1,4 +1,4 @@
-// instructor/instructor-checklist.js
+// instructor/checklist-review-for-instructor.js
 
 import { db } from '../firebase.js';
 import {

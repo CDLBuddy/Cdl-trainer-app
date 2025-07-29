@@ -181,7 +181,7 @@ export function handleNavigation(page, direction = 'forward', ...args) {
     // --- DEFAULT FALLBACK: Role-based dashboard ---
     default:
       if (NAV_DEBUG)
-        console.warn(`[NAV] Unknown route "${page}" – fallback to dashboard`);
+        console.warn(`[NAV] Unknown route "${page}" - fallback to dashboard`);
       switch (role) {
         case 'superadmin':
           return (

@@ -3,7 +3,7 @@
 // === STUDENT MODULE BARREL IMPORTS ===
 import { renderStudentDashboard } from './student-dashboard.js';
 import { renderProfile } from './profile.js';
-import { renderAICoach } from './a-i-coach.js';
+import { renderAICoach } from './ai-coach.js';
 import { renderWalkthrough } from './walkthrough.js';
 import { renderChecklists } from './checklists.js';
 import { renderPracticeTests } from './practice-tests.js';

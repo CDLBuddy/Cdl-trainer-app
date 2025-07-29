@@ -10,7 +10,7 @@ import {
   renderBilling,
   renderSettings,
   renderLogs,
-} from '../superadmin-index.js'; // <-- Barrel import: from root!
+} from './index.js'; // <-- Barrel import: from root!
 
 import { showToast, setupNavigation } from '../ui-helpers.js';
 

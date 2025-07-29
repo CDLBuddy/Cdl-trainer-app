@@ -18,7 +18,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
 import { renderProfile } from './profile.js';
-import { renderAICoach } from './a-i-coach.js';
+import { renderAICoach } from './ai-coach.js';
 import { renderWalkthrough } from './walkthrough.js';
 import { renderChecklists } from './checklists.js';
 import { renderPracticeTests } from './practice-tests.js';
