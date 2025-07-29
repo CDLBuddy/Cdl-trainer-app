@@ -13,25 +13,27 @@ import {
   setupNavigation,
   getNextChecklistAlert,
 } from '../ui-helpers.js';
-
-// Barrel import for all instructor/role-based pages:
 import * as instructorPages from './index.js';
 import { renderWelcome } from '../welcome.js';
 
-// Main instructor dashboard
+// --- MAIN INSTRUCTOR DASHBOARD ---
 export async function renderInstructorDashboard(
   container = document.getElementById('app')
 ) {
   if (!container) return;
+
+  // (Optional) Show loader while fetching
+  // container.innerHTML = '<div class="loader"></div>';
+
   let currentUserEmail =
     window.currentUserEmail || localStorage.getItem('currentUserEmail') || null;
   if (!currentUserEmail) {
-    showToast('No user found. Please log in again.');
+    showToast('No user found. Please log in again.', 3500, 'error');
     renderWelcome();
     return;
   }
 
-  // Role check
+  // --- Fetch user info & role
   let userData = {};
   let userRole = localStorage.getItem('userRole') || 'instructor';
   try {
@@ -47,12 +49,12 @@ export async function renderInstructorDashboard(
     userData = {};
   }
   if (userRole !== 'instructor') {
-    showToast('Access denied: Instructor role required.');
+    showToast('Access denied: Instructor role required.', 4000, 'error');
     if (instructorPages.renderDashboard) instructorPages.renderDashboard();
     return;
   }
 
-  // === Fetch Assigned Students (admin-assigned only) ===
+  // --- Fetch assigned students (admin-assigned only)
   let assignedStudents = [];
   try {
     const assignSnap = await getDocs(
@@ -78,10 +80,11 @@ export async function renderInstructorDashboard(
     });
   } catch (e) {
     assignedStudents = [];
+    showToast('Error fetching assigned students.', 3500, 'error');
     console.error('Assigned students fetch error', e);
   }
 
-  // === Fetch Latest Test Results per Student ===
+  // --- Fetch latest test results per student
   let testResultsByStudent = {};
   try {
     for (const student of assignedStudents) {
@@ -116,10 +119,11 @@ export async function renderInstructorDashboard(
     }
   } catch (e) {
     testResultsByStudent = {};
+    showToast('Error fetching test results.', 3200, 'error');
     console.error('Instructor test results error', e);
   }
 
-  // === Dashboard Layout HTML ===
+  // --- Main Dashboard Layout HTML
   container.innerHTML = `
     <h2 class="dash-head">Welcome, Instructor! <span class="role-badge instructor">Instructor</span></h2>
     <button class="btn" id="edit-instructor-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
@@ -195,7 +199,7 @@ export async function renderInstructorDashboard(
 
   setupNavigation();
 
-  // === Profile Edit ===
+  // --- Profile Edit ---
   document
     .getElementById('edit-instructor-profile-btn')
     ?.addEventListener('click', () => {
@@ -203,41 +207,51 @@ export async function renderInstructorDashboard(
         instructorPages.renderInstructorProfile();
     });
 
-  // === Logout ===
+  // --- Logout ---
   document.getElementById('logout-btn')?.addEventListener('click', async () => {
     await signOut(auth);
     localStorage.clear();
     renderWelcome();
   });
 
-  // === View Student Profile (click name or button) ===
+  // --- View Student Profile ---
   container
     .querySelectorAll('.student-name, button[data-nav="viewStudentProfile"]')
     .forEach((el) => {
       el.addEventListener('click', () => {
         const studentEmail =
           el.getAttribute('data-email') || el.getAttribute('data-student');
-        if (instructorPages.renderStudentProfileForInstructor) {
+        if (instructorPages.renderStudentProfileForInstructor && studentEmail) {
           instructorPages.renderStudentProfileForInstructor(studentEmail);
+        } else {
+          showToast('No student email found.', 3000, 'error');
         }
       });
     });
 
-  // === Checklist Review modal ===
+  // --- Checklist Review modal ---
   container
     .querySelectorAll('button[data-nav="reviewChecklist"]')
     .forEach((btn) => {
       btn.addEventListener('click', () => {
         const studentEmail = btn.getAttribute('data-student');
-        if (instructorPages.renderChecklistReviewForInstructor) {
+        if (
+          instructorPages.renderChecklistReviewForInstructor &&
+          studentEmail
+        ) {
           instructorPages.renderChecklistReviewForInstructor(studentEmail);
+        } else {
+          showToast(
+            'No student email found for checklist review.',
+            3200,
+            'error'
+          );
         }
       });
     });
 
-  // === CSV Export ===
+  // --- CSV Export ---
   document.getElementById('export-csv-btn')?.addEventListener('click', () => {
-    // CSV headers
     const headers = [
       'Name',
       'Email',
@@ -249,7 +263,6 @@ export async function renderInstructorDashboard(
       'Checklist Alerts',
       'Last Test',
     ];
-    // Build rows
     const rows = assignedStudents.map((s) => [
       `"${s.name}"`,
       `"${s.email}"`,
@@ -269,9 +282,7 @@ export async function renderInstructorDashboard(
           : 'No recent test'
       }"`,
     ]);
-    // CSV string
     const csv = [headers, ...rows].map((row) => row.join(',')).join('\r\n');
-    // Download
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

@@ -1,45 +1,66 @@
-// import-barrel-checker.cjs
+// dev-utils/import-barrel-checker.cjs
+
 const fs = require('fs');
 const path = require('path');
 
-// === Folders to check ===
-const roleFolders = ['student', 'instructor', 'admin', 'superadmin'];
+// Always run relative to project root (one up from dev-utils)
+const projectRoot = path.resolve(__dirname, '..');
+process.chdir(projectRoot);
 
-// === Function to check imports for a single barrel/index.js ===
-function checkImportsForBarrel(folder) {
-  const barrelPath = path.join(__dirname, folder, 'index.js');
+const barrelFiles = [
+  'student/index.js',
+  'instructor/index.js',
+  'admin/index.js',
+  'superadmin/index.js',
+];
+
+let allValid = true;
+
+for (const barrelPath of barrelFiles) {
   if (!fs.existsSync(barrelPath)) {
-    console.warn(`⚠️  Barrel file missing: ${barrelPath}`);
-    return;
+    console.log(
+      `⚠️  Barrel file missing: ${path.join(projectRoot, barrelPath)}`
+    );
+    allValid = false;
+    continue;
   }
 
-  const content = fs.readFileSync(barrelPath, 'utf8');
-  // Match import { ... } from './something.js';
-  const importRegex = /import\s+.*?from\s+['"](\.\/.*?\.js)['"]/g;
-  let match,
-    missing = [],
-    found = [];
-  while ((match = importRegex.exec(content)) !== null) {
+  const src = fs.readFileSync(barrelPath, 'utf8');
+  // Find local imports only (relative paths)
+  const importRegex = /import\s+.*?['"](\.\/[^'"]+)['"]/g;
+  let match;
+  let broken = [];
+  let count = 0;
+  while ((match = importRegex.exec(src))) {
     const importPath = match[1];
-    const fullPath = path.join(__dirname, folder, importPath);
-    if (fs.existsSync(fullPath)) {
-      found.push(importPath);
-    } else {
-      missing.push(importPath);
+    const absImportPath = path.resolve(path.dirname(barrelPath), importPath);
+    // If importing a directory, try index.js
+    let testPath = absImportPath;
+    if (!fs.existsSync(testPath)) {
+      if (fs.existsSync(testPath + '.js')) {
+        testPath = testPath + '.js';
+      } else if (fs.existsSync(path.join(testPath, 'index.js'))) {
+        testPath = path.join(testPath, 'index.js');
+      } else {
+        broken.push(importPath);
+      }
     }
+    count++;
   }
-
-  // Output summary
-  if (missing.length === 0) {
-    console.log(`✅ All imports in ${folder}/index.js exist and match!`);
+  if (broken.length > 0) {
+    allValid = false;
+    console.log(`❌ Broken imports in: ${barrelPath}`);
+    broken.forEach((f) => console.log(`   - ${f}`));
   } else {
-    console.log(`❌ Missing files for ${folder}/index.js:`);
-    missing.forEach((p) => console.log(`   - ${p}`));
-  }
-  if (found.length) {
-    console.log(`   [Checked ${found.length + missing.length} imports]`);
+    console.log(`✅ All imports in ${barrelPath} exist and match!`);
+    console.log(`   [Checked ${count} imports]`);
   }
 }
 
-// === Main ===
-roleFolders.forEach((folder) => checkImportsForBarrel(folder));
+if (allValid) {
+  console.log('\n🎉 All checked barrel files passed!');
+} else {
+  console.log(
+    '\n⚠️  Some issues detected above. Fix broken imports before committing!'
+  );
+}

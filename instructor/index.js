@@ -22,6 +22,12 @@ export function handleInstructorNav(page, ...args) {
   const container = args[1] || document.getElementById('app');
   window.currentUserRole = 'instructor';
 
+  // Extract param if hash includes a colon, e.g., #instructor-checklist-review:student@email.com
+  let param = null;
+  if (typeof page === 'string' && page.includes(':')) {
+    [page, param] = page.split(':');
+  }
+
   switch (page) {
     case 'instructor-dashboard':
       renderInstructorDashboard(container);
@@ -30,7 +36,7 @@ export function handleInstructorNav(page, ...args) {
       renderInstructorProfile(container);
       break;
     case 'instructor-checklist-review':
-      renderChecklistReviewForInstructor(container);
+      renderChecklistReviewForInstructor(param, container);
       break;
     case 'instructor-student-profile':
       renderStudentProfileForInstructor(container);
@@ -43,16 +49,20 @@ export function handleInstructorNav(page, ...args) {
 // --- Standalone instructor entry for direct page loads ---
 window.addEventListener('DOMContentLoaded', () => {
   if (location.hash.startsWith('#instructor-')) {
-    const match = location.hash.match(/^#instructor-([a-zA-Z-]+)/);
-    const page = match ? `instructor-${match[1]}` : 'instructor-dashboard';
+    // Support :param, e.g. #instructor-checklist-review:student@email.com
+    const match = location.hash.match(/^#(instructor-[a-zA-Z-]+)(?::(.+))?/);
+    const page = match
+      ? match[1] + (match[2] ? ':' + match[2] : '')
+      : 'instructor-dashboard';
     handleInstructorNav(page);
   }
 });
 
-// --- Instructor-specific popstate handling ---
 window.addEventListener('popstate', () => {
   if (!location.hash.startsWith('#instructor-')) return;
-  const match = location.hash.match(/^#instructor-([a-zA-Z-]+)/);
-  const page = match ? `instructor-${match[1]}` : 'instructor-dashboard';
+  const match = location.hash.match(/^#(instructor-[a-zA-Z-]+)(?::(.+))?/);
+  const page = match
+    ? match[1] + (match[2] ? ':' + match[2] : '')
+    : 'instructor-dashboard';
   handleInstructorNav(page);
 });
