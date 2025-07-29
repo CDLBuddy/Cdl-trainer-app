@@ -12,7 +12,7 @@ import {
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
-import { renderSuperadminDashboard } from '../superadmin/superadmin-dashboard.js';
+import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 
 // Utility: Get all schools for dropdown
 async function getAllSchools() {
