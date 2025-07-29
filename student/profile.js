@@ -26,7 +26,7 @@ import {
   getDownloadURL,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js';
 
-import { renderDashboard as renderStudentDashboard } from './student-dashboard.js';
+import { renderStudentDashboard } from './student-dashboard.js';
 
 // --- DRY: Get current user email ---
 function getCurrentUserEmail() {
