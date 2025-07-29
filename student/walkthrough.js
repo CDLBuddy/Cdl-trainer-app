@@ -17,7 +17,7 @@ import {
   getUserProgress,
 } from '../ui-helpers.js';
 import { renderProfile } from './profile.js';
-import { renderDashboard as renderStudentDashboard } from './student-dashboard.js';
+import { renderStudentDashboard } from './student-dashboard.js';
 
 // --- Walkthrough Drill Data ---
 const brakeCheckFull = [
