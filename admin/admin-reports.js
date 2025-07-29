@@ -1,16 +1,11 @@
 // admin/admin-reports.js
 
-// ===== PDF EXPORT DEPENDENCY =====
-// <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-// window.jspdf.jsPDF will be available
-
 // ===== CSV EXPORT (No dependencies needed) =====
 
 /**
  * Export user data as CSV.
  * @param {Array} users - Array of user objects.
  */
-// Renders the Admin Reports page (stub - replace with your real logic)
 export function renderAdminReports(container = document.getElementById('app')) {
   if (!container) return;
   container.innerHTML = `
