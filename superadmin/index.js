@@ -25,15 +25,24 @@ export function handleSuperadminNav(page, ...args) {
   window.currentUserRole = 'superadmin';
 
   switch ((page || '').toLowerCase()) {
-    case 'superadmin-dashboard':   return renderSuperadminDashboard(container);
-    case 'superadmin-schools':     return renderSchoolManagement(container);
-    case 'superadmin-users':       return renderUserManagement(container);
-    case 'superadmin-compliance':  return renderComplianceCenter(container);
-    case 'superadmin-billing':     return renderBilling(container);
-    case 'superadmin-settings':    return renderSettings(container);
-    case 'superadmin-permissions': return renderPermissions(container);
-    case 'superadmin-logs':        return renderLogs(container);
-    default:                       return renderSuperadminDashboard(container);
+    case 'superadmin-dashboard':
+      return renderSuperadminDashboard(container);
+    case 'superadmin-schools':
+      return renderSchoolManagement(container);
+    case 'superadmin-users':
+      return renderUserManagement(container);
+    case 'superadmin-compliance':
+      return renderComplianceCenter(container);
+    case 'superadmin-billing':
+      return renderBilling(container);
+    case 'superadmin-settings':
+      return renderSettings(container);
+    case 'superadmin-permissions':
+      return renderPermissions(container);
+    case 'superadmin-logs':
+      return renderLogs(container);
+    default:
+      return renderSuperadminDashboard(container);
   }
 }
 

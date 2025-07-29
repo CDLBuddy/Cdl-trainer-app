@@ -99,9 +99,9 @@ export async function renderInstructorProfile(
           <select name="experience" required>
             <option value="">Select</option>
             <option value="none" ${experience === 'none' ? 'selected' : ''}>No experience</option>
-            <option value="1-2" ${experience === '1-2' ? 'selected' : ''}>1–2 years</option>
-            <option value="3-5" ${experience === '3-5' ? 'selected' : ''}>3–5 years</option>
-            <option value="6-10" ${experience === '6-10' ? 'selected' : ''}>6–10 years</option>
+            <option value="1-2" ${experience === '1-2' ? 'selected' : ''}>1-2 years</option>
+            <option value="3-5" ${experience === '3-5' ? 'selected' : ''}>3-5 years</option>
+            <option value="6-10" ${experience === '6-10' ? 'selected' : ''}>6-10 years</option>
             <option value="10+" ${experience === '10+' ? 'selected' : ''}>10+ years</option>
           </select>
         </label>
