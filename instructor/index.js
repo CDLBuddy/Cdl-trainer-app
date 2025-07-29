@@ -14,9 +14,6 @@ export {
   renderStudentProfileForInstructor,
 };
 
-// Alias for navigation compatibility
-export { renderInstructorDashboard as renderDashboard };
-
 // === INSTRUCTOR NAVIGATION HANDLER ===
 export function handleInstructorNav(page, ...args) {
   const container = args[1] || document.getElementById('app');
