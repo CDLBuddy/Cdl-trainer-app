@@ -240,14 +240,21 @@ window.addEventListener('DOMContentLoaded', () => {
   } else {
     // Go to role-specific dashboard
     const role = getCurrentRole();
-    let dash =
-      role === 'superadmin'
-        ? 'superadmin-dashboard'
-        : role === 'admin'
-          ? 'admin-dashboard'
-          : role === 'instructor'
-            ? 'instructor-dashboard'
-            : 'student-dashboard';
+    let dash;
+    switch (role) {
+      case 'superadmin':
+        dash = 'superadmin-dashboard';
+        break;
+      case 'admin':
+        dash = 'admin-dashboard';
+        break;
+      case 'instructor':
+        dash = 'instructor-dashboard';
+        break;
+      case 'student':
+      default:
+        dash = 'student-dashboard';
+    }
     handleNavigation(dash);
   }
 });

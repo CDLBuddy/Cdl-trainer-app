@@ -66,9 +66,31 @@ document.body.addEventListener('click', (e) => {
   }
 });
 window.addEventListener('popstate', () => {
-  const page = location.hash.replace('#', '') || 'dashboard';
+  const page = location.hash.replace('#', '') || null;
   console.log('🔄 popstate navigation: ', page);
-  handleNavigation(page, 'back');
+  if (!page) {
+    // Fallback to role-specific dashboard
+    const role = getCurrentRole();
+    let dash;
+    switch (role) {
+      case 'superadmin':
+        dash = 'superadmin-dashboard';
+        break;
+      case 'admin':
+        dash = 'admin-dashboard';
+        break;
+      case 'instructor':
+        dash = 'instructor-dashboard';
+        break;
+      case 'student':
+      default:
+        dash = 'student-dashboard';
+        break;
+    }
+    handleNavigation(dash, 'back');
+  } else {
+    handleNavigation(page, 'back');
+  }
 });
 
 // --- AUTH STATE LISTENER ---
@@ -188,9 +210,26 @@ onAuthStateChanged(auth, async (user) => {
       console.log('🚦 Routing to dashboard...');
       showPageTransitionLoader();
       setTimeout(() => {
-        handleNavigation('dashboard');
+        // Choose dashboard based on role!
+        let dash;
+        switch (userRole) {
+          case 'superadmin':
+            dash = 'superadmin-dashboard';
+            break;
+          case 'admin':
+            dash = 'admin-dashboard';
+            break;
+          case 'instructor':
+            dash = 'instructor-dashboard';
+            break;
+          case 'student':
+          default:
+            dash = 'student-dashboard';
+            break;
+        }
+        handleNavigation(dash);
         hidePageTransitionLoader();
-        console.log('🏠 Dashboard render triggered');
+        console.log('🏠 Dashboard render triggered:', dash);
       }, 350);
     } catch (err) {
       console.error('❌ Auth/profile error:', err);
@@ -241,3 +280,6 @@ window.addEventListener('DOMContentLoaded', () => {
   // Auth state listener will trigger and handle boot
   console.log('🔄 DOM ready, waiting for Firebase auth...');
 });
+
+// Optionally, export any globals you want available to the rest of your app here (for testing/dev)
+// export { currentUserEmail, currentUserRole, schoolId };
