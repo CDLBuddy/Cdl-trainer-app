@@ -9,11 +9,10 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 
-import {
-  renderStudentDashboard,
-  renderTestEngine,
-} from './student-dashboard.js';
-import { renderTestReview } from './test-review.js'; // NEW: Use the new split file
+import { renderStudentDashboard } from './student-dashboard.js';
+// Import renderTestEngine from its new file (after split)
+import { renderTestEngine } from './test-engine.js';
+import { renderTestReview } from './test-review.js'; // Already correct
 
 // --- Helper for user email everywhere (keeps DRY) ---
 function getCurrentUserEmail() {

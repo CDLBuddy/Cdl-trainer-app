@@ -30,9 +30,27 @@ function getCurrentUserEmail() {
 // ─── REVIEW A SPECIFIC TEST RESULT ───────────────────────────
 export async function renderTestReview(container, testName) {
   container = container || document.getElementById('app');
+  if (!container) return;
   container.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧾 ${testName} Review</h2><p>Loading...</p></div>`;
 
   const currentUserEmail = getCurrentUserEmail();
+  if (!currentUserEmail) {
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in">
+        <h2>🧾 ${testName} Review</h2>
+        <p>You must be logged in to view this page.</p>
+        <button class="btn outline" data-nav="practiceTests">⬅ Back to Practice Tests</button>
+      </div>
+    `;
+    setupNavigation();
+    container
+      .querySelector('[data-nav="practiceTests"]')
+      ?.addEventListener('click', () => {
+        renderPracticeTests(container);
+      });
+    return;
+  }
+
   try {
     const snap = await getDocs(
       query(
@@ -73,21 +91,31 @@ export async function renderTestReview(container, testName) {
     // Milestone: Mark test as passed if pct >= 80
     if (pct >= 80) {
       // Only show toast the first time they pass
-      const progress = await getUserProgress(currentUserEmail);
-      if (!progress.practiceTestPassed) {
-        await markStudentTestPassed(currentUserEmail);
-        showToast('🎉 Practice Test milestone complete! Progress updated.');
+      try {
+        const progress = await getUserProgress(currentUserEmail);
+        if (!progress?.practiceTestPassed) {
+          await markStudentTestPassed(currentUserEmail);
+          showToast('🎉 Practice Test milestone complete! Progress updated.');
+        }
+      } catch (e) {
+        // It's okay if progress can't be checked/updated
+        console.warn('Could not update practice test milestone:', e);
       }
     }
 
     // Always log study minutes and session
     const minutes = latest?.durationMinutes || 5;
-    await incrementStudentStudyMinutes(currentUserEmail, minutes);
-    await logStudySession(
-      currentUserEmail,
-      minutes,
-      `Practice Test: ${testName}`
-    );
+    try {
+      await incrementStudentStudyMinutes(currentUserEmail, minutes);
+      await logStudySession(
+        currentUserEmail,
+        minutes,
+        `Practice Test: ${testName}`
+      );
+    } catch (e) {
+      // Logging isn't fatal
+      console.warn('Could not log study session:', e);
+    }
 
     container.innerHTML = `
       <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">

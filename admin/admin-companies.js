@@ -44,7 +44,7 @@ async function fetchCompanyList() {
 export async function renderAdminCompanies(
   container = document.getElementById('app')
 ) {
-  if (!container) container = document.getElementById('app');
+  container = container || document.getElementById('app');
 
   // --- School Branding (header, color, logo) ---
   const brand = getCurrentSchoolBranding?.() || {};

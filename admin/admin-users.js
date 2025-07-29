@@ -17,7 +17,7 @@ import { showToast, setupNavigation } from '../ui-helpers.js';
 export async function renderAdminUsers(
   container = document.getElementById('app')
 ) {
-  if (!container) return;
+  container = container || document.getElementById('app');
 
   // --- Fetch all users ---
   let allUsers = [];

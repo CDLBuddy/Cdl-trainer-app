@@ -213,7 +213,7 @@ async function showStudentDetailsModal(email) {
   </div>`;
   document.body.appendChild(modal);
 
-  // Close logic
+  // Safe close binding (no inline JS)
   modal.querySelector('.modal-close').onclick = () => modal.remove();
   modal.onclick = (e) => {
     if (e.target === modal) modal.remove();
@@ -259,9 +259,11 @@ async function showStudentDetailsModal(email) {
         ${data.profilePicUrl ? `<img src="${data.profilePicUrl}" alt="Profile" style="width:90px;height:90px;object-fit:cover;border-radius:10px;border:1.5px solid #b48aff;margin-bottom:7px;">` : ''}
       </div>
       <div style="margin-top:10px;text-align:center;">
-        <button class="btn" style="margin-top:9px;" onclick="this.closest('.modal-overlay').remove()">Close</button>
+        <button class="btn modal-close-btn" style="margin-top:9px;">Close</button>
       </div>
     `;
+
+    modal.querySelector('.modal-close-btn').onclick = () => modal.remove();
   } catch (err) {
     modal.querySelector('.student-modal-content').innerHTML =
       `<h3>Error</h3><div>${err.message}</div>`;
