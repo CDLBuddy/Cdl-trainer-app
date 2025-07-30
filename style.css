@@ -2674,9 +2674,9 @@ body.ai-modal-open {
     opacity: 1;
   }
 }
-/* === Welcome Screen Styling (Frosted Glass, Soft, Modern) === */
+/* === Welcome Screen Styling (Frosted Glass, Soft, Modern, No Panel) === */
 
-/* Main screen background */
+/* Main screen background: blue multi-gradient only */
 .welcome-screen {
   min-height: 100vh;
   display: flex;
@@ -2689,7 +2689,14 @@ body.ai-modal-open {
   padding: 0 0.5em;
 }
 
-/* Switch School Button (centered, floating above card) */
+/* Remove any legacy panel backgrounds that might override this */
+body, #app, .main-panel, .background-panel, .welcome-panel {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Switch School Button (floating above card) */
 .switch-school-wrapper {
   width: 100%;
   display: flex;
@@ -2717,7 +2724,7 @@ body.ai-modal-open {
   color: #fff;
 }
 
-/* Main Welcome Card: Frosted, Blue, Soft */
+/* Main Welcome Card: True glass, no extra panel */
 .welcome-content {
   background: rgba(38, 65, 115, 0.24);      /* glassy blue tint */
   border-radius: 1.7em;
@@ -2739,7 +2746,7 @@ body.ai-modal-open {
   transition: background 0.26s, box-shadow 0.24s;
 }
 
-/* Mobile Card Responsiveness */
+/* Responsive Glass Card */
 @media (max-width: 600px) {
   .welcome-content { max-width: 99vw; border-radius: 1.1em; padding: 1.2rem 0.28rem 1rem 0.28rem; }
   #switch-school-btn { padding: 9px 18px; font-size: 0.97em; margin-top: 17px; }
@@ -2911,11 +2918,6 @@ body.ai-modal-open {
 /* Glow for shimmer effect */
 .shimmer-glow {
   box-shadow: 0 0 42px 3px #b48aff1a, 0 1px 8px #fff2;
-}
-body, #app, .main-panel, .background-panel, .welcome-panel {
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
 }
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
