@@ -2877,6 +2877,9 @@ body.ai-modal-open {
   box-shadow:
     0 8px 28px 4px rgba(32,16,60,0.09),  /* Lighter outer shadow */
     0 1.5px 7px rgba(40,20,80,0.08);
+    box-shadow:
+    0 8px 32px 3px rgba(40,20,80,0.08),
+    0 0 0 1.5px rgba(255,255,255,0.12) inset;
   backdrop-filter: blur(10px);        /* Subtle blur for glass effect */
   -webkit-backdrop-filter: blur(10px);
   z-index: 1;
