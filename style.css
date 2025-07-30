@@ -2674,17 +2674,6 @@ body.ai-modal-open {
     opacity: 1;
   }
 }
-/* Main screen background: multi-gradient, no panels! */
-.welcome-screen {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  padding: 0 0.5em;
-}
 /* Card: max width and side gap for all screens */
 .welcome-content {
   background: rgba(38, 65, 115, 0.23);
