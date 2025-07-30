@@ -75,6 +75,18 @@ export async function renderProfile(
     window.location.reload();
     return;
   }
+  // --- SCHOOL BRANDING (Accent, Logo, School Name) ---
+  // Import this at the top: import { getCurrentSchoolBranding } from '../school-branding.js';
+  const brand = (await getCurrentSchoolBranding?.()) || {};
+  if (brand.primaryColor) {
+    document.documentElement.style.setProperty(
+      '--brand-primary',
+      brand.primaryColor
+    );
+  }
+  const accent = brand.primaryColor || '#b48aff';
+  const schoolLogo = brand.logoUrl || '';
+  const schoolDisplayName = brand.schoolName || '';
 
   // --- FETCH user data by doc ID ---
   let userData = {};
@@ -197,168 +209,169 @@ export async function renderProfile(
     { val: 'roadtest', label: 'Road Test Prep' },
   ];
 
-  // --- Accessibility: Add aria-labels and label ids ---
   container.innerHTML = `
-    <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
-      <h2>
-        👤 Student Profile <span class="role-badge student">Student</span>
-        ${schoolName ? `<span class="school-badge">School: ${escapeHTML(schoolName)}</span>` : ''}
-      </h2>
-      <div style="font-size:0.99em; color:#bbb; margin-bottom:0.5em;">
-        <strong>Status:</strong> ${status.charAt(0).toUpperCase() + status.slice(1)}
-        ${profileUpdatedAt ? `&nbsp;|&nbsp;<span aria-label="Profile last updated">Last updated: ${new Date(profileUpdatedAt.seconds ? profileUpdatedAt.seconds * 1000 : profileUpdatedAt).toLocaleString()}</span>` : ''}
-      </div>
-      <div class="progress-bar" style="margin-bottom:1.4rem;">
-        <div class="progress" style="width:${profileProgress || 0}%;"></div>
-        <span class="progress-label">${profileProgress || 0}% Complete</span>
-      </div>
-      <form id="profile-form" autocomplete="off" style="display:flex;flex-direction:column;gap:1.1rem;">
-        <label for="name">Name:
-          <input id="name" name="name" type="text" required value="${escapeHTML(name)}" />
-        </label>
-        <label for="dob">Date of Birth:
-          <input id="dob" name="dob" type="date" required value="${dob}" />
-        </label>
-        <label for="profilePic">Profile Picture:
-          <input id="profilePic" name="profilePic" type="file" accept="image/*" aria-label="Profile Picture" />
-          ${profilePicUrl ? `<img src="${profilePicUrl}" alt="Profile Picture" style="max-width:70px; margin-top:5px; border-radius:9px;">` : ''}
-        </label>
-        <label for="cdlClass">CDL Class:
-          <select id="cdlClass" name="cdlClass" required>
-            <option value="">Select</option>
-            <option value="A" ${cdlClass === 'A' ? 'selected' : ''}>Class A</option>
-            <option value="B" ${cdlClass === 'B' ? 'selected' : ''}>Class B</option>
-            <option value="C" ${cdlClass === 'C' ? 'selected' : ''}>Class C</option>
-          </select>
-        </label>
-        <label>Endorsements:<br>
-          ${endorsementOptions
-            .map(
-              (opt) =>
-                `<label style="margin-right:1em;">
-              <input type="checkbox" name="endorsements[]" value="${opt.val}" ${endorsements.includes(opt.val) ? 'checked' : ''}> ${opt.label}
-            </label>`
-            )
-            .join('')}
-        </label>
-        <label>Restrictions:<br>
-          ${restrictionOptions
-            .map(
-              (opt) =>
-                `<label style="margin-right:1em;">
-              <input type="checkbox" name="restrictions[]" value="${opt.val}" ${restrictions.includes(opt.val) ? 'checked' : ''}> ${opt.label}
-            </label>`
-            )
-            .join('')}
-        </label>
-        <label for="experience">Experience:
-          <select id="experience" name="experience" required>
-            <option value="">Select</option>
-            <option value="none" ${experience === 'none' ? 'selected' : ''}>No Experience</option>
-            <option value="1-2" ${experience === '1-2' ? 'selected' : ''}>1–2 Years</option>
-            <option value="3-5" ${experience === '3-5' ? 'selected' : ''}>3–5 Years</option>
-            <option value="6-10" ${experience === '6-10' ? 'selected' : ''}>6–10 Years</option>
-            <option value="10+" ${experience === '10+' ? 'selected' : ''}>10+ Years</option>
-          </select>
-        </label>
-        <label for="prevEmployer">Previous Employer:
-          <input id="prevEmployer" name="prevEmployer" type="text" value="${escapeHTML(prevEmployer)}" />
-        </label>
-        <label for="assignedCompany">Assigned Company:
-          <input id="assignedCompany" name="assignedCompany" type="text" value="${escapeHTML(assignedCompany)}" />
-        </label>
-        <label for="assignedInstructor">Assigned Instructor:
-          <input id="assignedInstructor" name="assignedInstructor" type="text" value="${escapeHTML(assignedInstructor)}" />
-        </label>
-        <label for="cdlPermit">CDL Permit?
-          <select id="cdlPermit" name="cdlPermit" required>
-            <option value="">Select</option>
-            <option value="yes" ${cdlPermit === 'yes' ? 'selected' : ''}>Yes</option>
-            <option value="no" ${cdlPermit === 'no' ? 'selected' : ''}>No</option>
-          </select>
-        </label>
-        <div id="permit-photo-section" style="display:${cdlPermit === 'yes' ? '' : 'none'};">
-          <label for="permitPhoto">Permit Photo:
-            <input id="permitPhoto" name="permitPhoto" type="file" accept="image/*" aria-label="Permit Photo" />
-            ${permitPhotoUrl ? `<img src="${permitPhotoUrl}" alt="Permit Photo" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
-          </label>
-          <label for="permitExpiry">Permit Expiry:
-            <input id="permitExpiry" name="permitExpiry" type="date" value="${permitExpiry}" />
-          </label>
-        </div>
-        <label for="driverLicense">Driver License Upload:
-          <input id="driverLicense" name="driverLicense" type="file" accept="image/*" aria-label="Driver License" />
-          ${driverLicenseUrl ? `<img src="${driverLicenseUrl}" alt="License" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
-        </label>
-        <label for="licenseExpiry">License Expiry:
-          <input id="licenseExpiry" name="licenseExpiry" type="date" value="${licenseExpiry}" />
-        </label>
-        <label for="medicalCard">Medical Card Upload:
-          <input id="medicalCard" name="medicalCard" type="file" accept="image/*" aria-label="Medical Card" />
-          ${medicalCardUrl ? `<img src="${medicalCardUrl}" alt="Medical Card" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
-        </label>
-        <label for="medCardExpiry">Medical Card Expiry:
-          <input id="medCardExpiry" name="medCardExpiry" type="date" value="${medCardExpiry}" />
-        </label>
-        <label for="vehicleQualified">Is Your Vehicle Qualified?
-          <select id="vehicleQualified" name="vehicleQualified" required>
-            <option value="">Select</option>
-            <option value="yes" ${vehicleQualified === 'yes' ? 'selected' : ''}>Yes</option>
-            <option value="no" ${vehicleQualified === 'no' ? 'selected' : ''}>No</option>
-          </select>
-        </label>
-        <div id="vehicle-photos-section" style="display:${vehicleQualified === 'yes' ? '' : 'none'};">
-          <label for="truckPlate">Truck Data Plate:
-            <input id="truckPlate" name="truckPlate" type="file" accept="image/*" aria-label="Truck Plate" />
-            ${truckPlateUrl ? `<img src="${truckPlateUrl}" alt="Truck Plate" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
-          </label>
-          <label for="trailerPlate">Trailer Data Plate:
-            <input id="trailerPlate" name="trailerPlate" type="file" accept="image/*" aria-label="Trailer Plate" />
-            ${trailerPlateUrl ? `<img src="${trailerPlateUrl}" alt="Trailer Plate" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
-          </label>
-        </div>
-        <label for="emergencyName">Emergency Contact Name:
-          <input id="emergencyName" name="emergencyName" type="text" required value="${escapeHTML(emergencyName)}" />
-        </label>
-        <label for="emergencyPhone">Emergency Contact Phone:
-          <input id="emergencyPhone" name="emergencyPhone" type="tel" required value="${escapeHTML(emergencyPhone)}" pattern="${phonePattern}" />
-        </label>
-        <label for="emergencyRelation">Emergency Contact Relation:
-          <input id="emergencyRelation" name="emergencyRelation" type="text" required value="${escapeHTML(emergencyRelation)}" />
-        </label>
-        <label for="waiver">Waiver Signed:
-          <input id="waiver" name="waiver" type="checkbox" ${waiverSigned ? 'checked' : ''} />
-        </label>
-        <label for="waiverSignature">Waiver Signature:
-          <input id="waiverSignature" name="waiverSignature" type="text" value="${escapeHTML(waiverSignature)}" />
-        </label>
-        <label for="course">Course:
-          <input id="course" name="course" type="text" value="${escapeHTML(course)}" />
-        </label>
-        <label for="schedulePref">Schedule Preference:
-          <input id="schedulePref" name="schedulePref" type="text" value="${escapeHTML(schedulePref)}" />
-        </label>
-        <label for="scheduleNotes">Schedule Notes:
-          <textarea id="scheduleNotes" name="scheduleNotes">${escapeHTML(scheduleNotes)}</textarea>
-        </label>
-        <label for="paymentStatus">Payment Status:
-          <input id="paymentStatus" name="paymentStatus" type="text" value="${escapeHTML(paymentStatus)}" />
-        </label>
-        <label for="paymentProof">Payment Proof Upload:
-          <input id="paymentProof" name="paymentProof" type="file" accept="image/*" aria-label="Payment Proof" />
-          ${paymentProofUrl ? `<img src="${paymentProofUrl}" alt="Payment Proof" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
-        </label>
-        <label for="accommodation">Accommodation Needs:
-          <input id="accommodation" name="accommodation" type="text" value="${escapeHTML(accommodation)}" />
-        </label>
-        <label for="studentNotes">Student Notes:
-          <textarea id="studentNotes" name="studentNotes">${escapeHTML(studentNotes)}</textarea>
-        </label>
-        <button class="btn primary wide" id="save-profile-btn" type="submit">Save Profile</button>
-        <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Dashboard</button>
-      </form>
+  <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
+    <h2 style="color:${accent};display:flex;align-items:center;gap:12px;">
+      ${schoolLogo ? `<img src="${schoolLogo}" alt="School Logo" style="height:36px;border-radius:8px;background:#fff;margin-right:3px;box-shadow:0 1px 5px #0001;">` : ''}
+      👤 Student Profile 
+      <span class="role-badge student" style="background:${accent};color:#fff;">Student</span>
+      ${schoolDisplayName ? `<span class="school-badge" style="margin-left:5px;padding:2px 10px 2px 7px;background:${accent}18;border-radius:8px;color:${accent};font-size:.98em;vertical-align:middle;">${escapeHTML(schoolDisplayName)}</span>` : ''}
+    </h2>
+    <div style="font-size:0.99em; color:#bbb; margin-bottom:0.5em;">
+      <strong>Status:</strong> ${status.charAt(0).toUpperCase() + status.slice(1)}
+      ${profileUpdatedAt ? `&nbsp;|&nbsp;<span aria-label="Profile last updated">Last updated: ${new Date(profileUpdatedAt.seconds ? profileUpdatedAt.seconds * 1000 : profileUpdatedAt).toLocaleString()}</span>` : ''}
     </div>
-  `;
+    <div class="progress-bar" style="margin-bottom:1.4rem;">
+      <div class="progress" style="width:${profileProgress || 0}%;background:${accent};"></div>
+      <span class="progress-label">${profileProgress || 0}% Complete</span>
+    </div>
+    <form id="profile-form" autocomplete="off" style="display:flex;flex-direction:column;gap:1.1rem;">
+      <label for="name">Name:
+        <input id="name" name="name" type="text" required value="${escapeHTML(name)}" />
+      </label>
+      <label for="dob">Date of Birth:
+        <input id="dob" name="dob" type="date" required value="${dob}" />
+      </label>
+      <label for="profilePic">Profile Picture:
+        <input id="profilePic" name="profilePic" type="file" accept="image/*" aria-label="Profile Picture" />
+        ${profilePicUrl ? `<img src="${profilePicUrl}" alt="Profile Picture" style="max-width:70px; margin-top:5px; border-radius:9px;">` : ''}
+      </label>
+      <label for="cdlClass">CDL Class:
+        <select id="cdlClass" name="cdlClass" required>
+          <option value="">Select</option>
+          <option value="A" ${cdlClass === 'A' ? 'selected' : ''}>Class A</option>
+          <option value="B" ${cdlClass === 'B' ? 'selected' : ''}>Class B</option>
+          <option value="C" ${cdlClass === 'C' ? 'selected' : ''}>Class C</option>
+        </select>
+      </label>
+      <label>Endorsements:<br>
+        ${endorsementOptions
+          .map(
+            (opt) =>
+              `<label style="margin-right:1em;">
+            <input type="checkbox" name="endorsements[]" value="${opt.val}" ${endorsements.includes(opt.val) ? 'checked' : ''}> ${opt.label}
+          </label>`
+          )
+          .join('')}
+      </label>
+      <label>Restrictions:<br>
+        ${restrictionOptions
+          .map(
+            (opt) =>
+              `<label style="margin-right:1em;">
+            <input type="checkbox" name="restrictions[]" value="${opt.val}" ${restrictions.includes(opt.val) ? 'checked' : ''}> ${opt.label}
+          </label>`
+          )
+          .join('')}
+      </label>
+      <label for="experience">Experience:
+        <select id="experience" name="experience" required>
+          <option value="">Select</option>
+          <option value="none" ${experience === 'none' ? 'selected' : ''}>No Experience</option>
+          <option value="1-2" ${experience === '1-2' ? 'selected' : ''}>1–2 Years</option>
+          <option value="3-5" ${experience === '3-5' ? 'selected' : ''}>3–5 Years</option>
+          <option value="6-10" ${experience === '6-10' ? 'selected' : ''}>6–10 Years</option>
+          <option value="10+" ${experience === '10+' ? 'selected' : ''}>10+ Years</option>
+        </select>
+      </label>
+      <label for="prevEmployer">Previous Employer:
+        <input id="prevEmployer" name="prevEmployer" type="text" value="${escapeHTML(prevEmployer)}" />
+      </label>
+      <label for="assignedCompany">Assigned Company:
+        <input id="assignedCompany" name="assignedCompany" type="text" value="${escapeHTML(assignedCompany)}" />
+      </label>
+      <label for="assignedInstructor">Assigned Instructor:
+        <input id="assignedInstructor" name="assignedInstructor" type="text" value="${escapeHTML(assignedInstructor)}" />
+      </label>
+      <label for="cdlPermit">CDL Permit?
+        <select id="cdlPermit" name="cdlPermit" required>
+          <option value="">Select</option>
+          <option value="yes" ${cdlPermit === 'yes' ? 'selected' : ''}>Yes</option>
+          <option value="no" ${cdlPermit === 'no' ? 'selected' : ''}>No</option>
+        </select>
+      </label>
+      <div id="permit-photo-section" style="display:${cdlPermit === 'yes' ? '' : 'none'};">
+        <label for="permitPhoto">Permit Photo:
+          <input id="permitPhoto" name="permitPhoto" type="file" accept="image/*" aria-label="Permit Photo" />
+          ${permitPhotoUrl ? `<img src="${permitPhotoUrl}" alt="Permit Photo" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
+        </label>
+        <label for="permitExpiry">Permit Expiry:
+          <input id="permitExpiry" name="permitExpiry" type="date" value="${permitExpiry}" />
+        </label>
+      </div>
+      <label for="driverLicense">Driver License Upload:
+        <input id="driverLicense" name="driverLicense" type="file" accept="image/*" aria-label="Driver License" />
+        ${driverLicenseUrl ? `<img src="${driverLicenseUrl}" alt="License" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
+      </label>
+      <label for="licenseExpiry">License Expiry:
+        <input id="licenseExpiry" name="licenseExpiry" type="date" value="${licenseExpiry}" />
+      </label>
+      <label for="medicalCard">Medical Card Upload:
+        <input id="medicalCard" name="medicalCard" type="file" accept="image/*" aria-label="Medical Card" />
+        ${medicalCardUrl ? `<img src="${medicalCardUrl}" alt="Medical Card" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
+      </label>
+      <label for="medCardExpiry">Medical Card Expiry:
+        <input id="medCardExpiry" name="medCardExpiry" type="date" value="${medCardExpiry}" />
+      </label>
+      <label for="vehicleQualified">Is Your Vehicle Qualified?
+        <select id="vehicleQualified" name="vehicleQualified" required>
+          <option value="">Select</option>
+          <option value="yes" ${vehicleQualified === 'yes' ? 'selected' : ''}>Yes</option>
+          <option value="no" ${vehicleQualified === 'no' ? 'selected' : ''}>No</option>
+        </select>
+      </label>
+      <div id="vehicle-photos-section" style="display:${vehicleQualified === 'yes' ? '' : 'none'};">
+        <label for="truckPlate">Truck Data Plate:
+          <input id="truckPlate" name="truckPlate" type="file" accept="image/*" aria-label="Truck Plate" />
+          ${truckPlateUrl ? `<img src="${truckPlateUrl}" alt="Truck Plate" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
+        </label>
+        <label for="trailerPlate">Trailer Data Plate:
+          <input id="trailerPlate" name="trailerPlate" type="file" accept="image/*" aria-label="Trailer Plate" />
+          ${trailerPlateUrl ? `<img src="${trailerPlateUrl}" alt="Trailer Plate" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
+        </label>
+      </div>
+      <label for="emergencyName">Emergency Contact Name:
+        <input id="emergencyName" name="emergencyName" type="text" required value="${escapeHTML(emergencyName)}" />
+      </label>
+      <label for="emergencyPhone">Emergency Contact Phone:
+        <input id="emergencyPhone" name="emergencyPhone" type="tel" required value="${escapeHTML(emergencyPhone)}" pattern="${phonePattern}" />
+      </label>
+      <label for="emergencyRelation">Emergency Contact Relation:
+        <input id="emergencyRelation" name="emergencyRelation" type="text" required value="${escapeHTML(emergencyRelation)}" />
+      </label>
+      <label for="waiver">Waiver Signed:
+        <input id="waiver" name="waiver" type="checkbox" ${waiverSigned ? 'checked' : ''} />
+      </label>
+      <label for="waiverSignature">Waiver Signature:
+        <input id="waiverSignature" name="waiverSignature" type="text" value="${escapeHTML(waiverSignature)}" />
+      </label>
+      <label for="course">Course:
+        <input id="course" name="course" type="text" value="${escapeHTML(course)}" />
+      </label>
+      <label for="schedulePref">Schedule Preference:
+        <input id="schedulePref" name="schedulePref" type="text" value="${escapeHTML(schedulePref)}" />
+      </label>
+      <label for="scheduleNotes">Schedule Notes:
+        <textarea id="scheduleNotes" name="scheduleNotes">${escapeHTML(scheduleNotes)}</textarea>
+      </label>
+      <label for="paymentStatus">Payment Status:
+        <input id="paymentStatus" name="paymentStatus" type="text" value="${escapeHTML(paymentStatus)}" />
+      </label>
+      <label for="paymentProof">Payment Proof Upload:
+        <input id="paymentProof" name="paymentProof" type="file" accept="image/*" aria-label="Payment Proof" />
+        ${paymentProofUrl ? `<img src="${paymentProofUrl}" alt="Payment Proof" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
+      </label>
+      <label for="accommodation">Accommodation Needs:
+        <input id="accommodation" name="accommodation" type="text" value="${escapeHTML(accommodation)}" />
+      </label>
+      <label for="studentNotes">Student Notes:
+        <textarea id="studentNotes" name="studentNotes">${escapeHTML(studentNotes)}</textarea>
+      </label>
+      <button class="btn primary wide" id="save-profile-btn" type="submit" style="background:${accent};border:none;">Save Profile</button>
+      <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Dashboard</button>
+    </form>
+  </div>
+`;
 
   // --- Show/hide permit photo section
   container

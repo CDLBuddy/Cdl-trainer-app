@@ -8,6 +8,7 @@ import {
   getRandomAITip,
   getNextChecklistAlert,
 } from '../ui-helpers.js';
+import { getCurrentSchoolBranding } from '../school-branding.js';
 
 import { signOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {
@@ -25,10 +26,21 @@ import { renderPracticeTests } from './practice-tests.js';
 import { renderFlashcards } from './flashcards.js';
 
 // ========== MAIN DASHBOARD RENDERER ==========
+
 export async function renderStudentDashboard(
   container = document.getElementById('app')
 ) {
   if (!container) return;
+
+  // === Dynamic Branding ===
+  const brand = await getCurrentSchoolBranding();
+  // Set CSS theme variable for accents
+  if (brand.primaryColor) {
+    document.documentElement.style.setProperty(
+      '--brand-primary',
+      brand.primaryColor
+    );
+  }
 
   // --- Always resolve user (never cache old) ---
   const currentUserEmail =
@@ -124,7 +136,19 @@ export async function renderStudentDashboard(
   const roleBadge = `<span class="role-badge student">Student</span>`;
 
   // ========== DASHBOARD LAYOUT ==========
+
   container.innerHTML = `
+    <div class="dashboard-branding-header" style="display:flex;align-items:center;gap:20px;margin-bottom:1.2rem;">
+      <img src="${brand.logoUrl || '/default-logo.svg'}" alt="School Logo" class="dashboard-logo" style="height:52px;max-width:105px;border-radius:9px;box-shadow:0 1px 8px #22115522;">
+      <div>
+        <div class="dashboard-school-name" style="font-size:1.27em;color:${brand.primaryColor || '#b48aff'};font-weight:600;">
+          ${brand.schoolName || 'CDL Trainer'}
+        </div>
+        <div class="dashboard-school-headline" style="font-size:0.97em;color:#999;">
+          ${brand.subHeadline || ''}
+        </div>
+      </div>
+    </div>
     <h2 class="dash-head">Welcome back, ${name}! ${roleBadge}</h2>
     <button class="btn" id="edit-student-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
     <div class="dash-layout">
@@ -172,8 +196,8 @@ export async function renderStudentDashboard(
         <aside class="dash-rail">
           <button class="rail-btn profile" data-nav="profile" aria-label="My Profile">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="8" r="4" stroke="#b48aff" stroke-width="2"/>
-              <path d="M4 20c0-2.8 3.6-4.2 8-4.2s8 1.4 8 4.2" stroke="#b48aff" stroke-width="2"/>
+              <circle cx="12" cy="8" r="4" stroke="${brand.primaryColor || '#b48aff'}" stroke-width="2"/>
+              <path d="M4 20c0-2.8 3.6-4.2 8-4.2s8 1.4 8 4.2" stroke="${brand.primaryColor || '#b48aff'}" stroke-width="2"/>
             </svg>
             <span class="label">My Profile</span>
           </button>

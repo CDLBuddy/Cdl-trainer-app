@@ -13,7 +13,7 @@ import {
   getAllSchools,
 } from './school-branding.js';
 
-// Renders school selector modal/dialog
+// === Renders school selector modal/dialog ===
 function renderSchoolSelector(container, onSelect) {
   const schools = getAllSchools();
   const modal = document.createElement('div');
@@ -24,11 +24,7 @@ function renderSchoolSelector(container, onSelect) {
       <div style="margin-bottom:1.2rem;">
         <select id="school-select-dropdown" class="school-select-dropdown" style="width:90%;padding:8px 10px;font-size:1em;">
           ${schools
-            .map(
-              (s) => `
-            <option value="${s.id}">${s.schoolName}</option>
-          `
-            )
+            .map((s) => `<option value="${s.id}">${s.schoolName}</option>`)
             .join('')}
         </select>
       </div>
@@ -50,23 +46,32 @@ function renderSchoolSelector(container, onSelect) {
   });
 }
 
-// ---- MAIN WELCOME RENDER ----
-export function renderWelcome(
+// === MAIN WELCOME RENDER (ASYNC for Firestore support) ===
+export async function renderWelcome(
   container = document.getElementById('app'),
   opts = {}
 ) {
   if (!container) return;
 
-  // Get school branding config
-  const brand = getCurrentSchoolBranding();
+  // Show loading while fetching branding
+  container.innerHTML = `
+    <div style="text-align:center;padding:2em;">
+      <span class="spinner"></span>
+      <span style="display:block;margin-top:0.7em;">Loading school branding...</span>
+    </div>
+  `;
 
-  // Set CSS variable for theme color
-  document.documentElement.style.setProperty(
-    '--brand-primary',
-    brand.primaryColor
-  );
+  // Get school branding config (await for Firestore)
+  const brand = await getCurrentSchoolBranding();
 
-  // Welcome Screen HTML
+  // Set CSS variable for theme color (for all CSS, e.g., buttons)
+  if (brand.primaryColor)
+    document.documentElement.style.setProperty(
+      '--brand-primary',
+      brand.primaryColor
+    );
+
+  // Main Welcome Screen HTML
   container.innerHTML = `
     <div class="welcome-screen" tabindex="0" aria-label="Welcome screen">
       <button id="switch-school-btn" class="btn outline" style="position:absolute;right:24px;top:20px;z-index:12;font-size:0.98em;">Switch School</button>
@@ -77,11 +82,11 @@ export function renderWelcome(
         <div class="bokeh-dot parallax-float" style="top:80%; left:80%; animation-delay:6s;"></div>
       </div>
       <div class="welcome-content shimmer-glow fade-in" role="main">
-        <img src="${brand.logoUrl}" class="welcome-logo" alt="School Logo" style="max-width:110px;margin-bottom:8px;"/>
+        <img src="${brand.logoUrl || '/default-logo.svg'}" class="welcome-logo" alt="School Logo" style="max-width:110px;margin-bottom:8px;"/>
         <h1 class="typewriter" aria-live="polite" aria-atomic="true">
-          <span id="headline">${brand.schoolName}</span><span class="cursor" aria-hidden="true">|</span>
+          <span id="headline">${brand.schoolName || 'Your School'}</span><span class="cursor" aria-hidden="true">|</span>
         </h1>
-        <p>${brand.subHeadline}</p>
+        <p>${brand.subHeadline || ''}</p>
         <div style="display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
           <button id="login-btn" class="btn pulse" data-nav="login" aria-label="Login" style="background:var(--brand-primary);">
             <span class="icon">🚀</span> Login
@@ -108,8 +113,8 @@ export function renderWelcome(
         </div>
         <div class="welcome-footer" style="margin-top:2.5rem;text-align:center;">
           <small>
-            Need help? <a href="mailto:${brand.contactEmail}" style="color:${brand.primaryColor};text-decoration:underline;">Email Support</a>
-            &bull; <a href="${brand.website}" target="_blank" rel="noopener">Visit Our Site</a>
+            Need help? <a href="mailto:${brand.contactEmail || 'support@cdltrainerapp.com'}" style="color:${brand.primaryColor || '#b48aff'};text-decoration:underline;">Email Support</a>
+            &bull; <a href="${brand.website || '#'}" target="_blank" rel="noopener">Visit Our Site</a>
             &bull; <a href="https://fmcsa.dot.gov" target="_blank" rel="noopener">FMCSA ELDT Info</a>
           </small>
         </div>
@@ -117,14 +122,14 @@ export function renderWelcome(
     </div>
   `;
 
-  // Show school selector modal if no school is set in storage (or always show, up to you)
+  // Show school selector if no school is set
   if (!localStorage.getItem('schoolId')) {
     setTimeout(() => {
       renderSchoolSelector(container, () => renderWelcome(container));
     }, 10);
   }
 
-  // Effects and Animation
+  // Effects and Animation (only once per load)
   if (!container._welcomeInit) {
     initInfiniteCarousel?.();
     initCarousel?.();

@@ -1,6 +1,12 @@
 // school-branding.js
 
-// === Demo: In-memory list. Replace or expand with Firestore as needed. ===
+import { db } from './firebase.js';
+import {
+  doc,
+  getDoc,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+
+// Demo fallback brands (used if Firestore fails)
 const SCHOOL_BRANDS = [
   {
     id: 'cdlbuddy',
@@ -20,39 +26,65 @@ const SCHOOL_BRANDS = [
     website: 'https://acmetruck.edu',
     subHeadline: 'Training the best drivers in the Midwest!',
   },
-  // Add more schools as needed...
 ];
 
-// === Get selected school branding (from localStorage or fallback to first/default) ===
-export function getCurrentSchoolBranding() {
+// === Get branding from Firestore (dynamic, fallback to demo if missing) ===
+export async function getCurrentSchoolBranding() {
   const id = localStorage.getItem('schoolId') || SCHOOL_BRANDS[0].id;
-  return SCHOOL_BRANDS.find((s) => s.id === id) || SCHOOL_BRANDS[0];
-}
 
-// === Save school selection, update CSS var for theming ===
-export function setCurrentSchool(schoolId) {
-  localStorage.setItem('schoolId', schoolId);
-  const brand =
-    SCHOOL_BRANDS.find((s) => s.id === schoolId) || SCHOOL_BRANDS[0];
+  // Try to get branding from Firestore first
+  try {
+    const schoolDoc = await getDoc(doc(db, 'schools', id));
+    if (schoolDoc.exists()) {
+      const data = schoolDoc.data();
+      // Set theme color if present
+      if (data.primaryColor)
+        document.documentElement.style.setProperty(
+          '--brand-primary',
+          data.primaryColor
+        );
+
+      // (Optional) Save to localStorage for quick reload
+      localStorage.setItem('schoolBrand', JSON.stringify({ id, ...data }));
+
+      return { id, ...data };
+    }
+  } catch (err) {
+    // Optionally: console.warn('Firestore branding fetch failed:', err);
+  }
+
+  // Fallback: Demo in-memory list
+  const brand = SCHOOL_BRANDS.find((s) => s.id === id) || SCHOOL_BRANDS[0];
   if (brand.primaryColor)
     document.documentElement.style.setProperty(
       '--brand-primary',
       brand.primaryColor
     );
-  // (Optional) Could also set --accent, --brand-logo, etc.
+
   localStorage.setItem('schoolBrand', JSON.stringify(brand));
+  return brand;
 }
 
-// === List all available schools (for selector UI) ===
+// === Set current school and update theme ===
+export function setCurrentSchool(schoolId) {
+  localStorage.setItem('schoolId', schoolId);
+  // Optionally, pre-load branding for UX
+  getCurrentSchoolBranding();
+}
+
+// === List all demo schools (for selector UI; for prod, use Firestore) ===
 export function getAllSchools() {
   return SCHOOL_BRANDS;
 }
 
-// === (Optional) Load school branding from Firestore dynamically ===
-// For future expansion if you want schools to be managed via Firestore:
-// import { db } from "./firebase.js";
-// import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-// export async function fetchSchoolsFromFirestore() {
-//   const snap = await getDocs(collection(db, "schools"));
-//   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(s => !s.disabled);
-// }
+// === (Optional) Load all schools from Firestore for selector UI ===
+import {
+  collection,
+  getDocs,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+export async function fetchSchoolsFromFirestore() {
+  const snap = await getDocs(collection(db, 'schools'));
+  return snap.docs
+    .map((doc) => ({ id: doc.id, ...doc.data() }))
+    .filter((s) => !s.disabled);
+}

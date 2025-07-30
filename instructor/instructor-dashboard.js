@@ -13,6 +13,7 @@ import {
   setupNavigation,
   getNextChecklistAlert,
 } from '../ui-helpers.js';
+import { getCurrentSchoolBranding } from '../school-branding.js';
 import * as instructorPages from './index.js';
 import { renderWelcome } from '../welcome.js';
 
@@ -22,8 +23,15 @@ export async function renderInstructorDashboard(
 ) {
   if (!container) return;
 
-  // (Optional) Show loader while fetching
-  // container.innerHTML = '<div class="loader"></div>';
+  // === Dynamic Branding ===
+  const brand = await getCurrentSchoolBranding();
+  // Set CSS theme variable for accents
+  if (brand.primaryColor) {
+    document.documentElement.style.setProperty(
+      '--brand-primary',
+      brand.primaryColor
+    );
+  }
 
   let currentUserEmail =
     window.currentUserEmail || localStorage.getItem('currentUserEmail') || null;
@@ -125,6 +133,17 @@ export async function renderInstructorDashboard(
 
   // --- Main Dashboard Layout HTML
   container.innerHTML = `
+    <div class="dashboard-branding-header" style="display:flex;align-items:center;gap:20px;margin-bottom:1.2rem;">
+      <img src="${brand.logoUrl || '/default-logo.svg'}" alt="School Logo" class="dashboard-logo" style="height:52px;max-width:105px;border-radius:9px;box-shadow:0 1px 8px #22115522;">
+      <div>
+        <div class="dashboard-school-name" style="font-size:1.27em;color:${brand.primaryColor || '#b48aff'};font-weight:600;">
+          ${brand.schoolName || 'CDL Trainer'}
+        </div>
+        <div class="dashboard-school-headline" style="font-size:0.97em;color:#999;">
+          ${brand.subHeadline || ''}
+        </div>
+      </div>
+    </div>
     <h2 class="dash-head">Welcome, Instructor! <span class="role-badge instructor">Instructor</span></h2>
     <button class="btn" id="edit-instructor-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
     <button class="btn outline" id="export-csv-btn" style="margin-bottom:1.2rem;margin-left:10px;">⬇️ Export CSV</button>

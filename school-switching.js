@@ -26,17 +26,15 @@ export async function renderSchoolSwitching(
     return;
   }
 
-  // Fetch all schools this user is permitted to join (for superadmin, admin, or multi-instructor accounts)
+  // Fetch all schools this user is permitted to join
   let userSchools = [];
   try {
     const userDocSnap = await getDocs(
       query(collection(db, 'userRoles'), where('email', '==', userEmail))
     );
     if (!userDocSnap.empty) {
-      // If your schema allows multiple school assignments, set as array; otherwise, single:
       userDocSnap.forEach((doc) => {
         const d = doc.data();
-        // Accepts array or string (backwards compatibility)
         if (Array.isArray(d.schools)) userSchools = d.schools;
         else if (d.schoolId) userSchools = [d.schoolId];
       });
@@ -57,7 +55,7 @@ export async function renderSchoolSwitching(
     showToast('Error loading school list.');
   }
 
-  // Filter the list to only those user is assigned (if not superadmin)
+  // Filter the list to only those user is assigned (unless 'all')
   let allowedSchools = schoolBrandList;
   if (!userSchools.includes('all') && userSchools.length > 0) {
     allowedSchools = schoolBrandList.filter((s) => userSchools.includes(s.id));
@@ -73,7 +71,7 @@ export async function renderSchoolSwitching(
   container.innerHTML = `
     <div class="school-switch-card fade-in" style="max-width:500px;margin:40px auto 0 auto;">
       <h2 style="text-align:center;">
-        <img src="${currentBrand.logo || 'logo-default.svg'}"
+        <img src="${currentBrand.logoUrl || '/default-logo.svg'}"
              alt="Current School Logo"
              style="height:46px;max-width:96px;margin-bottom:0.3em;border-radius:7px;box-shadow:0 1px 8px #22115533;">
         <br>Switch School
@@ -85,7 +83,7 @@ export async function renderSchoolSwitching(
             .map(
               (s) =>
                 `<option value="${s.id}" ${s.id === currentSchoolId ? 'selected' : ''}>
-              ${s.name || s.id}
+              ${s.schoolName || s.name || s.id}
             </option>`
             )
             .join('')}
@@ -94,8 +92,8 @@ export async function renderSchoolSwitching(
         <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Back</button>
       </form>
       <div style="margin-top:1em;text-align:center;font-size:.96em;">
-        Need help? <a href="mailto:${currentBrand.supportEmail || 'support@cdltrainerapp.com'}"
-          style="color:${currentBrand.accent || '#b48aff'};text-decoration:underline;">Contact Support</a>
+        Need help? <a href="mailto:${currentBrand.contactEmail || 'support@cdltrainerapp.com'}"
+          style="color:${currentBrand.primaryColor || '#b48aff'};text-decoration:underline;">Contact Support</a>
       </div>
     </div>
   `;
@@ -111,19 +109,14 @@ export async function renderSchoolSwitching(
       showToast('Invalid school selected.', 2000, 'error');
       return;
     }
-    // Save to localStorage
+    // Save to localStorage (only the ID; all branding is fetched dynamically)
     localStorage.setItem('schoolId', schoolId);
-    localStorage.setItem(
-      'schoolBrand',
-      JSON.stringify({
-        id: school.id,
-        name: school.name || '',
-        logo: school.logo || '',
-        accent: school.accent || '#b48aff',
-        supportEmail: school.supportEmail || 'support@cdltrainerapp.com',
-      })
+
+    showToast(
+      `Switched to: ${school.schoolName || school.name || school.id}`,
+      1700,
+      'success'
     );
-    showToast(`Switched to: ${school.name || school.id}`, 1700, 'success');
     // Optionally: reload/re-render with new brand
     setTimeout(() => handleNavigation('dashboard'), 500);
   };

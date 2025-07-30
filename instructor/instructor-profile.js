@@ -17,8 +17,8 @@ import {
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderWelcome } from '../welcome.js';
 import { renderInstructorDashboard } from './instructor-dashboard.js';
+import { getCurrentSchoolBranding } from '../school-branding.js';
 
-// Use global or pass in as param
 let currentUserEmail =
   window.currentUserEmail || localStorage.getItem('currentUserEmail') || null;
 
@@ -32,6 +32,16 @@ export async function renderInstructorProfile(
     renderWelcome();
     return;
   }
+
+  // --- Dynamic School Branding ---
+  const brand = (await getCurrentSchoolBranding?.()) || {};
+  if (brand.primaryColor) {
+    document.documentElement.style.setProperty(
+      '--brand-primary',
+      brand.primaryColor
+    );
+  }
+  const accent = brand.primaryColor || '#b48aff';
 
   // Fetch instructor profile
   let userData = {};
@@ -85,7 +95,11 @@ export async function renderInstructorProfile(
 
   container.innerHTML = `
     <div class="screen-wrapper fade-in profile-page" style="max-width: 540px; margin: 0 auto;">
-      <h2>👤 Instructor Profile <span class="role-badge instructor">Instructor</span></h2>
+      <header style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+        <span style="font-size:1.25em;font-weight:500;color:${accent};">${brand.schoolName || 'CDL Trainer'}</span>
+        ${brand.logoUrl ? `<img src="${brand.logoUrl}" alt="School Logo" class="dashboard-logo" style="max-width:75px;vertical-align:middle;">` : ''}
+      </header>
+      <h2 style="color:${accent};">👤 Instructor Profile <span class="role-badge instructor" style="background:${accent};color:#fff;">Instructor</span></h2>
       ${complianceAlert}
       <form id="instructor-profile-form" style="display:flex;flex-direction:column;gap:1.3rem;">
         <label>Name:<input type="text" name="name" value="${name}" required /></label>
@@ -167,7 +181,7 @@ export async function renderInstructorProfile(
           <input type="checkbox" name="active" ${active ? 'checked' : ''} disabled />
           Active Instructor <span style="font-size:0.98em;color:#888;">(Set by admin)</span>
         </label>
-        <button class="btn primary wide" type="submit">Save Profile</button>
+        <button class="btn primary wide" type="submit" style="background:${accent};border:none;">Save Profile</button>
         <button class="btn outline" id="back-to-instructor-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅ Dashboard</button>
       </form>
     </div>

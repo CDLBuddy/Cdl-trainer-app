@@ -7,6 +7,8 @@ import {
   where,
   getDocs,
   updateDoc,
+  doc,
+  setDoc,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import {
   ref,
@@ -20,8 +22,9 @@ import { getCurrentSchoolBranding } from '../school-branding.js';
 
 let currentUserEmail =
   window.currentUserEmail || localStorage.getItem('currentUserEmail') || null;
+let currentSchoolId =
+  window.schoolId || localStorage.getItem('schoolId') || null;
 
-/** Admin Profile Renderer */
 export async function renderAdminProfile(
   container = document.getElementById('app')
 ) {
@@ -32,15 +35,21 @@ export async function renderAdminProfile(
     return;
   }
 
-  // School Branding (logo, color, schoolName)
-  const brand = getCurrentSchoolBranding?.() || {};
+  // --- Get dynamic branding ---
+  const brand = (await getCurrentSchoolBranding?.()) || {};
+  if (brand.primaryColor) {
+    document.documentElement.style.setProperty(
+      '--brand-primary',
+      brand.primaryColor
+    );
+  }
   const headerLogo = brand.logoUrl
     ? `<img src="${brand.logoUrl}" alt="School Logo" class="dashboard-logo" style="max-width:90px;vertical-align:middle;margin-bottom:3px;">`
     : '';
   const schoolName = brand.schoolName || 'CDL Trainer';
   const accent = brand.primaryColor || '#b48aff';
 
-  // Fetch admin data
+  // --- Fetch admin user data ---
   let userData = {};
   try {
     const usersRef = collection(db, 'users');
@@ -73,6 +82,9 @@ export async function renderAdminProfile(
     adminWaiverSigned = false,
     adminSignature = '',
   } = userData;
+
+  // --- Preview the latest school logo (branding takes precedence) ---
+  let schoolLogoUrl = brand.logoUrl || companyLogoUrl || '/default-logo.svg';
 
   container.innerHTML = `
     <div class="screen-wrapper fade-in profile-page" style="max-width:520px;margin:0 auto;">
@@ -107,11 +119,12 @@ export async function renderAdminProfile(
           School Address:
           <input type="text" name="companyAddress" value="${companyAddress}" />
         </label>
-        <label>
-          Company Logo:
-          <input type="file" name="companyLogo" accept="image/*" />
-          ${companyLogoUrl ? `<img src="${companyLogoUrl}" alt="Logo" style="max-width:80px;display:block;margin-top:7px;" />` : ''}
-        </label>
+        <div class="logo-upload-section">
+          <label for="school-logo-upload">School/Brand Logo:</label>
+          <input type="file" id="school-logo-upload" accept="image/*" />
+          <img id="current-school-logo" src="${schoolLogoUrl}" alt="School Logo" style="height: 60px; display: block; margin: 12px 0;" />
+          <button type="button" id="upload-school-logo-btn" class="btn outline small" style="margin-bottom:10px;">Upload Logo</button>
+        </div>
         <label>
           Admin Notes / Memo:
           <textarea name="adminNotes" rows="2">${adminNotes || ''}</textarea>
@@ -180,10 +193,60 @@ export async function renderAdminProfile(
     });
   }
 
-  // Wire up all upload fields
+  // Wire up all upload fields (admin profile)
   handleFileInput('profilePic', 'profilePics', 'profilePicUrl');
-  handleFileInput('companyLogo', 'schoolLogos', 'companyLogoUrl');
   handleFileInput('complianceDocs', 'complianceDocs', 'complianceDocsUrl');
+
+  // --- SCHOOL LOGO UPLOAD HANDLER ---
+  const schoolLogoInput = container.querySelector('#school-logo-upload');
+  const schoolLogoBtn = container.querySelector('#upload-school-logo-btn');
+  const schoolLogoImg = container.querySelector('#current-school-logo');
+
+  schoolLogoBtn?.addEventListener('click', async () => {
+    if (!schoolLogoInput?.files?.length) {
+      showToast('Please select a logo file first.');
+      return;
+    }
+    if (!currentSchoolId) {
+      showToast('School ID not found. Cannot upload logo.');
+      return;
+    }
+    const file = schoolLogoInput.files[0];
+    try {
+      // Upload logo to storage
+      const ext = file.name.split('.').pop();
+      const logoRef = ref(
+        storage,
+        `school-logos/${currentSchoolId}/logo.${ext}`
+      );
+      await uploadBytes(logoRef, file);
+      const logoUrl = await getDownloadURL(logoRef);
+
+      // Save to schools collection (central branding)
+      await setDoc(
+        doc(db, 'schools', currentSchoolId),
+        { logoUrl },
+        { merge: true }
+      );
+
+      // Save also to admin user profile (optional legacy support)
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', currentUserEmail));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        await updateDoc(snap.docs[0].ref, { companyLogoUrl: logoUrl });
+      }
+
+      // Update preview in UI
+      schoolLogoImg.src = logoUrl;
+      showToast('School logo uploaded!');
+
+      // Optionally, re-render profile to refresh logo everywhere
+      setTimeout(() => renderAdminProfile(container), 600);
+    } catch (err) {
+      showToast('Logo upload failed: ' + err.message);
+    }
+  });
 
   // --- SAVE PROFILE HANDLER ---
   container.querySelector('#admin-profile-form').onsubmit = async (e) => {
@@ -204,7 +267,6 @@ export async function renderAdminProfile(
       adminSignature: fd.get('adminSignature'),
     };
 
-    // Save to Firestore
     try {
       const usersRef = collection(db, 'users');
       const q = query(usersRef, where('email', '==', currentUserEmail));
