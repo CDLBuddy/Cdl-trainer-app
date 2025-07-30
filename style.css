@@ -2737,19 +2737,18 @@ body.ai-modal-open {
   line-height: 1.5;
 }
 #switch-school-btn {
-  top: 2rem;
-  right: 2rem;
   position: absolute;
-  border-radius: 1em;
-  background: rgba(255,255,255,0.18);
-  color: #333;
+  right: 18px;
+  top: 18px;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid var(--brand-primary, #b48aff);
+  color: var(--brand-primary, #b48aff);
   font-weight: 500;
-  border: none;
-  padding: 0.55em 1.1em;
-  transition: background 0.15s;
-  box-shadow: 0 1px 8px rgba(50, 40, 100, 0.05);
+  border-radius: 2em;
+  padding: 7px 16px;
+  transition: background 0.2s;
 }
-#switch-school-btn:hover { background: rgba(255,255,255,0.28); }
+#switch-school-btn:hover { background: rgba(180,138,255,0.16); }
 .welcome-content .btn {
   margin: 0.5em 0;
   width: 100%;
@@ -2886,7 +2885,25 @@ body.ai-modal-open {
 }
 
 .welcome-screen {
-  background: none !important;  
+  background: none !important;
+} 
+ .btn {
+  border-radius: 1em;
+  padding: 14px 0;
+  font-size: 1.12em;
+  margin-bottom: 1.1em;
+  width: 100%;
+  font-weight: 600;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn.primary { background: var(--brand-primary, #b48aff); color: #fff; }
+.btn.outline {
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid var(--brand-primary, #b48aff);
+  color: var(--brand-primary, #b48aff);
+}
+.btn.outline:hover { background: rgba(180,138,255,0.08);}
+.btn .icon { margin-right: 0.6em; }   
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
   opacity: 1;
