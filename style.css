@@ -2445,7 +2445,7 @@ body.ai-modal-open {
 }
 .btn.outline.btn-sm:hover,
 .btn.outline.btn-sm:focus {
-  background: #b48aff;
+  background: #004d66;
   color: #fff;
   border-color: #b48aff;
 }
@@ -2784,7 +2784,7 @@ body.ai-modal-open {
   gap: 0.1em;
 }
 .typewriter .cursor {
-  color: var(--brand-primary, #b48aff);
+  color: var(--brand-primary, #004d66);
   font-size: 1.1em;
   animation: blink-cursor 1.1s steps(1) infinite;
 }
