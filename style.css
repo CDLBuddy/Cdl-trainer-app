@@ -2727,20 +2727,21 @@ body.ai-modal-open {
 #switch-school-btn {
   margin-top: 32px;
   pointer-events: all;
-  background: rgba(255,255,255,0.11);
-  border: 2.5px solid var(--brand-primary, #b48aff);
-  color: var(--brand-primary, #b48aff);
+  background: rgba(80,180,255,0.18);  /* soft blue glass */
+  border: 2.5px solid var(--brand-primary, #4ec3fa); /* blue, fallback to sky blue */
+  color: var(--brand-primary, #238ddb);
   font-weight: 600;
   border-radius: 2em;
   padding: 9px 38px;
   font-size: 1.09em;
-  box-shadow: 0 2px 12px rgba(180,138,255,0.09);
-  backdrop-filter: blur(8px) saturate(1.15);
-  transition: background 0.22s, border 0.22s, color 0.18s;
+  box-shadow: 0 2px 16px rgba(44,140,255,0.13);
+  backdrop-filter: blur(9px) saturate(1.18);
+  transition: background 0.23s, border 0.23s, color 0.17s;
 }
 #switch-school-btn:hover {
-  background: rgba(180,138,255,0.16);
-  color: #fff;
+  background: linear-gradient(92deg, #7fd3fe 0%, #b0b6ff 100%);
+  color: #194866;
+  border-color: #8ee7ff;
 }
 
 /* Main Welcome Card: True glass, no extra panel */
