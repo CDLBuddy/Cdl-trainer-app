@@ -2912,6 +2912,11 @@ body.ai-modal-open {
 .shimmer-glow {
   box-shadow: 0 0 42px 3px #b48aff1a, 0 1px 8px #fff2;
 }
+body, #app, .main-panel, .background-panel, .welcome-panel {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
   opacity: 1;
