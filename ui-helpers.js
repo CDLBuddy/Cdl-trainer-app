@@ -499,6 +499,8 @@ export function initCarousel() {
     if (!isPaused) track.scrollLeft = (track.scrollLeft + speed) % half();
     requestAnimationFrame(drift);
   }
+  requestAnimationFrame(drift); // <--- You need to start the drift loop!
+}
 
 // --- ASYNC LOADER UTILITY ---------------------------------------------
 export async function withLoader(taskFn, loaderId = 'page-loader') {
