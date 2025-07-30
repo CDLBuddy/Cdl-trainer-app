@@ -2919,6 +2919,14 @@ body, #app, .main-panel, .background-panel, .welcome-panel {
 .shimmer-glow {
   box-shadow: 0 0 42px 3px #b48aff1a, 0 1px 8px #fff2;
 }
+.features {
+  background: none !important;
+  box-shadow: none !important;
+}
+.features-list {
+  background: none !important;
+  box-shadow: none !important;
+}
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
   opacity: 1;
