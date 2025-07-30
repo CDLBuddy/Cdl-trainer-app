@@ -2674,7 +2674,7 @@ body.ai-modal-open {
     opacity: 1;
   }
 }
-/* === Welcome Screen Styling (Polished & Structured) === */
+/* === Welcome Screen Styling (Frosted Glass, Soft, Modern) === */
 
 /* Main screen background */
 .welcome-screen {
@@ -2689,53 +2689,60 @@ body.ai-modal-open {
   padding: 0 0.5em;
 }
 
-/* Switch School Button Floating Above Card */
+/* Switch School Button (centered, floating above card) */
 .switch-school-wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
   position: relative;
   z-index: 12;
-  pointer-events: none; /* only allow pointer events on button */
+  pointer-events: none;
 }
-
 #switch-school-btn {
   margin-top: 32px;
   pointer-events: all;
-  background: rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.11);
   border: 2.5px solid var(--brand-primary, #b48aff);
   color: var(--brand-primary, #b48aff);
   font-weight: 600;
   border-radius: 2em;
   padding: 9px 38px;
-  font-size: 1.08em;
+  font-size: 1.09em;
   box-shadow: 0 2px 12px rgba(180,138,255,0.09);
   backdrop-filter: blur(8px) saturate(1.15);
-  transition: background 0.22s, border 0.22s;
+  transition: background 0.22s, border 0.22s, color 0.18s;
 }
-#switch-school-btn:hover { background: rgba(180,138,255,0.16); }
+#switch-school-btn:hover {
+  background: rgba(180,138,255,0.16);
+  color: #fff;
+}
 
-/* Main Welcome Card */
+/* Main Welcome Card: Frosted, Blue, Soft */
 .welcome-content {
-  background: rgba(26,32,62,0.59);
-  border-radius: 2.1em;
-  box-shadow: 0 8px 52px rgba(80,60,120,0.13);
-  border: 2.5px solid rgba(180,138,255,0.21);
-  padding: 2.3em 1.1em 2em 1.1em;
-  margin: 30px auto 0 auto;
+  background: rgba(38, 65, 115, 0.24);      /* glassy blue tint */
+  border-radius: 1.7em;
+  border: 1.5px solid rgba(255,255,255,0.18);
+  box-shadow:
+    0 10px 36px 0 rgba(44,80,160,0.12),
+    0 1.5px 10px 0 rgba(70,140,255,0.05);
+  padding: 2.1em 1.1em 2em 1.1em;
+  margin: 38px auto 0 auto;
   max-width: 370px;
   width: 100%;
   text-align: center;
-  backdrop-filter: blur(22px) saturate(1.16);
+  backdrop-filter: blur(26px) saturate(1.15);
+  -webkit-backdrop-filter: blur(26px) saturate(1.15);
+  color: #f4f8ff;
   z-index: 1;
   position: relative;
   animation: fadeInUp 0.6s cubic-bezier(.17,.67,.38,.95);
+  transition: background 0.26s, box-shadow 0.24s;
 }
 
-/* Mobile Responsive Card */
+/* Mobile Card Responsiveness */
 @media (max-width: 600px) {
-  .welcome-content { max-width: 99vw; border-radius: 1.2rem; padding: 1.3rem 0.35rem 1rem 0.35rem; }
-  #switch-school-btn { padding: 9px 22px; font-size: 0.97em; margin-top: 18px;}
+  .welcome-content { max-width: 99vw; border-radius: 1.1em; padding: 1.2rem 0.28rem 1rem 0.28rem; }
+  #switch-school-btn { padding: 9px 18px; font-size: 0.97em; margin-top: 17px; }
 }
 
 /* Logo */
@@ -2743,14 +2750,14 @@ body.ai-modal-open {
   display: block;
   margin: 0 auto 0.9em auto;
   max-width: 92px;
-  border-radius: 20px;
-  background: #fff3;
-  box-shadow: 0 4px 14px rgba(80,40,180,0.10);
+  border-radius: 18px;
+  background: #fff2;
+  box-shadow: 0 4px 14px rgba(80,40,180,0.09);
 }
 
 /* Typewriter Headline */
 .typewriter {
-  font-size: 2rem;
+  font-size: 2.1rem;
   font-weight: 700;
   letter-spacing: -1px;
   color: #fff;
@@ -2772,24 +2779,24 @@ body.ai-modal-open {
 
 /* Subheadline */
 .welcome-content p {
-  color: #d5d8f0;
+  color: #e1e9ff;
   margin-bottom: 1.7em;
-  font-size: 1.09em;
+  font-size: 1.08em;
   line-height: 1.5;
 }
 
-/* Main Buttons */
+/* Main Buttons: Soft, Modern, Responsive */
 .welcome-content .btn {
   margin: 0.5em 0;
   width: 100%;
   max-width: 260px;
-  padding: 0.85em 0;
-  border-radius: 1.3em;
+  padding: 0.87em 0;
+  border-radius: 1.2em;
   font-size: 1.13em;
   font-weight: 600;
   border: none;
   box-shadow: 0 1px 10px rgba(100, 40, 160, 0.08);
-  transition: background 0.18s, box-shadow 0.18s;
+  transition: background 0.18s, box-shadow 0.18s, color 0.15s;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -2799,61 +2806,70 @@ body.ai-modal-open {
   margin-right: auto;
 }
 .welcome-content .btn:not(:last-child) { margin-bottom: 0.7em; }
+/* Frosted, glassy login button */
 .welcome-content .btn.pulse {
-  background: linear-gradient(90deg, var(--brand-primary, #b48aff) 40%, #6f65e8 100%);
-  color: #fff;
-  box-shadow: 0 2px 16px rgba(180,138,255,0.13);
+  background: linear-gradient(90deg, #b2dcff 40%, #d0caff 100%);
+  color: #242848;
+  box-shadow: 0 2px 12px rgba(120,190,255,0.11);
+  border: none;
+}
+.welcome-content .btn.pulse:hover {
+  background: linear-gradient(90deg, #c4e7ff 30%, #bdafff 100%);
+  color: #222546;
 }
 .welcome-content .btn.outline {
-  background: rgba(255,255,255,0.16);
-  color: #eee;
-  border: 1.5px solid #fff2;
+  background: rgba(255,255,255,0.14);
+  color: #e7eaff;
+  border: 1.3px solid #d2e6ff2e;
 }
-.welcome-content .btn.outline:hover,
-.welcome-content .btn.pulse:hover {
-  background: var(--brand-primary, #b48aff);
+.welcome-content .btn.outline:hover {
+  background: rgba(180,138,255,0.09);
   color: #fff;
 }
-.welcome-content .icon { font-size: 1.1em; margin-right: 0.15em; }
+.welcome-content .icon { font-size: 1.1em; margin-right: 0.14em; }
 
-/* Features Section */
+/* Features Section: Soft cards, grid */
 .features {
-  margin-top: 2.2em;
-  background: rgba(255,255,255,0.10);
-  border-radius: 1.2em;
-  padding: 1em 0.3em 0.8em 0.3em;
-  box-shadow: 0 1px 7px rgba(50,30,120,0.04);
+  margin-top: 2.1em;
+  background: none;
+  border-radius: 1.1em;
+  padding: 0.4em 0 0.3em 0;
+  box-shadow: none;
   overflow-x: auto;
 }
-.features-inner {
+.features-list {
   display: flex;
   flex-wrap: wrap;
+  gap: 1.07em 1.12em;
   justify-content: center;
-  gap: 0.7em 1em;
+  margin-top: 0.3em;
 }
 .feat {
-  min-width: 88px;
+  min-width: 138px;
+  min-height: 88px;
   text-align: center;
-  background: rgba(255,255,255,0.09);
-  border-radius: 0.9em;
-  padding: 0.35em 0.7em 0.4em 0.7em;
-  margin: 0.2em 0;
-  box-shadow: 0 1px 6px rgba(100,80,200,0.04);
+  background: rgba(220,230,255,0.17);
+  border-radius: 1.18em;
+  padding: 1em 0.4em 0.7em 0.4em;
+  margin: 0.1em 0.13em;
+  box-shadow: 0 1px 7px rgba(100,120,200,0.05);
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 0.98em;
-  color: #f8f8f8;
+  font-size: 1.04em;
+  color: #e6eafd;
+  border: 1px solid rgba(255,255,255,0.11);
+  transition: background 0.18s, box-shadow 0.17s;
 }
-.feat i { font-size: 1.4em; margin-bottom: 0.09em; }
-.feat:hover { background: rgba(180,138,255,0.09); }
+.feat i { font-size: 1.42em; margin-bottom: 0.09em; }
+.feat:hover { background: rgba(180,210,255,0.16); color: #fff; }
 
 /* Footer */
 .welcome-footer {
-  font-size: 0.97em;
-  color: #bfbfff;
+  font-size: 0.99em;
+  color: #bed6ff;
   margin-top: 2.5rem;
-  opacity: 0.88;
+  opacity: 0.93;
 }
 .welcome-footer a {
   color: var(--brand-primary, #b48aff);
@@ -2872,16 +2888,16 @@ body.ai-modal-open {
 }
 .bokeh-dot {
   position: absolute;
-  width: 90px;
-  height: 90px;
+  width: 92px;
+  height: 92px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 20%, #b48aff44 0%, #b48aff09 80%);
-  filter: blur(4px);
-  opacity: 0.35;
+  background: radial-gradient(circle at 30% 20%, #b48aff35 0%, #b48aff09 80%);
+  filter: blur(6px);
+  opacity: 0.28;
   animation: floatBokeh 18s infinite linear;
 }
 @keyframes floatBokeh {
-  to { transform: translateY(-40px) scale(1.08); opacity: 0.32; }
+  to { transform: translateY(-38px) scale(1.08); opacity: 0.22; }
 }
 .parallax-float { animation: floatBokeh 18s infinite linear; }
 
@@ -2892,8 +2908,9 @@ body.ai-modal-open {
 }
 .fade-in { animation: fadeInUp 0.7s cubic-bezier(.17,.67,.38,.95); }
 
+/* Glow for shimmer effect */
 .shimmer-glow {
-  box-shadow: 0 0 40px 3px #b48aff11, 0 1px 6px #fff3;
+  box-shadow: 0 0 42px 3px #b48aff1a, 0 1px 8px #fff2;
 }
 /* ─── Page Transitions ─────────────────────────────── */
 .screen-wrapper {
