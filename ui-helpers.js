@@ -483,20 +483,26 @@ export function getRoleBadge(input) {
 }
 
 // --- INFINITE CAROUSEL UTILS ------------------------------------------
-export function initInfiniteCarousel(trackSelector = '.features-inner') {
-  const track = document.querySelector(trackSelector);
+export function initCarousel() {
+  const track = document.querySelector('.features-inner');
   if (!track) return;
-  // Prevent multiple duplication on repeated renders
-  const origCount = track.children.length;
-  if (track.dataset.looped === 'true' || origCount > 9) return; // adjust 10 to your actual unique count
-  track.innerHTML += track.innerHTML;
-  track.dataset.looped = 'true';
-  track.addEventListener('scroll', () => {
-    const max = track.scrollWidth / 2;
-    if (track.scrollLeft >= max) track.scrollLeft -= max;
-    else if (track.scrollLeft <= 0) track.scrollLeft += max;
-  });
+  const half = () => track.scrollWidth / 2;
+  let isPaused = false;
+  const speed = 1.0;
+  ['mouseenter', 'touchstart'].forEach((evt) =>
+    track.addEventListener(evt, () => (isPaused = true))
+  );
+  ['mouseleave', 'touchend'].forEach((evt) =>
+    track.addEventListener(evt, () => (isPaused = false))
+  );
+  function drift() {
+    if (!isPaused) track.scrollLeft = (track.scrollLeft + speed) % half();
+    requestAnimationFrame(drift);
+  }
+  requestAnimationFrame(drift);
 }
+
+
 // --- ASYNC LOADER UTILITY ---------------------------------------------
 export async function withLoader(taskFn, loaderId = 'page-loader') {
   showPageTransitionLoader();
