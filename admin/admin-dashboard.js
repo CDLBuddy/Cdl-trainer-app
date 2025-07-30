@@ -54,12 +54,12 @@ export async function renderAdminDashboard(
     userData = {};
   }
   if (userRole !== 'admin') {
-  showToast('Access denied: Admin role required.');
-  import('../welcome.js').then((mod) => {
-    mod.renderWelcome && mod.renderWelcome(container);
-  });
-  return;
-}
+    showToast('Access denied: Admin role required.');
+    import('../welcome.js').then((mod) => {
+      mod.renderWelcome && mod.renderWelcome(container);
+    });
+    return;
+  }
 
   // --- Fetch all users ---
   let allUsers = [];
@@ -187,8 +187,8 @@ export async function renderAdminDashboard(
 
           <div class="dashboard-card">
             <h3>🏢 Manage Companies</h3>
-            <p>Create, edit, and view all companies who send students to your school. (Coming soon)</p>
-            <button class="btn" id="add-company-btn" style="margin-top:10px;">+ Add Company</button>
+            <p>Create, edit, and view all companies who send students to your school.</p>
+            <button class="btn wide" data-nav="admin-companies" style="margin-top:10px;">Open Companies Page</button>
           </div>
 
           <div class="dashboard-card">
@@ -197,6 +197,7 @@ export async function renderAdminDashboard(
               Download user data, filter for missing docs, and message all students or instructors with one click.<br>
               <em>(Coming soon: Download/export, batch reminders, activity logs...)</em>
             </p>
+            <button class="btn wide" data-nav="admin-reports" style="margin-top:10px;">Open Reports Page</button>
           </div>
         </section>
         <button class="rail-btn logout wide-logout" id="logout-btn" aria-label="Logout">
@@ -314,12 +315,6 @@ export async function renderAdminDashboard(
         showToast('Failed to remove user.');
       }
     });
-  });
-
-  // --- Add Company (future modal) ---
-  container.querySelector('#add-company-btn')?.addEventListener('click', () => {
-    showToast('Add company: Coming soon!');
-    // TODO: Open company creation modal/form
   });
 
   // --- Logout ---
