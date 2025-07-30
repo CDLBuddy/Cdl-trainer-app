@@ -1,8 +1,8 @@
 // welcome.js
 
 import {
-  initInfiniteCarousel,
-  initCarousel,
+  // initInfiniteCarousel,  // Remove if not using
+  // initCarousel,          // Remove if not using
   initFadeInOnScroll,
   startTypewriter,
 } from './ui-helpers.js';
@@ -50,12 +50,13 @@ function renderSchoolSelector(container, onSelect) {
   modal.addEventListener('click', (e) => {
     if (e.target === modal) modal.remove();
   });
-  window.addEventListener('keydown', function escClose(e) {
+  function escClose(e) {
     if (e.key === 'Escape') {
       modal.remove();
       window.removeEventListener('keydown', escClose);
     }
-  });
+  }
+  window.addEventListener('keydown', escClose);
 }
 
 // === MAIN WELCOME RENDER (ASYNC for Firestore support) ===
@@ -111,7 +112,7 @@ export async function renderWelcome(
           </button>
         </div>
         <div class="features" tabindex="0" aria-label="Feature highlights">
-          <div class="features-inner" role="list">
+          <div class="features-list" role="list" style="display:flex;flex-wrap:wrap;gap:1.2em;justify-content:center;">
             <div class="feat" role="listitem"><i>🧪</i><p>Practice Tests</p></div>
             <div class="feat" role="listitem"><i>✅</i><p>Checklists</p></div>
             <div class="feat" role="listitem"><i>📊</i><p>Results</p></div>
@@ -142,8 +143,8 @@ export async function renderWelcome(
 
   // Effects and Animation (only once per load)
   if (!container._welcomeInit) {
-    initInfiniteCarousel?.();
-    initCarousel?.();
+    // initInfiniteCarousel?.(); // REMOVE if not using carousel!
+    // initCarousel?.();         // REMOVE if not using carousel!
     initFadeInOnScroll?.();
     startTypewriter();
     container._welcomeInit = true;
@@ -175,24 +176,4 @@ export async function renderWelcome(
       renderSchoolSelector(container, () => renderWelcome(container));
     });
 
-  // Mobile swipe support for features carousel
-  let touchStartX = 0,
-    touchEndX = 0;
-  const featuresTrack = document.querySelector('.features-inner');
-  if (featuresTrack) {
-    featuresTrack.addEventListener(
-      'touchstart',
-      (e) => (touchStartX = e.changedTouches[0].screenX),
-      { passive: true }
-    );
-    featuresTrack.addEventListener(
-      'touchend',
-      (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        if (touchStartX - touchEndX > 40) featuresTrack.scrollLeft += 120;
-        if (touchEndX - touchStartX > 40) featuresTrack.scrollLeft -= 120;
-      },
-      { passive: true }
-    );
-  }
 }
