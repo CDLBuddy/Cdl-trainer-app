@@ -1,5 +1,6 @@
 // welcome.js
 
+
 import {
   initInfiniteCarousel,
   initCarousel,
@@ -15,14 +16,9 @@ import {
 
 // === Renders school selector modal/dialog ===
 function renderSchoolSelector(container, onSelect) {
-  // Remove any existing modals
-  document.querySelectorAll('.modal-overlay.school-modal').forEach(m => m.remove());
-
   const schools = getAllSchools();
   const modal = document.createElement('div');
-  modal.className = 'modal-overlay fade-in school-modal';
-  modal.setAttribute('role', 'dialog');
-  modal.setAttribute('aria-modal', 'true');
+  modal.className = 'modal-overlay fade-in';
   modal.innerHTML = `
     <div class="modal-card school-select-modal" style="max-width:410px;">
       <h2>Select Your School</h2>
@@ -45,16 +41,9 @@ function renderSchoolSelector(container, onSelect) {
     modal.remove();
     if (onSelect) onSelect();
   };
-
   // Optional: close on outside click/esc
   modal.addEventListener('click', (e) => {
     if (e.target === modal) modal.remove();
-  });
-  window.addEventListener('keydown', function escClose(e) {
-    if (e.key === 'Escape') {
-      modal.remove();
-      window.removeEventListener('keydown', escClose);
-    }
   });
 }
 
@@ -134,10 +123,11 @@ export async function renderWelcome(
     </div>
   `;
 
-  // Only show school selector modal if no school is set
+  // Show school selector if no school is set
   if (!localStorage.getItem('schoolId')) {
-    renderSchoolSelector(container, () => renderWelcome(container));
-    return; // Don't continue rendering until school is picked
+    setTimeout(() => {
+      renderSchoolSelector(container, () => renderWelcome(container));
+    }, 10);
   }
 
   // Effects and Animation (only once per load)
