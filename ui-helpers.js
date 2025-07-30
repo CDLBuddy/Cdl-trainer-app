@@ -482,26 +482,6 @@ export function getRoleBadge(input) {
   return `<span class="role-badge ${role}">${role.charAt(0).toUpperCase() + role.slice(1)}</span>`;
 }
 
-// --- INFINITE CAROUSEL UTILS ------------------------------------------
-export function initCarousel() {
-  const track = document.querySelector('.features-inner');
-  if (!track) return;
-  const half = () => track.scrollWidth / 2;
-  let isPaused = false;
-  const speed = 1.0;
-  ['mouseenter', 'touchstart'].forEach((evt) =>
-    track.addEventListener(evt, () => (isPaused = true))
-  );
-  ['mouseleave', 'touchend'].forEach((evt) =>
-    track.addEventListener(evt, () => (isPaused = false))
-  );
-  function drift() {
-    if (!isPaused) track.scrollLeft = (track.scrollLeft + speed) % half();
-    requestAnimationFrame(drift);
-  }
-  requestAnimationFrame(drift); // <--- You need to start the drift loop!
-}
-
 // --- ASYNC LOADER UTILITY ---------------------------------------------
 export async function withLoader(taskFn, loaderId = 'page-loader') {
   showPageTransitionLoader();
