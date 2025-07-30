@@ -54,10 +54,12 @@ export async function renderAdminDashboard(
     userData = {};
   }
   if (userRole !== 'admin') {
-    showToast('Access denied: Admin role required.');
-    renderDashboard();
-    return;
-  }
+  showToast('Access denied: Admin role required.');
+  import('../welcome.js').then((mod) => {
+    mod.renderWelcome && mod.renderWelcome(container);
+  });
+  return;
+}
 
   // --- Fetch all users ---
   let allUsers = [];
