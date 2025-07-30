@@ -35,7 +35,7 @@ body {
 }
 /* Optional: Toast focus (for a11y, tab) */
 .toast-message:focus {
-  outline: 2px solid var(--accent, #b48aff);
+  outline: 2px solid var(--accent, #004d66);
   outline-offset: 2px;
 }
 /* Optional: Smoother fade out */
@@ -1129,7 +1129,7 @@ body::before {
 .signup-card h2 {
   font-size: 2.1em;
   font-weight: 800;
-  color: var(--brand-light, #b48aff);
+  color: var(--brand-light, #004d66);
   margin-bottom: 1.2rem;
   letter-spacing: 0.02em;
   text-align: center;
@@ -1167,7 +1167,7 @@ body::before {
   box-shadow: 0 0 0 0 rgba(170, 110, 255, 0);
 }
 .form-group input:focus {
-  border: 1.6px solid var(--accent, #b48aff);
+  border: 1.6px solid var(--accent, #004d66);
   box-shadow: 0 0 0 2.5px rgba(180, 138, 255, 0.13);
 }
 .form-group input:disabled {
@@ -2883,12 +2883,12 @@ body.ai-modal-open {
 /* Footer */
 .welcome-footer {
   font-size: 0.99em;
-  color: #bed6ff;
+  color: #004d66;
   margin-top: 2.5rem;
   opacity: 0.93;
 }
 .welcome-footer a {
-  color: var(--brand-primary, #b48aff);
+  color: var(--brand-primary, #004d66);
   text-decoration: underline;
   transition: color 0.18s;
 }
@@ -2907,7 +2907,7 @@ body.ai-modal-open {
   width: 92px;
   height: 92px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 20%, #b48aff35 0%, #b48aff09 80%);
+  background: radial-gradient(circle at 30% 20%, #004d66 0%, #004d66 80%);
   filter: blur(6px);
   opacity: 0.28;
   animation: floatBokeh 18s infinite linear;
