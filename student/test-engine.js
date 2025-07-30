@@ -208,7 +208,7 @@ export async function renderTestEngine(
       .querySelector('[data-nav="dashboard"]')
       ?.addEventListener('click', () => {
         import('./student-dashboard.js').then((mod) =>
-          mod.renderDashboard(container)
+          mod.renderStudentDashboard(container)
         );
       });
     container

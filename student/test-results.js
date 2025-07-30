@@ -148,7 +148,7 @@ export async function renderTestResults(
     .getElementById('back-to-dashboard-btn')
     ?.addEventListener('click', () => {
       import('./student-dashboard.js').then((mod) =>
-        mod.renderDashboard(container)
+        mod.renderStudentDashboard(container)
       );
     });
   document.getElementById('retake-test-btn')?.addEventListener('click', () => {
