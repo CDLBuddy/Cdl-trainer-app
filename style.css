@@ -2674,26 +2674,18 @@ body.ai-modal-open {
     opacity: 1;
   }
 }
-/* === Welcome Screen Styling (Frosted Glass, Soft, Modern, No Panel) === */
-
-/* Main screen background: blue multi-gradient only */
+/* Main screen background: multi-gradient, no panels! */
 .welcome-screen {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background: linear-gradient(120deg, #242848 0%, #3a3084 100%);
+  background: linear-gradient(120deg, #1a2346 0%, #36a8e7 44%, #3a3084 100%);
+  /* You can tune colors for your signature look */
   position: relative;
   overflow: hidden;
   padding: 0 0.5em;
-}
-
-/* Remove any legacy panel backgrounds that might override this */
-body, #app, .main-panel, .background-panel, .welcome-panel {
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
 }
 
 /* Switch School Button (floating above card) */
