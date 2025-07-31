@@ -1,6 +1,7 @@
 // superadmin/logs.js
 
 import { db } from '../firebase.js';
+import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 
@@ -14,15 +15,20 @@ async function fetchLogs({
   school,
   keyword,
 } = {}) {
-  let ref = db.collection('systemLogs').orderBy('timestamp', 'desc');
-  // Add client-side filtering for now, backend if collection grows
-  let snap = await ref.limit(400).get();
+  // Firestore v9+ modular syntax
+  const ref = query(
+    collection(db, "systemLogs"),
+    orderBy("timestamp", "desc"),
+    limit(400)
+  );
+  const snap = await getDocs(ref);
   let logs = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
   if (dateFrom)
     logs = logs.filter((l) => l.timestamp && l.timestamp >= dateFrom);
   if (dateTo)
     logs = logs.filter(
-      (l) => l.timestamp && l.timestamp <= dateTo + 'T23:59:59'
+      (l) => l.timestamp && l.timestamp <= dateTo + "T23:59:59"
     );
   if (user)
     logs = logs.filter((l) => l.userEmail && l.userEmail.includes(user));
@@ -33,8 +39,8 @@ async function fetchLogs({
   if (keyword)
     logs = logs.filter(
       (l) =>
-        (l.details || '').toLowerCase().includes(keyword.toLowerCase()) ||
-        (l.target || '').toLowerCase().includes(keyword.toLowerCase())
+        (l.details || "").toLowerCase().includes(keyword.toLowerCase()) ||
+        (l.target || "").toLowerCase().includes(keyword.toLowerCase())
     );
   return logs;
 }
@@ -158,6 +164,7 @@ export async function renderLogs(container = document.getElementById('app')) {
       keyword: container.querySelector('#log-keyword-filter').value.trim(),
     };
   }
+
   container
     .querySelectorAll('.logs-toolbar input, .logs-toolbar select')
     .forEach((el) => {
