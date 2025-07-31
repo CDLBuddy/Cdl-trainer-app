@@ -12,7 +12,7 @@ import {
 import { renderProfile } from './profile.js';
 import { renderWalkthrough } from './walkthrough.js';
 import { renderPracticeTests } from './practice-tests.js';
-import { renderStudentDashboard } from './student-dashboard.js'; // <-- Correct
+import { renderStudentDashboard } from './student-dashboard.js';
 
 // ==== Checklist Template (static structure only) ====
 export const studentChecklistSectionsTemplate = [
@@ -96,7 +96,11 @@ export async function renderChecklists(
 ) {
   if (!container) return;
 
-  // Resolve user email with full fallback coverage
+  // Show a quick loader while fetching data
+  container.innerHTML = `<div class="loader" role="status" aria-live="polite" style="margin:2em auto;text-align:center;">Loading your checklist...</div>`;
+  setupNavigation();
+
+  // Robust email/user context
   const currentUserEmail =
     window.currentUserEmail ||
     localStorage.getItem('currentUserEmail') ||
@@ -104,7 +108,7 @@ export async function renderChecklists(
     null;
 
   if (!currentUserEmail) {
-    container.innerHTML = '<p>You must be logged in to view this page.</p>';
+    container.innerHTML = `<div role="alert" aria-live="assertive">You must be logged in to view this page.</div>`;
     setupNavigation();
     return;
   }
@@ -130,7 +134,7 @@ export async function renderChecklists(
 
   if (userRole !== 'student') {
     container.innerHTML =
-      '<p>This checklist is only available for students.</p>';
+      '<div role="alert" aria-live="assertive">This checklist is only available for students.</div>';
     setupNavigation();
     return;
   }
@@ -199,26 +203,37 @@ export async function renderChecklists(
   const complete = flatChecklist.filter((x) => x.done).length;
   const percent = Math.round((complete / flatChecklist.length) * 100);
 
-  // Confetti celebration at 100%
-  if (percent === 100 && window.confetti) {
-    setTimeout(() => {
-      window.confetti();
-      const badge = document.createElement('div');
-      badge.className = 'completion-badge';
-      badge.innerHTML = '🎉 All steps complete! Ready for certification.';
-      document.body.appendChild(badge);
-      setTimeout(() => badge.remove(), 3200);
-    }, 600);
-  }
+  // Store last percent for fast reload, animate bar from last to new
+  const lastPercent =
+    parseInt(sessionStorage.getItem('checklistLastPercent'), 10) || 0;
+  sessionStorage.setItem('checklistLastPercent', percent);
 
-  // Render checklist UI
+  // Any critical notify items? (for alert banner)
+  const notifyItems = flatChecklist.filter((item) => item.notify);
+
+  // Main UI render
   container.innerHTML = `
-    <div class="screen-wrapper fade-in checklist-page" style="max-width:480px;margin:0 auto;">
-      <h2 style="display:flex;align-items:center;gap:9px;">📋 Student Checklist</h2>
-      <div class="progress-track" style="margin-bottom:18px;">
-        <div class="progress-fill" style="width:${percent}%;transition:width 0.6s cubic-bezier(.45,1.4,.5,1.02);"></div>
-        <span class="progress-label">${percent}% Complete</span>
+    <div class="screen-wrapper fade-in checklist-page" style="max-width:500px;margin:0 auto;">
+      <h2 style="display:flex;align-items:center;gap:10px;">📋 Student Checklist</h2>
+      ${
+        notifyItems.length
+          ? `<div class="checklist-alert-banner" role="alert" aria-live="polite" style="background:#ffe3e3;color:#c1272d;border-radius:10px;padding:10px 14px;margin-bottom:15px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:1.3em;">⚠️</span>
+            <span>You have steps that need attention before you can complete your training.</span>
+          </div>`
+          : ''
+      }
+      <div class="progress-track" style="margin-bottom:18px;position:relative;">
+        <div class="progress-fill" style="width:${lastPercent}%;transition:width 0.8s cubic-bezier(.45,1.4,.5,1.02);"></div>
+        <span class="progress-label" id="progress-label" aria-live="polite" tabindex="0">${percent}% Complete</span>
       </div>
+      ${
+        percent === 100
+          ? `<div class="completion-badge" aria-live="polite" style="background:#bbffd0;color:#14692d;padding:7px 17px;border-radius:20px;font-weight:600;text-align:center;margin:0 0 12px 0;">
+              🎉 All steps complete! Ready for certification.
+            </div>`
+          : ''
+      }
       ${studentChecklistSections
         .map(
           (section) => `
@@ -227,26 +242,43 @@ export async function renderChecklists(
           <ul class="checklist-list">
             ${section.items
               .map(
-                (item) => `
-              <li class="checklist-item ${item.done ? 'done' : ''} ${item.readonly ? 'readonly' : ''}">
+                (item, idx) => `
+              <li
+                class="checklist-item${item.done ? ' done' : ''}${item.readonly ? ' readonly' : ''}"
+                ${item.notify && !item.done && !item.readonly ? 'aria-current="step"' : ''}
+                tabindex="0"
+              >
                 ${
                   item.notify && !item.done && !item.readonly
                     ? `<span class="notify-bubble" aria-label="Incomplete Step" title="This step needs attention">!</span>`
                     : ''
                 }
-                <div class="checklist-item-main" tabindex="0" role="button" aria-expanded="false">
+                <div
+                  class="checklist-item-main"
+                  role="button"
+                  aria-expanded="false"
+                  aria-controls="details-${section.header.replace(/\s/g, '')}-${idx}"
+                  tabindex="0"
+                  style="display:flex;align-items:center;gap:8px;min-height:38px;user-select:none;cursor:pointer;"
+                >
                   <span class="checklist-label" style="${item.done ? 'text-decoration:line-through;color:#9fdcb7;' : ''}">
                     ${item.label}
                   </span>
+                  <span class="chevron" style="margin-left:auto;font-size:1.1em;color:#999;">&#x25B6;</span>
                   ${
                     item.done
-                      ? `<span class="badge badge-success" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>`
+                      ? `<span class="badge badge-success" aria-label="Complete" style="animation:popCheck .28s cubic-bezier(.42,1.85,.5,1.03);">✔</span>`
                       : item.readonly
                         ? `<span class="badge badge-waiting" title="Instructor must complete" aria-label="Instructor Only">🔒</span>`
                         : `<button class="btn outline btn-sm" data-nav="${item.link}">Complete</button>`
                   }
                 </div>
-                <div class="checklist-details" style="display:none;">
+                <div
+                  id="details-${section.header.replace(/\s/g, '')}-${idx}"
+                  class="checklist-details"
+                  style="display:none;"
+                  aria-hidden="true"
+                >
                   ${item.details || ''}
                   ${
                     item.substeps
@@ -282,27 +314,48 @@ export async function renderChecklists(
   // Animate progress bar
   setTimeout(() => {
     const bar = container.querySelector('.progress-fill');
-    if (bar) bar.style.width = percent + '%';
-  }, 25);
+    if (bar) {
+      bar.style.width = percent + '%';
+      // Focus on label for screen readers if 100% or error
+      if (percent === 100 || notifyItems.length) {
+        const progressLabel = container.querySelector('#progress-label');
+        progressLabel && progressLabel.focus();
+      }
+    }
+  }, 50);
 
-  // Expand/collapse checklist details
+  // Confetti celebration (debounced)
+  if (percent === 100 && window.confetti && !window.__checklistConfettiFired) {
+    window.__checklistConfettiFired = true;
+    setTimeout(() => {
+      window.confetti();
+      setTimeout(() => {
+        window.__checklistConfettiFired = false;
+      }, 5000);
+    }, 700);
+  }
+
+  // Expand/collapse checklist details (full row is now clickable and keyboard accessible)
   container.querySelectorAll('.checklist-item-main').forEach((main) => {
     main.addEventListener('click', function () {
       const li = this.closest('.checklist-item');
       const details = li.querySelector('.checklist-details');
       const label = li.querySelector('.checklist-label');
+      const chevron = li.querySelector('.chevron');
       if (!details) return;
       const expanded = li.classList.toggle('expanded');
       details.style.display = expanded ? 'block' : 'none';
-      label.style.display = expanded ? 'none' : '';
+      details.setAttribute('aria-hidden', expanded ? 'false' : 'true');
       this.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      if (chevron) chevron.style.transform = expanded ? 'rotate(90deg)' : '';
     });
+    // Accessibility: keyboard open/close
     main.addEventListener('keyup', function (e) {
       if (e.key === 'Enter' || e.key === ' ') this.click();
     });
   });
 
-  // Checklist navigation actions
+  // Checklist navigation actions (robust: remove existing before adding new)
   container.querySelectorAll('.btn[data-nav]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const target = btn.getAttribute('data-nav');
@@ -318,7 +371,7 @@ export async function renderChecklists(
   container
     .querySelector('#back-to-dashboard-btn')
     ?.addEventListener('click', () => {
-      renderStudentDashboard(); // <-- SAFE! Named import, consistent signature
+      renderStudentDashboard();
     });
 
   setupNavigation();
