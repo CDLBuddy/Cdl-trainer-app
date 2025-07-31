@@ -1,6 +1,12 @@
 // superadmin/compliance.js
 
 import { db, storage } from '../firebase.js';
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 
@@ -20,7 +26,7 @@ export async function renderComplianceCenter(
   // Fetch all schools and compliance info
   let schools = [];
   try {
-    const schoolsSnap = await db.collection('schools').get();
+    const schoolsSnap = await getDocs(collection(db, 'schools'));
     schools = schoolsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
     showToast('Failed to load schools.');
@@ -296,7 +302,7 @@ function showComplianceModal(school, mode = 'view', container) {
         auditFindings: fd.get('auditFindings'),
       };
       try {
-        await db.collection('schools').doc(school.id).update(updated);
+        await updateDoc(doc(db, 'schools', school.id), updated);
         showToast('Compliance info updated!');
         modal.remove();
         renderComplianceCenter(container);

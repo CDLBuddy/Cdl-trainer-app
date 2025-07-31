@@ -1,6 +1,12 @@
 // superadmin/superadmin-dashboard.js
 
 import { db, auth } from '../firebase.js';
+import {
+  collection,
+  getDocs,
+  query,
+  where
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { signOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import { renderWelcome } from '../welcome.js';
 import {
@@ -10,7 +16,7 @@ import {
   renderBilling,
   renderSettings,
   renderLogs,
-} from './index.js'; // <-- Barrel import: from root!
+} from './index.js';
 
 import { showToast, setupNavigation } from '../ui-helpers.js';
 
@@ -20,14 +26,18 @@ async function getSuperadminStats() {
     users = 0,
     complianceAlerts = 0;
   try {
-    const schoolsSnap = await db.collection('schools').get();
+    // Schools
+    const schoolsSnap = await getDocs(collection(db, 'schools'));
     schools = schoolsSnap.size;
-    const usersSnap = await db.collection('users').get();
+    // Users
+    const usersSnap = await getDocs(collection(db, 'users'));
     users = usersSnap.size;
-    const alertsSnap = await db
-      .collection('complianceAlerts')
-      .where('resolved', '==', false)
-      .get();
+    // Compliance Alerts (unresolved only)
+    const alertsQuery = query(
+      collection(db, 'complianceAlerts'),
+      where('resolved', '==', false)
+    );
+    const alertsSnap = await getDocs(alertsQuery);
     complianceAlerts = alertsSnap.size;
   } catch (e) {}
   return { schools, users, complianceAlerts };
@@ -53,8 +63,11 @@ export async function renderSuperadminDashboard(
     localStorage.getItem('currentUserEmail') || window.currentUserEmail || null;
   let userData = {};
   try {
-    const usersRef = db.collection('users');
-    const snap = await usersRef.where('email', '==', currentUserEmail).get();
+    const usersQuery = query(
+      collection(db, 'users'),
+      where('email', '==', currentUserEmail)
+    );
+    const snap = await getDocs(usersQuery);
     if (!snap.empty) userData = snap.docs[0].data();
   } catch (e) {
     userData = {};

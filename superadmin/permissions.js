@@ -1,6 +1,16 @@
 // superadmin/permissions.js
 
 import { db } from '../firebase.js';
+import {
+  collection,
+  query,
+  orderBy,
+  where,
+  getDocs,
+  doc,
+  updateDoc,
+  addDoc,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 
@@ -20,7 +30,7 @@ const PERMISSIONS_LIST = [
 // --- Fetch all schools for assignment ---
 async function fetchSchools() {
   try {
-    const snap = await db.collection('schools').orderBy('name').get();
+    const snap = await getDocs(query(collection(db, 'schools'), orderBy('name')));
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
     return [];
@@ -29,22 +39,32 @@ async function fetchSchools() {
 
 // --- Fetch all users (with search/filter support) ---
 async function fetchUsers(search = '') {
-  let query = db.collection('users');
-  if (search)
-    query = query.where('keywords', 'array-contains', search.toLowerCase());
-  const snap = await query.orderBy('name').get();
-  return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  try {
+    let usersQuery = query(collection(db, 'users'), orderBy('name'));
+    // Firestore doesn't support text search natively, so you'd need an array field (like 'keywords')
+    if (search) {
+      usersQuery = query(
+        collection(db, 'users'),
+        where('keywords', 'array-contains', search.toLowerCase()),
+        orderBy('name')
+      );
+    }
+    const snap = await getDocs(usersQuery);
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch (e) {
+    return [];
+  }
 }
 
 // --- Fetch permissions audit log (by user) ---
 async function fetchAuditLog(userId) {
   try {
-    const snap = await db
-      .collection('users')
-      .doc(userId)
-      .collection('permissionsLog')
-      .orderBy('timestamp', 'desc')
-      .get();
+    const snap = await getDocs(
+      query(
+        collection(db, 'users', userId, 'permissionsLog'),
+        orderBy('timestamp', 'desc')
+      )
+    );
     return snap.docs.map((doc) => doc.data());
   } catch (e) {
     return [];
@@ -264,7 +284,7 @@ export async function renderPermissions(
 
       // Update user doc
       try {
-        await db.collection('users').doc(userId).update({
+        await updateDoc(doc(db, 'users', userId), {
           role: newRole,
           assignedSchools,
           permissions,
@@ -273,16 +293,15 @@ export async function renderPermissions(
         });
 
         // Log change to audit trail
-        await db
-          .collection('users')
-          .doc(userId)
-          .collection('permissionsLog')
-          .add({
+        await addDoc(
+          collection(db, 'users', userId, 'permissionsLog'),
+          {
             timestamp: new Date().toISOString(),
             actorEmail: localStorage.getItem('currentUserEmail'),
             actorName: localStorage.getItem('fullName'),
             details: `Role: ${newRole}, Schools: [${assignedSchools.join(', ')}], Perms: [${permissions.join(', ')}], Status: ${status}, Expiry: ${expiryDate}`,
-          });
+          }
+        );
 
         showToast(`User permissions updated.`);
         btn.disabled = true;

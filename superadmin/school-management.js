@@ -1,4 +1,14 @@
 import { db } from '../firebase.js';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  doc,
+  updateDoc,
+  deleteDoc,
+  orderBy,
+  query,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 
@@ -8,7 +18,6 @@ function getStatusBadge(status) {
     Active: '<span class="badge badge-active">Active</span>',
     Pending: '<span class="badge badge-pending">Pending</span>',
     Suspended: '<span class="badge badge-suspended">Suspended</span>',
-    // eslint-disable-next-line prettier/prettier
     Expired: '<span class="badge badge-expired">Expired</span>',
   };
   return (
@@ -116,7 +125,7 @@ export async function renderSchoolManagement(
   // --- Fetch and Render Schools ---
   let schools = [];
   try {
-    const snap = await db.collection('schools').orderBy('name').get();
+    const snap = await getDocs(query(collection(db, 'schools'), orderBy('name')));
     schools = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
     showToast('Failed to load schools.');
@@ -238,7 +247,6 @@ export async function renderSchoolManagement(
             contactPhone: fd.get('contactPhone')?.trim() || '',
             notes: fd.get('notes')?.trim() || '',
             updatedAt: new Date().toISOString(),
-            // Add to change log
             changeLog: [
               ...(school.changeLog || []),
               {
@@ -249,7 +257,7 @@ export async function renderSchoolManagement(
             ],
           };
           try {
-            await db.collection('schools').doc(schoolId).update(updates);
+            await updateDoc(doc(db, 'schools', schoolId), updates);
             showToast('School updated!');
             modal.style.display = 'none';
             modal.innerHTML = '';
@@ -267,7 +275,6 @@ export async function renderSchoolManagement(
     document.querySelectorAll('.delete-school-btn').forEach((btn) => {
       btn.onclick = async () => {
         const schoolId = btn.dataset.schoolId;
-        // Modal confirm (more modern than alert)
         if (
           !window.confirm(
             'Are you sure you want to delete this school/provider? This action cannot be undone.'
@@ -275,7 +282,7 @@ export async function renderSchoolManagement(
         )
           return;
         try {
-          await db.collection('schools').doc(schoolId).delete();
+          await deleteDoc(doc(db, 'schools', schoolId));
           showToast('School deleted.');
           schools = schools.filter((s) => s.id !== schoolId);
           renderSchoolsTable(document.getElementById('school-search').value);
@@ -284,7 +291,6 @@ export async function renderSchoolManagement(
         }
       };
     });
-
     // Bulk select/delete
     const selectAll = document.getElementById('select-all-schools');
     const allBoxes = document.querySelectorAll('.school-select');
@@ -300,7 +306,6 @@ export async function renderSchoolManagement(
         ).some((b) => b.checked);
       };
     });
-
     document.getElementById('bulk-delete-btn').onclick = async () => {
       const ids = Array.from(
         document.querySelectorAll('.school-select:checked')
@@ -312,7 +317,7 @@ export async function renderSchoolManagement(
         return;
       try {
         for (const id of ids) {
-          await db.collection('schools').doc(id).delete();
+          await deleteDoc(doc(db, 'schools', id));
           schools = schools.filter((s) => s.id !== id);
         }
         showToast(`${ids.length} school(s) deleted.`);
@@ -366,10 +371,10 @@ export async function renderSchoolManagement(
       ],
     };
     try {
-      await db.collection('schools').add(newSchool);
+      await addDoc(collection(db, 'schools'), newSchool);
       showToast('School added!');
       // Refresh data
-      const snap = await db.collection('schools').orderBy('name').get();
+      const snap = await getDocs(query(collection(db, 'schools'), orderBy('name')));
       schools = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       renderSchoolsTable(document.getElementById('school-search').value);
       e.target.reset();

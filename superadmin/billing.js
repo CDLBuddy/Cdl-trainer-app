@@ -1,6 +1,12 @@
 // superadmin/billing.js
 
 import { db } from '../firebase.js';
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 
@@ -23,8 +29,7 @@ export async function renderBilling(
   // Fetch all schools and their billing info
   let schools = [];
   try {
-    // Firestore v9 compat (modular syntax for future-proofing, but keep as is for now)
-    const schoolsSnap = await db.collection('schools').get();
+    const schoolsSnap = await getDocs(collection(db, 'schools'));
     schools = schoolsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
     showToast('Failed to load schools or billing info.');
@@ -308,7 +313,7 @@ function showBillingModal(school, mode = 'view', container) {
         manualOverride: fd.get('manualOverride'),
       };
       try {
-        await db.collection('schools').doc(school.id).update(updated);
+        await updateDoc(doc(db, 'schools', school.id), updated);
         showToast('Billing info updated!');
         modal.remove();
         renderBilling(container);

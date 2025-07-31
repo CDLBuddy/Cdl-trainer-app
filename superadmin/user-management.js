@@ -19,11 +19,11 @@ import {
   showModal,
   closeModal,
 } from '../ui-helpers.js';
-import { renderSuperadminDashboard } from './superadmin-dashboard.js'; // <-- For dashboard back button
+import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 
 // ==== Data Helpers ====
 
-// Get all users (optionally filter by school or role)
+// Get all users
 async function getAllUsers() {
   const snap = await getDocs(collection(db, 'users'));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -50,7 +50,7 @@ export async function renderUserManagement(
   if (!container) return;
   setupNavigation();
 
-  // Fetch all users and schools (data state)
+  // Fetch users/schools in parallel
   let [users, schools] = await Promise.all([getAllUsers(), getAllSchools()]);
   let filter = { search: '', role: '', school: '', active: 'all' };
 
@@ -238,8 +238,6 @@ export async function renderUserManagement(
 
   // ====== Modals (unchanged) ======
   function showUserModal(user = {}, editable = true) {
-    // ... [keep this code as is, from your current file] ...
-    // API credential display and multi-school assign UI included!
     showModal(`
       <div class="modal-card user-modal">
         <button class="modal-close" aria-label="Close" onclick="document.querySelector('.modal-overlay').remove()">&times;</button>
@@ -385,10 +383,8 @@ export async function renderUserManagement(
     renderUserManagement(container);
   }
   async function impersonateUser(user) {
-    // Save impersonation state in local/session storage for next page load
     sessionStorage.setItem('impersonateUserId', user.id);
     showToast(`Now impersonating ${user.name || user.email} (dev mode).`);
-    // Redirect or reload for effect (implement real logic as needed)
     location.reload();
   }
   async function showUserAuditLog(userId, email) {

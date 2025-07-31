@@ -1,7 +1,13 @@
 // superadmin/logs.js
 
 import { db } from '../firebase.js';
-import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
+import {
+  collection,
+  query,
+  orderBy,
+  limit,
+  getDocs,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 
@@ -15,7 +21,7 @@ async function fetchLogs({
   school,
   keyword,
 } = {}) {
-  // Firestore v9+ modular syntax
+  // Firestore v9+ modular syntax (CDN)
   const ref = query(
     collection(db, "systemLogs"),
     orderBy("timestamp", "desc"),
@@ -145,7 +151,7 @@ export async function renderLogs(container = document.getElementById('app')) {
           </tbody>
         </table>
         <div style="font-size:.94em;color:#888;margin:1.2em 0 0.3em;">
-          Showing most recent ${logs.length > 100 ? 100 : logs.length} of ${logs.length} logs. Export for full history.
+          Showing most recent ${logs.length > 100 ? 100 : logs.length} logs. Export for full history.
         </div>
         <button class="btn outline" id="back-to-superadmin-dashboard-btn" style="margin-top:2rem;">⬅ Dashboard</button>
       </div>

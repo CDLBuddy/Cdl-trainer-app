@@ -7,9 +7,9 @@ import {
   getDoc,
   setDoc,
   updateDoc,
-  deleteDoc,
   getDocs,
   serverTimestamp,
+  addDoc,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
@@ -36,20 +36,16 @@ async function getSchoolSettings(schoolId) {
 async function saveSettings(type, settings, schoolId = null) {
   if (type === 'global') {
     await setDoc(doc(db, 'settings', 'global'), settings, { merge: true });
-    logSettingsChange('global', settings);
+    await logSettingsChange('global', settings);
   } else if (type === 'school' && schoolId) {
-    await updateDoc(
-      doc(db, 'schools', schoolId),
-      { settings },
-      { merge: true }
-    );
-    logSettingsChange(schoolId, settings);
+    await updateDoc(doc(db, 'schools', schoolId), { settings });
+    await logSettingsChange(schoolId, settings);
   }
 }
 
 // Utility: Log all settings changes for audit trail
 async function logSettingsChange(target, newSettings) {
-  await setDoc(doc(collection(db, 'settingsLogs')), {
+  await addDoc(collection(db, 'settingsLogs'), {
     target, // "global" or schoolId
     newSettings,
     changedBy: localStorage.getItem('currentUserEmail'),
@@ -66,7 +62,7 @@ async function getApiKeys() {
 // Utility: Create/rotate/revoke API Key
 async function createApiKey(label, schoolId = null) {
   const key = crypto.randomUUID();
-  await setDoc(doc(collection(db, 'apiKeys')), {
+  await addDoc(collection(db, 'apiKeys'), {
     key,
     label,
     schoolId,
@@ -74,7 +70,7 @@ async function createApiKey(label, schoolId = null) {
     active: true,
     createdBy: localStorage.getItem('currentUserEmail'),
   });
-  logSettingsChange('apiKey', { key, label, schoolId });
+  await logSettingsChange('apiKey', { key, label, schoolId });
   return key;
 }
 async function revokeApiKey(keyId) {
@@ -82,7 +78,7 @@ async function revokeApiKey(keyId) {
     active: false,
     revokedAt: serverTimestamp(),
   });
-  logSettingsChange('apiKey', { keyId, action: 'revoked' });
+  await logSettingsChange('apiKey', { keyId, action: 'revoked' });
 }
 
 // ======== SUPER ADMIN SETTINGS UI RENDERER ========
@@ -240,8 +236,7 @@ export async function renderSettings(
             renderSettings(container);
           });
       } else {
-        container.querySelector('#school-settings-form-container').innerHTML =
-          '';
+        container.querySelector('#school-settings-form-container').innerHTML = '';
       }
     });
 
