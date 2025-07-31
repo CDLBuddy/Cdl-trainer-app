@@ -26,45 +26,44 @@ export function renderLogin(
   const schoolBrand = getCurrentSchoolBranding();
   const schoolLogo = schoolBrand.logoUrl || '/default-logo.svg';
   const schoolName = schoolBrand.schoolName || 'CDL Trainer';
-  const accentColor = schoolBrand.primaryColor || '#b48aff';
+  const accentColor = '#4e91ad'; // Hardcoded app blue
   const supportEmail = schoolBrand.contactEmail || 'support@cdltrainerapp.com';
-  document.documentElement.style.setProperty('--brand-primary', accentColor);
 
   container.innerHTML = `
     <div class="login-card fade-in" role="main" aria-label="Login Page" style="--accent:${accentColor};">
       <div style="text-align:center;">
         <img src="${schoolLogo}" alt="School Logo" style="height:52px;max-width:120px;margin-bottom:0.8rem;border-radius:10px;box-shadow:0 1px 8px #22115533;">
-        <h2 tabindex="0" style="margin:0 0 8px 0;">🚛 ${schoolName} Login</h2>
+        <h2 tabindex="0" style="margin:0 0 8px 0;color:#fff;">🚛 ${schoolName} Login</h2>
       </div>
       <form id="login-form" autocomplete="off" aria-label="Login form">
         <div class="form-group">
-          <label for="email">Email</label>
+          <label for="email" style="color:#fff;">Email</label>
           <input id="email" name="email" type="email" required autocomplete="username" autofocus />
         </div>
         <div class="form-group password-group">
-          <label for="login-password">Password</label>
+          <label for="login-password" style="color:#fff;">Password</label>
           <div style="position:relative;">
             <input id="login-password" name="password" type="password" required autocomplete="current-password" style="padding-right:2.3rem;">
             <button type="button" id="toggle-password"
               aria-label="Show/hide password"
-              style="position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);font-size:1.17em;cursor:pointer;">
+              style="position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:1.17em;cursor:pointer;">
               👁
             </button>
           </div>
         </div>
-        <div id="error-msg" role="alert" style="display:none;color:var(--error);margin-bottom:10px;font-weight:500;"></div>
-        <button class="btn primary" id="login-submit" type="submit" aria-label="Sign in" style="background:${accentColor};border:none;">Log In</button>
-        <button type="button" class="btn" id="google-login" style="margin-top:0.8rem;display:flex;align-items:center;justify-content:center;gap:0.5em;">
+        <div id="error-msg" role="alert" style="display:none;color:#e53e3e;margin-bottom:10px;font-weight:500;"></div>
+        <button class="btn primary" id="login-submit" type="submit" aria-label="Sign in" style="background:${accentColor};border:none;color:#fff;">Log In</button>
+        <button type="button" class="btn" id="google-login" style="margin-top:0.8rem;display:flex;align-items:center;justify-content:center;gap:0.5em;background:#fff;color:#222;">
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" style="height:1.1em;width:1.1em;vertical-align:middle;"> Sign in with Google
         </button>
-        <button type="button" class="btn outline" id="reset-password" style="margin-top:0.6rem;">Forgot Password?</button>
-        <button type="button" class="btn outline" id="demo-login" style="margin-top:0.7rem;">🔑 Demo/Test Account</button>
+        <button type="button" class="btn outline" id="reset-password" style="margin-top:0.6rem;color:#fff;">Forgot Password?</button>
+        <button type="button" class="btn outline" id="demo-login" style="margin-top:0.7rem;color:#fff;">🔑 Demo/Test Account</button>
       </form>
-      <div class="login-footer" style="margin-top:1.2rem;">
-        New? <button class="btn outline" type="button" id="go-signup">Sign Up</button>
+      <div class="login-footer" style="margin-top:1.2rem;color:#ccc;">
+        New? <button class="btn outline" type="button" id="go-signup" style="color:#fff;">Sign Up</button>
       </div>
       <div style="text-align:center;margin-top:0.7rem;">
-        <button class="btn outline" id="back-to-welcome-btn" type="button" style="width:99%;">⬅ Back</button>
+        <button class="btn outline" id="back-to-welcome-btn" type="button" style="width:99%;color:#fff;">⬅ Back</button>
         <button class="btn text" id="switch-school-btn" type="button" style="margin-top:0.3rem;width:99%;color:${accentColor};background:none;border:none;font-size:1.02em;">🏫 Switch School</button>
       </div>
       <div style="margin-top:1.1rem;text-align:center;font-size:0.98em;color:#aaa;">
