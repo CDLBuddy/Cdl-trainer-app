@@ -225,7 +225,6 @@ export async function renderProfile(
           <option value="A-WO-HYD-ELEC" ${cdlClass === 'A-WO-HYD-ELEC' ? 'selected' : ''}>Class A w/o Hydraulic/Electric</option>
           <option value="B" ${cdlClass === 'B' ? 'selected' : ''}>Class B</option>
           <option value="PASSENGER-BUS" ${cdlClass === 'PASSENGER-BUS' ? 'selected' : ''}>Passenger Bus</option>
-          <option value="C" ${cdlClass === 'C' ? 'selected' : ''}>Class C</option>
         </select>
       </label>
       <label>Endorsements:<br>
