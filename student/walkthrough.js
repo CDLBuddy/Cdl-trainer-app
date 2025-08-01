@@ -9,9 +9,20 @@ import {
 } from '../ui-helpers.js';
 import { renderProfile } from './profile.js';
 import { renderStudentDashboard } from './student-dashboard.js';
-
-// === NEW: Walkthrough data (dynamic per class) ===
 import { getWalkthroughByClass, allWalkthroughs } from '../walkthrough-data/index.js';
+
+// === CDL class label mapping for display ===
+const CDL_CLASS_LABELS = {
+  A: 'Class A',
+  'A-WO-AIR-ELEC': 'Class A w/o Air/Electric',
+  'A-WO-HYD-ELEC': 'Class A w/o Hydraulic/Electric',
+  B: 'Class B',
+  'PASSENGER-BUS': 'Passenger Bus',
+  C: 'Class C',
+};
+function getCdlClassLabel(key) {
+  return CDL_CLASS_LABELS[key] || key || '';
+}
 
 export async function renderWalkthrough(
   container = document.getElementById('app')
@@ -49,12 +60,9 @@ export async function renderWalkthrough(
   const school = userData?.schoolName || schoolId || 'N/A';
 
   // === Select walkthrough script ===
-  // Normalize CDL class selection to match your keys
   let walkthroughKey = '';
   if (cdlClass) {
     walkthroughKey = cdlClass.trim().toUpperCase();
-    // If user selected a special option, e.g., "A-WO-AIR-ELEC", "PASSENGER-BUS", etc., map accordingly
-    // You can expand this mapping if needed
   }
   const walkthroughData = getWalkthroughByClass(walkthroughKey);
 
@@ -92,7 +100,7 @@ export async function renderWalkthrough(
   else if (!walkthroughData) {
     content += `
       <div class="alert-box" role="alert">
-        ⚠ Sorry, we do not have a walkthrough script for your selected class: <b>${cdlClass}</b>.<br>
+        ⚠ Sorry, we do not have a walkthrough script for your selected class: <b>${getCdlClassLabel(cdlClass)}</b>.<br>
         Please contact support or your instructor.
       </div>
     `;
@@ -100,7 +108,7 @@ export async function renderWalkthrough(
   // === Walkthrough and drills ===
   else {
     content += `
-      <p><strong>CDL Class:</strong> ${cdlClass}</p>
+      <p><strong>CDL Class:</strong> ${getCdlClassLabel(cdlClass)}</p>
       <p>Study the walkthrough below to prepare for your in-person vehicle inspection test. <span style="color:var(--accent);font-weight:bold;">Critical/pass-fail sections are highlighted.</span></p>
       <div class="walkthrough-script" aria-label="Walkthrough script">
         ${walkthroughData.sections.map(section => `
@@ -205,22 +213,18 @@ export async function renderWalkthrough(
     if (!walkthroughData) return;
 
     // Pick the pass/fail (must-memorize) section for drills
-    // If not present, fall back to first section
     const criticalSection =
       walkthroughData.sections.find((s) => s.critical) ||
       walkthroughData.sections[0];
 
-    // ---- Drill Data Extraction (Fill, Order, Typing, Visual) ----
-    // Here you would extract the correct "script" or steps from your critical section.
-    // You can expand this if you want to support different types of drills for each class.
+    // Drill Data Extraction
     const brakeCheckLines =
       (criticalSection.items &&
         criticalSection.items.map((item) => (typeof item === 'string' ? item : item.text || '')).filter(Boolean)) ||
       [];
 
-    // Example Drill Generators
     function getFillBlanks() {
-      // Super simple: replace a keyword with ___ and store the answer.
+      // Simple: replace keywords with ___ and store answers.
       return brakeCheckLines.map((line) => {
         if (!line) return { text: '', answers: [] };
         let blanks = [];
@@ -399,7 +403,6 @@ export async function renderWalkthrough(
     }
   }
 
-  // Setup drill nav
   function setupDrillsNav(drillNavBar, drillsContainer) {
     ['fill', 'order', 'type', 'visual'].forEach((type) => {
       const btn = drillNavBar.querySelector(`[data-drill="${type}"]`);
