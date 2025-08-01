@@ -2,7 +2,7 @@
 // CDL Class A Pre-Trip Walkthrough (Without Air/Electric Lines)
 // Format: Sections > Steps > { label, script, mustSay, required }
 
-export const walkthroughClassA_WOAirElec = [
+const walkthroughClassAWoAirElec = [
   {
     section: "Engine Compartment",
     steps: [
@@ -35,7 +35,6 @@ export const walkthroughClassA_WOAirElec = [
       },
     ],
   },
-
   {
     section: "Steering System",
     steps: [
@@ -49,7 +48,6 @@ export const walkthroughClassA_WOAirElec = [
       },
     ],
   },
-
   {
     section: "Front Suspension",
     steps: [
@@ -63,7 +61,6 @@ export const walkthroughClassA_WOAirElec = [
       },
     ],
   },
-
   {
     section: "Front Brake",
     steps: [
@@ -87,7 +84,6 @@ export const walkthroughClassA_WOAirElec = [
       },
     ],
   },
-
   {
     section: "Front Wheel/Tire",
     steps: [
@@ -115,7 +111,6 @@ export const walkthroughClassA_WOAirElec = [
       },
     ],
   },
-
   {
     section: "Driver/Fuel Area",
     steps: [
@@ -141,7 +136,6 @@ export const walkthroughClassA_WOAirElec = [
       },
     ],
   },
-
   {
     section: "Rear Axle/Trailer Suspension",
     steps: [
@@ -160,7 +154,6 @@ export const walkthroughClassA_WOAirElec = [
       },
     ],
   },
-
   {
     section: "Rear Brakes",
     steps: [
@@ -184,7 +177,6 @@ export const walkthroughClassA_WOAirElec = [
       },
     ],
   },
-
   {
     section: "Rear Wheels/Tires",
     steps: [
@@ -216,7 +208,6 @@ export const walkthroughClassA_WOAirElec = [
       },
     ],
   },
-
   {
     section: "Lights/Reflectors",
     steps: [
@@ -234,7 +225,6 @@ export const walkthroughClassA_WOAirElec = [
       },
     ],
   },
-
   {
     section: "Trailer/Coupling (No air/electric)",
     steps: [
@@ -290,7 +280,6 @@ export const walkthroughClassA_WOAirElec = [
       },
     ],
   },
-
   {
     section: "In-Cab / Safe Start / Controls",
     steps: [
@@ -334,8 +323,7 @@ export const walkthroughClassA_WOAirElec = [
       },
     ],
   },
-
   // Add additional sections or custom requirements as needed...
 ];
 
-export default walkthroughClassA_WOAirElec;
+export default walkthroughClassAWoAirElec;

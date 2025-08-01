@@ -2,7 +2,7 @@
 // CDL Passenger Bus Full Pre-Trip Walkthrough
 // Structure: [ { section, steps: [ { label, script, mustSay, required, passFail } ] } ]
 
-export const walkthroughPassengerBus = [
+const walkthroughPassengerBus = [
   {
     section: "Engine Compartment",
     steps: [

@@ -2,7 +2,7 @@
 // CDL Class B Full Pre-Trip Walkthrough
 // Structure: [ { section, steps: [ { label, script, mustSay, required, passFail } ] } ]
 
-export const walkthroughClassB = [
+const walkthroughClassB = [
   {
     section: "Engine Compartment",
     steps: [

@@ -2,7 +2,7 @@
 // CDL Class A Full Pre-Trip Walkthrough (With Air, Hydraulic, and Electric Lines)
 // Structure: [ { section, steps: [ { label, script, mustSay, required } ] } ]
 
-export const walkthroughClassA = [
+const walkthroughClassA = [
   {
     section: "Engine Compartment",
     steps: [
@@ -35,7 +35,6 @@ export const walkthroughClassA = [
       },
     ],
   },
-
   {
     section: "Steering System",
     steps: [
@@ -49,7 +48,6 @@ export const walkthroughClassA = [
       },
     ],
   },
-
   {
     section: "Front Suspension",
     steps: [
@@ -63,7 +61,6 @@ export const walkthroughClassA = [
       },
     ],
   },
-
   {
     section: "Front Brake (Air)",
     steps: [
@@ -87,7 +84,6 @@ export const walkthroughClassA = [
       },
     ],
   },
-
   {
     section: "Front Wheel/Tire",
     steps: [
@@ -115,7 +111,6 @@ export const walkthroughClassA = [
       },
     ],
   },
-
   {
     section: "Driver/Fuel Area",
     steps: [
@@ -141,7 +136,6 @@ export const walkthroughClassA = [
       },
     ],
   },
-
   {
     section: "Coupling & Connection Lines",
     steps: [
@@ -167,7 +161,6 @@ export const walkthroughClassA = [
       },
     ],
   },
-
   {
     section: "Rear Axle/Trailer Suspension",
     steps: [
@@ -185,7 +178,6 @@ export const walkthroughClassA = [
       },
     ],
   },
-
   {
     section: "Rear Brakes (Air)",
     steps: [
@@ -209,7 +201,6 @@ export const walkthroughClassA = [
       },
     ],
   },
-
   {
     section: "Rear Wheels/Tires",
     steps: [
@@ -241,7 +232,6 @@ export const walkthroughClassA = [
       },
     ],
   },
-
   {
     section: "Lights/Reflectors",
     steps: [
@@ -259,7 +249,6 @@ export const walkthroughClassA = [
       },
     ],
   },
-
   {
     section: "Trailer/Coupling",
     steps: [
@@ -315,7 +304,6 @@ export const walkthroughClassA = [
       },
     ],
   },
-
   {
     section: "In-Cab / Safe Start / Controls",
     steps: [
@@ -360,9 +348,9 @@ export const walkthroughClassA = [
       {
         label: "Air Brake Check",
         script: `I'll perform the three-point air brake check:
-        1. With engine off and key on, release parking brake and fully apply foot brake—observe air pressure drop, should not exceed 3 psi in one minute.
-        2. Fan brakes to low air warning—warning light/buzzer should activate at or above 60 psi.
-        3. Continue to fan brakes—spring brake (parking brake) should set between 20-45 psi.`,
+1. With engine off and key on, release parking brake and fully apply foot brake—observe air pressure drop, should not exceed 3 psi in one minute.
+2. Fan brakes to low air warning—warning light/buzzer should activate at or above 60 psi.
+3. Continue to fan brakes—spring brake (parking brake) should set between 20-45 psi.`,
         mustSay: true,
         required: true,
         passFail: true, // This is always a pass/fail state
