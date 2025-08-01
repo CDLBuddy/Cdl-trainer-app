@@ -66,6 +66,12 @@ export async function renderStudentProfileForInstructor(
     eldtProgress = {};
   }
 
+  // UI local state for verification
+  let profileVerified = !!eldtProgress?.profileVerified;
+  let permitVerified = !!eldtProgress?.permitVerified;
+  let vehicleVerified = !!eldtProgress?.vehicleVerified;
+  let walkthroughReviewed = !!eldtProgress?.walkthroughReviewed;
+
   // Prepare profile fields
   const {
     name = '',
@@ -119,7 +125,7 @@ export async function renderStudentProfileForInstructor(
         }
         <div>
           <div style="font-size:1.18em;font-weight:600;">${name}</div>
-          <div style="color:#979ad1;">${cdlClass ? `CDL Class: <b>${cdlClass}</b>` : 'No class set'}</div>
+          <div style="color:#979ad1;">${cdlClass ? `CDL Class: <b>${cdlClass.toUpperCase()}</b>` : 'No class set'}</div>
           <div style="color:#aaa;font-size:0.96em;">${studentEmail}</div>
         </div>
       </div>
@@ -167,10 +173,18 @@ export async function renderStudentProfileForInstructor(
       <div class="glass-card" style="margin-top:1.2rem; padding:1.2rem;">
         <strong>Instructor Actions</strong>
         <div style="margin:0.5em 0;">
-          <button class="btn outline" id="verify-profile-btn">✔️ Approve Profile</button>
-          <button class="btn outline" id="verify-permit-btn">✔️ Approve Permit</button>
-          <button class="btn outline" id="verify-vehicle-btn">✔️ Approve Vehicle</button>
-          <button class="btn outline" id="review-walkthrough-btn">👀 Review Walkthrough</button>
+          <button class="btn outline" id="verify-profile-btn" ${profileVerified ? 'disabled aria-disabled="true"' : ''} aria-label="Approve Profile">
+            ✔️ Approve Profile ${profileVerified ? '<span style="color:#3ecf8e;margin-left:7px;">✅</span>' : ''}
+          </button>
+          <button class="btn outline" id="verify-permit-btn" ${permitVerified ? 'disabled aria-disabled="true"' : ''} aria-label="Approve Permit">
+            ✔️ Approve Permit ${permitVerified ? '<span style="color:#3ecf8e;margin-left:7px;">✅</span>' : ''}
+          </button>
+          <button class="btn outline" id="verify-vehicle-btn" ${vehicleVerified ? 'disabled aria-disabled="true"' : ''} aria-label="Approve Vehicle">
+            ✔️ Approve Vehicle ${vehicleVerified ? '<span style="color:#3ecf8e;margin-left:7px;">✅</span>' : ''}
+          </button>
+          <button class="btn outline" id="review-walkthrough-btn" ${walkthroughReviewed ? 'disabled aria-disabled="true"' : ''} aria-label="Review Walkthrough">
+            👀 Review Walkthrough ${walkthroughReviewed ? '<span style="color:#3ecf8e;margin-left:7px;">✅</span>' : ''}
+          </button>
         </div>
         <div style="margin:0.7em 0 0.2em 0;">
           <textarea id="instructor-note" style="width:100%;min-height:50px;" placeholder="Add a note for this student..."></textarea>
@@ -195,43 +209,36 @@ export async function renderStudentProfileForInstructor(
       renderInstructorDashboard();
     });
 
-  // Approve actions
-  document
-    .getElementById('verify-profile-btn')
-    ?.addEventListener('click', async () => {
-      await verifyStudentProfile(
-        studentEmail,
-        localStorage.getItem('currentUserEmail')
-      );
-      showToast('Profile verified!', 2300, 'success');
-    });
-  document
-    .getElementById('verify-permit-btn')
-    ?.addEventListener('click', async () => {
-      await verifyStudentPermit(
-        studentEmail,
-        localStorage.getItem('currentUserEmail')
-      );
-      showToast('Permit verified!', 2300, 'success');
-    });
-  document
-    .getElementById('verify-vehicle-btn')
-    ?.addEventListener('click', async () => {
-      await verifyStudentVehicle(
-        studentEmail,
-        localStorage.getItem('currentUserEmail')
-      );
-      showToast('Vehicle verified!', 2300, 'success');
-    });
-  document
-    .getElementById('review-walkthrough-btn')
-    ?.addEventListener('click', async () => {
-      await reviewStudentWalkthrough(
-        studentEmail,
-        localStorage.getItem('currentUserEmail')
-      );
-      showToast('Walkthrough reviewed!', 2300, 'success');
-    });
+  // Approve actions with button disable and instant UI feedback
+  const profileBtn = document.getElementById('verify-profile-btn');
+  const permitBtn = document.getElementById('verify-permit-btn');
+  const vehicleBtn = document.getElementById('verify-vehicle-btn');
+  const walkthroughBtn = document.getElementById('review-walkthrough-btn');
+
+  profileBtn?.addEventListener('click', async () => {
+    profileBtn.disabled = true;
+    profileBtn.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
+    await verifyStudentProfile(studentEmail, localStorage.getItem('currentUserEmail'));
+    showToast('Profile verified!', 2300, 'success');
+  });
+  permitBtn?.addEventListener('click', async () => {
+    permitBtn.disabled = true;
+    permitBtn.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
+    await verifyStudentPermit(studentEmail, localStorage.getItem('currentUserEmail'));
+    showToast('Permit verified!', 2300, 'success');
+  });
+  vehicleBtn?.addEventListener('click', async () => {
+    vehicleBtn.disabled = true;
+    vehicleBtn.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
+    await verifyStudentVehicle(studentEmail, localStorage.getItem('currentUserEmail'));
+    showToast('Vehicle verified!', 2300, 'success');
+  });
+  walkthroughBtn?.addEventListener('click', async () => {
+    walkthroughBtn.disabled = true;
+    walkthroughBtn.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
+    await reviewStudentWalkthrough(studentEmail, localStorage.getItem('currentUserEmail'));
+    showToast('Walkthrough reviewed!', 2300, 'success');
+  });
 
   // Save instructor note
   document
