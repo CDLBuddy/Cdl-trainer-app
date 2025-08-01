@@ -14,10 +14,6 @@ import {
   getDoc,
   updateDoc,
   serverTimestamp,
-  collection,
-  query,
-  where,
-  getDocs,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
 import {
@@ -27,6 +23,21 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js';
 
 import { renderStudentDashboard } from './student-dashboard.js';
+import { getCurrentSchoolBranding } from '../school-branding.js';
+
+// --- CDL Class labels mapping ---
+const CDL_CLASS_LABELS = {
+  A: 'Class A',
+  'A-WO-AIR-ELEC': 'Class A w/o Air/Electric',
+  'A-WO-HYD-ELEC': 'Class A w/o Hydraulic/Electric',
+  B: 'Class B',
+  'PASSENGER-BUS': 'Passenger Bus',
+  C: 'Class C',
+};
+
+function getCdlClassLabel(key) {
+  return CDL_CLASS_LABELS[key] || key || '';
+}
 
 // --- DRY: Get current user email ---
 function getCurrentUserEmail() {
@@ -36,17 +47,6 @@ function getCurrentUserEmail() {
     localStorage.getItem('currentUserEmail') ||
     null
   );
-}
-
-// --- Utility: Fetch school name ---
-async function fetchSchoolName(schoolId) {
-  if (!schoolId) return '';
-  try {
-    const schoolDoc = await getDoc(doc(db, 'schools', schoolId));
-    return schoolDoc.exists() ? schoolDoc.data().name : '';
-  } catch {
-    return '';
-  }
 }
 
 // --- Utility: HTML-escape ---
@@ -76,7 +76,6 @@ export async function renderProfile(
     return;
   }
   // --- SCHOOL BRANDING (Accent, Logo, School Name) ---
-  // Import this at the top: import { getCurrentSchoolBranding } from '../school-branding.js';
   const brand = (await getCurrentSchoolBranding?.()) || {};
   if (brand.primaryColor) {
     document.documentElement.style.setProperty(
@@ -107,11 +106,7 @@ export async function renderProfile(
   // --- Enforce role and schoolId from Firestore ---
   const userRole = userData.role || 'student';
   const schoolId = userData.schoolId || '';
-  const status = userData.status || 'active'; // Can be 'active', 'inactive', etc.
-
-  // --- Fetch and display school name ---
-  let schoolName = '';
-  if (schoolId) schoolName = await fetchSchoolName(schoolId);
+  const status = userData.status || 'active';
 
   // --- Fields & defaults ---
   const {
@@ -152,28 +147,12 @@ export async function renderProfile(
     lastUpdatedBy = '',
   } = userData;
 
-  // --- Validate status ---
-  if (status !== 'active') {
-    container.innerHTML = `
-      <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
-        <h2>Profile Inactive</h2>
-        <p>Your profile is currently inactive. Please contact your instructor or school admin for details.</p>
-        <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Dashboard</button>
-      </div>`;
-    document
-      .getElementById('back-to-dashboard-btn')
-      ?.addEventListener('click', () => renderStudentDashboard());
-    setupNavigation();
-    return;
-  }
-
   // --- For accessibility: phone pattern and label ids ---
   const phonePattern = '[0-9\\-\\(\\)\\+ ]{10,15}';
 
   // --- Profile completion calculation ---
   function calcProgress(fd) {
-    let total = 15,
-      filled = 0;
+    let total = 15, filled = 0;
     if (fd.get('name')) filled++;
     if (fd.get('dob')) filled++;
     if (profilePicUrl || fd.get('profilePic')?.size) filled++;
@@ -209,6 +188,21 @@ export async function renderProfile(
     { val: 'roadtest', label: 'Road Test Prep' },
   ];
 
+  // --- Inactive status UI ---
+  if (status !== 'active') {
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
+        <h2>Profile Inactive</h2>
+        <p>Your profile is currently inactive. Please contact your instructor or school admin for details.</p>
+        <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Dashboard</button>
+      </div>`;
+    document
+      .getElementById('back-to-dashboard-btn')
+      ?.addEventListener('click', () => renderStudentDashboard());
+    setupNavigation();
+    return;
+  }
+
   container.innerHTML = `
   <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
     <h2 style="color:${accent};display:flex;align-items:center;gap:12px;">
@@ -240,7 +234,10 @@ export async function renderProfile(
         <select id="cdlClass" name="cdlClass" required>
           <option value="">Select</option>
           <option value="A" ${cdlClass === 'A' ? 'selected' : ''}>Class A</option>
+          <option value="A-WO-AIR-ELEC" ${cdlClass === 'A-WO-AIR-ELEC' ? 'selected' : ''}>Class A w/o Air/Electric</option>
+          <option value="A-WO-HYD-ELEC" ${cdlClass === 'A-WO-HYD-ELEC' ? 'selected' : ''}>Class A w/o Hydraulic/Electric</option>
           <option value="B" ${cdlClass === 'B' ? 'selected' : ''}>Class B</option>
+          <option value="PASSENGER-BUS" ${cdlClass === 'PASSENGER-BUS' ? 'selected' : ''}>Passenger Bus</option>
           <option value="C" ${cdlClass === 'C' ? 'selected' : ''}>Class C</option>
         </select>
       </label>
@@ -370,6 +367,9 @@ export async function renderProfile(
       <button class="btn primary wide" id="save-profile-btn" type="submit" style="background:${accent};border:none;">Save Profile</button>
       <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Dashboard</button>
     </form>
+    <div style="margin-top:1.5rem;font-size:1em;color:${accent};">
+      <strong>Your selected CDL Class:</strong> <span style="font-weight:600">${getCdlClassLabel(cdlClass) || '<i>Not selected</i>'}</span>
+    </div>
   </div>
 `;
 
@@ -515,7 +515,6 @@ export async function renderProfile(
       profileProgress: calcProgress(fd),
       profileUpdatedAt: serverTimestamp(),
       lastUpdatedBy: currentUserEmail,
-      // Do NOT update role or schoolId here!
     };
 
     try {
