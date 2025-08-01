@@ -11,9 +11,10 @@ import { renderProfile } from './profile.js';
 import { renderStudentDashboard } from './student-dashboard.js';
 import {
   getWalkthroughByClass,
-  allWalkthroughs,
-  getWalkthroughLabel // <--- Add this!
-} from '../walkthrough-data';
+  getWalkthroughLabel, // Use for class label
+  allWalkthroughs
+} from '../walkthrough-data/index.js';
+import { getCdlClassLabel } from './profile.js'; // Or wherever your mapping helper lives
 
 export async function renderWalkthrough(
   container = document.getElementById('app')
@@ -91,7 +92,7 @@ export async function renderWalkthrough(
   else if (!walkthroughData) {
     content += `
       <div class="alert-box" role="alert">
-        ⚠ Sorry, we do not have a walkthrough script for your selected class: <b>${getCdlClassLabel(cdlClass)}</b>.<br>
+        ⚠ Sorry, we do not have a walkthrough script for your selected class: <b>${getWalkthroughLabel(cdlClass)}</b>.<br>
         Please contact support or your instructor.
       </div>
     `;
@@ -99,16 +100,23 @@ export async function renderWalkthrough(
   // === Walkthrough and drills ===
   else {
     content += `
-      <p><strong>CDL Class:</strong> ${getCdlClassLabel(cdlClass)}</p>
+      <p><strong>CDL Class:</strong> ${getWalkthroughLabel(cdlClass)}</p>
       <p>Study the walkthrough below to prepare for your in-person vehicle inspection test. <span style="color:var(--accent);font-weight:bold;">Critical/pass-fail sections are highlighted.</span></p>
       <div class="walkthrough-script" aria-label="Walkthrough script">
-        ${walkthroughData.sections.map(section => `
-          <h3>${section.critical ? '🚨' : '✅'} ${section.title}${section.critical ? ' <span style="color:var(--accent);">(Pass/Fail)</span>' : ''}</h3>
-          <div class="${section.critical ? 'highlight-section' : ''}">
-            ${section.items.map(item =>
-              typeof item === 'string'
-                ? `<p>${item}</p>`
-                : `<p>${item.label ? `<strong>${item.label}:</strong> ` : ''}${item.text || ''}</p>`
+        ${walkthroughData.map(section => `
+          <h3>
+            ${(section.critical || section.passFail) ? '🚨' : '✅'} 
+            ${section.section}
+            ${(section.critical || section.passFail) ? ' <span style="color:var(--accent);">(Pass/Fail)</span>' : ''}
+          </h3>
+          <div class="${section.critical || section.passFail ? 'highlight-section' : ''}">
+            ${section.steps.map(step =>
+              `<p>
+                ${step.label ? `<strong>${step.label}:</strong> ` : ''}
+                ${step.script || ''}
+                ${step.mustSay ? ' <span class="must-say" style="color:var(--accent);font-weight:bold;">(Must Say)</span>' : ''}
+                ${step.passFail ? ' <span class="pass-fail" style="color:#ee3377;font-weight:bold;">(Pass/Fail)</span>' : ''}
+              </p>`
             ).join('')}
           </div>
         `).join('')}
@@ -134,6 +142,7 @@ export async function renderWalkthrough(
   `;
   container.innerHTML = content;
 
+  // === Event Handlers ===
   document
     .getElementById('back-to-dashboard-btn')
     ?.addEventListener('click', () => {
@@ -205,14 +214,12 @@ export async function renderWalkthrough(
 
     // Pick the pass/fail (must-memorize) section for drills
     const criticalSection =
-      walkthroughData.sections.find((s) => s.critical) ||
-      walkthroughData.sections[0];
+      walkthroughData.find((s) => s.critical || s.passFail) ||
+      walkthroughData[0];
 
     // Drill Data Extraction
     const brakeCheckLines =
-      (criticalSection.items &&
-        criticalSection.items.map((item) => (typeof item === 'string' ? item : item.text || '')).filter(Boolean)) ||
-      [];
+      (criticalSection?.steps || []).map(step => step.script || '').filter(Boolean);
 
     function getFillBlanks() {
       // Simple: replace keywords with ___ and store answers.
