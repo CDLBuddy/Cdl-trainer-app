@@ -24,20 +24,7 @@ import {
 
 import { renderStudentDashboard } from './student-dashboard.js';
 import { getCurrentSchoolBranding } from '../school-branding.js';
-
-// --- CDL Class labels mapping ---
-const CDL_CLASS_LABELS = {
-  A: 'Class A',
-  'A-WO-AIR-ELEC': 'Class A w/o Air/Electric',
-  'A-WO-HYD-ELEC': 'Class A w/o Hydraulic/Electric',
-  B: 'Class B',
-  'PASSENGER-BUS': 'Passenger Bus',
-  C: 'Class C',
-};
-
-function getCdlClassLabel(key) {
-  return CDL_CLASS_LABELS[key] || key || '';
-}
+import { getWalkthroughLabel } from '../walkthrough-data'; // ✅ Centralized CDL class label import
 
 // --- DRY: Get current user email ---
 function getCurrentUserEmail() {

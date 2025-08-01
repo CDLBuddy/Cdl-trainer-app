@@ -9,20 +9,11 @@ import {
 } from '../ui-helpers.js';
 import { renderProfile } from './profile.js';
 import { renderStudentDashboard } from './student-dashboard.js';
-import { getWalkthroughByClass, allWalkthroughs } from '../walkthrough-data/index.js';
-
-// === CDL class label mapping for display ===
-const CDL_CLASS_LABELS = {
-  A: 'Class A',
-  'A-WO-AIR-ELEC': 'Class A w/o Air/Electric',
-  'A-WO-HYD-ELEC': 'Class A w/o Hydraulic/Electric',
-  B: 'Class B',
-  'PASSENGER-BUS': 'Passenger Bus',
-  C: 'Class C',
-};
-function getCdlClassLabel(key) {
-  return CDL_CLASS_LABELS[key] || key || '';
-}
+import {
+  getWalkthroughByClass,
+  allWalkthroughs,
+  getWalkthroughLabel // <--- Add this!
+} from '../walkthrough-data';
 
 export async function renderWalkthrough(
   container = document.getElementById('app')
