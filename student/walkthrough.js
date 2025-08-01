@@ -2,64 +2,23 @@
 
 import { db, auth } from '../firebase.js';
 import {
-  collection,
-  query,
-  where,
-  getDocs,
+  collection, query, where, getDocs
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import {
-  showToast,
-  setupNavigation,
-  updateELDTProgress,
-  incrementStudentStudyMinutes,
-  logStudySession,
-  markStudentWalkthroughComplete,
-  getUserProgress,
+  showToast, setupNavigation, updateELDTProgress, markStudentWalkthroughComplete, getUserProgress
 } from '../ui-helpers.js';
 import { renderProfile } from './profile.js';
 import { renderStudentDashboard } from './student-dashboard.js';
 
-// --- Walkthrough Drill Data ---
-const brakeCheckFull = [
-  'With the engine off and key on, I will release the parking brake, hold the service brake pedal for 1 minute, and check for air loss no more than 3 PSI.',
-  'Then I will perform a low air warning check, fan the brakes to make sure the warning activates before 60 PSI.',
-  'Finally, I will fan the brakes to trigger the spring brake pop-out between 20–45 PSI.',
-];
-const brakeCheckBlanks = [
-  {
-    text: 'With the engine ___ and key on, I will release the ___ brake, hold the ___ brake pedal for 1 minute, and check for air loss no more than ___ PSI.',
-    answers: ['off', 'parking', 'service', '3'],
-  },
-  {
-    text: 'Then I will perform a low air warning check, fan the brakes to make sure the warning activates before ___ PSI.',
-    answers: ['60'],
-  },
-  {
-    text: 'Finally, I will fan the brakes to trigger the spring brake pop-out between ___–___ PSI.',
-    answers: ['20', '45'],
-  },
-];
-const brakeCheckSteps = [
-  'Release the parking brake',
-  'Hold the service brake pedal for 1 minute, check for air loss no more than 3 PSI',
-  'Perform low air warning check--fan brakes, warning should activate before 60 PSI',
-  'Fan brakes to trigger spring brake pop-out between 20–45 PSI',
-];
-const visualRecall = [
-  {
-    img: 'brake-gauge.png',
-    question: 'At what PSI should the low air warning activate?',
-    answer: 'before 60',
-  },
-];
+// === NEW: Walkthrough data (dynamic per class) ===
+import { getWalkthroughByClass, allWalkthroughs } from '../walkthrough-data/index.js';
 
-// --- Main Walkthrough Renderer ---
 export async function renderWalkthrough(
   container = document.getElementById('app')
 ) {
   if (!container) return;
 
-  // User/session validation
+  // === User/session validation ===
   const currentUserEmail =
     window.currentUserEmail ||
     localStorage.getItem('currentUserEmail') ||
@@ -74,7 +33,7 @@ export async function renderWalkthrough(
     return;
   }
 
-  // Fetch user profile (CDL class, school)
+  // === Fetch user profile (CDL class, school) ===
   let userData = {};
   try {
     const usersRef = collection(db, 'users');
@@ -89,7 +48,17 @@ export async function renderWalkthrough(
   const cdlClass = userData?.cdlClass || null;
   const school = userData?.schoolName || schoolId || 'N/A';
 
-  // Fetch Drill Progress
+  // === Select walkthrough script ===
+  // Normalize CDL class selection to match your keys
+  let walkthroughKey = '';
+  if (cdlClass) {
+    walkthroughKey = cdlClass.trim().toUpperCase();
+    // If user selected a special option, e.g., "A-WO-AIR-ELEC", "PASSENGER-BUS", etc., map accordingly
+    // You can expand this mapping if needed
+  }
+  const walkthroughData = getWalkthroughByClass(walkthroughKey);
+
+  // === Fetch Drill Progress ===
   let progress = {};
   try {
     progress = (await getUserProgress(currentUserEmail)) || {};
@@ -104,12 +73,12 @@ export async function renderWalkthrough(
   };
   let currentDrill = 'fill';
 
-  // --- Main Content HTML ---
-  let content = `
-    <div class="screen-wrapper walkthrough-page fade-in" tabindex="0">
+  // === Build Main Walkthrough Content ===
+  let content = `<div class="screen-wrapper walkthrough-page fade-in" tabindex="0">
       <h2>🧭 CDL Walkthrough Practice ${school !== 'N/A' ? `<span class="school-badge">${school}</span>` : ''}</h2>
   `;
 
+  // === No CDL class chosen ===
   if (!cdlClass) {
     content += `
       <div class="alert-box" role="alert">
@@ -118,21 +87,32 @@ export async function renderWalkthrough(
       </div>
       <button data-nav="profile" class="btn">Go to Profile</button>
     `;
-  } else {
+  }
+  // === No walkthrough data for this class ===
+  else if (!walkthroughData) {
+    content += `
+      <div class="alert-box" role="alert">
+        ⚠ Sorry, we do not have a walkthrough script for your selected class: <b>${cdlClass}</b>.<br>
+        Please contact support or your instructor.
+      </div>
+    `;
+  }
+  // === Walkthrough and drills ===
+  else {
     content += `
       <p><strong>CDL Class:</strong> ${cdlClass}</p>
-      <p>Study the following walkthrough to prepare for your in-person vehicle inspection test. <span style="color:var(--accent);font-weight:bold;">Critical sections are highlighted.</span></p>
+      <p>Study the walkthrough below to prepare for your in-person vehicle inspection test. <span style="color:var(--accent);font-weight:bold;">Critical/pass-fail sections are highlighted.</span></p>
       <div class="walkthrough-script" aria-label="Walkthrough script">
-        <h3>🚨 Three-Point Brake Check <span style="color:var(--accent);">(Must Memorize Word-for-Word)</span></h3>
-        <div class="highlight-section" aria-live="polite">
-          ${brakeCheckFull.map((line) => `<p>${line}</p>`).join('')}
-        </div>
-        <h3>✅ Entering the Vehicle</h3>
-        <p>Say: <strong>"Getting in using three points of contact."</strong></p>
-        <h3>✅ Exiting the Vehicle</h3>
-        <p>Say: <strong>"Getting out using three points of contact."</strong></p>
-        <h3>🔧 Engine Compartment (Sample)</h3>
-        <p>Check oil level with dipstick. Look for leaks, cracks, or broken hoses...</p>
+        ${walkthroughData.sections.map(section => `
+          <h3>${section.critical ? '🚨' : '✅'} ${section.title}${section.critical ? ' <span style="color:var(--accent);">(Pass/Fail)</span>' : ''}</h3>
+          <div class="${section.critical ? 'highlight-section' : ''}">
+            ${section.items.map(item =>
+              typeof item === 'string'
+                ? `<p>${item}</p>`
+                : `<p>${item.label ? `<strong>${item.label}:</strong> ` : ''}${item.text || ''}</p>`
+            ).join('')}
+          </div>
+        `).join('')}
       </div>
       <div style="margin:2rem 0 1.3rem 0;">
         <progress value="${Object.values(completedDrills).filter(Boolean).length}" max="4" style="width:100%;" aria-valuemax="4" aria-valuenow="${Object.values(completedDrills).filter(Boolean).length}" aria-label="Walkthrough drill progress"></progress>
@@ -166,7 +146,7 @@ export async function renderWalkthrough(
       renderProfile();
     });
 
-  // --- Confetti ---
+  // === Confetti animation ===
   function showConfetti() {
     const canvas = document.getElementById('drill-confetti');
     if (!canvas) return;
@@ -189,7 +169,7 @@ export async function renderWalkthrough(
     setTimeout(() => (canvas.style.display = 'none'), 1800);
   }
 
-  // --- Mark Drill Complete ---
+  // === Mark Drill Complete and Save Progress ===
   async function markDrillComplete(type) {
     if (completedDrills[type]) return;
     completedDrills[type] = true;
@@ -220,8 +200,48 @@ export async function renderWalkthrough(
     }
   }
 
-  // --- Drill Renderers & Events ---
+  // === Drill Renderers & Events ===
   function renderDrill(drillType, drillsContainer) {
+    if (!walkthroughData) return;
+
+    // Pick the pass/fail (must-memorize) section for drills
+    // If not present, fall back to first section
+    const criticalSection =
+      walkthroughData.sections.find((s) => s.critical) ||
+      walkthroughData.sections[0];
+
+    // ---- Drill Data Extraction (Fill, Order, Typing, Visual) ----
+    // Here you would extract the correct "script" or steps from your critical section.
+    // You can expand this if you want to support different types of drills for each class.
+    const brakeCheckLines =
+      (criticalSection.items &&
+        criticalSection.items.map((item) => (typeof item === 'string' ? item : item.text || '')).filter(Boolean)) ||
+      [];
+
+    // Example Drill Generators
+    function getFillBlanks() {
+      // Super simple: replace a keyword with ___ and store the answer.
+      return brakeCheckLines.map((line) => {
+        if (!line) return { text: '', answers: [] };
+        let blanks = [];
+        let text = line.replace(/\b(engine|parking|service|3|60|20|45)\b/gi, (match) => {
+          blanks.push(match);
+          return '___';
+        });
+        return { text, answers: blanks };
+      });
+    }
+    const brakeCheckBlanks = getFillBlanks();
+
+    const brakeCheckSteps = brakeCheckLines;
+    const visualRecall = [
+      {
+        img: 'brake-gauge.png',
+        question: 'At what PSI should the low air warning activate?',
+        answer: 'before 60',
+      },
+    ];
+
     let html = '';
     if (drillType === 'fill') {
       html += `<h3>Fill in the Blanks</h3>`;
@@ -251,13 +271,13 @@ export async function renderWalkthrough(
         <button class="btn" id="check-order-btn">Check Order</button>
         <div class="drill-result" style="margin-top:0.3rem;" aria-live="polite"></div>`;
     } else if (drillType === 'type') {
-      html += `<h3>Type the Brake Check Phrase Word-for-Word</h3>
+      html += `<h3>Type the Pass/Fail Phrase Word-for-Word</h3>
         <form id="typing-challenge">
           <textarea rows="4" style="width:100%;" placeholder="Type the full phrase here" aria-label="Type phrase"></textarea>
           <button class="btn" type="submit" style="margin-top:0.5rem;">Check</button>
           <div class="drill-result" style="margin-top:0.3rem;" aria-live="polite"></div>
         </form>
-        <div style="font-size:0.95em;margin-top:0.6rem;opacity:0.6;">Hint: ${brakeCheckFull[0]}</div>`;
+        <div style="font-size:0.95em;margin-top:0.6rem;opacity:0.6;">Hint: ${brakeCheckLines[0]}</div>`;
     } else if (drillType === 'visual') {
       html += `<h3>Visual Recall</h3>
         <div style="margin-bottom:1rem;">
@@ -278,7 +298,7 @@ export async function renderWalkthrough(
           e.preventDefault();
           let correct = true;
           form.querySelectorAll('.blank-input').forEach((input, idx) => {
-            const answer = input.dataset.answer.toLowerCase().trim();
+            const answer = (input.dataset.answer || '').toLowerCase().trim();
             if (input.value.toLowerCase().trim() !== answer) {
               correct = false;
               input.style.background = '#ffcccc';
@@ -349,7 +369,7 @@ export async function renderWalkthrough(
           .value.trim()
           .replace(/\s+/g, ' ')
           .toLowerCase();
-        const ans = brakeCheckFull[0].trim().replace(/\s+/g, ' ').toLowerCase();
+        const ans = (brakeCheckLines[0] || '').trim().replace(/\s+/g, ' ').toLowerCase();
         const res = drillsContainer.querySelector('.drill-result');
         if (val === ans) {
           res.innerHTML = '✅ Perfect! You memorized it.';
@@ -393,7 +413,7 @@ export async function renderWalkthrough(
   // --- Init drills on load (default to first drill) ---
   const drillsContainer = document.getElementById('drills-container');
   const drillsNav = document.querySelector('.drills-nav');
-  if (drillsContainer && drillsNav) {
+  if (walkthroughData && drillsContainer && drillsNav) {
     renderDrill(currentDrill, drillsContainer);
     setupDrillsNav(drillsNav, drillsContainer);
   }
