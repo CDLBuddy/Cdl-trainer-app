@@ -57,13 +57,14 @@ export function getCdlClassLabel(classKey) {
   return getWalkthroughLabel(classKey);
 }
 
-export async function renderProfile(
-  container = document.getElementById('app')
-) {
-  if (!container || typeof container.querySelectorAll !== 'function') {
-    console.error('❌ container is not a DOM element:', container);
-    showToast('Internal error: Container not ready.');
-    return;
+export async function renderProfile(container = document.getElementById('app')) {
+  // Defensive fallback: try to recover if the container isn't valid
+  if (!container || typeof container.querySelector !== 'function') {
+    container = document.getElementById('app');
+    if (!container || typeof container.querySelector !== 'function') {
+      console.error('❌ container is not a DOM element:', container);
+      showToast('Internal error: Container not ready.');
+      return;
   }
 
   const currentUserEmail = getCurrentUserEmail();
