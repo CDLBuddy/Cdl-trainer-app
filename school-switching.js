@@ -11,6 +11,21 @@ import { showToast, setupNavigation } from './ui-helpers.js';
 import { handleNavigation } from './navigation.js';
 import { renderWelcome } from './welcome.js';
 
+// === Role-aware dashboard routing helper ===
+function getDashboardRoute(role) {
+  switch (role) {
+    case 'superadmin':
+      return 'superadmin-dashboard';
+    case 'admin':
+      return 'admin-dashboard';
+    case 'instructor':
+      return 'instructor-dashboard';
+    case 'student':
+    default:
+      return 'student-dashboard';
+  }
+}
+
 export async function renderSchoolSwitching(
   container = document.getElementById('app')
 ) {
@@ -117,14 +132,24 @@ export async function renderSchoolSwitching(
       1700,
       'success'
     );
-    // Optionally: reload/re-render with new brand
-    setTimeout(() => handleNavigation('dashboard'), 500);
+    // Reload/re-render with new brand, go to correct dashboard
+    setTimeout(() => {
+      const role =
+        window.currentUserRole ||
+        localStorage.getItem('userRole') ||
+        'student';
+      handleNavigation(getDashboardRoute(role));
+    }, 500);
   };
 
   // Back to dashboard
   document
     .getElementById('back-to-dashboard-btn')
     ?.addEventListener('click', () => {
-      handleNavigation('dashboard');
+      const role =
+        window.currentUserRole ||
+        localStorage.getItem('userRole') ||
+        'student';
+      handleNavigation(getDashboardRoute(role));
     });
 }
