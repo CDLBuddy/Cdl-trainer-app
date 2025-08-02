@@ -9,7 +9,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { setupNavigation, showToast } from '../ui-helpers.js';
 
-// Accepts container param, and always checks for logged in user email
+// Accepts container param, always checks for logged-in user email
 export async function renderTestResults(
   container = document.getElementById('app')
 ) {
@@ -55,7 +55,7 @@ export async function renderTestResults(
     let studentFilterEmails = [currentUserEmail];
 
     if (isStaff) {
-      // For now, get ALL students (upgrade to filter for assigned students when you implement it!)
+      // For now, get ALL students (upgrade to filter for assigned students later)
       const userSnap = await getDocs(
         query(collection(db, 'users'), where('role', '==', 'student'))
       );
@@ -200,7 +200,7 @@ export async function renderTestResults(
   }
 }
 
-// --- Student Details Modal (compatible for instructor/admin roles) ---
+// --- Student Details Modal (for instructor/admin) ---
 async function showStudentDetailsModal(email) {
   // Loader
   let modal = document.createElement('div');
@@ -213,7 +213,7 @@ async function showStudentDetailsModal(email) {
   </div>`;
   document.body.appendChild(modal);
 
-  // Safe close binding (no inline JS)
+  // Safe close binding
   modal.querySelector('.modal-close').onclick = () => modal.remove();
   modal.onclick = (e) => {
     if (e.target === modal) modal.remove();
@@ -230,18 +230,6 @@ async function showStudentDetailsModal(email) {
     );
     if (snap.empty) throw new Error('Student not found.');
     const data = snap.docs[0].data();
-
-    // Checklist/permit progress (sample logic; customize to match your fields)
-    const checklist = [
-      { label: 'Profile Complete', value: data.profileProgress + '%' },
-      { label: 'Permit Uploaded', value: data.permitPhotoUrl ? '✅' : '❌' },
-      {
-        label: 'Vehicle Qualified',
-        value: data.vehicleQualified === 'yes' ? '✅' : '❌',
-      },
-      { label: 'Experience', value: data.experience || 'n/a' },
-      { label: 'CDL Class', value: data.cdlClass || 'n/a' },
-    ];
 
     modal.querySelector('.student-modal-content').innerHTML = `
       <h3>${data.name || '(No Name)'} <span class="role-badge">${data.role || ''}</span></h3>

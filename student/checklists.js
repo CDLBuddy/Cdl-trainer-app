@@ -16,6 +16,7 @@ import { renderStudentDashboard } from './student-dashboard.js';
 
 // ==== Checklist Template (static structure only) ====
 export const studentChecklistSectionsTemplate = [
+  // ...unchanged...
   {
     header: 'Personal Info',
     items: [
@@ -94,7 +95,12 @@ export const studentChecklistSectionsTemplate = [
 export async function renderChecklists(
   container = document.getElementById('app')
 ) {
-  if (!container) return;
+  // --- Defensive: Validate container is a DOM node ---
+  if (!container || typeof container.querySelector !== 'function') {
+    console.error('❌ container is not a DOM element:', container);
+    showToast('Internal error: Container not ready.');
+    return;
+  }
 
   // Show a quick loader while fetching data
   container.innerHTML = `<div class="loader" role="status" aria-live="polite" style="margin:2em auto;text-align:center;">Loading your checklist...</div>`;
@@ -310,11 +316,6 @@ export async function renderChecklists(
       <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅ Back to Dashboard</button>
     </div>
   `;
-  if (!container || typeof container.querySelector !== 'function') {
-    console.error('❌ container is not a DOM element:', container);
-    showToast('Internal error: Container not ready.');
-    return;
-  }
 
   // Animate progress bar
   setTimeout(() => {
@@ -345,7 +346,6 @@ export async function renderChecklists(
     main.addEventListener('click', function () {
       const li = this.closest('.checklist-item');
       const details = li.querySelector('.checklist-details');
-      const label = li.querySelector('.checklist-label');
       const chevron = li.querySelector('.chevron');
       if (!details) return;
       const expanded = li.classList.toggle('expanded');

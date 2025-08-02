@@ -18,10 +18,9 @@ import { renderProfile } from './profile.js';
 import { renderStudentDashboard } from './student-dashboard.js';
 import {
   getWalkthroughByClass,
-  getWalkthroughLabel, // Use for class label
-  allWalkthroughs,
+  getWalkthroughLabel,
 } from '../walkthrough-data/index.js';
-import { getCdlClassLabel } from './profile.js'; // Or wherever your mapping helper lives
+import { getCdlClassLabel } from './profile.js';
 
 export async function renderWalkthrough(
   container = document.getElementById('app')
@@ -60,9 +59,7 @@ export async function renderWalkthrough(
 
   // === Select walkthrough script ===
   let walkthroughKey = '';
-  if (cdlClass) {
-    walkthroughKey = cdlClass.trim().toUpperCase();
-  }
+  if (cdlClass) walkthroughKey = cdlClass.trim().toUpperCase();
   const walkthroughData = getWalkthroughByClass(walkthroughKey);
 
   // === Fetch Drill Progress ===
@@ -82,7 +79,7 @@ export async function renderWalkthrough(
 
   // === Build Main Walkthrough Content ===
   let content = `<div class="screen-wrapper walkthrough-page fade-in" tabindex="0">
-      <h2>🧭 CDL Walkthrough Practice ${school !== 'N/A' ? `<span class="school-badge">${school}</span>` : ''}</h2>
+    <h2>🧭 CDL Walkthrough Practice ${school !== 'N/A' ? `<span class="school-badge">${school}</span>` : ''}</h2>
   `;
 
   // === No CDL class chosen ===

@@ -13,7 +13,13 @@ export async function renderTestEngine(
   testName,
   currentUserEmail
 ) {
-  if (!container || !testName || !currentUserEmail) {
+  // Defensive: check required parameters and container
+  if (
+    !container ||
+    typeof container.querySelectorAll !== 'function' ||
+    !testName ||
+    !currentUserEmail
+  ) {
     showToast('Missing required parameters for test engine.');
     return;
   }

@@ -24,7 +24,7 @@ import {
 
 import { renderStudentDashboard } from './student-dashboard.js';
 import { getCurrentSchoolBranding } from '../school-branding.js';
-import { getWalkthroughLabel } from '../walkthrough-data/index.js'; // ✅ Centralized CDL class label import
+import { getWalkthroughLabel } from '../walkthrough-data/index.js';
 
 // --- DRY: Get current user email ---
 function getCurrentUserEmail() {
@@ -52,16 +52,27 @@ function escapeHTML(str) {
   );
 }
 
+// === CDL Class Label Export ===
+export function getCdlClassLabel(classKey) {
+  return getWalkthroughLabel(classKey);
+}
+
 export async function renderProfile(
   container = document.getElementById('app')
 ) {
-  if (!container) return;
+  if (!container || typeof container.querySelectorAll !== 'function') {
+    console.error('❌ container is not a DOM element:', container);
+    showToast('Internal error: Container not ready.');
+    return;
+  }
+
   const currentUserEmail = getCurrentUserEmail();
   if (!currentUserEmail) {
     showToast('No user found. Please log in again.');
     window.location.reload();
     return;
   }
+
   // --- SCHOOL BRANDING (Accent, Logo, School Name) ---
   const brand = (await getCurrentSchoolBranding?.()) || {};
   if (brand.primaryColor) {
@@ -191,6 +202,7 @@ export async function renderProfile(
     return;
   }
 
+  // --- MAIN PROFILE HTML ---
   container.innerHTML = `
   <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
     <h2 style="color:${accent};display:flex;align-items:center;gap:12px;">
@@ -231,8 +243,8 @@ export async function renderProfile(
       <label>Endorsements:<br>
         ${endorsementOptions
           .map(
-            (opt) =>
-              `<label style="margin-right:1em;">
+            (opt) => `
+          <label style="margin-right:1em;">
             <input type="checkbox" name="endorsements[]" value="${opt.val}" ${endorsements.includes(opt.val) ? 'checked' : ''}> ${opt.label}
           </label>`
           )
@@ -241,8 +253,8 @@ export async function renderProfile(
       <label>Restrictions:<br>
         ${restrictionOptions
           .map(
-            (opt) =>
-              `<label style="margin-right:1em;">
+            (opt) => `
+          <label style="margin-right:1em;">
             <input type="checkbox" name="restrictions[]" value="${opt.val}" ${restrictions.includes(opt.val) ? 'checked' : ''}> ${opt.label}
           </label>`
           )
@@ -427,7 +439,6 @@ export async function renderProfile(
   );
   handleFileInput('driverLicense', 'licenses', 'driverLicenseUrl');
   handleFileInput('medicalCard', 'medCards', 'medicalCardUrl');
-
   // Data plates (when both uploaded, mark vehicle uploaded)
   let truckUploaded = !!truckPlateUrl,
     trailerUploaded = !!trailerPlateUrl;
@@ -453,7 +464,7 @@ export async function renderProfile(
   );
   handleFileInput('paymentProof', 'payments', 'paymentProofUrl');
 
-  // --- SAVE PROFILE HANDLER (defensive, disables submit while saving) ---
+  // --- SAVE PROFILE HANDLER ---
   container.querySelector('#profile-form').onsubmit = async (e) => {
     e.preventDefault();
     const saveBtn = document.getElementById('save-profile-btn');
@@ -515,8 +526,4 @@ export async function renderProfile(
   };
 
   setupNavigation();
-}
-// === CDL Class Label Export ===
-export function getCdlClassLabel(classKey) {
-  return getWalkthroughLabel(classKey);
 }
