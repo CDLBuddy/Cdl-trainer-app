@@ -22,7 +22,6 @@ export function handleAdminNav(page, ...args) {
   const container = args[1] || document.getElementById('app');
   window.currentUserRole = 'admin';
 
-  // Route only via explicit admin-page names
   switch ((page || '').toLowerCase()) {
     case 'admin-dashboard':
       renderAdminDashboard(container);
@@ -41,23 +40,24 @@ export function handleAdminNav(page, ...args) {
       break;
     default:
       renderAdminDashboard(container);
-      break;
   }
 }
 
-// --- (Optional) Standalone admin entry for direct page loads ---
+// --- Standalone admin entry for direct page loads ---
 window.addEventListener('DOMContentLoaded', () => {
-  if (location.hash.startsWith('#admin')) {
-    const match = location.hash.match(/^#admin-([a-zA-Z-]+)/);
+  const hash = location.hash.toLowerCase();
+  if (hash.startsWith('#admin')) {
+    const match = hash.match(/^#admin-([a-z\-]+)/);
     const page = match ? `admin-${match[1]}` : 'admin-dashboard';
     handleAdminNav(page);
   }
 });
 
-// --- (Optional) Admin-specific popstate handling ---
+// --- Admin-specific popstate handling (browser navigation) ---
 window.addEventListener('popstate', () => {
-  if (!location.hash.startsWith('#admin')) return;
-  const match = location.hash.match(/^#admin-([a-zA-Z-]+)/);
+  const hash = location.hash.toLowerCase();
+  if (!hash.startsWith('#admin')) return;
+  const match = hash.match(/^#admin-([a-z\-]+)/);
   const page = match ? `admin-${match[1]}` : 'admin-dashboard';
   handleAdminNav(page);
 });
