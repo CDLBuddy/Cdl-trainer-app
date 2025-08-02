@@ -81,7 +81,7 @@ export async function renderProfile(
       brand.primaryColor
     );
   }
-  const accent = brand.primaryColor || '#b48aff';
+  const accent = brand.primaryColor || '';
   const schoolLogo = brand.logoUrl || '';
   const schoolDisplayName = brand.schoolName || '';
 
