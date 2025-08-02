@@ -310,6 +310,11 @@ export async function renderChecklists(
       <button class="btn wide" id="back-to-dashboard-btn" style="margin-top:24px;">⬅ Back to Dashboard</button>
     </div>
   `;
+  if (!container || typeof container.querySelector !== 'function') {
+    console.error('❌ container is not a DOM element:', container);
+    showToast('Internal error: Container not ready.');
+    return;
+  }
 
   // Animate progress bar
   setTimeout(() => {
