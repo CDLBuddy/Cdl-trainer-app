@@ -10,9 +10,8 @@ import {
 import { showToast, setupNavigation } from '../ui-helpers.js';
 
 import { renderStudentDashboard } from './student-dashboard.js';
-// Import renderTestEngine from its new file (after split)
 import { renderTestEngine } from './test-engine.js';
-import { renderTestReview } from './test-review.js'; // Already correct
+import { renderTestReview } from './test-review.js';
 
 // --- Helper for user email everywhere (keeps DRY) ---
 function getCurrentUserEmail() {
@@ -31,7 +30,12 @@ let schoolId = localStorage.getItem('schoolId') || '';
 export async function renderPracticeTests(
   container = document.getElementById('app')
 ) {
-  if (!container) return;
+  // Defensive: Ensure container is a DOM element
+  if (!container || typeof container.querySelectorAll !== 'function') {
+    console.error('❌ container is not a DOM element:', container);
+    showToast('Internal error: Container not ready.');
+    return;
+  }
 
   const currentUserEmail = getCurrentUserEmail();
   if (!currentUserEmail) {
@@ -150,14 +154,17 @@ export async function renderPracticeTests(
 
   setupNavigation();
 
-  document
-    .getElementById('back-to-dashboard-btn')
-    ?.addEventListener('click', () => {
-      renderStudentDashboard();
-    });
-
-  // DOM event listeners after DOM render
+  // Defensive: Add listeners only if container is still valid
   setTimeout(() => {
+    if (!container || typeof container.querySelectorAll !== 'function') {
+      // Navigation away during async
+      return;
+    }
+    container
+      .getElementById('back-to-dashboard-btn')
+      ?.addEventListener('click', () => {
+        renderStudentDashboard();
+      });
     container.querySelectorAll('.start-btn,.retake-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const test = btn.dataset.test;

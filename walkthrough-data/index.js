@@ -23,10 +23,22 @@ export {
  */
 export const allWalkthroughs = [
   { key: 'A', label: 'Class A', data: walkthroughClassA },
-  { key: 'A-WO-AIR-ELEC', label: 'Class A w/o Air/Electric', data: walkthroughClassAWoAirElec },
-  { key: 'A-WO-HYD-ELEC', label: 'Class A w/o Hydraulic/Electric', data: walkthroughClassAWoHydElec },
+  {
+    key: 'A-WO-AIR-ELEC',
+    label: 'Class A w/o Air/Electric',
+    data: walkthroughClassAWoAirElec,
+  },
+  {
+    key: 'A-WO-HYD-ELEC',
+    label: 'Class A w/o Hydraulic/Electric',
+    data: walkthroughClassAWoHydElec,
+  },
   { key: 'B', label: 'Class B', data: walkthroughClassB },
-  { key: 'PASSENGER-BUS', label: 'Passenger Bus', data: walkthroughPassengerBus },
+  {
+    key: 'PASSENGER-BUS',
+    label: 'Passenger Bus',
+    data: walkthroughPassengerBus,
+  },
 ];
 
 // === WALKTHROUGH LOOKUP MAP (advanced/faster lookup) ===
@@ -35,10 +47,10 @@ export const allWalkthroughs = [
  * Advanced: Use this if you need key → data without iteration.
  */
 export const walkthroughMap = {
-  'A': walkthroughClassA,
+  A: walkthroughClassA,
   'A-WO-AIR-ELEC': walkthroughClassAWoAirElec,
   'A-WO-HYD-ELEC': walkthroughClassAWoHydElec,
-  'B': walkthroughClassB,
+  B: walkthroughClassB,
   'PASSENGER-BUS': walkthroughPassengerBus,
 };
 
@@ -66,6 +78,6 @@ export function getAllWalkthroughKeys() {
  * @returns {string}
  */
 export function getWalkthroughLabel(className) {
-  const found = allWalkthroughs.find(w => w.key === className);
+  const found = allWalkthroughs.find((w) => w.key === className);
   return found ? found.label : className;
 }

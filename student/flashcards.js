@@ -13,10 +13,9 @@ import {
   incrementStudentStudyMinutes,
   logStudySession,
 } from '../ui-helpers.js';
-import { renderStudentDashboard } from './student-dashboard.js'; // <--- FIXED
+import { renderStudentDashboard } from './student-dashboard.js';
 
 // ========== CONFIG ==========
-// For multi-school, swap this with Firestore fetch in the future.
 const defaultFlashcards = [
   {
     q: 'What is the minimum tread depth for front tires?',
@@ -37,7 +36,12 @@ const defaultFlashcards = [
 export async function renderFlashcards(
   container = document.getElementById('app')
 ) {
-  if (!container) return;
+  // Defensive: Validate container
+  if (!container || typeof container.querySelector !== 'function') {
+    console.error('❌ container is not a DOM element:', container);
+    showToast('Internal error: Container not ready.');
+    return;
+  }
 
   const email =
     (auth.currentUser && auth.currentUser.email) ||
@@ -92,6 +96,13 @@ export async function renderFlashcards(
 
   // --- RENDER CARD ---
   async function renderCard() {
+    // Defensive: Validate container before each render
+    if (!container || typeof container.querySelector !== 'function') {
+      console.error('❌ container is not a DOM element:', container);
+      showToast('Internal error: Container not ready.');
+      return;
+    }
+
     // Completion
     if (completed) {
       const minutes = Math.max(1, Math.round((Date.now() - startedAt) / 60000));
@@ -122,7 +133,6 @@ export async function renderFlashcards(
       document
         .getElementById('restart-unknown')
         ?.addEventListener('click', () => {
-          // Show only unmastered cards
           flashcards = defaultFlashcards.filter(
             (c, i) => !knownCards.includes(i)
           );
@@ -135,7 +145,7 @@ export async function renderFlashcards(
       document
         .getElementById('back-to-dashboard-btn')
         ?.addEventListener('click', () => {
-          renderStudentDashboard(); // <--- FIXED
+          renderStudentDashboard();
         });
       setupNavigation();
       return;
@@ -264,7 +274,7 @@ export async function renderFlashcards(
     document
       .getElementById('back-to-dashboard-btn')
       ?.addEventListener('click', () => {
-        renderStudentDashboard(); // <--- FIXED
+        renderStudentDashboard();
       });
 
     // Mark as known logic

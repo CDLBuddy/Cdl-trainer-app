@@ -90,7 +90,6 @@ export async function renderTestReview(container, testName) {
 
     // Milestone: Mark test as passed if pct >= 80
     if (pct >= 80) {
-      // Only show toast the first time they pass
       try {
         const progress = await getUserProgress(currentUserEmail);
         if (!progress?.practiceTestPassed) {
@@ -98,7 +97,7 @@ export async function renderTestReview(container, testName) {
           showToast('🎉 Practice Test milestone complete! Progress updated.');
         }
       } catch (e) {
-        // It's okay if progress can't be checked/updated
+        // Not fatal if progress can't be checked/updated
         console.warn('Could not update practice test milestone:', e);
       }
     }
@@ -137,6 +136,18 @@ export async function renderTestReview(container, testName) {
       });
   } catch (e) {
     console.error('❌ Review fetch error:', e);
-    container.innerHTML = `<p>Failed to load review data.</p>`;
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in">
+        <h2>🧾 ${testName} Review</h2>
+        <p>Failed to load review data.</p>
+        <button class="btn outline" data-nav="practiceTests">⬅ Back to Practice Tests</button>
+      </div>
+    `;
+    setupNavigation();
+    container
+      .querySelector('[data-nav="practiceTests"]')
+      ?.addEventListener('click', () => {
+        renderPracticeTests(container);
+      });
   }
 }

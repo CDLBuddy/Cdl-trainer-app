@@ -1,10 +1,11 @@
+// student/ai-coach.js
+
 import { getUserInitials, showToast, setupNavigation } from '../ui-helpers.js';
 import { auth } from '../firebase.js';
-import { askCDLAI } from './ai-api.js'; // Now points to student/ai-api.js
+import { askCDLAI } from './ai-api.js';
 
-const MAX_HISTORY = 20; // Cap chat to last 20 messages
+const MAX_HISTORY = 20;
 
-// --- Modal header rendering ---
 function renderAICoachHeader(name, isFirstTime) {
   return `
     <div class="coach-avatar" style="display:flex; align-items:center; justify-content:center; margin-bottom: 12px; animation: floatMascot 2.6s ease-in-out infinite;">
@@ -17,10 +18,15 @@ function renderAICoachHeader(name, isFirstTime) {
   `;
 }
 
-/**
- * Renders the AI Coach modal for CDL Buddy students.
- */
 export function renderAICoach(container = document.getElementById('app')) {
+  // Defensive: If container is not DOM, fallback to document.body
+  if (!container || typeof container.querySelectorAll !== 'function') {
+    console.error(
+      '❌ [AI Coach] Container not a DOM element, using document.body'
+    );
+    container = document.body;
+  }
+
   // Remove any existing modal overlays
   document.querySelectorAll('.ai-coach-modal').forEach((el) => el.remove());
 
@@ -29,9 +35,9 @@ export function renderAICoach(container = document.getElementById('app')) {
   const isFirstTime = !localStorage.getItem('aiCoachWelcomed');
   const schoolId = localStorage.getItem('schoolId') || '';
   const userRole = localStorage.getItem('userRole') || 'student';
-  const email = localStorage.getItem('currentUserEmail') || auth.currentUser?.email || '';
+  const email =
+    localStorage.getItem('currentUserEmail') || auth.currentUser?.email || '';
 
-  // Prompts tailored by context
   const starterPrompts = {
     dashboard: [
       'What should I work on next?',
@@ -86,7 +92,12 @@ export function renderAICoach(container = document.getElementById('app')) {
           </span>
         </div>
         <div class="ai-coach-suggestions">
-          ${suggestions.map((txt) => `<button type="button" class="ai-suggestion">${txt}</button>`).join('')}
+          ${suggestions
+            .map(
+              (txt) =>
+                `<button type="button" class="ai-suggestion">${txt}</button>`
+            )
+            .join('')}
         </div>
         <div id="ai-chat-history" class="ai-chat-history"></div>
       </div>
@@ -105,7 +116,7 @@ export function renderAICoach(container = document.getElementById('app')) {
     modal.querySelector('#ai-coach-input')?.focus();
   }, 50);
 
-  // Focus trap inside modal for accessibility
+  // Focus trap for accessibility
   function trapFocus(e) {
     if (e.key !== 'Tab') return;
     const focusableEls = modal.querySelectorAll(
@@ -129,24 +140,28 @@ export function renderAICoach(container = document.getElementById('app')) {
 
   // Conversation state (capped)
   const chatHistoryEl = modal.querySelector('#ai-chat-history');
-  let conversation = JSON.parse(sessionStorage.getItem('aiCoachHistory') || '[]');
+  let conversation = JSON.parse(
+    sessionStorage.getItem('aiCoachHistory') || '[]'
+  );
   if (!conversation.length) {
     conversation.push({
       role: 'assistant',
       content: `
         👋 Hi${name ? `, ${name}` : ''}! I’m your AI CDL Coach.
         <br>
-        ${isFirstTime ? `<b>Let’s get started! I can answer your CDL questions, help with profile steps, explain checklists, and guide you through the walkthrough. Try a suggestion below, or ask anything related to your CDL training.</b>` : `Ask me anything about your CDL process!`}
+        ${
+          isFirstTime
+            ? `<b>Let’s get started! I can answer your CDL questions, help with profile steps, explain checklists, and guide you through the walkthrough. Try a suggestion below, or ask anything related to your CDL training.</b>`
+            : `Ask me anything about your CDL process!`
+        }
       `,
     });
     localStorage.setItem('aiCoachWelcomed', 'yes');
   }
-  // Cap history
   function trimHistory(arr) {
     return arr.slice(-MAX_HISTORY);
   }
 
-  // Renders message history in modal
   function renderHistory() {
     chatHistoryEl.innerHTML = conversation
       .map(
@@ -166,13 +181,16 @@ export function renderAICoach(container = document.getElementById('app')) {
                 </div>`
           }
           <div class="ai-msg-bubble">${msg.content}
-            ${msg.role === 'assistant' && msg.fmcsatag ? `<div class="ai-source-tag">${msg.fmcsatag}</div>` : ''}
+            ${
+              msg.role === 'assistant' && msg.fmcsatag
+                ? `<div class="ai-source-tag">${msg.fmcsatag}</div>`
+                : ''
+            }
           </div>
         </div>
       `
       )
       .join('');
-    // For screen readers, ensure update is recognized
     setTimeout(() => {
       chatHistoryEl.setAttribute('aria-live', 'polite');
       chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
@@ -180,7 +198,6 @@ export function renderAICoach(container = document.getElementById('app')) {
   }
   renderHistory();
 
-  // Suggestion quick-fill
   modal.querySelectorAll('.ai-suggestion').forEach((btn) => {
     btn.addEventListener('click', () => {
       const input = modal.querySelector('#ai-coach-input');
@@ -189,15 +206,12 @@ export function renderAICoach(container = document.getElementById('app')) {
     });
   });
 
-  // --- Send button disables on pending AI ---
   let aiPending = false;
-
-  // Main form: send question to AI
   modal.querySelector('#ai-coach-form').onsubmit = async (e) => {
     e.preventDefault();
     const input = modal.querySelector('#ai-coach-input');
     const sendBtn = modal.querySelector('.ai-coach-send');
-    if (aiPending) return; // Don't send if already waiting
+    if (aiPending) return;
     const question = input.value.trim();
     if (!question) return;
     conversation.push({ role: 'user', content: question });
@@ -208,21 +222,20 @@ export function renderAICoach(container = document.getElementById('app')) {
     aiPending = true;
     chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
 
-    // Typing Dots
     const loadingBubble = document.createElement('div');
     loadingBubble.className = 'ai-msg ai-msg--assistant';
     loadingBubble.innerHTML = `<div class="ai-msg-bubble"><span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></div>`;
     chatHistoryEl.appendChild(loadingBubble);
     chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
 
-    // CALL AI
     let reply = '';
     try {
-      reply = await askCDLAI(
-        question,
-        conversation.slice(-10),
-        { role: userRole, schoolId, email, context }
-      );
+      reply = await askCDLAI(question, conversation.slice(-10), {
+        role: userRole,
+        schoolId,
+        email,
+        context,
+      });
     } catch (err) {
       reply = "Sorry, I couldn't reach the AI right now.";
       console.error('AI Coach API error:', err);
@@ -241,7 +254,9 @@ export function renderAICoach(container = document.getElementById('app')) {
     }
 
     // Remove loading dots
-    const loadingMsg = chatHistoryEl.querySelector('.typing-dots')?.closest('.ai-msg');
+    const loadingMsg = chatHistoryEl
+      .querySelector('.typing-dots')
+      ?.closest('.ai-msg');
     if (loadingMsg) loadingMsg.remove();
 
     conversation.push({ role: 'assistant', content: reply, fmcsatag });
@@ -250,11 +265,9 @@ export function renderAICoach(container = document.getElementById('app')) {
     aiPending = false;
     sendBtn.disabled = false;
     renderHistory();
-
-    // Focus input again
     input.focus();
 
-    // Easter Egg every 10th user question
+    // Fun fact easter egg
     if (conversation.filter((m) => m.role === 'user').length % 10 === 0) {
       setTimeout(() => {
         const funFacts = [
@@ -273,7 +286,6 @@ export function renderAICoach(container = document.getElementById('app')) {
     }
   };
 
-  // --- Reset Chat Button ---
   modal.querySelector('#ai-coach-reset').addEventListener('click', () => {
     if (!confirm('Clear all AI Coach messages?')) return;
     sessionStorage.removeItem('aiCoachHistory');
@@ -283,7 +295,11 @@ export function renderAICoach(container = document.getElementById('app')) {
         content: `
           👋 Hi${name ? `, ${name}` : ''}! I’m your AI CDL Coach.
           <br>
-          ${isFirstTime ? `<b>Let’s get started! I can answer your CDL questions, help with profile steps, explain checklists, and guide you through the walkthrough. Try a suggestion below, or ask anything related to your CDL training.</b>` : `Ask me anything about your CDL process!`}
+          ${
+            isFirstTime
+              ? `<b>Let’s get started! I can answer your CDL questions, help with profile steps, explain checklists, and guide you through the walkthrough. Try a suggestion below, or ask anything related to your CDL training.</b>`
+              : `Ask me anything about your CDL process!`
+          }
         `,
       },
     ];
@@ -292,22 +308,22 @@ export function renderAICoach(container = document.getElementById('app')) {
     modal.querySelector('#ai-coach-input').focus();
   });
 
-  // Modal close and robust cleanup
   function closeModal() {
     modal.remove();
     document.body.style.overflow = '';
-    // Return focus to FAB/button if desired (optional)
-    if (container && container.querySelector('#ai-coach-fab')) {
+    if (
+      container &&
+      typeof container.querySelector === 'function' &&
+      container.querySelector('#ai-coach-fab')
+    ) {
       container.querySelector('#ai-coach-fab').focus();
     }
-    // Remove listeners
     window.removeEventListener('keydown', escClose);
     modal.removeEventListener('keydown', trapFocus);
   }
 
   modal.querySelector('.modal-close')?.addEventListener('click', closeModal);
 
-  // ESC key closes modal
   function escClose(e) {
     if (e.key === 'Escape') {
       closeModal();
@@ -315,6 +331,5 @@ export function renderAICoach(container = document.getElementById('app')) {
   }
   window.addEventListener('keydown', escClose);
 
-  // Cleanup on navigation/setup
   setupNavigation();
 }

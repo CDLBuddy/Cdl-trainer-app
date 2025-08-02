@@ -30,7 +30,11 @@ import { renderFlashcards } from './flashcards.js';
 export async function renderStudentDashboard(
   container = document.getElementById('app')
 ) {
-  if (!container) return;
+  if (!container || typeof container.querySelectorAll !== 'function') {
+    console.error('❌ container is not a DOM element:', container);
+    showToast('Internal error: Container not ready.');
+    return;
+  }
 
   // === Dynamic Branding ===
   const brand = await getCurrentSchoolBranding();
