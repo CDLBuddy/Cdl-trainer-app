@@ -1,15 +1,16 @@
 // superadmin/index.js
 
+// === SUPERADMIN MODULE BARREL IMPORTS ===
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
-import { renderSchoolManagement } from './school-management.js';
-import { renderUserManagement } from './user-management.js';
-import { renderComplianceCenter } from './compliance-center.js';
-import { renderBilling } from './billing.js';
-import { renderSettings } from './settings.js';
-import { renderPermissions } from './permissions.js';
-import { renderLogs } from './logs.js';
+import { renderSchoolManagement }     from './school-management.js';
+import { renderUserManagement }       from './user-management.js';
+import { renderComplianceCenter }     from './compliance-center.js';
+import { renderBilling }              from './billing.js';
+import { renderSettings }             from './settings.js';
+import { renderPermissions }          from './permissions.js';
+import { renderLogs }                 from './logs.js';
 
-// Export all UI entrypoints (barrel)
+// === SUPERADMIN MODULE BARREL EXPORTS ===
 export {
   renderSuperadminDashboard,
   renderSchoolManagement,
@@ -21,12 +22,12 @@ export {
   renderLogs,
 };
 
-// --- Navigation handler (SPA-style) ---
+// === SUPERADMIN NAVIGATION HANDLER ===
 export function handleSuperadminNav(page, ...args) {
   const container = args[1] || document.getElementById('app');
   window.currentUserRole = 'superadmin';
 
-  // Scroll to top on every nav
+  // Optional: Scroll to top on navigation
   if (container && container.scrollIntoView) container.scrollIntoView({ behavior: 'smooth' });
 
   switch ((page || '').toLowerCase()) {
@@ -51,10 +52,11 @@ export function handleSuperadminNav(page, ...args) {
   }
 }
 
-// --- SPA Routing: On initial load and popstate ---
+// --- SPA Routing: On initial load and browser nav ---
 function navFromHash() {
-  if (!location.hash.startsWith('#superadmin')) return;
-  const match = location.hash.match(/^#superadmin-([a-zA-Z-]+)/);
+  const hash = location.hash.toLowerCase();
+  if (!hash.startsWith('#superadmin')) return;
+  const match = hash.match(/^#superadmin-([a-z\-]+)/);
   const page = match ? `superadmin-${match[1]}` : 'superadmin-dashboard';
   handleSuperadminNav(page);
 }
