@@ -52,21 +52,36 @@ export async function renderStudentDashboard(
     return;
   }
 
-  // --- Fetch User Data ---
+    // --- Robust role detection (localStorage/window first) ---
+  let userRole =
+    localStorage.getItem('userRole') ||
+    window.currentUserRole ||
+    'student';
   let userData = {};
-  let userRole = localStorage.getItem('userRole') || 'student';
+
+  // --- Debug: show role before fetching Firestore
+  console.log('[StudentDashboard] Initial userRole:', userRole);
+
   try {
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', currentUserEmail));
     const snap = await getDocs(q);
     if (!snap.empty) {
       userData = snap.docs[0].data();
-      userRole = userData.role || userRole || 'student';
-      localStorage.setItem('userRole', userRole);
+      // Only accept known roles
+      const validRoles = ['student', 'instructor', 'admin', 'superadmin'];
+      if (userData.role && validRoles.includes(userData.role)) {
+        userRole = userData.role;
+        localStorage.setItem('userRole', userRole);
+      }
     }
   } catch (e) {
     userData = {};
   }
+
+  // --- Debug: role after fetching
+  console.log('[StudentDashboard] Final userRole after Firestore:', userRole);
+
   if (userRole !== 'student') {
     showToast('Access denied: Student dashboard only.');
     window.location.reload();
