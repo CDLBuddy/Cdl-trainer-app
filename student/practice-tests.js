@@ -27,14 +27,15 @@ function getCurrentUserEmail() {
 let schoolId = localStorage.getItem('schoolId') || '';
 
 // ─── PRACTICE TESTS PAGE (STUDENT) ─────────────────────────
-export async function renderPracticeTests(
-  container = document.getElementById('app')
-) {
-  // Defensive: Ensure container is a DOM element
+export async function renderPracticeTests(container = document.getElementById('app')) {
+  // Defensive: Ensure container is a DOM element, try to recover if not
   if (!container || typeof container.querySelectorAll !== 'function') {
-    console.error('❌ container is not a DOM element:', container);
-    showToast('Internal error: Container not ready.');
-    return;
+    container = document.getElementById('app');
+    if (!container || typeof container.querySelectorAll !== 'function') {
+      console.error('❌ container is not a DOM element:', container);
+      showToast('Internal error: Container not ready.');
+      return;
+    }
   }
 
   const currentUserEmail = getCurrentUserEmail();
@@ -57,6 +58,8 @@ export async function renderPracticeTests(
       schoolId = userData.schoolId || schoolId;
       localStorage.setItem('userRole', userRole);
       if (schoolId) localStorage.setItem('schoolId', schoolId);
+      window.currentUserRole = userRole;    // Keep window sync for other modules
+      window.schoolId = schoolId;
     }
   } catch (e) {
     userData = {};
@@ -67,7 +70,7 @@ export async function renderPracticeTests(
     setupNavigation();
     return;
   }
-
+}
   // --- TEST DATA ---
   const tests = ['General Knowledge', 'Air Brakes', 'Combination Vehicles'];
   const testScores = {};
