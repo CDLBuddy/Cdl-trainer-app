@@ -72,45 +72,45 @@ export async function renderPracticeTests(
     setupNavigation();
     return;
   }
-}
-// --- TEST DATA ---
-const tests = ['General Knowledge', 'Air Brakes', 'Combination Vehicles'];
-const testScores = {};
 
-try {
-  const snap = await getDocs(
-    query(
-      collection(db, 'testResults'),
-      where('studentId', '==', currentUserEmail)
-    )
-  );
-  tests.forEach((test) => {
-    const testDocs = snap.docs
-      .map((doc) => doc.data())
-      .filter((d) => d.testName === test);
-    if (testDocs.length > 0) {
-      const latest = testDocs.sort(
-        (a, b) =>
-          (b.timestamp?.toDate?.() || new Date(b.timestamp)) -
-          (a.timestamp?.toDate?.() || new Date(a.timestamp))
-      )[0];
-      const pct = Math.round((latest.correct / latest.total) * 100);
-      testScores[test] = {
-        pct,
-        passed: pct >= 80,
-        lastResult: latest,
-      };
-    }
-  });
-} catch (e) {
-  console.error('❌ Error loading test results:', e);
-}
+  // --- TEST DATA ---
+  const tests = ['General Knowledge', 'Air Brakes', 'Combination Vehicles'];
+  const testScores = {};
 
-// Progress: how many tests passed?
-const passedCount = Object.values(testScores).filter((s) => s.passed).length;
+  try {
+    const snap = await getDocs(
+      query(
+        collection(db, 'testResults'),
+        where('studentId', '==', currentUserEmail)
+      )
+    );
+    tests.forEach((test) => {
+      const testDocs = snap.docs
+        .map((doc) => doc.data())
+        .filter((d) => d.testName === test);
+      if (testDocs.length > 0) {
+        const latest = testDocs.sort(
+          (a, b) =>
+            (b.timestamp?.toDate?.() || new Date(b.timestamp)) -
+            (a.timestamp?.toDate?.() || new Date(a.timestamp))
+        )[0];
+        const pct = Math.round((latest.correct / latest.total) * 100);
+        testScores[test] = {
+          pct,
+          passed: pct >= 80,
+          lastResult: latest,
+        };
+      }
+    });
+  } catch (e) {
+    console.error('❌ Error loading test results:', e);
+  }
 
-// --- RENDER PAGE ---
-container.innerHTML = `
+  // Progress: how many tests passed?
+  const passedCount = Object.values(testScores).filter((s) => s.passed).length;
+
+  // --- RENDER PAGE ---
+  container.innerHTML = `
     <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
       <h2 class="dash-head" style="display:flex;align-items:center;gap:10px;">
         🧪 Student Practice Tests
@@ -157,31 +157,32 @@ container.innerHTML = `
     </div>
   `;
 
-setupNavigation();
+  setupNavigation();
 
-// Defensive: Add listeners only if container is still valid
-setTimeout(() => {
-  if (!container || typeof container.querySelectorAll !== 'function') {
-    // Navigation away during async
-    return;
-  }
-  container
-    .getElementById('back-to-dashboard-btn')
-    ?.addEventListener('click', () => {
-      renderStudentDashboard();
+  // Defensive: Add listeners only if container is still valid
+  setTimeout(() => {
+    if (!container || typeof container.querySelectorAll !== 'function') {
+      // Navigation away during async
+      return;
+    }
+    container
+      .querySelector('#back-to-dashboard-btn')
+      ?.addEventListener('click', () => {
+        renderStudentDashboard();
+      });
+    container.querySelectorAll('.start-btn,.retake-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const test = btn.dataset.test;
+        showToast(`Starting "${test}" test…`);
+        renderTestEngine(container, test, currentUserEmail);
+      });
     });
-  container.querySelectorAll('.start-btn,.retake-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const test = btn.dataset.test;
-      showToast(`Starting "${test}" test…`);
-      renderTestEngine(container, test, currentUserEmail);
+    container.querySelectorAll('.review-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const test = btn.dataset.test;
+        showToast(`Loading your last "${test}" result…`);
+        renderTestReview(container, test);
+      });
     });
-  });
-  container.querySelectorAll('.review-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const test = btn.dataset.test;
-      showToast(`Loading your last "${test}" result…`);
-      renderTestReview(container, test);
-    });
-  });
-}, 0);
+  }, 0);
+}
