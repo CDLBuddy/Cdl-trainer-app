@@ -103,13 +103,15 @@ export async function renderProfile(container = document.getElementById('app')) 
       // Only accept known roles for safety
       const validRoles = ['student', 'instructor', 'admin', 'superadmin'];
       if (userData.role && validRoles.includes(userData.role)) {
-        userRole = userData.role;
-        localStorage.setItem('userRole', userRole);
-      }
-      if (userData.schoolId) {
-        schoolId = userData.schoolId;
-        localStorage.setItem('schoolId', schoolId);
-      }
+  userRole = userData.role;
+  localStorage.setItem('userRole', userRole);
+  window.currentUserRole = userRole;
+}
+if (userData.schoolId) {
+  schoolId = userData.schoolId;
+  localStorage.setItem('schoolId', schoolId);
+  window.schoolId = schoolId;
+}
     } else {
       showToast('Profile not found.');
       window.location.reload();
