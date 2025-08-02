@@ -24,7 +24,7 @@ import {
 
 import { renderStudentDashboard } from './student-dashboard.js';
 import { getCurrentSchoolBranding } from '../school-branding.js';
-import { getWalkthroughLabel } from '../walkthrough-data'; // ✅ Centralized CDL class label import
+import { getWalkthroughLabel } from '../walkthrough-data/index.js'; // ✅ Centralized CDL class label import
 
 // --- DRY: Get current user email ---
 function getCurrentUserEmail() {
@@ -139,7 +139,8 @@ export async function renderProfile(
 
   // --- Profile completion calculation ---
   function calcProgress(fd) {
-    let total = 15, filled = 0;
+    let total = 15,
+      filled = 0;
     if (fd.get('name')) filled++;
     if (fd.get('dob')) filled++;
     if (profilePicUrl || fd.get('profilePic')?.size) filled++;

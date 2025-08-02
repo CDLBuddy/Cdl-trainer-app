@@ -2,17 +2,24 @@
 
 import { db, auth } from '../firebase.js';
 import {
-  collection, query, where, getDocs
+  collection,
+  query,
+  where,
+  getDocs,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import {
-  showToast, setupNavigation, updateELDTProgress, markStudentWalkthroughComplete, getUserProgress
+  showToast,
+  setupNavigation,
+  updateELDTProgress,
+  markStudentWalkthroughComplete,
+  getUserProgress,
 } from '../ui-helpers.js';
 import { renderProfile } from './profile.js';
 import { renderStudentDashboard } from './student-dashboard.js';
 import {
   getWalkthroughByClass,
   getWalkthroughLabel, // Use for class label
-  allWalkthroughs
+  allWalkthroughs,
 } from '../walkthrough-data/index.js';
 import { getCdlClassLabel } from './profile.js'; // Or wherever your mapping helper lives
 
@@ -103,23 +110,30 @@ export async function renderWalkthrough(
       <p><strong>CDL Class:</strong> ${getWalkthroughLabel(cdlClass)}</p>
       <p>Study the walkthrough below to prepare for your in-person vehicle inspection test. <span style="color:var(--accent);font-weight:bold;">Critical/pass-fail sections are highlighted.</span></p>
       <div class="walkthrough-script" aria-label="Walkthrough script">
-        ${walkthroughData.map(section => `
+        ${walkthroughData
+          .map(
+            (section) => `
           <h3>
-            ${(section.critical || section.passFail) ? '🚨' : '✅'} 
+            ${section.critical || section.passFail ? '🚨' : '✅'} 
             ${section.section}
-            ${(section.critical || section.passFail) ? ' <span style="color:var(--accent);">(Pass/Fail)</span>' : ''}
+            ${section.critical || section.passFail ? ' <span style="color:var(--accent);">(Pass/Fail)</span>' : ''}
           </h3>
           <div class="${section.critical || section.passFail ? 'highlight-section' : ''}">
-            ${section.steps.map(step =>
-              `<p>
+            ${section.steps
+              .map(
+                (step) =>
+                  `<p>
                 ${step.label ? `<strong>${step.label}:</strong> ` : ''}
                 ${step.script || ''}
                 ${step.mustSay ? ' <span class="must-say" style="color:var(--accent);font-weight:bold;">(Must Say)</span>' : ''}
                 ${step.passFail ? ' <span class="pass-fail" style="color:#ee3377;font-weight:bold;">(Pass/Fail)</span>' : ''}
               </p>`
-            ).join('')}
+              )
+              .join('')}
           </div>
-        `).join('')}
+        `
+          )
+          .join('')}
       </div>
       <div style="margin:2rem 0 1.3rem 0;">
         <progress value="${Object.values(completedDrills).filter(Boolean).length}" max="4" style="width:100%;" aria-valuemax="4" aria-valuenow="${Object.values(completedDrills).filter(Boolean).length}" aria-label="Walkthrough drill progress"></progress>
@@ -218,18 +232,22 @@ export async function renderWalkthrough(
       walkthroughData[0];
 
     // Drill Data Extraction
-    const brakeCheckLines =
-      (criticalSection?.steps || []).map(step => step.script || '').filter(Boolean);
+    const brakeCheckLines = (criticalSection?.steps || [])
+      .map((step) => step.script || '')
+      .filter(Boolean);
 
     function getFillBlanks() {
       // Simple: replace keywords with ___ and store answers.
       return brakeCheckLines.map((line) => {
         if (!line) return { text: '', answers: [] };
         let blanks = [];
-        let text = line.replace(/\b(engine|parking|service|3|60|20|45)\b/gi, (match) => {
-          blanks.push(match);
-          return '___';
-        });
+        let text = line.replace(
+          /\b(engine|parking|service|3|60|20|45)\b/gi,
+          (match) => {
+            blanks.push(match);
+            return '___';
+          }
+        );
         return { text, answers: blanks };
       });
     }
@@ -371,7 +389,10 @@ export async function renderWalkthrough(
           .value.trim()
           .replace(/\s+/g, ' ')
           .toLowerCase();
-        const ans = (brakeCheckLines[0] || '').trim().replace(/\s+/g, ' ').toLowerCase();
+        const ans = (brakeCheckLines[0] || '')
+          .trim()
+          .replace(/\s+/g, ' ')
+          .toLowerCase();
         const res = drillsContainer.querySelector('.drill-result');
         if (val === ans) {
           res.innerHTML = '✅ Perfect! You memorized it.';
