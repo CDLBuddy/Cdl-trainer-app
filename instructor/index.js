@@ -36,8 +36,8 @@ export function handleInstructorNav(page, ...args) {
       renderChecklistReviewForInstructor(param, container);
       break;
     case 'instructor-student-profile':
-      renderStudentProfileForInstructor(container);
-      break;
+  renderStudentProfileForInstructor(param, container);
+  break;
     default:
       renderInstructorDashboard(container);
   }
