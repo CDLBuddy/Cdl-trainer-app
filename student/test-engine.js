@@ -33,7 +33,7 @@ export async function renderTestEngine(
     passedUserEmail ||
     window.currentUserEmail ||
     localStorage.getItem('currentUserEmail') ||
-    (auth.currentUser && auth.currentUser.email) ||
+    (window.auth?.currentUser && window.auth.currentUser.email) ||
     null;
 
   if (!currentUserEmail) {
@@ -46,7 +46,6 @@ export async function renderTestEngine(
   }
 
   setupNavigation();
-}
 
   // --- 1. Question Banks (expandable, per-school future) --------------
   const questionBanks = {

@@ -26,14 +26,17 @@ import { renderPracticeTests } from './practice-tests.js';
 import { renderFlashcards } from './flashcards.js';
 
 // ========== MAIN DASHBOARD RENDERER ==========
-
 export async function renderStudentDashboard(
   container = document.getElementById('app')
 ) {
+  // Defensive: Validate container
   if (!container || typeof container.querySelectorAll !== 'function') {
-    console.error('❌ container is not a DOM element:', container);
-    showToast('Internal error: Container not ready.');
-    return;
+    container = document.getElementById('app');
+    if (!container || typeof container.querySelectorAll !== 'function') {
+      console.error('❌ container is not a DOM element:', container);
+      showToast('Internal error: Container not ready.');
+      return;
+    }
   }
 
   // === Dynamic Branding ===
@@ -52,15 +55,12 @@ export async function renderStudentDashboard(
     return;
   }
 
-    // --- Robust role detection (localStorage/window first) ---
+  // --- Robust role detection ---
   let userRole =
     localStorage.getItem('userRole') ||
     window.currentUserRole ||
     'student';
   let userData = {};
-
-  // --- Debug: show role before fetching Firestore
-  console.log('[StudentDashboard] Initial userRole:', userRole);
 
   try {
     const usersRef = collection(db, 'users');
@@ -68,7 +68,6 @@ export async function renderStudentDashboard(
     const snap = await getDocs(q);
     if (!snap.empty) {
       userData = snap.docs[0].data();
-      // Only accept known roles
       const validRoles = ['student', 'instructor', 'admin', 'superadmin'];
       if (userData.role && validRoles.includes(userData.role)) {
         userRole = userData.role;
@@ -78,9 +77,6 @@ export async function renderStudentDashboard(
   } catch (e) {
     userData = {};
   }
-
-  // --- Debug: role after fetching
-  console.log('[StudentDashboard] Final userRole after Firestore:', userRole);
 
   if (userRole !== 'student') {
     showToast('Access denied: Student dashboard only.');

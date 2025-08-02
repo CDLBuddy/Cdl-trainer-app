@@ -22,10 +22,18 @@ import {
 } from '../walkthrough-data/index.js';
 import { getCdlClassLabel } from './profile.js';
 
+// Main Walkthrough Renderer
 export async function renderWalkthrough(
   container = document.getElementById('app')
 ) {
-  if (!container) return;
+  // Defensive: ensure container is a DOM element
+  if (!container || typeof container.querySelector !== 'function') {
+    container = document.getElementById('app');
+    if (!container || typeof container.querySelector !== 'function') {
+      showToast('Internal error: Container not ready.');
+      return;
+    }
+  }
 
   // === User/session validation ===
   const currentUserEmail =
@@ -82,7 +90,7 @@ export async function renderWalkthrough(
     <h2>🧭 CDL Walkthrough Practice ${school !== 'N/A' ? `<span class="school-badge">${school}</span>` : ''}</h2>
   `;
 
-  // === No CDL class chosen ===
+  // No CDL class chosen
   if (!cdlClass) {
     content += `
       <div class="alert-box" role="alert">
@@ -92,7 +100,7 @@ export async function renderWalkthrough(
       <button data-nav="profile" class="btn">Go to Profile</button>
     `;
   }
-  // === No walkthrough data for this class ===
+  // No walkthrough data for this class
   else if (!walkthroughData) {
     content += `
       <div class="alert-box" role="alert">
@@ -101,7 +109,7 @@ export async function renderWalkthrough(
       </div>
     `;
   }
-  // === Walkthrough and drills ===
+  // Walkthrough and drills
   else {
     content += `
       <p><strong>CDL Class:</strong> ${getWalkthroughLabel(cdlClass)}</p>

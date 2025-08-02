@@ -30,7 +30,11 @@ function getCurrentUserEmail() {
 // ─── REVIEW A SPECIFIC TEST RESULT ───────────────────────────
 export async function renderTestReview(container, testName) {
   container = container || document.getElementById('app');
-  if (!container) return;
+  if (!container || typeof container.querySelectorAll !== 'function') {
+    console.error('❌ container is not a DOM element:', container);
+    showToast('Internal error: Container not ready.');
+    return;
+  }
   container.innerHTML = `<div class="screen-wrapper fade-in"><h2>🧾 ${testName} Review</h2><p>Loading...</p></div>`;
 
   const currentUserEmail = getCurrentUserEmail();
