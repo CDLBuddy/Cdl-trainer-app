@@ -119,24 +119,40 @@ export async function renderChecklists(container = document.getElementById('app'
     return;
   }
 
-  // Fetch user data/role/schoolId
-  let userData = {};
-  let userRole = localStorage.getItem('userRole') || 'student';
+    // --- Robust role detection ---
+  let userRole =
+    localStorage.getItem('userRole') ||
+    window.currentUserRole ||
+    'student';
   let schoolId = localStorage.getItem('schoolId') || '';
+  let userData = {};
+
+  // --- Debug log: show what role we THINK we are at first ---
+  console.log('[Checklist] Initial userRole:', userRole);
+
   try {
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', currentUserEmail));
     const snap = await getDocs(q);
     if (!snap.empty) {
       userData = snap.docs[0].data();
-      userRole = userData.role || userRole;
-      schoolId = userData.schoolId || schoolId;
-      localStorage.setItem('userRole', userRole);
-      if (schoolId) localStorage.setItem('schoolId', schoolId);
+      // Only update role if it's a valid known type
+      const validRoles = ['student', 'instructor', 'admin', 'superadmin'];
+      if (userData.role && validRoles.includes(userData.role)) {
+        userRole = userData.role;
+        localStorage.setItem('userRole', userRole);
+      }
+      if (userData.schoolId) {
+        schoolId = userData.schoolId;
+        localStorage.setItem('schoolId', schoolId);
+      }
     }
   } catch (e) {
     userData = {};
   }
+
+  // --- Debug: role AFTER fetching userData ---
+  console.log('[Checklist] Final userRole after Firestore:', userRole);
 
   if (userRole !== 'student') {
     container.innerHTML =
