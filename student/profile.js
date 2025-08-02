@@ -411,10 +411,6 @@ export async function renderProfile(
       }
     });
   }
-  
-export function getCdlClassLabel(classKey) {
-  return getWalkthroughLabel(classKey);
-}
   // All uploads with checklist logic
   handleFileInput(
     'profilePic',
@@ -518,4 +514,8 @@ export function getCdlClassLabel(classKey) {
   };
 
   setupNavigation();
+}
+// === CDL Class Label Export ===
+export function getCdlClassLabel(classKey) {
+  return getWalkthroughLabel(classKey);
 }
