@@ -8,9 +8,6 @@ import {
   collection,
   addDoc,
   serverTimestamp,
-  query,
-  where,
-  getDocs,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
 import {
@@ -25,6 +22,7 @@ import {
 import { renderInstructorDashboard } from './instructor-dashboard.js';
 import { renderChecklistReviewForInstructor } from './checklist-review-for-instructor.js';
 
+// ---- Main Instructor-View Student Profile Renderer ----
 export async function renderStudentProfileForInstructor(
   studentEmail,
   container = document.getElementById('app')
@@ -54,19 +52,17 @@ export async function renderStudentProfileForInstructor(
     return;
   }
 
-  // Fetch instructor review data (checklist/milestones)
+  // Fetch instructor review data (ELDT progress & checklist verification)
   let eldtProgress = {};
   try {
     const progressRef = doc(db, 'eldtProgress', studentEmail);
     const progressSnap = await getDoc(progressRef);
-    if (progressSnap.exists()) {
-      eldtProgress = progressSnap.data();
-    }
+    if (progressSnap.exists()) eldtProgress = progressSnap.data();
   } catch (e) {
     eldtProgress = {};
   }
 
-  // UI local state for verification
+  // State: Verified checklist
   let profileVerified = !!eldtProgress?.profileVerified;
   let permitVerified = !!eldtProgress?.permitVerified;
   let vehicleVerified = !!eldtProgress?.vehicleVerified;
@@ -109,13 +105,13 @@ export async function renderStudentProfileForInstructor(
     profileProgress = 0,
   } = userData;
 
-  // UI Render
+  // ---- Render Profile UI ----
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="max-width:540px;margin:0 auto;">
       <h2>
         👤 Student Profile
         <span class="role-badge student">Student</span>
-        <span class="role-badge instructor-view">Instructor View</span>
+        <span class="role-badge instructor-view" title="You are viewing as an instructor">Instructor View</span>
       </h2>
       <div class="profile-meta" style="display:flex;gap:1.4rem;align-items:center;margin-bottom:1.4rem;">
         ${
@@ -134,8 +130,8 @@ export async function renderStudentProfileForInstructor(
         <span class="progress-label">${profileProgress || 0}% Complete</span>
       </div>
       <div class="profile-details glass-card" style="padding:1.2rem;">
-        <div><strong>DOB:</strong> ${dob ? dob : '-'}</div>
-        <div><strong>Experience:</strong> ${experience ? experience : '-'}</div>
+        <div><strong>DOB:</strong> ${dob || '-'}</div>
+        <div><strong>Experience:</strong> ${experience || '-'}</div>
         <div><strong>Endorsements:</strong> ${endorsements.length ? endorsements.join(', ') : '-'}</div>
         <div><strong>Restrictions:</strong> ${restrictions.length ? restrictions.join(', ') : '-'}</div>
         <div><strong>CDL Permit:</strong> ${cdlPermit === 'yes' ? '✔️ Yes' : cdlPermit === 'no' ? '❌ No' : '-'}</div>
@@ -165,14 +161,16 @@ export async function renderStudentProfileForInstructor(
           <strong>Trailer Plate:</strong>
           ${trailerPlateUrl ? `<a href="${trailerPlateUrl}" target="_blank" style="color:#b48aff;text-decoration:underline;">View</a>` : '-'}
         </div>
-        <div><strong>Emergency Contact:</strong> ${emergencyName || '-'} (${emergencyRelation || ''})<br>
-        <span style="color:#b48aff;">${emergencyPhone || ''}</span></div>
+        <div>
+          <strong>Emergency Contact:</strong> ${emergencyName || '-'} (${emergencyRelation || ''})<br>
+          <span style="color:#b48aff;">${emergencyPhone || ''}</span>
+        </div>
         <div><strong>Waiver Signed:</strong> ${waiverSigned ? '✔️' : '❌'} (${waiverSignature || '-'})</div>
         <div><strong>Notes:</strong> ${studentNotes || '-'}</div>
       </div>
       <div class="glass-card" style="margin-top:1.2rem; padding:1.2rem;">
         <strong>Instructor Actions</strong>
-        <div style="margin:0.5em 0;">
+        <div style="margin:0.5em 0;display:flex;flex-wrap:wrap;gap:0.8em;">
           <button class="btn outline" id="verify-profile-btn" ${profileVerified ? 'disabled aria-disabled="true"' : ''} aria-label="Approve Profile">
             ✔️ Approve Profile ${profileVerified ? '<span style="color:#3ecf8e;margin-left:7px;">✅</span>' : ''}
           </button>
@@ -203,70 +201,59 @@ export async function renderStudentProfileForInstructor(
   // Navigation/event handlers
   setupNavigation();
 
+  // --- Dashboard back ---
   document
     .getElementById('back-to-dashboard-btn')
-    ?.addEventListener('click', () => {
-      renderInstructorDashboard();
-    });
+    ?.addEventListener('click', () => renderInstructorDashboard());
 
-  // Approve actions with button disable and instant UI feedback
-  const profileBtn = document.getElementById('verify-profile-btn');
-  const permitBtn = document.getElementById('verify-permit-btn');
-  const vehicleBtn = document.getElementById('verify-vehicle-btn');
-  const walkthroughBtn = document.getElementById('review-walkthrough-btn');
+  // --- Approve actions with button disable and instant UI feedback
+  const currentInstructorEmail = localStorage.getItem('currentUserEmail');
 
-  profileBtn?.addEventListener('click', async () => {
-    profileBtn.disabled = true;
-    profileBtn.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
-    await verifyStudentProfile(studentEmail, localStorage.getItem('currentUserEmail'));
+  document.getElementById('verify-profile-btn')?.addEventListener('click', async (e) => {
+    e.target.disabled = true;
+    e.target.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
+    await verifyStudentProfile(studentEmail, currentInstructorEmail);
     showToast('Profile verified!', 2300, 'success');
   });
-  permitBtn?.addEventListener('click', async () => {
-    permitBtn.disabled = true;
-    permitBtn.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
-    await verifyStudentPermit(studentEmail, localStorage.getItem('currentUserEmail'));
+  document.getElementById('verify-permit-btn')?.addEventListener('click', async (e) => {
+    e.target.disabled = true;
+    e.target.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
+    await verifyStudentPermit(studentEmail, currentInstructorEmail);
     showToast('Permit verified!', 2300, 'success');
   });
-  vehicleBtn?.addEventListener('click', async () => {
-    vehicleBtn.disabled = true;
-    vehicleBtn.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
-    await verifyStudentVehicle(studentEmail, localStorage.getItem('currentUserEmail'));
+  document.getElementById('verify-vehicle-btn')?.addEventListener('click', async (e) => {
+    e.target.disabled = true;
+    e.target.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
+    await verifyStudentVehicle(studentEmail, currentInstructorEmail);
     showToast('Vehicle verified!', 2300, 'success');
   });
-  walkthroughBtn?.addEventListener('click', async () => {
-    walkthroughBtn.disabled = true;
-    walkthroughBtn.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
-    await reviewStudentWalkthrough(studentEmail, localStorage.getItem('currentUserEmail'));
+  document.getElementById('review-walkthrough-btn')?.addEventListener('click', async (e) => {
+    e.target.disabled = true;
+    e.target.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
+    await reviewStudentWalkthrough(studentEmail, currentInstructorEmail);
     showToast('Walkthrough reviewed!', 2300, 'success');
   });
 
-  // Save instructor note
-  document
-    .getElementById('save-note-btn')
-    ?.addEventListener('click', async () => {
-      const note = document.getElementById('instructor-note').value.trim();
-      if (!note) {
-        showToast('Note is empty.', 1700, 'error');
-        return;
-      }
-      // Save note to a subcollection for audit/history
-      const notesRef = collection(
-        doc(db, 'users', studentEmail),
-        'instructorNotes'
-      );
-      await addDoc(notesRef, {
-        note,
-        by: localStorage.getItem('currentUserEmail'),
-        at: serverTimestamp(),
-      });
-      showToast('Note saved.', 1800, 'success');
-      document.getElementById('instructor-note').value = '';
+  // --- Save instructor note ---
+  document.getElementById('save-note-btn')?.addEventListener('click', async () => {
+    const note = document.getElementById('instructor-note').value.trim();
+    if (!note) {
+      showToast('Note is empty.', 1700, 'error');
+      return;
+    }
+    // Save note to a subcollection for audit/history
+    const notesRef = collection(doc(db, 'users', studentEmail), 'instructorNotes');
+    await addDoc(notesRef, {
+      note,
+      by: currentInstructorEmail,
+      at: serverTimestamp(),
     });
+    showToast('Note saved.', 1800, 'success');
+    document.getElementById('instructor-note').value = '';
+  });
 
-  // Checklist review
-  document
-    .getElementById('checklist-review-btn')
-    ?.addEventListener('click', () => {
-      renderChecklistReviewForInstructor(studentEmail, container);
-    });
+  // --- Checklist review modal/section ---
+  document.getElementById('checklist-review-btn')?.addEventListener('click', () => {
+    renderChecklistReviewForInstructor(studentEmail, container);
+  });
 }
