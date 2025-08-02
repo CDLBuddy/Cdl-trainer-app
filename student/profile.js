@@ -88,13 +88,28 @@ export async function renderProfile(container = document.getElementById('app')) 
   const schoolLogo = brand.logoUrl || '';
   const schoolDisplayName = brand.schoolName || '';
 
-  // --- FETCH user data by doc ID ---
+    // --- Fetch user data by doc ID ---
   let userData = {};
   let userDocRef = doc(db, 'users', currentUserEmail);
+
+  // Prefer to load role/schoolId from storage first
+  let userRole = localStorage.getItem('userRole') || window.currentUserRole || 'student';
+  let schoolId = localStorage.getItem('schoolId') || '';
+
   try {
     const userSnap = await getDoc(userDocRef);
     if (userSnap.exists()) {
       userData = userSnap.data();
+      // Only accept known roles for safety
+      const validRoles = ['student', 'instructor', 'admin', 'superadmin'];
+      if (userData.role && validRoles.includes(userData.role)) {
+        userRole = userData.role;
+        localStorage.setItem('userRole', userRole);
+      }
+      if (userData.schoolId) {
+        schoolId = userData.schoolId;
+        localStorage.setItem('schoolId', schoolId);
+      }
     } else {
       showToast('Profile not found.');
       window.location.reload();
@@ -104,9 +119,7 @@ export async function renderProfile(container = document.getElementById('app')) 
     userData = {};
   }
 
-  // --- Enforce role and schoolId from Firestore ---
-  const userRole = userData.role || 'student';
-  const schoolId = userData.schoolId || '';
+  // --- Status and role from Firestore ---
   const status = userData.status || 'active';
 
   // --- Fields & defaults ---
