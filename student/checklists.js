@@ -90,17 +90,17 @@ export const studentChecklistSectionsTemplate = [
     ],
   },
 ];
-
-// ==== Main Checklist Renderer ====
-export async function renderChecklists(
-  container = document.getElementById('app')
-) {
-  // --- Defensive: Validate container is a DOM node ---
+//main checklist render
+export async function renderChecklists(container = document.getElementById('app')) {
+  // --- Defensive: Validate container is a DOM node, attempt recovery if not ---
   if (!container || typeof container.querySelector !== 'function') {
-    console.error('❌ container is not a DOM element:', container);
-    showToast('Internal error: Container not ready.');
-    return;
-  }
+    container = document.getElementById('app');
+    if (!container || typeof container.querySelector !== 'function') {
+      console.error('❌ container is not a DOM element:', container);
+      showToast('Internal error: Container not ready.');
+      return;
+   }
+ }
 
   // Show a quick loader while fetching data
   container.innerHTML = `<div class="loader" role="status" aria-live="polite" style="margin:2em auto;text-align:center;">Loading your checklist...</div>`;

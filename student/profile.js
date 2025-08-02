@@ -57,14 +57,16 @@ export function getCdlClassLabel(classKey) {
   return getWalkthroughLabel(classKey);
 }
 
+// === Main Profile Renderer ===
 export async function renderProfile(container = document.getElementById('app')) {
-  // Defensive fallback: try to recover if the container isn't valid
+  // --- Defensive: Validate container is a DOM node, attempt recovery if not ---
   if (!container || typeof container.querySelector !== 'function') {
     container = document.getElementById('app');
     if (!container || typeof container.querySelector !== 'function') {
       console.error('❌ container is not a DOM element:', container);
       showToast('Internal error: Container not ready.');
       return;
+    }
   }
 
   const currentUserEmail = getCurrentUserEmail();
