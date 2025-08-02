@@ -10,17 +10,24 @@ import {
 import { setupNavigation, showToast } from '../ui-helpers.js';
 
 // Accepts container param, always checks for logged-in user email
-export async function renderTestResults(
-  container = document.getElementById('app')
-) {
+export async function renderTestResults(container = document.getElementById('app')) {
+  // Defensive: Ensure container is a DOM element, try to recover if not
+  if (!container || typeof container.querySelectorAll !== 'function') {
+    container = document.getElementById('app');
+    if (!container || typeof container.querySelectorAll !== 'function') {
+      console.error('❌ container is not a DOM element:', container);
+      showToast('Internal error: Container not ready.');
+      return;
+    }
+  }
+
   // --- USER ROLE RESOLUTION ---
   const currentUserEmail =
     window.currentUserEmail ||
     localStorage.getItem('currentUserEmail') ||
-    window.auth?.currentUser?.email ||
+    (window.auth?.currentUser && window.auth.currentUser.email) ||
     null;
-  const userRole = localStorage.getItem('userRole') || 'student';
-  if (!container) return;
+  let userRole = localStorage.getItem('userRole') || 'student';
 
   // --- GUARD AGAINST MISSING USER ---
   if (!currentUserEmail) {
