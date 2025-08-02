@@ -11,18 +11,42 @@ import { setupNavigation, showToast } from '../ui-helpers.js';
 export async function renderTestEngine(
   container = document.getElementById('app'),
   testName,
-  currentUserEmail
+  passedUserEmail
 ) {
-  // Defensive: check required parameters and container
-  if (
-    !container ||
-    typeof container.querySelectorAll !== 'function' ||
-    !testName ||
-    !currentUserEmail
-  ) {
-    showToast('Missing required parameters for test engine.');
+  // Defensive: Recover container if missing
+  if (!container || typeof container.querySelectorAll !== 'function') {
+    container = document.getElementById('app');
+    if (!container || typeof container.querySelectorAll !== 'function') {
+      showToast('Internal error: Container not ready.');
+      return;
+    }
+  }
+
+  // Defensive: Validate testName
+  if (!testName) {
+    showToast('Missing test name for test engine.');
     return;
   }
+
+  // Defensive: Find user email (from argument, globals, or auth)
+  const currentUserEmail =
+    passedUserEmail ||
+    window.currentUserEmail ||
+    localStorage.getItem('currentUserEmail') ||
+    (auth.currentUser && auth.currentUser.email) ||
+    null;
+
+  if (!currentUserEmail) {
+    container.innerHTML = `
+      <div class="screen-wrapper fade-in"><h2>Start Test</h2>
+      <p>You must be logged in to take a test.</p></div>
+    `;
+    setupNavigation();
+    return;
+  }
+
+  setupNavigation();
+}
 
   // --- 1. Question Banks (expandable, per-school future) --------------
   const questionBanks = {
