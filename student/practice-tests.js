@@ -27,7 +27,9 @@ function getCurrentUserEmail() {
 let schoolId = localStorage.getItem('schoolId') || '';
 
 // ─── PRACTICE TESTS PAGE (STUDENT) ─────────────────────────
-export async function renderPracticeTests(container = document.getElementById('app')) {
+export async function renderPracticeTests(
+  container = document.getElementById('app')
+) {
   // Defensive: Ensure container is a DOM element, try to recover if not
   if (!container || typeof container.querySelectorAll !== 'function') {
     container = document.getElementById('app');
@@ -58,7 +60,7 @@ export async function renderPracticeTests(container = document.getElementById('a
       schoolId = userData.schoolId || schoolId;
       localStorage.setItem('userRole', userRole);
       if (schoolId) localStorage.setItem('schoolId', schoolId);
-      window.currentUserRole = userRole;    // Keep window sync for other modules
+      window.currentUserRole = userRole; // Keep window sync for other modules
       window.schoolId = schoolId;
     }
   } catch (e) {
@@ -71,44 +73,44 @@ export async function renderPracticeTests(container = document.getElementById('a
     return;
   }
 }
-  // --- TEST DATA ---
-  const tests = ['General Knowledge', 'Air Brakes', 'Combination Vehicles'];
-  const testScores = {};
+// --- TEST DATA ---
+const tests = ['General Knowledge', 'Air Brakes', 'Combination Vehicles'];
+const testScores = {};
 
-  try {
-    const snap = await getDocs(
-      query(
-        collection(db, 'testResults'),
-        where('studentId', '==', currentUserEmail)
-      )
-    );
-    tests.forEach((test) => {
-      const testDocs = snap.docs
-        .map((doc) => doc.data())
-        .filter((d) => d.testName === test);
-      if (testDocs.length > 0) {
-        const latest = testDocs.sort(
-          (a, b) =>
-            (b.timestamp?.toDate?.() || new Date(b.timestamp)) -
-            (a.timestamp?.toDate?.() || new Date(a.timestamp))
-        )[0];
-        const pct = Math.round((latest.correct / latest.total) * 100);
-        testScores[test] = {
-          pct,
-          passed: pct >= 80,
-          lastResult: latest,
-        };
-      }
-    });
-  } catch (e) {
-    console.error('❌ Error loading test results:', e);
-  }
+try {
+  const snap = await getDocs(
+    query(
+      collection(db, 'testResults'),
+      where('studentId', '==', currentUserEmail)
+    )
+  );
+  tests.forEach((test) => {
+    const testDocs = snap.docs
+      .map((doc) => doc.data())
+      .filter((d) => d.testName === test);
+    if (testDocs.length > 0) {
+      const latest = testDocs.sort(
+        (a, b) =>
+          (b.timestamp?.toDate?.() || new Date(b.timestamp)) -
+          (a.timestamp?.toDate?.() || new Date(a.timestamp))
+      )[0];
+      const pct = Math.round((latest.correct / latest.total) * 100);
+      testScores[test] = {
+        pct,
+        passed: pct >= 80,
+        lastResult: latest,
+      };
+    }
+  });
+} catch (e) {
+  console.error('❌ Error loading test results:', e);
+}
 
-  // Progress: how many tests passed?
-  const passedCount = Object.values(testScores).filter((s) => s.passed).length;
+// Progress: how many tests passed?
+const passedCount = Object.values(testScores).filter((s) => s.passed).length;
 
-  // --- RENDER PAGE ---
-  container.innerHTML = `
+// --- RENDER PAGE ---
+container.innerHTML = `
     <div class="screen-wrapper fade-in" style="max-width:600px;margin:0 auto;padding:20px;">
       <h2 class="dash-head" style="display:flex;align-items:center;gap:10px;">
         🧪 Student Practice Tests
@@ -155,32 +157,31 @@ export async function renderPracticeTests(container = document.getElementById('a
     </div>
   `;
 
-  setupNavigation();
+setupNavigation();
 
-  // Defensive: Add listeners only if container is still valid
-  setTimeout(() => {
-    if (!container || typeof container.querySelectorAll !== 'function') {
-      // Navigation away during async
-      return;
-    }
-    container
-      .getElementById('back-to-dashboard-btn')
-      ?.addEventListener('click', () => {
-        renderStudentDashboard();
-      });
-    container.querySelectorAll('.start-btn,.retake-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const test = btn.dataset.test;
-        showToast(`Starting "${test}" test…`);
-        renderTestEngine(container, test, currentUserEmail);
-      });
+// Defensive: Add listeners only if container is still valid
+setTimeout(() => {
+  if (!container || typeof container.querySelectorAll !== 'function') {
+    // Navigation away during async
+    return;
+  }
+  container
+    .getElementById('back-to-dashboard-btn')
+    ?.addEventListener('click', () => {
+      renderStudentDashboard();
     });
-    container.querySelectorAll('.review-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const test = btn.dataset.test;
-        showToast(`Loading your last "${test}" result…`);
-        renderTestReview(container, test);
-      });
+  container.querySelectorAll('.start-btn,.retake-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const test = btn.dataset.test;
+      showToast(`Starting "${test}" test…`);
+      renderTestEngine(container, test, currentUserEmail);
     });
-  }, 0);
-}
+  });
+  container.querySelectorAll('.review-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const test = btn.dataset.test;
+      showToast(`Loading your last "${test}" result…`);
+      renderTestReview(container, test);
+    });
+  });
+}, 0);

@@ -91,7 +91,9 @@ export const studentChecklistSectionsTemplate = [
   },
 ];
 //main checklist render
-export async function renderChecklists(container = document.getElementById('app')) {
+export async function renderChecklists(
+  container = document.getElementById('app')
+) {
   // --- Defensive: Validate container is a DOM node, attempt recovery if not ---
   if (!container || typeof container.querySelector !== 'function') {
     container = document.getElementById('app');
@@ -99,8 +101,8 @@ export async function renderChecklists(container = document.getElementById('app'
       console.error('❌ container is not a DOM element:', container);
       showToast('Internal error: Container not ready.');
       return;
-   }
- }
+    }
+  }
 
   // Show a quick loader while fetching data
   container.innerHTML = `<div class="loader" role="status" aria-live="polite" style="margin:2em auto;text-align:center;">Loading your checklist...</div>`;
@@ -119,11 +121,9 @@ export async function renderChecklists(container = document.getElementById('app'
     return;
   }
 
-    // --- Robust role detection ---
+  // --- Robust role detection ---
   let userRole =
-    localStorage.getItem('userRole') ||
-    window.currentUserRole ||
-    'student';
+    localStorage.getItem('userRole') || window.currentUserRole || 'student';
   let schoolId = localStorage.getItem('schoolId') || '';
   let userData = {};
 

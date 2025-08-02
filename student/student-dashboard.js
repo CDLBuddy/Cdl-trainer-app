@@ -57,9 +57,7 @@ export async function renderStudentDashboard(
 
   // --- Robust role detection ---
   let userRole =
-    localStorage.getItem('userRole') ||
-    window.currentUserRole ||
-    'student';
+    localStorage.getItem('userRole') || window.currentUserRole || 'student';
   let userData = {};
 
   try {

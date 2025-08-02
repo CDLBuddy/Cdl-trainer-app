@@ -58,7 +58,9 @@ export function getCdlClassLabel(classKey) {
 }
 
 // === Main Profile Renderer ===
-export async function renderProfile(container = document.getElementById('app')) {
+export async function renderProfile(
+  container = document.getElementById('app')
+) {
   // --- Defensive: Validate container is a DOM node, attempt recovery if not ---
   if (!container || typeof container.querySelector !== 'function') {
     container = document.getElementById('app');
@@ -88,12 +90,13 @@ export async function renderProfile(container = document.getElementById('app')) 
   const schoolLogo = brand.logoUrl || '';
   const schoolDisplayName = brand.schoolName || '';
 
-    // --- Fetch user data by doc ID ---
+  // --- Fetch user data by doc ID ---
   let userData = {};
   let userDocRef = doc(db, 'users', currentUserEmail);
 
   // Prefer to load role/schoolId from storage first
-  let userRole = localStorage.getItem('userRole') || window.currentUserRole || 'student';
+  let userRole =
+    localStorage.getItem('userRole') || window.currentUserRole || 'student';
   let schoolId = localStorage.getItem('schoolId') || '';
 
   try {
@@ -103,15 +106,15 @@ export async function renderProfile(container = document.getElementById('app')) 
       // Only accept known roles for safety
       const validRoles = ['student', 'instructor', 'admin', 'superadmin'];
       if (userData.role && validRoles.includes(userData.role)) {
-  userRole = userData.role;
-  localStorage.setItem('userRole', userRole);
-  window.currentUserRole = userRole;
-}
-if (userData.schoolId) {
-  schoolId = userData.schoolId;
-  localStorage.setItem('schoolId', schoolId);
-  window.schoolId = schoolId;
-}
+        userRole = userData.role;
+        localStorage.setItem('userRole', userRole);
+        window.currentUserRole = userRole;
+      }
+      if (userData.schoolId) {
+        schoolId = userData.schoolId;
+        localStorage.setItem('schoolId', schoolId);
+        window.schoolId = schoolId;
+      }
     } else {
       showToast('Profile not found.');
       window.location.reload();
