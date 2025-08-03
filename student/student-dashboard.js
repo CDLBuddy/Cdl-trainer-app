@@ -9,7 +9,6 @@ import {
   getNextChecklistAlert,
 } from '../ui-helpers.js';
 import { getCurrentSchoolBranding } from '../school-branding.js';
-
 import { signOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {
   collection,
@@ -18,12 +17,8 @@ import {
   getDocs,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
-import { renderProfile } from './profile.js';
-import { renderAICoach } from './ai-coach.js';
-import { renderWalkthrough } from './walkthrough.js';
-import { renderChecklists } from './checklists.js';
-import { renderPracticeTests } from './practice-tests.js';
-import { renderFlashcards } from './flashcards.js';
+// --- Central navigation handler import ---
+import { handleNavigation } from '../navigation.js';
 
 // ========== MAIN DASHBOARD RENDERER ==========
 export async function renderStudentDashboard(
@@ -175,7 +170,7 @@ export async function renderStudentDashboard(
         <div class="dashboard-card">
           <h3>🧭 Walkthrough</h3>
           <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
-          <button class="btn" data-nav="walkthrough">Open Walkthrough</button>
+          <button class="btn" data-nav="student-walkthrough">Open Walkthrough</button>
         </div>
         <div class="glass-card metric">
           <h3>🔥 Study Streak</h3>
@@ -195,33 +190,33 @@ export async function renderStudentDashboard(
         <div class="dashboard-card last-test-card">
           <h3>🧪 Last Test Score</h3>
           <p>${lastTestStr}</p>
-          <button class="btn" data-nav="practiceTests">Take a Test</button>
+          <button class="btn" data-nav="student-practice-tests">Take a Test</button>
         </div>
       </section>
       <div class="dash-rail-wrapper">
         <aside class="dash-rail">
-          <button class="rail-btn profile" data-nav="profile" aria-label="My Profile">
+          <button class="rail-btn profile" data-nav="student-profile" aria-label="My Profile">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="8" r="4" stroke="#4e91ad" stroke-width="2"/>
               <path d="M4 20c0-2.8 3.6-4.2 8-4.2s8 1.4 8 4.2" stroke="#4e91ad" stroke-width="2"/>
             </svg>
             <span class="label">My Profile</span>
           </button>
-          <button class="rail-btn checklist" data-nav="checklists" aria-label="My Checklist">
+          <button class="rail-btn checklist" data-nav="student-checklists" aria-label="My Checklist">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <rect x="4" y="4" width="16" height="16" rx="3" stroke="#a8e063" stroke-width="2"/>
               <path d="M8 13l3 3 5-5" stroke="#a8e063" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span class="label">My<br>Checklist</span>
           </button>
-          <button class="rail-btn testing" data-nav="practiceTests" aria-label="Testing">
+          <button class="rail-btn testing" data-nav="student-practice-tests" aria-label="Testing">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <rect x="4" y="4" width="16" height="16" rx="3" stroke="#61aeee" stroke-width="2"/>
               <path d="M8 8h8M8 12h8M8 16h8" stroke="#61aeee" stroke-width="2" stroke-linecap="round"/>
             </svg>
             <span class="label">Testing<br>&nbsp;</span>
           </button>
-          <button class="rail-btn flashcards" data-nav="flashcards" aria-label="Flashcards">
+          <button class="rail-btn flashcards" data-nav="student-flashcards" aria-label="Flashcards">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <rect x="5" y="7" width="14" height="10" rx="2" stroke="#ffdb70" stroke-width="2"/>
               <rect x="7" y="9" width="10" height="6" rx="1" stroke="#ffdb70" stroke-width="2"/>
@@ -248,41 +243,51 @@ export async function renderStudentDashboard(
   setupNavigation();
 
   // ========== EVENT HANDLERS ==========
+
+  // Profile button (header & rail)
   document
     .getElementById('edit-student-profile-btn')
-    ?.addEventListener('click', renderProfile);
+    ?.addEventListener('click', () => handleNavigation('student-profile'));
   container
     .querySelector('.rail-btn.profile')
-    ?.addEventListener('click', renderProfile);
+    ?.addEventListener('click', () => handleNavigation('student-profile'));
+
+  // Checklist button (rail)
   container
     .querySelector('.rail-btn.checklist')
-    ?.addEventListener('click', renderChecklists);
+    ?.addEventListener('click', () => handleNavigation('student-checklists'));
+
+  // Testing button (rail) & test card
   container
     .querySelector('.rail-btn.testing')
-    ?.addEventListener('click', renderPracticeTests);
+    ?.addEventListener('click', () =>
+      handleNavigation('student-practice-tests')
+    );
+  container
+    .querySelector('.last-test-card button[data-nav="student-practice-tests"]')
+    ?.addEventListener('click', () =>
+      handleNavigation('student-practice-tests')
+    );
+
+  // Flashcards button (rail)
   container
     .querySelector('.rail-btn.flashcards')
-    ?.addEventListener('click', renderFlashcards);
+    ?.addEventListener('click', () => handleNavigation('student-flashcards'));
 
-  // Walkthrough button
+  // Walkthrough button (section)
   container
-    .querySelector('button[data-nav="walkthrough"]')
-    ?.addEventListener('click', renderWalkthrough);
+    .querySelector('button[data-nav="student-walkthrough"]')
+    ?.addEventListener('click', () => handleNavigation('student-walkthrough'));
 
   // AI Tip of the Day
   document
     .getElementById('ai-tip-btn')
-    ?.addEventListener('click', renderAICoach);
-
-  // Last Test Card
-  container
-    .querySelector('.last-test-card button[data-nav="practiceTests"]')
-    ?.addEventListener('click', renderPracticeTests);
+    ?.addEventListener('click', () => handleNavigation('student-coach'));
 
   // AI Coach Floating Button
   document
     .getElementById('ai-coach-fab')
-    ?.addEventListener('click', renderAICoach);
+    ?.addEventListener('click', () => handleNavigation('student-coach'));
 
   // Logout
   document.getElementById('logout-btn')?.addEventListener('click', async () => {

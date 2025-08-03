@@ -9,10 +9,8 @@ import {
   getDocs,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
-import { renderProfile } from './profile.js';
-import { renderWalkthrough } from './walkthrough.js';
-import { renderPracticeTests } from './practice-tests.js';
-import { renderStudentDashboard } from './student-dashboard.js';
+// Import navigation handler
+import { handleNavigation } from '../navigation.js';
 
 // ==== Checklist Template ====
 export const studentChecklistSectionsTemplate = [
@@ -22,7 +20,7 @@ export const studentChecklistSectionsTemplate = [
       {
         label: 'Profile Complete',
         key: 'profileComplete',
-        link: 'profile',
+        link: 'student-profile',
         details: 'Complete all required fields in your student profile.',
         readonly: false,
         substeps: null,
@@ -35,7 +33,7 @@ export const studentChecklistSectionsTemplate = [
       {
         label: 'Permit Uploaded',
         key: 'permitUploaded',
-        link: 'profile',
+        link: 'student-profile',
         details: 'Upload a clear photo of your CDL permit.',
         readonly: false,
         substeps: null,
@@ -43,7 +41,7 @@ export const studentChecklistSectionsTemplate = [
       {
         label: 'Vehicle Data Plates Uploaded',
         key: 'vehicleUploaded',
-        link: 'profile',
+        link: 'student-profile',
         details: 'Upload photos of both your truck and trailer data plates.',
         readonly: false,
         substeps: [
@@ -59,7 +57,7 @@ export const studentChecklistSectionsTemplate = [
       {
         label: 'Practice Test Passed',
         key: 'practiceTestPassed',
-        link: 'practiceTests',
+        link: 'student-practice-tests',
         details:
           'Score at least 80% on any practice test to unlock the next step.',
         readonly: false,
@@ -68,7 +66,7 @@ export const studentChecklistSectionsTemplate = [
       {
         label: 'Walkthrough Progress',
         key: 'walkthroughComplete',
-        link: 'walkthrough',
+        link: 'student-walkthrough',
         details: 'Start and complete your CDL vehicle inspection walkthrough.',
         readonly: false,
         substeps: null,
@@ -363,15 +361,16 @@ export async function renderChecklists(
     });
   });
 
-  // Checklist navigation
+  // Checklist navigation using handleNavigation
   container.querySelectorAll('.btn[data-nav]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const target = btn.getAttribute('data-nav');
-      if (target === 'profile') return renderProfile();
-      if (target === 'walkthrough') return renderWalkthrough();
-      if (target === 'practiceTests') return renderPracticeTests();
-      showToast('This action is not yet available.');
-      setupNavigation();
+      if (target && target.startsWith('student-')) {
+        handleNavigation(target);
+      } else {
+        showToast('This action is not yet available.');
+        setupNavigation();
+      }
     });
   });
 
@@ -379,7 +378,7 @@ export async function renderChecklists(
   container
     .querySelector('#back-to-dashboard-btn')
     ?.addEventListener('click', () => {
-      renderStudentDashboard();
+      handleNavigation('student-dashboard');
     });
 
   setupNavigation();
