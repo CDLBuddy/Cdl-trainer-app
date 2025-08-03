@@ -1,3 +1,5 @@
+// superadmin/school-management.js
+
 import { db } from '../firebase.js';
 import {
   collection,
@@ -369,6 +371,10 @@ export async function renderSchoolManagement(
           by: 'Superadmin',
         },
       ],
+      active: true,
+      logoUrl: '/public/default-logo.svg',
+      website: '',
+      subHeadline: '',
     };
     try {
       await addDoc(collection(db, 'schools'), newSchool);

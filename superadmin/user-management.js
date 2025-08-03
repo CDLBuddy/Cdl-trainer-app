@@ -23,21 +23,23 @@ import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 
 // ==== Data Helpers ====
 
-// Get all users
+// Get all users in system
 async function getAllUsers() {
   const snap = await getDocs(collection(db, 'users'));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
+// Get all schools in system
 async function getAllSchools() {
   const snap = await getDocs(collection(db, 'schools'));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
+// Write user log (for audit)
 async function logUserAction(userId, action, details = {}) {
   await setDoc(doc(collection(db, 'userLogs')), {
     userId,
     action,
     details,
-    changedBy: localStorage.getItem('currentUserEmail'),
+    changedBy: localStorage.getItem('currentUserEmail') || 'superadmin',
     changedAt: serverTimestamp(),
   });
 }
@@ -50,7 +52,7 @@ export async function renderUserManagement(
   if (!container) return;
   setupNavigation();
 
-  // Fetch users/schools in parallel
+  // Fetch users and schools in parallel
   let [users, schools] = await Promise.all([getAllUsers(), getAllSchools()]);
   let filter = { search: '', role: '', school: '', active: 'all' };
 
@@ -83,7 +85,7 @@ export async function renderUserManagement(
     `;
   }
 
-  // ====== Table Render (filter + display) ======
+  // ====== Filter Users ======
   function filterUsers(users) {
     return users.filter(
       (u) =>
@@ -102,6 +104,7 @@ export async function renderUserManagement(
     );
   }
 
+  // ====== Render User Table ======
   function renderTable(users) {
     return `
       <div class="user-table-scroll">
@@ -236,7 +239,7 @@ export async function renderUserManagement(
   // ====== Row Actions (first render) ======
   updateUsersTable();
 
-  // ====== Modals (unchanged) ======
+  // ====== Modals ======
   function showUserModal(user = {}, editable = true) {
     showModal(`
       <div class="modal-card user-modal">
@@ -289,7 +292,7 @@ export async function renderUserManagement(
         (o) => o.value
       );
       const formUser = {
-        name: fd.get('name'),
+        name: fd.get('name').trim(),
         email: fd.get('email').toLowerCase(),
         role: fd.get('role'),
         schools: selectedSchools,
@@ -362,32 +365,50 @@ export async function renderUserManagement(
     showToast('Users exported.');
   }
 
-  // ====== Helpers ======
-  async function updateUserStatus(user, active) {
+ // ====== Helpers ======
+async function updateUserStatus(user, active) {
+  try {
     await updateDoc(doc(db, 'users', user.id), { active });
     logUserAction(user.id, active ? 'activate' : 'deactivate');
     showToast(`User ${active ? 'activated' : 'deactivated'}.`);
-    renderUserManagement(container); // Full reload for accuracy
+    renderUserManagement(container);
+  } catch (err) {
+    showToast('Failed to update user status.');
   }
-  async function lockUser(user, locked) {
+}
+
+async function lockUser(user, locked) {
+  try {
     await updateDoc(doc(db, 'users', user.id), { locked });
     logUserAction(user.id, locked ? 'lock' : 'unlock');
     showToast(`User ${locked ? 'locked' : 'unlocked'}.`);
     renderUserManagement(container);
+  } catch (err) {
+    showToast('Failed to update lock status.');
   }
-  async function deleteUser(user) {
-    if (!confirm(`Delete user ${user.email}? This cannot be undone!`)) return;
+}
+
+async function deleteUser(user) {
+  if (!confirm(`Delete user ${user.email}? This cannot be undone!`)) return;
+  try {
     await deleteDoc(doc(db, 'users', user.id));
     logUserAction(user.id, 'delete');
     showToast('User deleted.');
     renderUserManagement(container);
+  } catch (err) {
+    showToast('Failed to delete user.');
   }
-  async function impersonateUser(user) {
-    sessionStorage.setItem('impersonateUserId', user.id);
-    showToast(`Now impersonating ${user.name || user.email} (dev mode).`);
-    location.reload();
-  }
-  async function showUserAuditLog(userId, email) {
+}
+
+async function impersonateUser(user) {
+  // This one is low risk, but you could wrap for consistency
+  sessionStorage.setItem('impersonateUserId', user.id);
+  showToast(`Now impersonating ${user.name || user.email} (dev mode).`);
+  location.reload();
+}
+
+async function showUserAuditLog(userId, email) {
+  try {
     const logSnap = await getDocs(
       query(collection(db, 'userLogs'), where('userId', '==', userId))
     );
@@ -416,5 +437,7 @@ export async function renderUserManagement(
         </div>
       </div>
     `);
+  } catch (err) {
+    showToast('Failed to load audit log.');
   }
 }

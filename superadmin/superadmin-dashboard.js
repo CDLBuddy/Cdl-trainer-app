@@ -5,7 +5,7 @@ import {
   collection,
   getDocs,
   query,
-  where
+  where,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { signOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import { renderWelcome } from '../welcome.js';
@@ -17,50 +17,42 @@ import {
   renderSettings,
   renderLogs,
 } from './index.js';
-
 import { showToast, setupNavigation } from '../ui-helpers.js';
 
-// --- Helper: Fetch platform stats ---
+// === Helper: Fetch Superadmin Platform Stats ===
 async function getSuperadminStats() {
-  let schools = 0,
-    users = 0,
-    complianceAlerts = 0;
+  let schools = 0, users = 0, complianceAlerts = 0;
   try {
-    // Schools
     const schoolsSnap = await getDocs(collection(db, 'schools'));
     schools = schoolsSnap.size;
-    // Users
     const usersSnap = await getDocs(collection(db, 'users'));
     users = usersSnap.size;
-    // Compliance Alerts (unresolved only)
     const alertsQuery = query(
       collection(db, 'complianceAlerts'),
       where('resolved', '==', false)
     );
     const alertsSnap = await getDocs(alertsQuery);
     complianceAlerts = alertsSnap.size;
-  } catch (e) {}
+  } catch (e) {
+    // Optionally log error
+  }
   return { schools, users, complianceAlerts };
 }
 
-// --- Main Super Admin Dashboard ---
-export async function renderSuperadminDashboard(
-  container = document.getElementById('app')
-) {
+// === Main Super Admin Dashboard Renderer ===
+export async function renderSuperadminDashboard(container = document.getElementById('app')) {
   if (!container) return;
 
-  // --- Authentication check ---
-  const currentUserRole =
-    localStorage.getItem('userRole') || window.currentUserRole;
+  // ---- Auth Check ----
+  const currentUserRole = localStorage.getItem('userRole') || window.currentUserRole;
   if (currentUserRole !== 'superadmin') {
     showToast('Access denied: Super Admins only.');
     renderWelcome();
     return;
   }
 
-  // --- Fetch superadmin info ---
-  const currentUserEmail =
-    localStorage.getItem('currentUserEmail') || window.currentUserEmail || null;
+  // ---- Fetch Current Superadmin Info ----
+  const currentUserEmail = localStorage.getItem('currentUserEmail') || window.currentUserEmail || null;
   let userData = {};
   try {
     const usersQuery = query(
@@ -73,10 +65,10 @@ export async function renderSuperadminDashboard(
     userData = {};
   }
 
-  // --- Fetch stats (live) ---
+  // ---- Fetch Dashboard Stats ----
   const { schools, users, complianceAlerts } = await getSuperadminStats();
 
-  // --- Dashboard layout ---
+  // ---- Render Dashboard ----
   container.innerHTML = `
     <div class="screen-wrapper fade-in superadmin-page" style="max-width:900px;margin:0 auto;">
       <h2 class="dash-head">
@@ -138,20 +130,16 @@ export async function renderSuperadminDashboard(
 
   setupNavigation();
 
-  // --- Navigation: use hashes for SPA routing ---
-  document
-    .getElementById('manage-schools-btn')
-    ?.addEventListener('click', () => {
-      window.location.hash = '#superadmin-schools';
-    });
+  // ==== Navigation Wiring: SPA Hash Routing ====
+  document.getElementById('manage-schools-btn')?.addEventListener('click', () => {
+    window.location.hash = '#superadmin-schools';
+  });
   document.getElementById('manage-users-btn')?.addEventListener('click', () => {
     window.location.hash = '#superadmin-users';
   });
-  document
-    .getElementById('compliance-center-btn')
-    ?.addEventListener('click', () => {
-      window.location.hash = '#superadmin-compliance';
-    });
+  document.getElementById('compliance-center-btn')?.addEventListener('click', () => {
+    window.location.hash = '#superadmin-compliance';
+  });
   document.getElementById('billing-btn')?.addEventListener('click', () => {
     window.location.hash = '#superadmin-billing';
   });
