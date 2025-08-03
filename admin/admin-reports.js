@@ -1,5 +1,10 @@
 // admin/admin-reports.js
 
+import { getCurrentSchoolBranding } from '../school-branding.js';
+
+// Always get current school ID for security
+const currentSchoolId = window.schoolId || localStorage.getItem('schoolId');
+
 /**
  * Renders the Admin Reports page, including a DOT/ELDT compliance checklist,
  * user/company export tools, and tips for admin users.
@@ -88,10 +93,15 @@ export function renderAdminReports(container = document.getElementById('app')) {
 
 /**
  * Export user data as CSV.
+ * Only users with matching schoolId will be exported!
  * @param {Array} users - Array of user objects.
  */
 export function exportUsersToCSV(users) {
   if (!users?.length) return alert('No users to export.');
+  // === FILTER by current schoolId (critical for privacy) ===
+  const filteredUsers = users.filter(u => u.schoolId === currentSchoolId);
+
+  if (!filteredUsers.length) return alert('No users to export for this school.');
   const headers = [
     'Name',
     'Email',
@@ -104,7 +114,7 @@ export function exportUsersToCSV(users) {
     'Payment Status',
     'Compliance',
   ];
-  const rows = users.map((u) => [
+  const rows = filteredUsers.map((u) => [
     `"${u.name || ''}"`,
     `"${u.email || ''}"`,
     `"${u.role || ''}"`,
@@ -133,10 +143,15 @@ export function exportUsersToCSV(users) {
 
 /**
  * Export user data as a PDF.
+ * Only users with matching schoolId will be exported!
  * @param {Array} users - Array of user objects.
  */
 export function exportUsersToPDF(users) {
   if (!users?.length) return alert('No users to export.');
+  // === FILTER by current schoolId (critical for privacy) ===
+  const filteredUsers = users.filter(u => u.schoolId === currentSchoolId);
+
+  if (!filteredUsers.length) return alert('No users to export for this school.');
   const { jsPDF } = window.jspdf || {};
   if (!jsPDF) {
     alert('PDF export requires jsPDF. Please include it in your HTML.');
@@ -147,7 +162,7 @@ export function exportUsersToPDF(users) {
     'Name', 'Email', 'Role', 'Instructor', 'Company',
     'Profile %', 'Permit Exp.', 'Med Exp.', 'Payment', 'Compliance'
   ];
-  const rows = users.map((u) => [
+  const rows = filteredUsers.map((u) => [
     u.name || '',
     u.email || '',
     u.role || '',

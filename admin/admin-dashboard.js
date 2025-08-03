@@ -12,9 +12,9 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderWelcome } from '../welcome.js';
-import { renderStudentDashboard } from '../student/index.js'; // Fallback for non-admins, now barrel import
+import { renderStudentDashboard } from '../student/index.js';
 import { renderAdminProfile } from './admin-profile.js';
-import { getCurrentSchoolBranding } from '../school-branding.js'; // Branding support
+import { getCurrentSchoolBranding } from '../school-branding.js';
 
 export let currentUserEmail =
   window.currentUserEmail || localStorage.getItem('currentUserEmail') || null;
@@ -41,6 +41,7 @@ export async function renderAdminDashboard(
 
   let userData = {};
   let userRole = localStorage.getItem('userRole') || 'admin';
+  let schoolId = localStorage.getItem('schoolId');
   try {
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', currentUserEmail));
@@ -48,23 +49,32 @@ export async function renderAdminDashboard(
     if (!snap.empty) {
       userData = snap.docs[0].data();
       userRole = userData.role || userRole || 'admin';
+      schoolId = userData.schoolId || schoolId;
       localStorage.setItem('userRole', userRole);
+      if (schoolId) localStorage.setItem('schoolId', schoolId);
     }
   } catch (e) {
     userData = {};
   }
-  if (userRole !== 'admin') {
-    showToast('Access denied: Admin role required.');
+  if (userRole !== 'admin' || !schoolId) {
+    showToast('Access denied: Admin role and school required.');
     import('../welcome.js').then((mod) => {
       mod.renderWelcome && mod.renderWelcome(container);
     });
     return;
   }
 
-  // --- Fetch all users ---
+  // --- Fetch only users from THIS admin's school ---
   let allUsers = [];
   try {
-    const usersSnap = await getDocs(collection(db, 'users'));
+    const usersSnap = await getDocs(
+      query(
+        collection(db, 'users'),
+        where('schoolId', '==', schoolId),
+        // Also exclude superadmins
+        where('role', 'in', ['student', 'instructor', 'admin'])
+      )
+    );
     usersSnap.forEach((doc) => {
       const d = doc.data();
       allUsers.push({
@@ -86,7 +96,7 @@ export async function renderAdminDashboard(
     console.error('Admin user fetch error', e);
   }
 
-  // --- Instructor & company lists ---
+  // --- Instructor & company lists (only in this school) ---
   const instructorList = allUsers.filter((u) => u.role === 'instructor');
   const companyList = Array.from(
     new Set(allUsers.map((u) => u.assignedCompany).filter(Boolean))
@@ -248,12 +258,12 @@ export async function renderAdminDashboard(
       try {
         await setDoc(
           doc(db, 'users', userEmail),
-          { role: newRole },
+          { role: newRole, schoolId }, // Always keep schoolId
           { merge: true }
         );
         await setDoc(
           doc(db, 'userRoles', userEmail),
-          { role: newRole },
+          { role: newRole, schoolId }, // Always keep schoolId
           { merge: true }
         );
         showToast(`Role updated for ${userEmail}`);
@@ -272,7 +282,7 @@ export async function renderAdminDashboard(
       try {
         await setDoc(
           doc(db, 'users', userEmail),
-          { assignedCompany: newCompany },
+          { assignedCompany: newCompany, schoolId },
           { merge: true }
         );
         showToast(`Company assigned to ${userEmail}`);
@@ -290,7 +300,7 @@ export async function renderAdminDashboard(
       try {
         await setDoc(
           doc(db, 'users', userEmail),
-          { assignedInstructor: newInstructor },
+          { assignedInstructor: newInstructor, schoolId },
           { merge: true }
         );
         showToast(`Instructor assigned to ${userEmail}`);

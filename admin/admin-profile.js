@@ -59,7 +59,9 @@ export async function renderAdminProfile(
   } catch (e) {
     userData = {};
   }
-  if ((userData.role || 'student') !== 'admin') {
+
+  // SECURITY: Enforce admin can only view/edit their own profile and own school
+  if ((userData.role || 'student') !== 'admin' || userData.schoolId !== currentSchoolId) {
     showToast('Access denied: Admin profile only.');
     renderAdminDashboard();
     return;
@@ -213,7 +215,7 @@ export async function renderAdminProfile(
     }
     const file = schoolLogoInput.files[0];
     try {
-      // Upload logo to storage
+      // Upload logo to storage (for THIS school only)
       const ext = file.name.split('.').pop();
       const logoRef = ref(
         storage,
@@ -222,7 +224,7 @@ export async function renderAdminProfile(
       await uploadBytes(logoRef, file);
       const logoUrl = await getDownloadURL(logoRef);
 
-      // Save to schools collection (central branding)
+      // Save to schools collection (central branding, scoped)
       await setDoc(
         doc(db, 'schools', currentSchoolId),
         { logoUrl },

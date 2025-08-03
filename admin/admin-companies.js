@@ -14,27 +14,21 @@ import {
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { getCurrentSchoolBranding } from '../school-branding.js';
 
-// --- Helper to fetch companies from both users & companies collections (unique list) ---
-async function fetchCompanyList() {
-  const seen = new Set();
-  let companies = [];
-  // From 'users'
-  const usersSnap = await getDocs(collection(db, 'users'));
-  usersSnap.forEach((docSnap) => {
-    const c = docSnap.data().assignedCompany;
-    if (c && !seen.has(c)) {
-      companies.push({ name: c });
-      seen.add(c);
-    }
-  });
-  // From 'companies' collection (support future fields)
-  const companiesSnap = await getDocs(collection(db, 'companies'));
+// --- Get current schoolId from localStorage or window
+function getCurrentSchoolId() {
+  return localStorage.getItem('schoolId') || window.schoolId;
+}
+
+// --- Only fetch companies for this school ---
+async function fetchCompanyListForSchool(schoolId) {
+  if (!schoolId) return [];
+  const companiesSnap = await getDocs(
+    query(collection(db, 'companies'), where('schoolId', '==', schoolId))
+  );
+  const companies = [];
   companiesSnap.forEach((docSnap) => {
     const c = docSnap.data();
-    if (c.name && !seen.has(c.name)) {
-      companies.push({ name: c.name });
-      seen.add(c.name);
-    }
+    if (c.name) companies.push({ name: c.name, id: docSnap.id });
   });
   companies.sort((a, b) => a.name.localeCompare(b.name));
   return companies;
@@ -45,6 +39,12 @@ export async function renderAdminCompanies(
   container = document.getElementById('app')
 ) {
   container = container || document.getElementById('app');
+  const schoolId = getCurrentSchoolId();
+
+  if (!schoolId) {
+    showToast('No school assigned. Please log in again.');
+    return;
+  }
 
   // --- School Branding (header, color, logo) ---
   const brand = getCurrentSchoolBranding?.() || {};
@@ -54,10 +54,10 @@ export async function renderAdminCompanies(
   const schoolName = brand.schoolName || 'CDL Trainer';
   const accent = brand.primaryColor || '#b48aff';
 
-  // --- Companies ---
+  // --- Companies for THIS SCHOOL ---
   let companies = [];
   try {
-    companies = await fetchCompanyList();
+    companies = await fetchCompanyListForSchool(schoolId);
   } catch (e) {
     companies = [];
     showToast('Failed to load companies.', 4200, 'error');
@@ -88,13 +88,13 @@ export async function renderAdminCompanies(
             ${companies
               .map(
                 (c) => `
-              <tr data-company="${c.name}">
+              <tr data-company-id="${c.id}">
                 <td>
                   <input class="company-name-input" value="${c.name}" style="width:90%;padding:2px 7px;" />
                 </td>
                 <td>
-                  <button class="btn outline btn-save-company" data-company="${c.name}">Save</button>
-                  <button class="btn outline btn-remove-company" data-company="${c.name}" style="margin-left:6px;">Remove</button>
+                  <button class="btn outline btn-save-company" data-company-id="${c.id}">Save</button>
+                  <button class="btn outline btn-remove-company" data-company-id="${c.id}" style="margin-left:6px;">Remove</button>
                 </td>
               </tr>
             `
@@ -109,7 +109,7 @@ export async function renderAdminCompanies(
 
   setupNavigation();
 
-  // --- Add company handler ---
+  // --- Add company handler (scoped to this school only) ---
   container
     .querySelector('#add-company-form')
     ?.addEventListener('submit', async (e) => {
@@ -118,16 +118,18 @@ export async function renderAdminCompanies(
       const companyName = form.companyName.value.trim();
       if (!companyName) return showToast('Enter a company name.');
       try {
-        // Check for duplicates
+        // Check for duplicates in THIS school
         const q = query(
           collection(db, 'companies'),
-          where('name', '==', companyName)
+          where('name', '==', companyName),
+          where('schoolId', '==', schoolId)
         );
         const snap = await getDocs(q);
         if (!snap.empty)
           return showToast('Company already exists.', 3000, 'error');
         await addDoc(collection(db, 'companies'), {
           name: companyName,
+          schoolId,
           createdAt: new Date().toISOString(),
         });
         showToast('Company added!', 2200, 'success');
@@ -137,49 +139,35 @@ export async function renderAdminCompanies(
       }
     });
 
-  // --- Save company (rename, future fields) ---
+  // --- Save company (rename, future fields, scoped) ---
   container.querySelectorAll('.btn-save-company').forEach((btn) => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
-      const oldName = btn.dataset.company;
+      const companyId = btn.dataset.companyId;
       const row = btn.closest('tr');
       const input = row.querySelector('.company-name-input');
       const newName = input.value.trim();
       if (!newName) return showToast('Company name cannot be empty.');
-      if (newName === oldName) return;
       try {
-        // Find company doc by oldName
-        const q = query(
-          collection(db, 'companies'),
-          where('name', '==', oldName)
-        );
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          const companyDoc = snap.docs[0];
-          await updateDoc(companyDoc.ref, { name: newName });
-          showToast('Company updated.', 2200, 'success');
-          renderAdminCompanies(container);
-        }
+        await updateDoc(doc(db, 'companies', companyId), { name: newName });
+        showToast('Company updated.', 2200, 'success');
+        renderAdminCompanies(container);
       } catch (err) {
         showToast('Failed to update company.', 3000, 'error');
       }
     });
   });
 
-  // --- Remove company (deletes from companies collection) ---
+  // --- Remove company (deletes from companies collection, scoped) ---
   container.querySelectorAll('.btn-remove-company').forEach((btn) => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
-      const name = btn.dataset.company;
-      if (!confirm(`Remove company "${name}"? This cannot be undone.`)) return;
+      const companyId = btn.dataset.companyId;
+      if (!confirm(`Remove company? This cannot be undone.`)) return;
       try {
-        const q = query(collection(db, 'companies'), where('name', '==', name));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          await deleteDoc(doc(db, 'companies', snap.docs[0].id));
-          showToast(`Company "${name}" removed.`, 2400, 'success');
-          renderAdminCompanies(container);
-        }
+        await deleteDoc(doc(db, 'companies', companyId));
+        showToast(`Company removed.`, 2400, 'success');
+        renderAdminCompanies(container);
       } catch (err) {
         showToast('Failed to remove company.', 3000, 'error');
       }

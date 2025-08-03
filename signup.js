@@ -204,18 +204,24 @@ export function renderSignup(
         }
 
         // --- Create blank profile doc for new user ---
-        const blankProfile = getBlankUserProfile({
-          user,
-          userRole: 'student',
-          schoolIdVal: selectedSchoolId,
-        });
+        // Always include assignedSchools array for privacy-locked access
+        const blankProfile = {
+          ...getBlankUserProfile({
+            user,
+            userRole: 'student',
+            schoolIdVal: selectedSchoolId,
+          }),
+          schoolId: selectedSchoolId,
+          assignedSchools: [selectedSchoolId], // for future-proof multi-school
+        };
         await setDoc(doc(db, 'users', user.email), blankProfile);
 
-        // Permissions/userRoles
+        // Permissions/userRoles (with schoolId)
         const roleDoc = {
           role: 'student',
           assignedAt: serverTimestamp(),
           schoolId: selectedSchoolId || undefined,
+          assignedSchools: [selectedSchoolId], // For admin filter compatibility!
         };
         if (inviteToken) roleDoc.invitedBy = inviteToken;
 
