@@ -269,6 +269,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // --- INITIAL LOAD ---
+// DOMContentLoaded improvements: Always route hash if present
 console.log('🚦 Initial DOMContentLoaded hook set.');
 window.addEventListener('DOMContentLoaded', () => {
   // On initial load, always update CSS vars for current school
@@ -277,9 +278,22 @@ window.addEventListener('DOMContentLoaded', () => {
     setCurrentSchool(sid);
     console.log('🎨 Set initial school theme for:', sid);
   }
+  // SPA hash routing: If hash is present on page load, handle it (eg, #superadmin-users)
+  const hash = window.location.hash.replace(/^#/, '');
+  if (hash) {
+    handleNavigation(hash);
+    console.log('🔗 Routed to hash page:', hash);
+  }
   // Auth state listener will trigger and handle boot
   console.log('🔄 DOM ready, waiting for Firebase auth...');
 });
 
 // Optionally, export any globals you want available to the rest of your app here (for testing/dev)
 // export { currentUserEmail, currentUserRole, schoolId };
+
+// --- Optional: Handle user impersonation session (advanced dev tool) ---
+if (sessionStorage.getItem('impersonateUserId')) {
+  // (e.g., set up dev-only logic if impersonation ID is present)
+  // You would typically integrate this in your auth logic if needed
+  // sessionStorage.removeItem('impersonateUserId'); // Or persist as needed
+}
