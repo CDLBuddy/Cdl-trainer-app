@@ -135,9 +135,7 @@ export async function renderSchoolSwitching(
     // Reload/re-render with new brand, go to correct dashboard
     setTimeout(() => {
       const role =
-        window.currentUserRole ||
-        localStorage.getItem('userRole') ||
-        'student';
+        window.currentUserRole || localStorage.getItem('userRole') || 'student';
       handleNavigation(getDashboardRoute(role));
     }, 500);
   };
@@ -147,9 +145,7 @@ export async function renderSchoolSwitching(
     .getElementById('back-to-dashboard-btn')
     ?.addEventListener('click', () => {
       const role =
-        window.currentUserRole ||
-        localStorage.getItem('userRole') ||
-        'student';
+        window.currentUserRole || localStorage.getItem('userRole') || 'student';
       handleNavigation(getDashboardRoute(role));
     });
 }

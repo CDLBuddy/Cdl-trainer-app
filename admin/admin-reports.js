@@ -80,7 +80,7 @@ export function renderAdminReports(container = document.getElementById('app')) {
         'All records retained for at least 3 years (FMCSA & Indiana BMV)',
       ];
       let y = 28;
-      checklist.forEach(item => {
+      checklist.forEach((item) => {
         doc.text('☐ ' + item, 14, y);
         y += 9;
       });
@@ -99,9 +99,10 @@ export function renderAdminReports(container = document.getElementById('app')) {
 export function exportUsersToCSV(users) {
   if (!users?.length) return alert('No users to export.');
   // === FILTER by current schoolId (critical for privacy) ===
-  const filteredUsers = users.filter(u => u.schoolId === currentSchoolId);
+  const filteredUsers = users.filter((u) => u.schoolId === currentSchoolId);
 
-  if (!filteredUsers.length) return alert('No users to export for this school.');
+  if (!filteredUsers.length)
+    return alert('No users to export for this school.');
   const headers = [
     'Name',
     'Email',
@@ -149,9 +150,10 @@ export function exportUsersToCSV(users) {
 export function exportUsersToPDF(users) {
   if (!users?.length) return alert('No users to export.');
   // === FILTER by current schoolId (critical for privacy) ===
-  const filteredUsers = users.filter(u => u.schoolId === currentSchoolId);
+  const filteredUsers = users.filter((u) => u.schoolId === currentSchoolId);
 
-  if (!filteredUsers.length) return alert('No users to export for this school.');
+  if (!filteredUsers.length)
+    return alert('No users to export for this school.');
   const { jsPDF } = window.jspdf || {};
   if (!jsPDF) {
     alert('PDF export requires jsPDF. Please include it in your HTML.');
@@ -159,8 +161,16 @@ export function exportUsersToPDF(users) {
   }
   const doc = new jsPDF();
   const colHeaders = [
-    'Name', 'Email', 'Role', 'Instructor', 'Company',
-    'Profile %', 'Permit Exp.', 'Med Exp.', 'Payment', 'Compliance'
+    'Name',
+    'Email',
+    'Role',
+    'Instructor',
+    'Company',
+    'Profile %',
+    'Permit Exp.',
+    'Med Exp.',
+    'Payment',
+    'Compliance',
   ];
   const rows = filteredUsers.map((u) => [
     u.name || '',
