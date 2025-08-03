@@ -3,6 +3,8 @@
 import { db } from '../firebase.js';
 import {
   collection,
+  query,
+  where,
   getDocs,
   setDoc,
   doc,
@@ -19,36 +21,53 @@ export async function renderAdminUsers(
 ) {
   container = container || document.getElementById('app');
 
-  // --- Fetch all users ---
-  let allUsers = [];
+  // --- Get current admin's schoolId(s) from localStorage or user profile
+  let adminSchoolId =
+    localStorage.getItem('schoolId') ||
+    (window.schoolId ? window.schoolId : null);
+
+  if (!adminSchoolId) {
+    showToast('No schoolId found for current admin.', 4000, 'error');
+    container.innerHTML =
+      '<div class="screen-wrapper"><h2>Error: No school assigned to this admin account.</h2></div>';
+    return;
+  }
+
+  // --- Fetch ONLY users from this school, never show superadmins ---
+  let schoolUsers = [];
   try {
-    const usersSnap = await getDocs(collection(db, 'users'));
-    usersSnap.forEach((doc) => {
-      const d = doc.data();
-      allUsers.push({
-        name: d.name || 'User',
-        email: d.email,
-        role: d.role || 'student',
-        assignedInstructor: d.assignedInstructor || '',
-        assignedCompany: d.assignedCompany || '',
-        id: doc.id,
-        profileProgress: d.profileProgress || 0,
-        permitExpiry: d.permitExpiry || '',
-        medCardExpiry: d.medCardExpiry || '',
-        paymentStatus: d.paymentStatus || '',
-        compliance: d.compliance || '',
-      });
-    });
+    // Users can have either assignedSchools (array) or schoolId (string)
+    // Try array-contains first, then fallback to schoolId == X
+    let usersSnap = await getDocs(
+      query(
+        collection(db, 'users'),
+        where('role', 'in', ['student', 'instructor', 'admin']),
+        where('assignedSchools', 'array-contains', adminSchoolId)
+      )
+    );
+    schoolUsers = usersSnap.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+
+    // Fallback: If array-contains query returns no users (legacy or single-school installs)
+    if (schoolUsers.length === 0) {
+      usersSnap = await getDocs(
+        query(
+          collection(db, 'users'),
+          where('role', 'in', ['student', 'instructor', 'admin']),
+          where('schoolId', '==', adminSchoolId)
+        )
+      );
+      schoolUsers = usersSnap.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+    }
   } catch (e) {
-    allUsers = [];
+    schoolUsers = [];
     showToast('Failed to load users.', 4200);
     console.error('Admin user fetch error', e);
   }
 
-  // --- Instructor & Company lists ---
-  const instructorList = allUsers.filter((u) => u.role === 'instructor');
+  // --- Instructor & Company lists (just from this school) ---
+  const instructorList = schoolUsers.filter((u) => u.role === 'instructor');
   const companyList = Array.from(
-    new Set(allUsers.map((u) => u.assignedCompany).filter(Boolean))
+    new Set(schoolUsers.map((u) => u.assignedCompany).filter(Boolean))
   );
 
   // --- Render UI ---
@@ -89,11 +108,11 @@ export async function renderAdminUsers(
               </tr>
             </thead>
             <tbody id="user-table-body">
-              ${allUsers
+              ${schoolUsers
                 .map(
                   (user) => `
                 <tr data-user="${user.email}">
-                  <td>${user.name}</td>
+                  <td>${user.name || 'User'}</td>
                   <td>${user.email}</td>
                   <td>
                     <select class="role-select" data-user="${user.email}">
