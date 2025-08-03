@@ -10,7 +10,9 @@ import {
 import { setupNavigation, showToast } from '../ui-helpers.js';
 
 // Accepts container param, always checks for logged-in user email
-export async function renderTestResults(container = document.getElementById('app')) {
+export async function renderTestResults(
+  container = document.getElementById('app')
+) {
   // Defensive: Ensure container is a DOM element, try to recover if not
   if (!container || typeof container.querySelectorAll !== 'function') {
     container = document.getElementById('app');

@@ -27,7 +27,9 @@ function getCurrentUserEmail() {
 let schoolId = localStorage.getItem('schoolId') || '';
 
 // ─── PRACTICE TESTS PAGE (STUDENT) ─────────────────────────
-export async function renderPracticeTests(container = document.getElementById('app')) {
+export async function renderPracticeTests(
+  container = document.getElementById('app')
+) {
   // Defensive: Ensure container is a DOM element, try to recover if not
   if (!container || typeof container.querySelectorAll !== 'function') {
     container = document.getElementById('app');
@@ -58,7 +60,7 @@ export async function renderPracticeTests(container = document.getElementById('a
       schoolId = userData.schoolId || schoolId;
       localStorage.setItem('userRole', userRole);
       if (schoolId) localStorage.setItem('schoolId', schoolId);
-      window.currentUserRole = userRole;    // Keep window sync for other modules
+      window.currentUserRole = userRole; // Keep window sync for other modules
       window.schoolId = schoolId;
     }
   } catch (e) {
@@ -70,7 +72,7 @@ export async function renderPracticeTests(container = document.getElementById('a
     setupNavigation();
     return;
   }
-}
+
   // --- TEST DATA ---
   const tests = ['General Knowledge', 'Air Brakes', 'Combination Vehicles'];
   const testScores = {};
@@ -164,7 +166,7 @@ export async function renderPracticeTests(container = document.getElementById('a
       return;
     }
     container
-      .getElementById('back-to-dashboard-btn')
+      .querySelector('#back-to-dashboard-btn')
       ?.addEventListener('click', () => {
         renderStudentDashboard();
       });

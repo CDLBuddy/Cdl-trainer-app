@@ -14,7 +14,7 @@ import { renderWalkthrough } from './walkthrough.js';
 import { renderPracticeTests } from './practice-tests.js';
 import { renderStudentDashboard } from './student-dashboard.js';
 
-// ==== Checklist Template (static structure only) ====
+// ==== Checklist Template ====
 export const studentChecklistSectionsTemplate = [
   {
     header: 'Personal Info',
@@ -89,7 +89,7 @@ export const studentChecklistSectionsTemplate = [
   },
 ];
 
-// === Main Checklist Renderer ===
+// --- Main Checklist Render ---
 export async function renderChecklists(container = document.getElementById('app')) {
   // Defensive: Validate container
   if (!container || typeof container.querySelector !== 'function') {
@@ -101,7 +101,6 @@ export async function renderChecklists(container = document.getElementById('app'
     }
   }
 
-  // Loader state
   container.innerHTML = `<div class="loader" role="status" aria-live="polite" style="margin:2em auto;text-align:center;">Loading your checklist...</div>`;
   setupNavigation();
 
@@ -118,7 +117,7 @@ export async function renderChecklists(container = document.getElementById('app'
     return;
   }
 
-  // Robust role detection
+  // Robust role detection (Firestore takes priority)
   let userRole =
     localStorage.getItem('userRole') ||
     window.currentUserRole ||
@@ -126,14 +125,12 @@ export async function renderChecklists(container = document.getElementById('app'
   let schoolId = localStorage.getItem('schoolId') || '';
   let userData = {};
 
-  // Firestore fetch for current user
   try {
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', currentUserEmail));
     const snap = await getDocs(q);
     if (!snap.empty) {
       userData = snap.docs[0].data();
-      // Update role if valid
       const validRoles = ['student', 'instructor', 'admin', 'superadmin'];
       if (userData.role && validRoles.includes(userData.role)) {
         userRole = userData.role;
@@ -155,7 +152,7 @@ export async function renderChecklists(container = document.getElementById('app'
     return;
   }
 
-  // Extract all progress fields
+  // Extract user progress fields
   const cdlClass = userData.cdlClass || '';
   const cdlPermit = userData.cdlPermit || '';
   const permitPhotoUrl = userData.permitPhotoUrl || '';
@@ -168,7 +165,7 @@ export async function renderChecklists(container = document.getElementById('app'
   const walkthroughComplete = !!userData.walkthroughComplete;
   const finalInstructorSignoff = !!userData.finalInstructorSignoff;
 
-  // Deep clone checklist template for session
+  // Deep clone checklist template for this session
   const studentChecklistSections = JSON.parse(JSON.stringify(studentChecklistSectionsTemplate));
 
   // Compute checklist step state
@@ -205,7 +202,7 @@ export async function renderChecklists(container = document.getElementById('app'
 
   const notifyItems = flatChecklist.filter((item) => item.notify);
 
-  // Main UI
+  // Main UI render
   container.innerHTML = `
     <div class="screen-wrapper fade-in checklist-page" style="max-width:500px;margin:0 auto;">
       <h2 style="display:flex;align-items:center;gap:10px;">📋 Student Checklist</h2>
