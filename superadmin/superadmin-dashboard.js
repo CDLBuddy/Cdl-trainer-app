@@ -5,7 +5,7 @@ import {
   collection,
   getDocs,
   query,
-  where,
+  where
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { signOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import { renderWelcome } from '../welcome.js';

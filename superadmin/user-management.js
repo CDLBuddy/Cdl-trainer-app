@@ -22,18 +22,14 @@ import {
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 
 // ==== Data Helpers ====
-
-// Get all users in system
 async function getAllUsers() {
   const snap = await getDocs(collection(db, 'users'));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
-// Get all schools in system
 async function getAllSchools() {
   const snap = await getDocs(collection(db, 'schools'));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
-// Write user log (for audit)
 async function logUserAction(userId, action, details = {}) {
   await setDoc(doc(collection(db, 'userLogs')), {
     userId,
@@ -45,18 +41,15 @@ async function logUserAction(userId, action, details = {}) {
 }
 
 // ==== Main Renderer ====
-
 export async function renderUserManagement(
   container = document.getElementById('app')
 ) {
   if (!container) return;
   setupNavigation();
 
-  // Fetch users and schools in parallel
   let [users, schools] = await Promise.all([getAllUsers(), getAllSchools()]);
   let filter = { search: '', role: '', school: '', active: 'all' };
 
-  // ====== Render Filter Bar ======
   function renderFilterBar() {
     return `
       <div class="user-filter-bar">
@@ -85,7 +78,6 @@ export async function renderUserManagement(
     `;
   }
 
-  // ====== Filter Users ======
   function filterUsers(users) {
     return users.filter(
       (u) =>
@@ -104,7 +96,6 @@ export async function renderUserManagement(
     );
   }
 
-  // ====== Render User Table ======
   function renderTable(users) {
     return `
       <div class="user-table-scroll">
@@ -161,12 +152,10 @@ export async function renderUserManagement(
     `;
   }
 
-  // ====== Update Table Only (after filter/search) ======
   function updateUsersTable() {
     const tbodyWrap = container.querySelector('.user-table-scroll');
     if (tbodyWrap) {
       tbodyWrap.innerHTML = renderTable(filterUsers(users));
-      // Reattach row action listeners:
       tbodyWrap.querySelectorAll('button[data-userid]').forEach((btn) => {
         btn.addEventListener('click', () => {
           const userId = btn.dataset.userid;
@@ -185,7 +174,6 @@ export async function renderUserManagement(
     }
   }
 
-  // ====== Main Page Render ======
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="max-width:1100px;margin:0 auto;padding:16px;">
       <h2 class="dash-head">👥 Super Admin: User Management</h2>
@@ -196,14 +184,12 @@ export async function renderUserManagement(
     </div>
   `;
 
-  // Back to dashboard
   container
     .querySelector('#back-to-superadmin-dashboard-btn')
     ?.addEventListener('click', () => {
       renderSuperadminDashboard(container);
     });
 
-  // ====== Filter/Sort/Event Handlers (update table only) ======
   container.querySelector('#user-search').addEventListener('input', (e) => {
     filter.search = e.target.value.toLowerCase();
     updateUsersTable();
@@ -236,10 +222,8 @@ export async function renderUserManagement(
     .querySelector('#export-users-btn')
     .addEventListener('click', () => exportUsers(filterUsers(users)));
 
-  // ====== Row Actions (first render) ======
   updateUsersTable();
 
-  // ====== Modals ======
   function showUserModal(user = {}, editable = true) {
     showModal(`
       <div class="modal-card user-modal">
@@ -309,7 +293,7 @@ export async function renderUserManagement(
           showToast('User created!');
         }
         closeModal();
-        renderUserManagement(container); // Full reload after create/update
+        renderUserManagement(container);
       } catch (err) {
         showToast('Failed to save user: ' + err.message);
       }
@@ -333,7 +317,6 @@ export async function renderUserManagement(
     }
   }
 
-  // ====== Bulk Actions Modal ======
   function showBulkModal() {
     showModal(`
       <div class="modal-card bulk-user-modal">
@@ -344,7 +327,6 @@ export async function renderUserManagement(
     `);
   }
 
-  // ====== Export ======
   function exportUsers(users) {
     const header = ['Name', 'Email', 'Role', 'Schools', 'Status'];
     const rows = users.map((u) => [
@@ -365,79 +347,78 @@ export async function renderUserManagement(
     showToast('Users exported.');
   }
 
- // ====== Helpers ======
-async function updateUserStatus(user, active) {
-  try {
-    await updateDoc(doc(db, 'users', user.id), { active });
-    logUserAction(user.id, active ? 'activate' : 'deactivate');
-    showToast(`User ${active ? 'activated' : 'deactivated'}.`);
-    renderUserManagement(container);
-  } catch (err) {
-    showToast('Failed to update user status.');
+  async function updateUserStatus(user, active) {
+    try {
+      await updateDoc(doc(db, 'users', user.id), { active });
+      logUserAction(user.id, active ? 'activate' : 'deactivate');
+      showToast(`User ${active ? 'activated' : 'deactivated'}.`);
+      renderUserManagement(container);
+    } catch (err) {
+      showToast('Failed to update user status.');
+    }
   }
-}
 
-async function lockUser(user, locked) {
-  try {
-    await updateDoc(doc(db, 'users', user.id), { locked });
-    logUserAction(user.id, locked ? 'lock' : 'unlock');
-    showToast(`User ${locked ? 'locked' : 'unlocked'}.`);
-    renderUserManagement(container);
-  } catch (err) {
-    showToast('Failed to update lock status.');
+  async function lockUser(user, locked) {
+    try {
+      await updateDoc(doc(db, 'users', user.id), { locked });
+      logUserAction(user.id, locked ? 'lock' : 'unlock');
+      showToast(`User ${locked ? 'locked' : 'unlocked'}.`);
+      renderUserManagement(container);
+    } catch (err) {
+      showToast('Failed to update lock status.');
+    }
   }
-}
 
-async function deleteUser(user) {
-  if (!confirm(`Delete user ${user.email}? This cannot be undone!`)) return;
-  try {
-    await deleteDoc(doc(db, 'users', user.id));
-    logUserAction(user.id, 'delete');
-    showToast('User deleted.');
-    renderUserManagement(container);
-  } catch (err) {
-    showToast('Failed to delete user.');
+  async function deleteUser(user) {
+    if (!confirm(`Delete user ${user.email}? This cannot be undone!`)) return;
+    try {
+      await deleteDoc(doc(db, 'users', user.id));
+      logUserAction(user.id, 'delete');
+      showToast('User deleted.');
+      renderUserManagement(container);
+    } catch (err) {
+      showToast('Failed to delete user.');
+    }
   }
-}
 
-async function impersonateUser(user) {
-  // This one is low risk, but you could wrap for consistency
-  sessionStorage.setItem('impersonateUserId', user.id);
-  showToast(`Now impersonating ${user.name || user.email} (dev mode).`);
-  location.reload();
-}
+  async function impersonateUser(user) {
+    sessionStorage.setItem('impersonateUserId', user.id);
+    showToast(`Now impersonating ${user.name || user.email} (dev mode).`);
+    location.reload();
+  }
 
-async function showUserAuditLog(userId, email) {
-  try {
-    const logSnap = await getDocs(
-      query(collection(db, 'userLogs'), where('userId', '==', userId))
-    );
-    const logs = logSnap.docs.map((d) => d.data());
-    showModal(`
-      <div class="modal-card audit-log-modal">
-        <button class="modal-close" aria-label="Close" onclick="document.querySelector('.modal-overlay').remove()">&times;</button>
-        <h2>Audit Log for ${email}</h2>
-        <div style="max-height:340px;overflow:auto;">
-          ${
-            logs.length
-              ? logs
-                  .map(
-                    (l) => `
-            <div>
-              <strong>${l.action}</strong> -- ${l.changedAt?.toDate?.().toLocaleString() || ''}<br/>
-              <span style="font-size:0.96em;color:#666">${JSON.stringify(l.details)}</span>
-              <span style="font-size:0.92em;color:#aaa;float:right">${l.changedBy || ''}</span>
-            </div>
-            <hr>
-          `
-                  )
-                  .join('')
-              : '<div>No log entries for this user yet.</div>'
-          }
+  async function showUserAuditLog(userId, email) {
+    try {
+      const logSnap = await getDocs(
+        query(collection(db, 'userLogs'), where('userId', '==', userId))
+      );
+      const logs = logSnap.docs.map((d) => d.data());
+      showModal(`
+        <div class="modal-card audit-log-modal">
+          <button class="modal-close" aria-label="Close" onclick="document.querySelector('.modal-overlay').remove()">&times;</button>
+          <h2>Audit Log for ${email}</h2>
+          <div style="max-height:340px;overflow:auto;">
+            ${
+              logs.length
+                ? logs
+                    .map(
+                      (l) => `
+              <div>
+                <strong>${l.action}</strong> -- ${l.changedAt?.toDate?.().toLocaleString() || ''}<br/>
+                <span style="font-size:0.96em;color:#666">${JSON.stringify(l.details)}</span>
+                <span style="font-size:0.92em;color:#aaa;float:right">${l.changedBy || ''}</span>
+              </div>
+              <hr>
+            `
+                    )
+                    .join('')
+                : '<div>No log entries for this user yet.</div>'
+            }
+          </div>
         </div>
-      </div>
-    `);
-  } catch (err) {
-    showToast('Failed to load audit log.');
+      `);
+    } catch (err) {
+      showToast('Failed to load audit log.');
+    }
   }
 }

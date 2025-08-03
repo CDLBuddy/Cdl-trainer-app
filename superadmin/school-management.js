@@ -4,7 +4,7 @@ import { db } from '../firebase.js';
 import {
   collection,
   getDocs,
-  addDoc,
+  setDoc,
   doc,
   updateDoc,
   deleteDoc,
@@ -13,6 +13,17 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderSuperadminDashboard } from './superadmin-dashboard.js';
+
+// --- Helper: Get next schoolXXX ID (e.g. school003) ---
+async function getNextSchoolId() {
+  const snap = await getDocs(collection(db, 'schools'));
+  const ids = snap.docs
+    .map(doc => doc.id)
+    .filter(id => /^school\d+$/.test(id));
+  const maxNum = Math.max(0, ...ids.map(id => parseInt(id.replace('school', ''))));
+  const nextNum = (maxNum + 1).toString().padStart(3, '0');
+  return `school${nextNum}`;
+}
 
 // --- Status badge helper ---
 function getStatusBadge(status) {
@@ -102,8 +113,9 @@ export async function renderSchoolManagement(
           <input name="tprExpiry" type="date" placeholder="TPR Expiry" style="flex:1 1 140px;">
           <input name="rangeAddress" type="text" placeholder="Range Address (optional)" style="flex:1 1 220px;">
           <input name="contactName" type="text" placeholder="Contact Person" style="flex:1 1 140px;">
-          <input name="contactEmail" type="email" placeholder="Contact Email" style="flex:1 1 180px;">
+          <input name="contactEmail" type="email" placeholder="Contact Email" required style="flex:1 1 180px;">
           <input name="contactPhone" type="tel" placeholder="Contact Phone" style="flex:1 1 120px;">
+          <input name="initialAdmin" type="email" placeholder="Initial Admin Email (optional)" style="flex:1 1 180px;">
           <textarea name="notes" placeholder="Internal notes, reminders, audit flags..." style="flex:1 1 280px;"></textarea>
           <button class="btn primary" type="submit" style="flex:1 1 120px;min-width:140px;">Add School</button>
         </form>
@@ -347,12 +359,23 @@ export async function renderSchoolManagement(
     a.remove();
   };
 
-  // --- Add New School ---
+  // --- Add New School (with custom ID and optional initial admin) ---
   document.getElementById('school-form').onsubmit = async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
+    const schoolName = fd.get('name').trim();
+    const contactEmail = fd.get('contactEmail').trim();
+    if (!schoolName || !contactEmail) {
+      showToast('School name and contact email are required.', 3000, 'error');
+      return;
+    }
+
+    // 1. Generate new schoolXXX id
+    const newId = await getNextSchoolId();
+
+    // 2. Build new school object
     const newSchool = {
-      name: fd.get('name').trim(),
+      name: schoolName,
       location: fd.get('location').trim(),
       address: fd.get('address')?.trim() || '',
       tprId: fd.get('tprId').trim(),
@@ -360,7 +383,7 @@ export async function renderSchoolManagement(
       tprExpiry: fd.get('tprExpiry') || '',
       rangeAddress: fd.get('rangeAddress')?.trim() || '',
       contactName: fd.get('contactName')?.trim() || '',
-      contactEmail: fd.get('contactEmail')?.trim() || '',
+      contactEmail,
       contactPhone: fd.get('contactPhone')?.trim() || '',
       notes: fd.get('notes')?.trim() || '',
       createdAt: new Date().toISOString(),
@@ -376,16 +399,33 @@ export async function renderSchoolManagement(
       website: '',
       subHeadline: '',
     };
+
     try {
-      await addDoc(collection(db, 'schools'), newSchool);
-      showToast('School added!');
-      // Refresh data
+      // 3. Create Firestore doc with *custom ID*
+      await setDoc(doc(db, 'schools', newId), newSchool);
+
+      // 4. (Optional) Invite/create initial admin user
+      const initialAdmin = fd.get('initialAdmin')?.trim();
+      if (initialAdmin) {
+        await setDoc(doc(db, 'users', initialAdmin), {
+          email: initialAdmin,
+          role: 'admin',
+          assignedSchools: [newId],
+          status: 'active',
+          createdAt: new Date().toISOString(),
+        });
+        showToast('School and initial admin added!');
+      } else {
+        showToast('School added!');
+      }
+
+      // 5. Refresh schools table & reset form
       const snap = await getDocs(query(collection(db, 'schools'), orderBy('name')));
       schools = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       renderSchoolsTable(document.getElementById('school-search').value);
       e.target.reset();
-    } catch (e) {
-      showToast('Failed to add school.');
+    } catch (err) {
+      showToast('Failed to add school.', 3200, 'error');
     }
   };
 
