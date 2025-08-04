@@ -61,7 +61,6 @@ export function getCdlClassLabel(classKey) {
 export async function renderProfile(
   container = document.getElementById('app')
 ) {
-  // --- Defensive: Validate container is a DOM node, attempt recovery if not ---
   if (!container || typeof container.querySelector !== 'function') {
     container = document.getElementById('app');
     if (!container || typeof container.querySelector !== 'function') {
@@ -127,7 +126,7 @@ export async function renderProfile(
   // --- Status and role from Firestore ---
   const status = userData.status || 'active';
 
-  // --- Fields & defaults ---
+  // --- Fields & defaults (kept for backend, just not shown in form) ---
   const {
     name = '',
     dob = '',
@@ -136,7 +135,6 @@ export async function renderProfile(
     endorsements = [],
     restrictions = [],
     experience = '',
-    prevEmployer = '',
     assignedCompany = '',
     assignedInstructor = '',
     cdlPermit = '',
@@ -159,8 +157,6 @@ export async function renderProfile(
     scheduleNotes = '',
     paymentStatus = '',
     paymentProofUrl = '',
-    accommodation = '',
-    studentNotes = '',
     profileProgress = 0,
     profileUpdatedAt = null,
     lastUpdatedBy = '',
@@ -291,10 +287,7 @@ export async function renderProfile(
           <option value="10+" ${experience === '10+' ? 'selected' : ''}>10+ Years</option>
         </select>
       </label>
-      <label for="prevEmployer">Previous Employer:
-        <input id="prevEmployer" name="prevEmployer" type="text" value="${escapeHTML(prevEmployer)}" />
-      </label>
-      <label for="assignedCompany">Assigned Company:
+      <label for="assignedCompany">Current Employer:
         <input id="assignedCompany" name="assignedCompany" type="text" value="${escapeHTML(assignedCompany)}" />
       </label>
       <label for="assignedInstructor">Assigned Instructor:
@@ -377,12 +370,6 @@ export async function renderProfile(
       <label for="paymentProof">Payment Proof Upload:
         <input id="paymentProof" name="paymentProof" type="file" accept="image/*" aria-label="Payment Proof" />
         ${paymentProofUrl ? `<img src="${paymentProofUrl}" alt="Payment Proof" style="max-width:90px;margin-top:5px;border-radius:8px;">` : ''}
-      </label>
-      <label for="accommodation">Accommodation Needs:
-        <input id="accommodation" name="accommodation" type="text" value="${escapeHTML(accommodation)}" />
-      </label>
-      <label for="studentNotes">Student Notes:
-        <textarea id="studentNotes" name="studentNotes">${escapeHTML(studentNotes)}</textarea>
       </label>
       <button class="btn primary wide" id="save-profile-btn" type="submit" style="background:${accent};border:none;">Save Profile</button>
       <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Dashboard</button>
@@ -511,7 +498,6 @@ export async function renderProfile(
       endorsements: fd.getAll('endorsements[]'),
       restrictions: fd.getAll('restrictions[]'),
       experience: fd.get('experience'),
-      prevEmployer: fd.get('prevEmployer'),
       assignedCompany: fd.get('assignedCompany'),
       assignedInstructor: fd.get('assignedInstructor'),
       cdlPermit: fd.get('cdlPermit'),
@@ -526,8 +512,6 @@ export async function renderProfile(
       schedulePref: fd.get('schedulePref'),
       scheduleNotes: fd.get('scheduleNotes'),
       paymentStatus: fd.get('paymentStatus'),
-      accommodation: fd.get('accommodation'),
-      studentNotes: fd.get('studentNotes'),
       waiverSigned: !!fd.get('waiver'),
       waiverSignature: fd.get('waiverSignature'),
       profileProgress: calcProgress(fd),
