@@ -22,9 +22,7 @@ import {
   getDownloadURL,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js';
 
-// SPA navigation handler for role-prefixed page nav
 import { handleNavigation } from '../navigation.js';
-
 import { getCurrentSchoolBranding } from '../school-branding.js';
 import { getWalkthroughLabel } from '../walkthrough-data/index.js';
 
@@ -76,7 +74,7 @@ export async function renderProfile(
   const currentUserEmail = getCurrentUserEmail();
   if (!currentUserEmail) {
     showToast('No user found. Please log in again.');
-    window.location.reload();
+    handleNavigation('login');
     return;
   }
 
@@ -117,12 +115,26 @@ export async function renderProfile(
         window.schoolId = schoolId;
       }
     } else {
-      showToast('Profile not found.');
-      window.location.reload();
+      showToast('Profile not found.', 3500, 'error');
+      handleNavigation('student-dashboard');
       return;
     }
   } catch {
     userData = {};
+    showToast('Error fetching profile.', 3500, 'error');
+    handleNavigation('student-dashboard');
+    return;
+  }
+
+  // Role-guard: Only allow students here
+  if (userRole !== 'student') {
+    showToast(
+      'Access denied: Student profile is for students only.',
+      3500,
+      'error'
+    );
+    handleNavigation('student-dashboard');
+    return;
   }
 
   // Status and role from Firestore
