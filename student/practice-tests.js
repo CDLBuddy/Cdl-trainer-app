@@ -9,7 +9,9 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
 
-import { renderStudentDashboard } from './student-dashboard.js';
+// Import navigation handler for SPA routing
+import { handleNavigation } from '../navigation.js';
+
 import { renderTestEngine } from './test-engine.js';
 import { renderTestReview } from './test-review.js';
 
@@ -165,11 +167,13 @@ export async function renderPracticeTests(
       // Navigation away during async
       return;
     }
+    // SPA navigation for dashboard
     container
       .querySelector('#back-to-dashboard-btn')
       ?.addEventListener('click', () => {
-        renderStudentDashboard();
+        handleNavigation('student-dashboard');
       });
+    // Local-only: start/retake/review test (no handleNavigation needed)
     container.querySelectorAll('.start-btn,.retake-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const test = btn.dataset.test;

@@ -13,7 +13,9 @@ import {
   incrementStudentStudyMinutes,
   logStudySession,
 } from '../ui-helpers.js';
-import { renderStudentDashboard } from './student-dashboard.js';
+
+// Import navigation handler for SPA routing
+import { handleNavigation } from '../navigation.js';
 
 // ========== CONFIG ==========
 const defaultFlashcards = [
@@ -145,7 +147,7 @@ export async function renderFlashcards(
       document
         .getElementById('back-to-dashboard-btn')
         ?.addEventListener('click', () => {
-          renderStudentDashboard();
+          handleNavigation('student-dashboard');
         });
       setupNavigation();
       return;
@@ -274,7 +276,7 @@ export async function renderFlashcards(
     document
       .getElementById('back-to-dashboard-btn')
       ?.addEventListener('click', () => {
-        renderStudentDashboard();
+        handleNavigation('student-dashboard');
       });
 
     // Mark as known logic

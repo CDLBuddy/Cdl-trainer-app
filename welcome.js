@@ -1,9 +1,6 @@
 // welcome.js
 
-import {
-  initFadeInOnScroll,
-  startTypewriter,
-} from './ui-helpers.js';
+import { initFadeInOnScroll, startTypewriter } from './ui-helpers.js';
 import { handleNavigation } from './navigation.js';
 import {
   getCurrentSchoolBranding,
@@ -13,7 +10,9 @@ import {
 
 // === Renders school selector modal/dialog ===
 function renderSchoolSelector(container, onSelect) {
-document.querySelectorAll('.modal-overlay.school-modal').forEach(m => m.remove());
+  document
+    .querySelectorAll('.modal-overlay.school-modal')
+    .forEach((m) => m.remove());
 
   const schools = getAllSchools();
   const modal = document.createElement('div');
@@ -81,8 +80,8 @@ export async function renderWelcome(
       brand.primaryColor
     );
 
-// Main Welcome Screen HTML
-container.innerHTML = `
+  // Main Welcome Screen HTML
+  container.innerHTML = `
   <div class="welcome-screen" tabindex="0" aria-label="Welcome screen">
     <!-- Floating Switch School button above card -->
     <div class="switch-school-wrapper">
@@ -173,5 +172,4 @@ container.innerHTML = `
     ?.addEventListener('click', () => {
       renderSchoolSelector(container, () => renderWelcome(container));
     });
-
 }

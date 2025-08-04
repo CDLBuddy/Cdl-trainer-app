@@ -41,7 +41,10 @@ export async function getCurrentSchoolBranding() {
       const data = schoolDoc.data();
       // Only set theme color if present (ignore if not needed)
       if (data.primaryColor) {
-        document.documentElement.style.setProperty('--brand-primary', data.primaryColor);
+        document.documentElement.style.setProperty(
+          '--brand-primary',
+          data.primaryColor
+        );
       }
       // Save to localStorage for quick reload
       localStorage.setItem('schoolBrand', JSON.stringify({ id, ...data }));

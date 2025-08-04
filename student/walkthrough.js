@@ -14,8 +14,7 @@ import {
   markStudentWalkthroughComplete,
   getUserProgress,
 } from '../ui-helpers.js';
-import { renderProfile } from './profile.js';
-import { renderStudentDashboard } from './student-dashboard.js';
+import { handleNavigation } from '../navigation.js';
 import {
   getWalkthroughByClass,
   getWalkthroughLabel,
@@ -97,7 +96,7 @@ export async function renderWalkthrough(
         ⚠ You haven’t selected your CDL class yet.<br>
         Please go to your <strong>Profile</strong> and select one so we can load the correct walkthrough script.
       </div>
-      <button data-nav="profile" class="btn">Go to Profile</button>
+      <button data-nav="student-profile" class="btn">Go to Profile</button>
     `;
   }
   // No walkthrough data for this class
@@ -156,21 +155,21 @@ export async function renderWalkthrough(
   }
 
   content += `
-    <button id="back-to-dashboard-btn" class="btn outline" style="margin-top:2rem;">⬅ Dashboard</button>
+    <button id="back-to-dashboard-btn" class="btn outline" style="margin-top:2rem;" data-nav="student-dashboard">⬅ Dashboard</button>
     </div>
   `;
   container.innerHTML = content;
 
   // === Event Handlers ===
-  document
-    .getElementById('back-to-dashboard-btn')
+  container
+    .querySelector('[data-nav="student-dashboard"]')
     ?.addEventListener('click', () => {
-      renderStudentDashboard();
+      handleNavigation('student-dashboard');
     });
   container
-    .querySelector('[data-nav="profile"]')
+    .querySelector('[data-nav="student-profile"]')
     ?.addEventListener('click', () => {
-      renderProfile();
+      handleNavigation('student-profile');
     });
 
   // === Confetti animation ===

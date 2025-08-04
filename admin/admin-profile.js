@@ -61,7 +61,10 @@ export async function renderAdminProfile(
   }
 
   // SECURITY: Enforce admin can only view/edit their own profile and own school
-  if ((userData.role || 'student') !== 'admin' || userData.schoolId !== currentSchoolId) {
+  if (
+    (userData.role || 'student') !== 'admin' ||
+    userData.schoolId !== currentSchoolId
+  ) {
     showToast('Access denied: Admin profile only.');
     renderAdminDashboard();
     return;

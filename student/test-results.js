@@ -8,6 +8,7 @@ import {
   where,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { setupNavigation, showToast } from '../ui-helpers.js';
+import { handleNavigation } from '../navigation.js';
 
 // Accepts container param, always checks for logged-in user email
 export async function renderTestResults(
@@ -152,17 +153,34 @@ export async function renderTestResults(
   container.innerHTML = html;
   setupNavigation();
 
-  // Back and Retake navigation (always uses latest dashboard, no hardcode)
+  // --- NAVIGATION (role-prefixed SPA) ---
   document
     .getElementById('back-to-dashboard-btn')
     ?.addEventListener('click', () => {
-      import('./student-dashboard.js').then((mod) =>
-        mod.renderStudentDashboard(container)
+      handleNavigation(
+        isStaff
+          ? userRole === 'admin'
+            ? 'admin-dashboard'
+            : userRole === 'instructor'
+              ? 'instructor-dashboard'
+              : userRole === 'superadmin'
+                ? 'superadmin-dashboard'
+                : 'student-dashboard'
+          : 'student-dashboard'
       );
     });
+
   document.getElementById('retake-test-btn')?.addEventListener('click', () => {
-    import('./practice-tests.js').then((mod) =>
-      mod.renderPracticeTests(container)
+    handleNavigation(
+      isStaff
+        ? userRole === 'admin'
+          ? 'admin-dashboard'
+          : userRole === 'instructor'
+            ? 'instructor-dashboard'
+            : userRole === 'superadmin'
+              ? 'superadmin-dashboard'
+              : 'student-practice-tests'
+        : 'student-practice-tests'
     );
   });
 

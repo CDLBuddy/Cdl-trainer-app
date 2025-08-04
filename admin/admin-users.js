@@ -56,7 +56,10 @@ export async function renderAdminUsers(
           where('schoolId', '==', adminSchoolId)
         )
       );
-      schoolUsers = usersSnap.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+      schoolUsers = usersSnap.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
     }
   } catch (e) {
     schoolUsers = [];

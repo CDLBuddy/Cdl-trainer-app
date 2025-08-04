@@ -8,6 +8,9 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { setupNavigation, showToast } from '../ui-helpers.js';
 
+// SPA role-based navigation
+import { handleNavigation } from '../navigation.js';
+
 export async function renderTestEngine(
   container = document.getElementById('app'),
   testName,
@@ -222,30 +225,25 @@ export async function renderTestEngine(
           You scored <strong>${correctCount}/${total}</strong> (${pct}%)
         </p>
         <div style="text-align:left; margin:1.7em 0 2.2em 0;">${reviewHtml}</div>
-        <button class="btn outline wide" data-nav="dashboard" style="margin-top:16px;">
+        <button class="btn outline wide" data-nav="student-dashboard" style="margin-top:16px;">
           🏠 Back to Dashboard
         </button>
-        <button class="btn wide" data-nav="practiceTests" style="margin-top:12px;">
+        <button class="btn wide" data-nav="student-practice-tests" style="margin-top:12px;">
           🔄 Try Again
         </button>
       </div>
     `;
     setupNavigation();
 
-    // Dynamic imports to prevent circular dependency
     container
-      .querySelector('[data-nav="dashboard"]')
+      .querySelector('[data-nav="student-dashboard"]')
       ?.addEventListener('click', () => {
-        import('./student-dashboard.js').then((mod) =>
-          mod.renderStudentDashboard(container)
-        );
+        handleNavigation('student-dashboard');
       });
     container
-      .querySelector('[data-nav="practiceTests"]')
+      .querySelector('[data-nav="student-practice-tests"]')
       ?.addEventListener('click', () => {
-        import('./practice-tests.js').then((mod) =>
-          mod.renderPracticeTests(container)
-        );
+        handleNavigation('student-practice-tests');
       });
   }
 

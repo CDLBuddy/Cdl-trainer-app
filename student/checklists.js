@@ -9,10 +9,8 @@ import {
   getDocs,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
-import { renderProfile } from './profile.js';
-import { renderWalkthrough } from './walkthrough.js';
-import { renderPracticeTests } from './practice-tests.js';
-import { renderStudentDashboard } from './student-dashboard.js';
+// Import navigation handler
+import { handleNavigation } from '../navigation.js';
 
 // ==== Checklist Template ====
 export const studentChecklistSectionsTemplate = [
@@ -22,7 +20,7 @@ export const studentChecklistSectionsTemplate = [
       {
         label: 'Profile Complete',
         key: 'profileComplete',
-        link: 'profile',
+        link: 'student-profile',
         details: 'Complete all required fields in your student profile.',
         readonly: false,
         substeps: null,
@@ -35,7 +33,7 @@ export const studentChecklistSectionsTemplate = [
       {
         label: 'Permit Uploaded',
         key: 'permitUploaded',
-        link: 'profile',
+        link: 'student-profile',
         details: 'Upload a clear photo of your CDL permit.',
         readonly: false,
         substeps: null,
@@ -43,7 +41,7 @@ export const studentChecklistSectionsTemplate = [
       {
         label: 'Vehicle Data Plates Uploaded',
         key: 'vehicleUploaded',
-        link: 'profile',
+        link: 'student-profile',
         details: 'Upload photos of both your truck and trailer data plates.',
         readonly: false,
         substeps: [
@@ -59,15 +57,16 @@ export const studentChecklistSectionsTemplate = [
       {
         label: 'Practice Test Passed',
         key: 'practiceTestPassed',
-        link: 'practiceTests',
-        details: 'Score at least 80% on any practice test to unlock the next step.',
+        link: 'student-practice-tests',
+        details:
+          'Score at least 80% on any practice test to unlock the next step.',
         readonly: false,
         substeps: null,
       },
       {
         label: 'Walkthrough Progress',
         key: 'walkthroughComplete',
-        link: 'walkthrough',
+        link: 'student-walkthrough',
         details: 'Start and complete your CDL vehicle inspection walkthrough.',
         readonly: false,
         substeps: null,
@@ -90,7 +89,9 @@ export const studentChecklistSectionsTemplate = [
 ];
 
 // --- Main Checklist Render ---
-export async function renderChecklists(container = document.getElementById('app')) {
+export async function renderChecklists(
+  container = document.getElementById('app')
+) {
   // Defensive: Validate container
   if (!container || typeof container.querySelector !== 'function') {
     container = document.getElementById('app');
@@ -119,9 +120,7 @@ export async function renderChecklists(container = document.getElementById('app'
 
   // Robust role detection (Firestore takes priority)
   let userRole =
-    localStorage.getItem('userRole') ||
-    window.currentUserRole ||
-    'student';
+    localStorage.getItem('userRole') || window.currentUserRole || 'student';
   let schoolId = localStorage.getItem('schoolId') || '';
   let userData = {};
 
@@ -160,23 +159,38 @@ export async function renderChecklists(container = document.getElementById('app'
   const truckPlateUrl = userData.truckPlateUrl || '';
   const trailerPlateUrl = userData.trailerPlateUrl || '';
   const experience = userData.experience || '';
-  const lastTestScore = typeof userData.lastTestScore === 'number' ? userData.lastTestScore : 0;
-  const walkthroughProgress = typeof userData.walkthroughProgress === 'number' ? userData.walkthroughProgress : 0;
+  const lastTestScore =
+    typeof userData.lastTestScore === 'number' ? userData.lastTestScore : 0;
+  const walkthroughProgress =
+    typeof userData.walkthroughProgress === 'number'
+      ? userData.walkthroughProgress
+      : 0;
   const walkthroughComplete = !!userData.walkthroughComplete;
   const finalInstructorSignoff = !!userData.finalInstructorSignoff;
 
   // Deep clone checklist template for this session
-  const studentChecklistSections = JSON.parse(JSON.stringify(studentChecklistSectionsTemplate));
+  const studentChecklistSections = JSON.parse(
+    JSON.stringify(studentChecklistSectionsTemplate)
+  );
 
   // Compute checklist step state
-  studentChecklistSections[0].items[0].done = !!(cdlClass && cdlPermit && experience);
-  studentChecklistSections[0].items[0].notify = !studentChecklistSections[0].items[0].done;
+  studentChecklistSections[0].items[0].done = !!(
+    cdlClass &&
+    cdlPermit &&
+    experience
+  );
+  studentChecklistSections[0].items[0].notify =
+    !studentChecklistSections[0].items[0].done;
 
-  studentChecklistSections[1].items[0].done = cdlPermit === 'yes' && !!permitPhotoUrl;
-  studentChecklistSections[1].items[0].notify = cdlPermit === 'yes' && !permitPhotoUrl;
+  studentChecklistSections[1].items[0].done =
+    cdlPermit === 'yes' && !!permitPhotoUrl;
+  studentChecklistSections[1].items[0].notify =
+    cdlPermit === 'yes' && !permitPhotoUrl;
 
-  studentChecklistSections[1].items[1].done = vehicleQualified === 'yes' && !!truckPlateUrl && !!trailerPlateUrl;
-  studentChecklistSections[1].items[1].notify = vehicleQualified === 'yes' && (!truckPlateUrl || !trailerPlateUrl);
+  studentChecklistSections[1].items[1].done =
+    vehicleQualified === 'yes' && !!truckPlateUrl && !!trailerPlateUrl;
+  studentChecklistSections[1].items[1].notify =
+    vehicleQualified === 'yes' && (!truckPlateUrl || !trailerPlateUrl);
   if (studentChecklistSections[1].items[1].substeps) {
     studentChecklistSections[1].items[1].substeps[0].done = !!truckPlateUrl;
     studentChecklistSections[1].items[1].substeps[1].done = !!trailerPlateUrl;
@@ -188,8 +202,10 @@ export async function renderChecklists(container = document.getElementById('app'
   studentChecklistSections[2].items[1].done = walkthroughProgress >= 1;
   studentChecklistSections[2].items[1].notify = walkthroughProgress < 1;
 
-  studentChecklistSections[3].items[0].done = walkthroughComplete || finalInstructorSignoff;
-  studentChecklistSections[3].items[0].notify = !studentChecklistSections[3].items[0].done;
+  studentChecklistSections[3].items[0].done =
+    walkthroughComplete || finalInstructorSignoff;
+  studentChecklistSections[3].items[0].notify =
+    !studentChecklistSections[3].items[0].done;
 
   // Progress percent calculation
   const flatChecklist = studentChecklistSections.flatMap((sec) => sec.items);
@@ -197,7 +213,8 @@ export async function renderChecklists(container = document.getElementById('app'
   const percent = Math.round((complete / flatChecklist.length) * 100);
 
   // Store last percent for fast reload/animation
-  const lastPercent = parseInt(sessionStorage.getItem('checklistLastPercent'), 10) || 0;
+  const lastPercent =
+    parseInt(sessionStorage.getItem('checklistLastPercent'), 10) || 0;
   sessionStorage.setItem('checklistLastPercent', percent);
 
   const notifyItems = flatChecklist.filter((item) => item.notify);
@@ -344,15 +361,16 @@ export async function renderChecklists(container = document.getElementById('app'
     });
   });
 
-  // Checklist navigation
+  // Checklist navigation using handleNavigation
   container.querySelectorAll('.btn[data-nav]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const target = btn.getAttribute('data-nav');
-      if (target === 'profile') return renderProfile();
-      if (target === 'walkthrough') return renderWalkthrough();
-      if (target === 'practiceTests') return renderPracticeTests();
-      showToast('This action is not yet available.');
-      setupNavigation();
+      if (target && target.startsWith('student-')) {
+        handleNavigation(target);
+      } else {
+        showToast('This action is not yet available.');
+        setupNavigation();
+      }
     });
   });
 
@@ -360,7 +378,7 @@ export async function renderChecklists(container = document.getElementById('app'
   container
     .querySelector('#back-to-dashboard-btn')
     ?.addEventListener('click', () => {
-      renderStudentDashboard();
+      handleNavigation('student-dashboard');
     });
 
   setupNavigation();

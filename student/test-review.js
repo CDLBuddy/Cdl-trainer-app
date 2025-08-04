@@ -15,7 +15,7 @@ import {
   markStudentTestPassed,
   getUserProgress,
 } from '../ui-helpers.js';
-import { renderPracticeTests } from './practice-tests.js';
+import { handleNavigation } from '../navigation.js';
 
 // --- Helper for user email everywhere (keeps DRY) ---
 function getCurrentUserEmail() {
@@ -43,14 +43,14 @@ export async function renderTestReview(container, testName) {
       <div class="screen-wrapper fade-in">
         <h2>🧾 ${testName} Review</h2>
         <p>You must be logged in to view this page.</p>
-        <button class="btn outline" data-nav="practiceTests">⬅ Back to Practice Tests</button>
+        <button class="btn outline" data-nav="student-practice-tests">⬅ Back to Practice Tests</button>
       </div>
     `;
     setupNavigation();
     container
-      .querySelector('[data-nav="practiceTests"]')
+      .querySelector('[data-nav="student-practice-tests"]')
       ?.addEventListener('click', () => {
-        renderPracticeTests(container);
+        handleNavigation('student-practice-tests');
       });
     return;
   }
@@ -77,14 +77,14 @@ export async function renderTestReview(container, testName) {
         <div class="screen-wrapper fade-in">
           <h2>🧾 ${testName} Review</h2>
           <p>No results found for this test.</p>
-          <button class="btn outline" data-nav="practiceTests">⬅ Back to Practice Tests</button>
+          <button class="btn outline" data-nav="student-practice-tests">⬅ Back to Practice Tests</button>
         </div>
       `;
       setupNavigation();
       container
-        .querySelector('[data-nav="practiceTests"]')
+        .querySelector('[data-nav="student-practice-tests"]')
         ?.addEventListener('click', () => {
-          renderPracticeTests(container);
+          handleNavigation('student-practice-tests');
         });
       return;
     }
@@ -126,7 +126,7 @@ export async function renderTestReview(container, testName) {
         <p>You scored <strong>${latest.correct}/${latest.total}</strong> (${pct}%)</p>
         <p><em>Question-level review coming soon!</em></p>
         <div style="margin-top:20px;">
-          <button class="btn outline" data-nav="practiceTests">⬅ Back to Practice Tests</button>
+          <button class="btn outline" data-nav="student-practice-tests">⬅ Back to Practice Tests</button>
         </div>
       </div>
     `;
@@ -134,9 +134,9 @@ export async function renderTestReview(container, testName) {
     setupNavigation();
 
     container
-      .querySelector('[data-nav="practiceTests"]')
+      .querySelector('[data-nav="student-practice-tests"]')
       ?.addEventListener('click', () => {
-        renderPracticeTests(container);
+        handleNavigation('student-practice-tests');
       });
   } catch (e) {
     console.error('❌ Review fetch error:', e);
@@ -144,14 +144,14 @@ export async function renderTestReview(container, testName) {
       <div class="screen-wrapper fade-in">
         <h2>🧾 ${testName} Review</h2>
         <p>Failed to load review data.</p>
-        <button class="btn outline" data-nav="practiceTests">⬅ Back to Practice Tests</button>
+        <button class="btn outline" data-nav="student-practice-tests">⬅ Back to Practice Tests</button>
       </div>
     `;
     setupNavigation();
     container
-      .querySelector('[data-nav="practiceTests"]')
+      .querySelector('[data-nav="student-practice-tests"]')
       ?.addEventListener('click', () => {
-        renderPracticeTests(container);
+        handleNavigation('student-practice-tests');
       });
   }
 }

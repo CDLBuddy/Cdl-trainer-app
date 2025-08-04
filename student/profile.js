@@ -22,7 +22,9 @@ import {
   getDownloadURL,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js';
 
-import { renderStudentDashboard } from './student-dashboard.js';
+// SPA navigation handler for role-prefixed page nav
+import { handleNavigation } from '../navigation.js';
+
 import { getCurrentSchoolBranding } from '../school-branding.js';
 import { getWalkthroughLabel } from '../walkthrough-data/index.js';
 
@@ -61,6 +63,7 @@ export function getCdlClassLabel(classKey) {
 export async function renderProfile(
   container = document.getElementById('app')
 ) {
+  // Defensive: Validate container is a DOM node, attempt recovery if not
   if (!container || typeof container.querySelector !== 'function') {
     container = document.getElementById('app');
     if (!container || typeof container.querySelector !== 'function') {
@@ -77,7 +80,7 @@ export async function renderProfile(
     return;
   }
 
-  // --- SCHOOL BRANDING (Accent, Logo, School Name) ---
+  // SCHOOL BRANDING
   const brand = (await getCurrentSchoolBranding?.()) || {};
   if (brand.primaryColor) {
     document.documentElement.style.setProperty(
@@ -89,11 +92,10 @@ export async function renderProfile(
   const schoolLogo = brand.logoUrl || '';
   const schoolDisplayName = brand.schoolName || '';
 
-  // --- Fetch user data by doc ID ---
+  // Fetch user data by doc ID
   let userData = {};
   let userDocRef = doc(db, 'users', currentUserEmail);
 
-  // Prefer to load role/schoolId from storage first
   let userRole =
     localStorage.getItem('userRole') || window.currentUserRole || 'student';
   let schoolId = localStorage.getItem('schoolId') || '';
@@ -123,10 +125,10 @@ export async function renderProfile(
     userData = {};
   }
 
-  // --- Status and role from Firestore ---
+  // Status and role from Firestore
   const status = userData.status || 'active';
 
-  // --- Fields & defaults (kept for backend, just not shown in form) ---
+  // Fields & defaults
   const {
     name = '',
     dob = '',
@@ -162,10 +164,10 @@ export async function renderProfile(
     lastUpdatedBy = '',
   } = userData;
 
-  // --- For accessibility: phone pattern and label ids ---
+  // Accessibility: phone pattern and label ids
   const phonePattern = '[0-9\\-\\(\\)\\+ ]{10,15}';
 
-  // --- Profile completion calculation ---
+  // Profile completion calculation
   function calcProgress(fd) {
     let total = 15,
       filled = 0;
@@ -187,7 +189,7 @@ export async function renderProfile(
     return Math.round((filled / total) * 100);
   }
 
-  // --- Field options ---
+  // Field options
   const endorsementOptions = [
     { val: 'H', label: 'Hazmat (H)' },
     { val: 'N', label: 'Tanker (N)' },
@@ -204,7 +206,7 @@ export async function renderProfile(
     { val: 'roadtest', label: 'Road Test Prep' },
   ];
 
-  // --- Inactive status UI ---
+  // Inactive status UI
   if (status !== 'active') {
     container.innerHTML = `
       <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
@@ -214,12 +216,12 @@ export async function renderProfile(
       </div>`;
     document
       .getElementById('back-to-dashboard-btn')
-      ?.addEventListener('click', () => renderStudentDashboard());
+      ?.addEventListener('click', () => handleNavigation('student-dashboard'));
     setupNavigation();
     return;
   }
 
-  // --- MAIN PROFILE HTML ---
+  // MAIN PROFILE HTML
   container.innerHTML = `
   <div class="screen-wrapper fade-in profile-page" style="max-width:480px;margin:0 auto;">
     <h2 style="color:${accent};display:flex;align-items:center;gap:12px;">
@@ -380,7 +382,7 @@ export async function renderProfile(
   </div>
 `;
 
-  // --- Show/hide permit photo section
+  // Show/hide permit photo section
   container
     .querySelector('select[name="cdlPermit"]')
     ?.addEventListener('change', function () {
@@ -395,11 +397,11 @@ export async function renderProfile(
         this.value === 'yes' ? '' : 'none';
     });
 
-  // --- Back to dashboard ---
-  document
-    .getElementById('back-to-dashboard-btn')
+  // --- Back to dashboard (SPA navigation) ---
+  container
+    .querySelector('#back-to-dashboard-btn')
     ?.addEventListener('click', () => {
-      renderStudentDashboard();
+      handleNavigation('student-dashboard');
     });
 
   // --- FILE UPLOAD HELPERS (with checklist marking) ---

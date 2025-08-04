@@ -209,51 +209,70 @@ export async function renderStudentProfileForInstructor(
   // --- Approve actions with button disable and instant UI feedback
   const currentInstructorEmail = localStorage.getItem('currentUserEmail');
 
-  document.getElementById('verify-profile-btn')?.addEventListener('click', async (e) => {
-    e.target.disabled = true;
-    e.target.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
-    await verifyStudentProfile(studentEmail, currentInstructorEmail);
-    showToast('Profile verified!', 2300, 'success');
-  });
-  document.getElementById('verify-permit-btn')?.addEventListener('click', async (e) => {
-    e.target.disabled = true;
-    e.target.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
-    await verifyStudentPermit(studentEmail, currentInstructorEmail);
-    showToast('Permit verified!', 2300, 'success');
-  });
-  document.getElementById('verify-vehicle-btn')?.addEventListener('click', async (e) => {
-    e.target.disabled = true;
-    e.target.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
-    await verifyStudentVehicle(studentEmail, currentInstructorEmail);
-    showToast('Vehicle verified!', 2300, 'success');
-  });
-  document.getElementById('review-walkthrough-btn')?.addEventListener('click', async (e) => {
-    e.target.disabled = true;
-    e.target.innerHTML += ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
-    await reviewStudentWalkthrough(studentEmail, currentInstructorEmail);
-    showToast('Walkthrough reviewed!', 2300, 'success');
-  });
+  document
+    .getElementById('verify-profile-btn')
+    ?.addEventListener('click', async (e) => {
+      e.target.disabled = true;
+      e.target.innerHTML +=
+        ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
+      await verifyStudentProfile(studentEmail, currentInstructorEmail);
+      showToast('Profile verified!', 2300, 'success');
+    });
+  document
+    .getElementById('verify-permit-btn')
+    ?.addEventListener('click', async (e) => {
+      e.target.disabled = true;
+      e.target.innerHTML +=
+        ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
+      await verifyStudentPermit(studentEmail, currentInstructorEmail);
+      showToast('Permit verified!', 2300, 'success');
+    });
+  document
+    .getElementById('verify-vehicle-btn')
+    ?.addEventListener('click', async (e) => {
+      e.target.disabled = true;
+      e.target.innerHTML +=
+        ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
+      await verifyStudentVehicle(studentEmail, currentInstructorEmail);
+      showToast('Vehicle verified!', 2300, 'success');
+    });
+  document
+    .getElementById('review-walkthrough-btn')
+    ?.addEventListener('click', async (e) => {
+      e.target.disabled = true;
+      e.target.innerHTML +=
+        ' <span style="color:#3ecf8e;margin-left:7px;">✅</span>';
+      await reviewStudentWalkthrough(studentEmail, currentInstructorEmail);
+      showToast('Walkthrough reviewed!', 2300, 'success');
+    });
 
   // --- Save instructor note ---
-  document.getElementById('save-note-btn')?.addEventListener('click', async () => {
-    const note = document.getElementById('instructor-note').value.trim();
-    if (!note) {
-      showToast('Note is empty.', 1700, 'error');
-      return;
-    }
-    // Save note to a subcollection for audit/history
-    const notesRef = collection(doc(db, 'users', studentEmail), 'instructorNotes');
-    await addDoc(notesRef, {
-      note,
-      by: currentInstructorEmail,
-      at: serverTimestamp(),
+  document
+    .getElementById('save-note-btn')
+    ?.addEventListener('click', async () => {
+      const note = document.getElementById('instructor-note').value.trim();
+      if (!note) {
+        showToast('Note is empty.', 1700, 'error');
+        return;
+      }
+      // Save note to a subcollection for audit/history
+      const notesRef = collection(
+        doc(db, 'users', studentEmail),
+        'instructorNotes'
+      );
+      await addDoc(notesRef, {
+        note,
+        by: currentInstructorEmail,
+        at: serverTimestamp(),
+      });
+      showToast('Note saved.', 1800, 'success');
+      document.getElementById('instructor-note').value = '';
     });
-    showToast('Note saved.', 1800, 'success');
-    document.getElementById('instructor-note').value = '';
-  });
 
   // --- Checklist review modal/section ---
-  document.getElementById('checklist-review-btn')?.addEventListener('click', () => {
-    renderChecklistReviewForInstructor(studentEmail, container);
-  });
+  document
+    .getElementById('checklist-review-btn')
+    ?.addEventListener('click', () => {
+      renderChecklistReviewForInstructor(studentEmail, container);
+    });
 }
