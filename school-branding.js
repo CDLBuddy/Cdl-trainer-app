@@ -8,25 +8,25 @@ import {
   getDocs,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
-// Demo fallback brands (used if Firestore fails)
+// === Demo fallback brands (used if Firestore fails or for selector preview) ===
 const SCHOOL_BRANDS = [
   {
     id: 'cdlbuddy',
     schoolName: 'CDL Buddy',
     logoUrl: '/default-logo.svg',
-    // primaryColor removed
+    // Optional: primaryColor: '#2576d1fb',
     contactEmail: 'support@cdltrainerapp.com',
     website: 'https://cdltrainerapp.com',
     subHeadline: 'Your all-in-one CDL prep coach. Scroll down to get started!',
   },
   {
-    id: 'acmetruck',
-    schoolName: 'Acme Truck School',
-    logoUrl: '/acme-logo.svg',
-    // primaryColor removed
-    contactEmail: 'help@acmetruck.edu',
-    website: 'https://acmetruck.edu',
-    subHeadline: 'Training the best drivers in the Midwest!',
+    id: 'browning',
+    schoolName: 'Browning Mountain Training',
+    logoUrl: '/browning-logo.svg', // Put your Browning logo in /public as needed
+    // Optional: primaryColor: '#276348ff',
+    contactEmail: 'browning@cdltraining.com',
+    website: 'https://browningmountaintraining.com',
+    subHeadline: 'Drive your future forward with Browning!',
   },
 ];
 
@@ -39,14 +39,13 @@ export async function getCurrentSchoolBranding() {
     const schoolDoc = await getDoc(doc(db, 'schools', id));
     if (schoolDoc.exists()) {
       const data = schoolDoc.data();
-      // Only set theme color if present (ignore if not needed)
       if (data.primaryColor) {
         document.documentElement.style.setProperty(
           '--brand-primary',
           data.primaryColor
         );
       }
-      // Save to localStorage for quick reload
+      // Save to localStorage for quick reloads
       localStorage.setItem('schoolBrand', JSON.stringify({ id, ...data }));
       return { id, ...data };
     }
@@ -54,7 +53,7 @@ export async function getCurrentSchoolBranding() {
     // Optionally: console.warn('Firestore branding fetch failed:', err);
   }
 
-  // Fallback: Demo in-memory list (no primaryColor)
+  // Fallback: Demo in-memory list
   const brand = SCHOOL_BRANDS.find((s) => s.id === id) || SCHOOL_BRANDS[0];
   // No attempt to set --brand-primary (keeps app's default blue)
   localStorage.setItem('schoolBrand', JSON.stringify(brand));
@@ -64,7 +63,7 @@ export async function getCurrentSchoolBranding() {
 // === Set current school and update theme ===
 export function setCurrentSchool(schoolId) {
   localStorage.setItem('schoolId', schoolId);
-  // Optionally, pre-load branding for UX
+  // Optionally, pre-load branding for instant theme update
   getCurrentSchoolBranding();
 }
 

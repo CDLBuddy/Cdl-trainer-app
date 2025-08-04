@@ -105,6 +105,9 @@ export function renderSignup(
           </div>
           <button class="btn outline" id="back-to-welcome-btn" type="button" style="margin-top:0.8rem;width:100%;">⬅ Back</button>
         </form>
+        <div class="switch-school-link" style="margin-top:1.2rem;text-align:center;">
+          Not your school? <a href="#" id="switchSchoolLink" style="color:#4e91ad;text-decoration:underline;font-weight:500;">Switch school</a>
+        </div>
       </div>
     `;
 
@@ -247,6 +250,15 @@ export function renderSignup(
         errD.style.display = 'block';
       }
     };
+
+    // Switch school subtle link
+    container
+      .querySelector('#switchSchoolLink')
+      ?.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('schoolId');
+        renderWelcome();
+      });
   }
 
   // Async fetch schools if needed

@@ -70,6 +70,12 @@ export async function renderWelcome(
     </div>
   `;
 
+  // Only show school selector modal if no school is set
+  if (!localStorage.getItem('schoolId')) {
+    renderSchoolSelector(container, () => renderWelcome(container));
+    return; // Don't continue rendering until school is picked
+  }
+
   // Get school branding config (await for Firestore)
   const brand = await getCurrentSchoolBranding();
 
@@ -83,10 +89,6 @@ export async function renderWelcome(
   // Main Welcome Screen HTML
   container.innerHTML = `
   <div class="welcome-screen" tabindex="0" aria-label="Welcome screen">
-    <!-- Floating Switch School button above card -->
-    <div class="switch-school-wrapper">
-      <button id="switch-school-btn" class="btn outline">Switch School</button>
-    </div>
     <div class="bokeh-layer" aria-hidden="true">
       <div class="bokeh-dot parallax-float" style="top:10%; left:15%; animation-delay:0s;"></div>
       <div class="bokeh-dot parallax-float" style="top:30%; left:70%; animation-delay:2s;"></div>
@@ -130,15 +132,12 @@ export async function renderWelcome(
           &bull; <a href="https://fmcsa.dot.gov" target="_blank" rel="noopener">FMCSA ELDT Info</a>
         </small>
       </div>
+      <div class="switch-school-link" style="margin-top:1.7rem;">
+        Not your school? <a href="#" id="switchSchoolLink">Switch school</a>
+      </div>
     </div>
   </div>
 `;
-
-  // Only show school selector modal if no school is set
-  if (!localStorage.getItem('schoolId')) {
-    renderSchoolSelector(container, () => renderWelcome(container));
-    return; // Don't continue rendering until school is picked
-  }
 
   // Effects and Animation (only once per load)
   if (!container._welcomeInit) {
@@ -166,10 +165,13 @@ export async function renderWelcome(
     });
   });
 
-  // "Switch School" handler
+  // "Switch school" subtle link handler
   document
-    .getElementById('switch-school-btn')
-    ?.addEventListener('click', () => {
+    .getElementById('switchSchoolLink')
+    ?.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Remove selected school and show picker
+      localStorage.removeItem('schoolId');
       renderSchoolSelector(container, () => renderWelcome(container));
     });
 }

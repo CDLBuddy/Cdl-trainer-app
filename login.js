@@ -11,10 +11,7 @@ import {
 import { showToast, setupNavigation } from './ui-helpers.js';
 import { renderSignup } from './signup.js';
 import { renderWelcome } from './welcome.js';
-import {
-  getCurrentSchoolBranding,
-  setCurrentSchool,
-} from './school-branding.js';
+import { getCurrentSchoolBranding } from './school-branding.js';
 
 export function renderLogin(
   container = document.getElementById('app'),
@@ -64,7 +61,9 @@ export function renderLogin(
       </div>
       <div style="text-align:center;margin-top:0.7rem;">
         <button class="btn outline" id="back-to-welcome-btn" type="button" style="width:99%;color:#fff;">⬅ Back</button>
-        <button class="btn text" id="switch-school-btn" type="button" style="margin-top:0.3rem;width:99%;color:${accentColor};background:none;border:none;font-size:1.02em;">🏫 Switch School</button>
+      </div>
+      <div class="switch-school-link" style="margin-top:1.2rem;text-align:center;">
+        Not your school? <a href="#" id="switchSchoolLink" style="color:${accentColor};text-decoration:underline;font-weight:500;">Switch school</a>
       </div>
       <div style="margin-top:1.1rem;text-align:center;font-size:0.98em;color:#aaa;">
         Need help? <a href="mailto:${supportEmail}" style="color:${accentColor};text-decoration:underline;">Contact Support</a>
@@ -188,10 +187,11 @@ export function renderLogin(
       renderWelcome();
     });
 
-  // School Switch Logic
+  // Switch school link handler (now a subtle link, not button)
   container
-    .querySelector('#switch-school-btn')
-    ?.addEventListener('click', () => {
+    .querySelector('#switchSchoolLink')
+    ?.addEventListener('click', (e) => {
+      e.preventDefault();
       localStorage.removeItem('schoolId');
       renderWelcome();
     });
