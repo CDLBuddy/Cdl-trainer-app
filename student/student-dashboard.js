@@ -7,7 +7,6 @@ import {
   getRandomAITip,
   getNextChecklistAlert,
 } from '../ui-helpers.js';
-import { signOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {
   collection,
   query,
@@ -15,22 +14,23 @@ import {
   getDocs,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { renderAppShell } from '../ui-shell.js';
+import { handleNavigation } from '../navigation.js';
 
+// ========== STUDENT DASHBOARD MAIN FUNCTION ==========
 export async function renderStudentDashboard() {
-  // --- Always resolve user ---
+  // --- Robust user/email detection
   const currentUserEmail =
     window.currentUserEmail ||
     localStorage.getItem('currentUserEmail') ||
     (auth.currentUser && auth.currentUser.email) ||
     null;
-
   if (!currentUserEmail) {
     showToast('No user found. Please log in again.');
-    window.location.reload();
+    handleNavigation('welcome');
     return;
   }
 
-  // --- Get user profile ---
+  // --- Get user profile & role
   let userData = {};
   let userRole = 'student';
   try {
@@ -45,17 +45,16 @@ export async function renderStudentDashboard() {
   } catch (e) {
     userData = {};
   }
-
   if (userRole !== 'student') {
     showToast('Access denied: Student dashboard only.');
-    window.location.reload();
+    handleNavigation('welcome');
     return;
   }
 
-  // --- Checklist Progress ---
-  let checklistPct = userData.profileProgress || 0;
+  // --- Checklist Progress
+  const checklistPct = userData.profileProgress || 0;
 
-  // --- Last Test Summary ---
+  // --- Last Test Score
   let lastTestStr = 'No tests taken yet.';
   try {
     const snap = await getDocs(
@@ -67,15 +66,13 @@ export async function renderStudentDashboard() {
     let latest = null;
     snap.forEach((d) => {
       const t = d.data();
-      if (
-        !latest ||
-        (t.timestamp?.toDate ? t.timestamp.toDate() : new Date(t.timestamp)) >
-          (latest?.timestamp?.toDate
-            ? latest.timestamp.toDate()
-            : new Date(latest?.timestamp))
-      ) {
-        latest = t;
-      }
+      const tTime =
+        t.timestamp?.toDate?.() || new Date(t.timestamp) || new Date(0);
+      const lTime =
+        latest?.timestamp?.toDate?.() ||
+        new Date(latest?.timestamp) ||
+        new Date(0);
+      if (!latest || tTime > lTime) latest = t;
     });
     if (latest) {
       const pct = Math.round((latest.correct / latest.total) * 100);
@@ -85,10 +82,11 @@ export async function renderStudentDashboard() {
       lastTestStr = `${latest.testName} – ${pct}% on ${dateStr}`;
     }
   } catch (e) {
+    // If fails, still render dashboard
     console.error('TestResults fetch error', e);
   }
 
-  // --- 7-day Study Streak ---
+  // --- Study Streak (7-day)
   let streak = 0;
   try {
     const today = new Date().toDateString();
@@ -101,10 +99,10 @@ export async function renderStudentDashboard() {
     cutoff.setDate(cutoff.getDate() - 6);
     streak = log.filter((d) => new Date(d) >= cutoff).length;
   } catch (e) {
-    console.error('Streak calc error', e);
+    streak = 0;
   }
 
-  // --- MAIN DASHBOARD CONTENT (HTML Only, No Wrapper) ---
+  // --- DASHBOARD CONTENT ---
   const mainContent = `
     <div id="latest-update-card" class="dashboard-card update-area"></div>
     <div class="dashboard-card">
@@ -146,20 +144,17 @@ export async function renderStudentDashboard() {
     </div>
   `;
 
-  // --- Render universal shell ---
+  // --- Render App Shell (header, nav, content, footer, AI coach) ---
   await renderAppShell({
     role: 'student',
     user: { name: userData.name },
     mainContent,
     showFooter: true,
-    notifications: [], // TODO: pass real notifications if you have them
+    notifications: [], // pass notifications if needed
   });
 
-  // --- Dashboard-specific event handlers (after render) ---
+  // --- Post-render dashboard events
   showLatestUpdate();
-
-  // Example: Add any custom logic for AI Tip button
-  document
-    .querySelector('.ai-tip-card .ai-tip')
-    ?.addEventListener('click', () => handleNavigation('student-coach'));
+  // (If you want to wire up anything *dashboard specific* here, do so.)
+  // All nav, logout, theme, etc, are now handled by shell/app.js.
 }
