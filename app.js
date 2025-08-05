@@ -38,6 +38,20 @@ import {
 } from './school-branding.js';
 import { getBlankUserProfile } from './utils/user-profile.js';
 
+import {
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import {
+  onAuthStateChanged,
+  signOut,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+
 // --- GLOBAL STATE ---
 console.log('🌐 Setting global state...');
 let currentUserEmail = null;
@@ -48,8 +62,37 @@ window.currentUserEmail = null;
 window.currentUserRole = null;
 window.schoolId = null;
 
-let loaderShownAt = Date.now();
-let loaderEl = document.getElementById('app-loader');
+// --- GLOBAL LOGOUT HANDLER ---
+window.handleLogout = async function() {
+  try {
+    if (auth && typeof auth.signOut === 'function') {
+      await signOut(auth);
+    }
+  } catch (err) {
+    // If signOut fails (e.g., user already signed out), still clear everything
+    console.warn('Sign out failed (may be expected):', err);
+  }
+  // Remove all auth/session data
+  localStorage.removeItem('userRole');
+  localStorage.removeItem('fullName');
+  localStorage.removeItem('currentUserEmail');
+  localStorage.removeItem('schoolId');
+  localStorage.removeItem('schoolBrand');
+  window.currentUserEmail = null;
+  window.currentUserRole = null;
+  window.schoolId = null;
+  currentUserEmail = null;
+  currentUserRole = null;
+  schoolId = null;
+  // Route to welcome/login – never bounce to dashboard
+  showPageTransitionLoader();
+  setTimeout(() => {
+    renderWelcome();
+    hidePageTransitionLoader();
+    window.location.hash = ''; // Remove any lingering hash route
+    console.log('✅ User fully logged out, rendered welcome screen');
+  }, 400);
+};
 
 // --- NAV HANDLERS ---
 console.log('🖱️ Setting up nav handlers...');
@@ -57,6 +100,10 @@ document.body.addEventListener('click', (e) => {
   const target = e.target.closest('[data-nav]');
   if (target) {
     const page = target.getAttribute('data-nav');
+    if (page === 'logout') {
+      window.handleLogout();
+      return;
+    }
     if (page) {
       let dir = 'forward';
       if (window.location.hash.replace('#', '') === page) dir = 'back';
@@ -94,22 +141,6 @@ window.addEventListener('popstate', () => {
 });
 
 // --- AUTH STATE LISTENER ---
-console.log('📦 Importing Firebase listeners...');
-import {
-  doc,
-  getDoc,
-  setDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
-import {
-  onAuthStateChanged,
-  signOut,
-} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
-
-// -- FIREBASE AUTH LISTENER --
 console.log('🛡️ Setting up onAuthStateChanged...');
 onAuthStateChanged(auth, async (user) => {
   console.log('🔔 Auth state changed! User:', user);
@@ -248,17 +279,19 @@ onAuthStateChanged(auth, async (user) => {
     window.schoolId = null;
     localStorage.removeItem('userRole');
     localStorage.removeItem('schoolId');
-    localStorage.removeItem('schoolBrand'); // Clear branding on logout!
+    localStorage.removeItem('schoolBrand');
     showPageTransitionLoader();
     setTimeout(() => {
       renderWelcome();
       hidePageTransitionLoader();
+      window.location.hash = '';
       console.log('🏁 Rendered welcome screen');
     }, 300);
   }
 
   // Loader hiding
-  const elapsed = Date.now() - loaderShownAt;
+  let loaderEl = document.getElementById('app-loader');
+  const elapsed = Date.now() - (window.loaderShownAt || Date.now());
   setTimeout(
     () => {
       loaderEl?.classList.add('hide');
@@ -269,7 +302,6 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // --- INITIAL LOAD ---
-// DOMContentLoaded improvements: Always route hash if present
 console.log('🚦 Initial DOMContentLoaded hook set.');
 window.addEventListener('DOMContentLoaded', () => {
   // On initial load, always update CSS vars for current school
@@ -288,12 +320,7 @@ window.addEventListener('DOMContentLoaded', () => {
   console.log('🔄 DOM ready, waiting for Firebase auth...');
 });
 
-// Optionally, export any globals you want available to the rest of your app here (for testing/dev)
-// export { currentUserEmail, currentUserRole, schoolId };
-
 // --- Optional: Handle user impersonation session (advanced dev tool) ---
 if (sessionStorage.getItem('impersonateUserId')) {
-  // (e.g., set up dev-only logic if impersonation ID is present)
-  // You would typically integrate this in your auth logic if needed
-  // sessionStorage.removeItem('impersonateUserId'); // Or persist as needed
+  // (dev tool: handle as needed)
 }
