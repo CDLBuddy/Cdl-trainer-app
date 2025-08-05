@@ -9,40 +9,51 @@ function roleLabel(role) {
   return role[0].toUpperCase() + role.slice(1);
 }
 
-// --- ROLE-BASED NAVIGATION (Add more as needed) ---
+// --- ROLE-BASED NAVIGATION (no nav logout; only at bottom) ---
 function getNavForRole(role) {
-  if (role === 'student') {
-    return `
-      <nav class="dash-rail glass-card" style="padding:1.2em 0 1em 0;">
-        <button class="rail-btn profile" data-nav="student-profile" aria-label="Profile">👤<span class="label">Profile</span></button>
-        <button class="rail-btn checklist" data-nav="student-checklists" aria-label="Checklist">✅<span class="label">Checklist</span></button>
-        <button class="rail-btn testing" data-nav="student-practice-tests" aria-label="Testing">📝<span class="label">Testing</span></button>
-        <button class="rail-btn flashcards" data-nav="student-flashcards" aria-label="Flashcards">🗂️<span class="label">Flashcards</span></button>
-      </nav>
-    `;
+  switch (role) {
+    case 'student':
+      return `
+        <nav class="dash-rail glass-card">
+          <button class="rail-btn profile" data-nav="student-profile" aria-label="Profile">👤<span class="label">Profile</span></button>
+          <button class="rail-btn checklist" data-nav="student-checklists" aria-label="Checklist">✅<span class="label">Checklist</span></button>
+          <button class="rail-btn testing" data-nav="student-practice-tests" aria-label="Testing">📝<span class="label">Testing</span></button>
+          <button class="rail-btn flashcards" data-nav="student-flashcards" aria-label="Flashcards">🗂️<span class="label">Flashcards</span></button>
+        </nav>
+      `;
+    case 'instructor':
+      return `
+        <nav class="dash-rail glass-card">
+          <button class="rail-btn dashboard" data-nav="instructor-dashboard" aria-label="Dashboard">🏠<span class="label">Dashboard</span></button>
+          <button class="rail-btn profile" data-nav="instructor-profile" aria-label="Profile">👤<span class="label">Profile</span></button>
+          <button class="rail-btn students" data-nav="instructor-student-list" aria-label="Students">🧑‍🎓<span class="label">Students</span></button>
+          <button class="rail-btn checklist-review" data-nav="instructor-checklist-review" aria-label="Checklist Review">📋<span class="label">Checklist</span></button>
+        </nav>
+      `;
+    case 'admin':
+      return `
+        <nav class="dash-rail glass-card">
+          <button class="rail-btn dashboard" data-nav="admin-dashboard" aria-label="Dashboard">🏠<span class="label">Dashboard</span></button>
+          <button class="rail-btn users" data-nav="admin-users" aria-label="Users">👥<span class="label">Users</span></button>
+          <button class="rail-btn companies" data-nav="admin-companies" aria-label="Companies">🏢<span class="label">Companies</span></button>
+          <button class="rail-btn reports" data-nav="admin-reports" aria-label="Reports">📄<span class="label">Reports</span></button>
+        </nav>
+      `;
+    case 'superadmin':
+      return `
+        <nav class="dash-rail glass-card">
+          <button class="rail-btn dashboard" data-nav="superadmin-dashboard" aria-label="Dashboard">🏆<span class="label">Dashboard</span></button>
+          <button class="rail-btn schools" data-nav="superadmin-schools" aria-label="Manage Schools">🏫<span class="label">Schools</span></button>
+          <button class="rail-btn users" data-nav="superadmin-users" aria-label="Manage Users">👤<span class="label">Users</span></button>
+          <button class="rail-btn compliance" data-nav="superadmin-compliance" aria-label="Compliance">🛡️<span class="label">Compliance</span></button>
+          <button class="rail-btn billing" data-nav="superadmin-billing" aria-label="Billing">💳<span class="label">Billing</span></button>
+          <button class="rail-btn settings" data-nav="superadmin-settings" aria-label="Settings">⚙️<span class="label">Settings</span></button>
+          <button class="rail-btn logs" data-nav="superadmin-logs" aria-label="Logs">🪵<span class="label">Logs</span></button>
+        </nav>
+      `;
+    default:
+      return '';
   }
-  if (role === 'instructor') {
-    return `
-      <nav class="dash-rail glass-card" style="padding:1.2em 0 1em 0;">
-        <button class="rail-btn dashboard" data-nav="instructor-dashboard" aria-label="Dashboard">🏠<span class="label">Dashboard</span></button>
-        <button class="rail-btn profile" data-nav="instructor-profile" aria-label="Profile">👤<span class="label">Profile</span></button>
-        <button class="rail-btn students" data-nav="instructor-student-list" aria-label="Students">🧑‍🎓<span class="label">Students</span></button>
-        <button class="rail-btn checklist-review" data-nav="instructor-checklist-review" aria-label="Checklist Review">📋<span class="label">Checklist</span></button>
-      </nav>
-    `;
-  }
-  if (role === 'admin') {
-    return `
-      <nav class="dash-rail glass-card" style="padding:1.2em 0 1em 0;">
-        <button class="rail-btn dashboard" data-nav="admin-dashboard" aria-label="Dashboard">🏠<span class="label">Dashboard</span></button>
-        <button class="rail-btn users" data-nav="admin-users" aria-label="Users">👥<span class="label">Users</span></button>
-        <button class="rail-btn companies" data-nav="admin-companies" aria-label="Companies">🏢<span class="label">Companies</span></button>
-        <button class="rail-btn reports" data-nav="admin-reports" aria-label="Reports">📄<span class="label">Reports</span></button>
-      </nav>
-    `;
-  }
-  // TODO: Add superadmin nav if needed
-  return '';
 }
 
 // --- MAIN SHELL RENDER ---
@@ -141,9 +152,9 @@ export async function renderAppShell({
   container.innerHTML = `${header}${main}${footer}`;
 
   // --- EVENT HANDLERS ---
-  // Rail/Nav
+  // SPA navigation for nav/rail
   container.querySelectorAll('[data-nav]').forEach((btn) =>
-    btn.addEventListener('click', async (e) => {
+    btn.addEventListener('click', (e) => {
       const page = btn.getAttribute('data-nav');
       if (page) handleNavigation(page);
     })
@@ -171,7 +182,7 @@ export async function renderAppShell({
       alert('Notifications coming soon!');
     });
 
-  // Robust logout: bottom bar
+  // Robust logout (bottom button only!)
   container
     .querySelector('#logout-bottom-btn')
     ?.addEventListener('click', async () => {
