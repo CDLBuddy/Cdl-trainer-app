@@ -27,39 +27,39 @@ export function handleInstructorNav(page, ...args) {
 
   switch (page) {
     case 'instructor-dashboard':
-      renderInstructorDashboard(container);
-      break;
+      return renderInstructorDashboard(container);
     case 'instructor-profile':
-      renderInstructorProfile(container);
-      break;
+      return renderInstructorProfile(container);
     case 'instructor-checklist-review':
-      renderChecklistReviewForInstructor(param, container);
-      break;
+      return renderChecklistReviewForInstructor(param, container);
     case 'instructor-student-profile':
-      renderStudentProfileForInstructor(param, container);
-      break;
+      return renderStudentProfileForInstructor(param, container);
     default:
-      renderInstructorDashboard(container);
+      // Fallback to dashboard
+      return renderInstructorDashboard(container);
   }
 }
 
-// --- Standalone instructor entry for direct page loads ---
+// --- Hash-based SPA entry for direct instructor page loads ---
 window.addEventListener('DOMContentLoaded', () => {
   if (location.hash.startsWith('#instructor-')) {
     // Support :param, e.g. #instructor-checklist-review:student@email.com
     const match = location.hash.match(/^#(instructor-[a-zA-Z-]+)(?::(.+))?/);
-    const page = match
-      ? match[1] + (match[2] ? ':' + match[2] : '')
-      : 'instructor-dashboard';
+    const page =
+      match && match[1]
+        ? match[1] + (match[2] ? ':' + match[2] : '')
+        : 'instructor-dashboard';
     handleInstructorNav(page);
   }
 });
 
+// --- Instructor-specific popstate handling ---
 window.addEventListener('popstate', () => {
   if (!location.hash.startsWith('#instructor-')) return;
   const match = location.hash.match(/^#(instructor-[a-zA-Z-]+)(?::(.+))?/);
-  const page = match
-    ? match[1] + (match[2] ? ':' + match[2] : '')
-    : 'instructor-dashboard';
+  const page =
+    match && match[1]
+      ? match[1] + (match[2] ? ':' + match[2] : '')
+      : 'instructor-dashboard';
   handleInstructorNav(page);
 });
