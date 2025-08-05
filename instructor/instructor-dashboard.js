@@ -1,7 +1,6 @@
 // instructor/instructor-dashboard.js
 
 import { db, auth } from '../firebase.js';
-import { signOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {
   collection,
   query,
@@ -12,38 +11,44 @@ import {
   showToast,
   getNextChecklistAlert,
 } from '../ui-helpers.js';
-import * as instructorPages from './index.js';
 import { renderAppShell } from '../ui-shell.js';
+import * as instructorPages from './index.js';
 
+// ========== MAIN INSTRUCTOR DASHBOARD ==========
 export async function renderInstructorDashboard() {
-  let currentUserEmail =
-    window.currentUserEmail || localStorage.getItem('currentUserEmail') || null;
+  // --- Robust user/email detection
+  const currentUserEmail =
+    window.currentUserEmail ||
+    localStorage.getItem('currentUserEmail') ||
+    (auth.currentUser && auth.currentUser.email) ||
+    null;
+
   if (!currentUserEmail) {
     showToast('No user found. Please log in again.', 3500, 'error');
     return;
   }
 
-  // --- Fetch user info & role
+  // --- Fetch user profile & role
   let userData = {};
-  let userRole = localStorage.getItem('userRole') || 'instructor';
+  let userRole = 'instructor';
   try {
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', currentUserEmail));
     const snap = await getDocs(q);
     if (!snap.empty) {
       userData = snap.docs[0].data();
-      userRole = userData.role || userRole;
+      userRole = userData.role || 'instructor';
       localStorage.setItem('userRole', userRole);
     }
   } catch (e) {
     userData = {};
   }
   if (userRole !== 'instructor') {
-    showToast('Access denied: Instructor role required.', 4000, 'error');
+    showToast('Access denied: Instructor dashboard only.', 4000, 'error');
     return;
   }
 
-  // --- Fetch assigned students
+  // --- Fetch assigned students (admin-assigned only)
   let assignedStudents = [];
   try {
     const assignSnap = await getDocs(
@@ -86,15 +91,13 @@ export async function renderInstructorDashboard() {
       let latest = null;
       testsSnap.forEach((doc) => {
         const t = doc.data();
-        if (
-          !latest ||
-          (t.timestamp?.toDate ? t.timestamp.toDate() : new Date(t.timestamp)) >
-            (latest?.timestamp?.toDate
-              ? latest.timestamp.toDate()
-              : new Date(latest?.timestamp))
-        ) {
-          latest = t;
-        }
+        const tTime =
+          t.timestamp?.toDate?.() || new Date(t.timestamp) || new Date(0);
+        const lTime =
+          latest?.timestamp?.toDate?.() ||
+          new Date(latest?.timestamp) ||
+          new Date(0);
+        if (!latest || tTime > lTime) latest = t;
       });
       if (latest) {
         testResultsByStudent[student.email] = {
@@ -112,7 +115,7 @@ export async function renderInstructorDashboard() {
     console.error('Instructor test results error', e);
   }
 
-  // --- Main Dashboard Layout (only the inside, no wrapper/nav/header/footer)
+  // --- Main Dashboard Content (HTML Only, No Shell)
   const mainContent = `
     <button class="btn" id="edit-instructor-profile-btn" style="margin-bottom:1.2rem;max-width:260px;">👤 View/Edit My Profile</button>
     <button class="btn outline" id="export-csv-btn" style="margin-bottom:1.2rem;margin-left:10px;">⬇️ Export CSV</button>
@@ -130,8 +133,14 @@ export async function renderInstructorDashboard() {
                     <div>Email: ${student.email}</div>
                     <div>CDL Class: ${student.cdlClass}</div>
                     <div>Experience: ${student.experience}</div>
-                    <div>Permit: ${student.cdlPermit === 'yes' && student.permitPhotoUrl ? '✔️ Uploaded' : '❌ Not Uploaded'}</div>
-                    <div>Med Card: ${student.medicalCardUrl ? '✔️ Uploaded' : '❌ Not Uploaded'}</div>
+                    <div>Permit: ${
+                      student.cdlPermit === 'yes' && student.permitPhotoUrl
+                        ? '✔️ Uploaded'
+                        : '❌ Not Uploaded'
+                    }</div>
+                    <div>Med Card: ${
+                      student.medicalCardUrl ? '✔️ Uploaded' : '❌ Not Uploaded'
+                    }</div>
                     <div>
                       Profile Completion:
                       <div class="progress-bar" style="width:120px;display:inline-block;">
