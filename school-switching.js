@@ -31,17 +31,20 @@ export async function renderSchoolSwitching(
 ) {
   if (!container) return;
 
-  // Current user
+  // Get current user
   const userEmail =
     (auth.currentUser && auth.currentUser.email) ||
     localStorage.getItem('currentUserEmail');
+  const userRole =
+    window.currentUserRole || localStorage.getItem('userRole') || 'student';
+
   if (!userEmail) {
     showToast('You must be logged in to switch schools.');
     renderWelcome();
     return;
   }
 
-  // Fetch all schools this user is permitted to join
+  // Fetch all schools this user is permitted to join (from userRoles)
   let userSchools = [];
   try {
     const userDocSnap = await getDocs(
@@ -50,15 +53,17 @@ export async function renderSchoolSwitching(
     if (!userDocSnap.empty) {
       userDocSnap.forEach((doc) => {
         const d = doc.data();
-        if (Array.isArray(d.schools)) userSchools = d.schools;
+        // Use assignedSchools or schoolId, but fallback to legacy 'schools'
+        if (Array.isArray(d.assignedSchools)) userSchools = d.assignedSchools;
         else if (d.schoolId) userSchools = [d.schoolId];
+        else if (Array.isArray(d.schools)) userSchools = d.schools;
       });
     }
   } catch (e) {
     showToast('Error fetching assigned schools.');
   }
 
-  // Fetch all school brands for select
+  // Fetch all schools from Firestore
   let schoolBrandList = [];
   try {
     const schoolsSnap = await getDocs(collection(db, 'schools'));
@@ -70,19 +75,49 @@ export async function renderSchoolSwitching(
     showToast('Error loading school list.');
   }
 
-  // Filter the list to only those user is assigned (unless 'all')
-  let allowedSchools = schoolBrandList;
-  if (!userSchools.includes('all') && userSchools.length > 0) {
+  // === Superadmin: can see all schools ===
+  // === Others: only allowed their assigned school(s) ===
+  let allowedSchools = [];
+  if (userRole === 'superadmin' || userSchools.includes('all')) {
+    allowedSchools = schoolBrandList;
+  } else if (userSchools.length > 0) {
     allowedSchools = schoolBrandList.filter((s) => userSchools.includes(s.id));
+  } else {
+    allowedSchools = [];
   }
 
-  // Find current school
+  // If no allowed schools, show error and return
+  if (!allowedSchools.length) {
+    container.innerHTML = `
+      <div class="school-switch-card fade-in" style="max-width:400px;margin:50px auto;">
+        <h2>No School Assigned</h2>
+        <p>Your account is not assigned to any school.<br>
+        Please contact support for assistance.</p>
+        <div style="margin-top:1em;text-align:center;font-size:.96em;">
+          <a href="mailto:support@cdltrainerapp.com"
+            style="color:#b48aff;text-decoration:underline;">Contact Support</a>
+        </div>
+        <button class="btn outline" id="back-to-dashboard-btn" style="margin-top:2em;">⬅ Back</button>
+      </div>
+    `;
+    setupNavigation();
+    document
+      .getElementById('back-to-dashboard-btn')
+      ?.addEventListener('click', () => {
+        handleNavigation(getDashboardRoute(userRole));
+      });
+    return;
+  }
+
+  // Determine current school for selection
   const currentSchoolId =
     localStorage.getItem('schoolId') || allowedSchools[0]?.id || '';
   const currentBrand =
-    allowedSchools.find((s) => s.id === currentSchoolId) || {};
+    allowedSchools.find((s) => s.id === currentSchoolId) || allowedSchools[0];
 
-  // Render UI
+  // === If only one allowed school, skip dropdown ===
+  const showDropdown = allowedSchools.length > 1;
+
   container.innerHTML = `
     <div class="school-switch-card fade-in" style="max-width:500px;margin:40px auto 0 auto;">
       <h2 style="text-align:center;">
@@ -92,7 +127,9 @@ export async function renderSchoolSwitching(
         <br>Switch School
       </h2>
       <form id="school-switch-form" style="display:flex;flex-direction:column;gap:1.3rem;">
-        <label for="school-select" style="font-weight:500;font-size:1.06em;">Select Your School:</label>
+        ${
+          showDropdown
+            ? `<label for="school-select" style="font-weight:500;font-size:1.06em;">Select Your School:</label>
         <select id="school-select" required>
           ${allowedSchools
             .map(
@@ -102,8 +139,12 @@ export async function renderSchoolSwitching(
             </option>`
             )
             .join('')}
-        </select>
-        <button class="btn primary" type="submit">Switch School</button>
+        </select>`
+            : `<input type="hidden" id="school-select" value="${currentSchoolId}">`
+        }
+        <button class="btn primary" type="submit">
+          ${showDropdown ? 'Switch School' : 'Continue'}
+        </button>
         <button class="btn outline" id="back-to-dashboard-btn" type="button">⬅ Back</button>
       </form>
       <div style="margin-top:1em;text-align:center;font-size:.96em;">
@@ -134,9 +175,7 @@ export async function renderSchoolSwitching(
     );
     // Reload/re-render with new brand, go to correct dashboard
     setTimeout(() => {
-      const role =
-        window.currentUserRole || localStorage.getItem('userRole') || 'student';
-      handleNavigation(getDashboardRoute(role));
+      handleNavigation(getDashboardRoute(userRole));
     }, 500);
   };
 
@@ -144,8 +183,6 @@ export async function renderSchoolSwitching(
   document
     .getElementById('back-to-dashboard-btn')
     ?.addEventListener('click', () => {
-      const role =
-        window.currentUserRole || localStorage.getItem('userRole') || 'student';
-      handleNavigation(getDashboardRoute(role));
+      handleNavigation(getDashboardRoute(userRole));
     });
 }

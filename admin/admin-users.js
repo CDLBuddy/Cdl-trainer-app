@@ -11,17 +11,28 @@ import {
   deleteDoc,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { showToast, setupNavigation } from '../ui-helpers.js';
+import {
+  exportUsersToCSV,
+  exportUsersToPDF,
+  exportUsersExpiringToCSV,
+} from './admin-reports.js';
 
-/**
- * Renders the main admin users management page.
- * @param {HTMLElement} container
- */
+const adminRole = window.userRole || localStorage.getItem('userRole') || '';
+
 export async function renderAdminUsers(
   container = document.getElementById('app')
 ) {
   container = container || document.getElementById('app');
 
-  // --- Get current admin's schoolId(s) from localStorage or user profile
+  // --- Permission check ---
+  if (adminRole !== 'admin') {
+    container.innerHTML = `<div class="dashboard-card" style="margin:2em auto;max-width:440px;">
+      <h3>Access Denied</h3>
+      <p>This page is for admins only.</p>
+    </div>`;
+    return;
+  }
+
   let adminSchoolId =
     localStorage.getItem('schoolId') ||
     (window.schoolId ? window.schoolId : null);
@@ -33,11 +44,9 @@ export async function renderAdminUsers(
     return;
   }
 
-  // --- Fetch ONLY users from this school, never show superadmins ---
+  // --- Fetch ONLY users from this school ---
   let schoolUsers = [];
   try {
-    // Users can have either assignedSchools (array) or schoolId (string)
-    // Try array-contains first, then fallback to schoolId == X
     let usersSnap = await getDocs(
       query(
         collection(db, 'users'),
@@ -47,7 +56,6 @@ export async function renderAdminUsers(
     );
     schoolUsers = usersSnap.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
 
-    // Fallback: If array-contains query returns no users (legacy or single-school installs)
     if (schoolUsers.length === 0) {
       usersSnap = await getDocs(
         query(
@@ -67,7 +75,7 @@ export async function renderAdminUsers(
     console.error('Admin user fetch error', e);
   }
 
-  // --- Instructor & Company lists (just from this school) ---
+  // --- Instructors & Companies (for dropdowns) ---
   const instructorList = schoolUsers.filter((u) => u.role === 'instructor');
   const companyList = Array.from(
     new Set(schoolUsers.map((u) => u.assignedCompany).filter(Boolean))
@@ -77,6 +85,12 @@ export async function renderAdminUsers(
   container.innerHTML = `
     <div class="screen-wrapper fade-in admin-users-page" style="padding: 24px; max-width: 1160px; margin: 0 auto;">
       <h2>👥 Manage Users</h2>
+      <div style="margin-bottom:1em;">
+        <input type="text" id="user-search" placeholder="🔍 Search users..." style="padding:6px 14px;width:220px;">
+        <button class="btn outline small" id="export-csv-btn" title="Export visible users as CSV">Export CSV</button>
+        <button class="btn outline small" id="export-pdf-btn" title="Export visible users as PDF">Export PDF</button>
+        <button class="btn outline small" id="export-expiring-btn" title="Export users with expiring permits">Permits Expiring (CSV)</button>
+      </div>
       <div class="dashboard-card" style="margin-bottom:1.3rem;">
         <div style="margin-bottom:1em;">
           <label>Filter by Role:
@@ -106,14 +120,24 @@ export async function renderAdminUsers(
                 <th>Profile %</th>
                 <th>Permit Exp.</th>
                 <th>MedCard Exp.</th>
+                <th>Phone</th>
                 <th>Payment</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="user-table-body">
               ${schoolUsers
-                .map(
-                  (user) => `
+                .map((user) => {
+                  // Highlight permits expiring within 30 days
+                  let expiring = '';
+                  if (user.permitExpiry) {
+                    const now = new Date();
+                    const exp = new Date(user.permitExpiry);
+                    const days = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
+                    if (days >= 0 && days <= 30)
+                      expiring = ' style="color:#e02;font-weight:bold;"';
+                  }
+                  return `
                 <tr data-user="${user.email}">
                   <td>${user.name || 'User'}</td>
                   <td>${user.email}</td>
@@ -140,15 +164,16 @@ export async function renderAdminUsers(
                     </select>
                   </td>
                   <td>${user.profileProgress || 0}%</td>
-                  <td>${user.permitExpiry || ''}</td>
+                  <td${expiring}>${user.permitExpiry || ''}</td>
                   <td>${user.medCardExpiry || ''}</td>
+                  <td>${user.phone || ''}</td>
                   <td>${user.paymentStatus || ''}</td>
                   <td>
                     <button class="btn outline btn-remove-user" data-user="${user.email}">Remove</button>
                   </td>
                 </tr>
-              `
-                )
+              `;
+                })
                 .join('')}
             </tbody>
           </table>
@@ -160,25 +185,61 @@ export async function renderAdminUsers(
 
   setupNavigation();
 
-  // --- Filtering ---
+  // --- UI Filtering ---
   const roleFilter = container.querySelector('#user-role-filter');
   const companyFilter = container.querySelector('#user-company-filter');
+  const searchInput = container.querySelector('#user-search');
   roleFilter?.addEventListener('change', filterUserTable);
   companyFilter?.addEventListener('change', filterUserTable);
+  searchInput?.addEventListener('input', filterUserTable);
 
   function filterUserTable() {
     const roleVal = roleFilter.value;
     const companyVal = companyFilter.value;
+    const searchVal = searchInput.value.trim().toLowerCase();
     const rows = container.querySelectorAll('#user-table-body tr');
     rows.forEach((row) => {
       const roleCell = row.querySelector('.role-select')?.value || '';
       const companyCell = row.querySelector('.company-input')?.value || '';
+      const nameCell = row.children[0].textContent.toLowerCase();
+      const emailCell = row.children[1].textContent.toLowerCase();
       let show = true;
       if (roleVal && roleCell !== roleVal) show = false;
       if (companyVal && companyCell !== companyVal) show = false;
+      if (
+        searchVal &&
+        !(
+          nameCell.includes(searchVal) ||
+          emailCell.includes(searchVal) ||
+          companyCell.toLowerCase().includes(searchVal)
+        )
+      )
+        show = false;
       row.style.display = show ? '' : 'none';
     });
   }
+
+  // --- EXPORT: Get visible users in table (filtered) ---
+  function getVisibleUsers() {
+    const rows = container.querySelectorAll('#user-table-body tr');
+    const visible = [];
+    rows.forEach((row, idx) => {
+      if (row.style.display !== 'none') visible.push(schoolUsers[idx]);
+    });
+    return visible;
+  }
+
+  container.querySelector('#export-csv-btn')?.addEventListener('click', () => {
+    exportUsersToCSV(getVisibleUsers());
+  });
+  container.querySelector('#export-pdf-btn')?.addEventListener('click', () => {
+    exportUsersToPDF(getVisibleUsers());
+  });
+  container
+    .querySelector('#export-expiring-btn')
+    ?.addEventListener('click', () => {
+      exportUsersExpiringToCSV(getVisibleUsers(), 30);
+    });
 
   // --- Role Change Handler ---
   container.querySelectorAll('.role-select').forEach((select) => {

@@ -1,5 +1,4 @@
 // admin/admin-profile.js
-
 import { db, storage } from '../firebase.js';
 import {
   collection,
@@ -9,6 +8,8 @@ import {
   updateDoc,
   doc,
   setDoc,
+  addDoc,
+  serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import {
   ref,
@@ -19,6 +20,17 @@ import { showToast, setupNavigation } from '../ui-helpers.js';
 import { renderWelcome } from '../welcome.js';
 import { renderAdminDashboard } from './admin-dashboard.js';
 import { getCurrentSchoolBranding } from '../school-branding.js';
+
+// PDF export utility (jsPDF CDN)
+let jsPDF = null;
+async function ensureJsPDF() {
+  if (!jsPDF) {
+    const mod = await import(
+      'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'
+    );
+    jsPDF = mod.jspdf.jsPDF;
+  }
+}
 
 let currentUserEmail =
   window.currentUserEmail || localStorage.getItem('currentUserEmail') || null;
@@ -51,11 +63,15 @@ export async function renderAdminProfile(
 
   // --- Fetch admin user data ---
   let userData = {};
+  let lastUpdated = '';
   try {
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', currentUserEmail));
     const snap = await getDocs(q);
-    if (!snap.empty) userData = snap.docs[0].data();
+    if (!snap.empty) {
+      userData = snap.docs[0].data();
+      lastUpdated = userData.profileUpdatedAt || userData.updatedAt || '';
+    }
   } catch (e) {
     userData = {};
   }
@@ -69,6 +85,24 @@ export async function renderAdminProfile(
     renderAdminDashboard();
     return;
   }
+
+  // --- Profile Completion Calculation ---
+  const completionFields = [
+    'name',
+    'phone',
+    'companyName',
+    'companyAddress',
+    'profilePicUrl',
+    'emergencyContactName',
+    'emergencyContactPhone',
+    'emergencyContactRelation',
+    'adminWaiverSigned',
+    'adminSignature',
+  ];
+  let completed = completionFields.filter((f) => !!userData[f]).length;
+  const profilePercent = Math.floor(
+    (completed / completionFields.length) * 100
+  );
 
   // --- Fields and Defaults ---
   const {
@@ -92,11 +126,16 @@ export async function renderAdminProfile(
   let schoolLogoUrl = brand.logoUrl || companyLogoUrl || '/default-logo.svg';
 
   container.innerHTML = `
-    <div class="screen-wrapper fade-in profile-page" style="max-width:520px;margin:0 auto;">
+    <div class="screen-wrapper fade-in profile-page" style="max-width:540px;margin:0 auto;">
       <header style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
         <span style="font-size:1.35em;font-weight:500;color:${accent};">${schoolName}</span>
         ${headerLogo}
       </header>
+      <div class="dashboard-card" style="margin-bottom:1.3em;padding:1em;">
+        <b>Admin Profile Completion: <span style="color:${profilePercent < 80 ? '#c50' : '#2c7'}">${profilePercent}%</span></b>
+        <br>
+        <small>Last updated: ${lastUpdated ? new Date(lastUpdated.seconds ? lastUpdated.seconds * 1000 : lastUpdated).toLocaleString() : '(unknown)'}</small>
+      </div>
       <h2>👤 Admin Profile <span class="role-badge admin">Admin</span></h2>
       <form id="admin-profile-form" style="display:flex;flex-direction:column;gap:1.1rem;">
         <label>
@@ -110,7 +149,7 @@ export async function renderAdminProfile(
         <label>
           Profile Picture:
           <input type="file" name="profilePic" accept="image/*" />
-          ${profilePicUrl ? `<img src="${profilePicUrl}" alt="Profile Picture" style="max-width:90px;border-radius:12px;display:block;margin-top:7px;" />` : ''}
+          <img id="admin-profile-pic-preview" src="${profilePicUrl}" alt="Profile Picture" style="max-width:90px;border-radius:12px;display:block;margin-top:7px;" />
         </label>
         <label>
           Phone:
@@ -154,7 +193,10 @@ export async function renderAdminProfile(
         <label>
           Digital Signature: <input type="text" name="adminSignature" value="${adminSignature || ''}" placeholder="Type or sign your name" />
         </label>
-        <button class="btn primary wide" type="submit" style="background:${accent};border:none;">Save Profile</button>
+        <div style="display:flex;gap:1em;">
+          <button class="btn primary wide" type="submit" style="background:${accent};border:none;">💾 Save Profile</button>
+          <button type="button" class="btn outline" id="download-profile-pdf-btn">📄 Download PDF</button>
+        </div>
         <button class="btn outline" id="back-to-admin-dashboard-btn" type="button" style="margin-top:0.5rem;">⬅ Dashboard</button>
       </form>
     </div>
@@ -168,6 +210,16 @@ export async function renderAdminProfile(
     });
 
   setupNavigation();
+
+  // --- PROFILE PIC PREVIEW ---
+  container
+    .querySelector('input[name="profilePic"]')
+    ?.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      container.querySelector('#admin-profile-pic-preview').src = url;
+    });
 
   // --- FILE UPLOAD HELPERS ---
   async function handleFileInput(inputName, storagePath, updateField) {
@@ -198,7 +250,6 @@ export async function renderAdminProfile(
     });
   }
 
-  // Wire up all upload fields (admin profile)
   handleFileInput('profilePic', 'profilePics', 'profilePicUrl');
   handleFileInput('complianceDocs', 'complianceDocs', 'complianceDocsUrl');
 
@@ -218,6 +269,10 @@ export async function renderAdminProfile(
     }
     const file = schoolLogoInput.files[0];
     try {
+      // Preview before upload
+      const url = URL.createObjectURL(file);
+      schoolLogoImg.src = url;
+
       // Upload logo to storage (for THIS school only)
       const ext = file.name.split('.').pop();
       const logoRef = ref(
@@ -245,9 +300,7 @@ export async function renderAdminProfile(
       // Update preview in UI
       schoolLogoImg.src = logoUrl;
       showToast('School logo uploaded!');
-
-      // Optionally, re-render profile to refresh logo everywhere
-      setTimeout(() => renderAdminProfile(container), 600);
+      setTimeout(() => renderAdminProfile(container), 800);
     } catch (err) {
       showToast('Logo upload failed: ' + err.message);
     }
@@ -257,6 +310,22 @@ export async function renderAdminProfile(
   container.querySelector('#admin-profile-form').onsubmit = async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
+
+    // --- Emergency Contact validation ---
+    if (
+      fd.get('emergencyContactName') ||
+      fd.get('emergencyContactPhone') ||
+      fd.get('emergencyContactRelation')
+    ) {
+      if (
+        !fd.get('emergencyContactName') ||
+        !fd.get('emergencyContactPhone') ||
+        !fd.get('emergencyContactRelation')
+      ) {
+        showToast('Please complete all emergency contact fields.');
+        return;
+      }
+    }
 
     // Build profile update object
     const updateObj = {
@@ -270,6 +339,7 @@ export async function renderAdminProfile(
       emergencyContactRelation: fd.get('emergencyContactRelation'),
       adminWaiverSigned: !!fd.get('adminWaiverSigned'),
       adminSignature: fd.get('adminSignature'),
+      profileUpdatedAt: serverTimestamp(),
     };
 
     try {
@@ -278,6 +348,15 @@ export async function renderAdminProfile(
       const snap = await getDocs(q);
       if (!snap.empty) {
         await updateDoc(snap.docs[0].ref, updateObj);
+
+        // --- Add to admin logs (simple version) ---
+        await addDoc(collection(db, 'adminLogs'), {
+          admin: currentUserEmail,
+          schoolId: currentSchoolId,
+          update: updateObj,
+          updatedAt: new Date().toISOString(),
+        });
+
         localStorage.setItem('fullName', updateObj.name);
         showToast('✅ Profile saved!');
         renderAdminProfile(container); // re-render for changes
@@ -286,4 +365,32 @@ export async function renderAdminProfile(
       showToast('❌ Error saving: ' + err.message);
     }
   };
+
+  // --- PDF Download Handler ---
+  container
+    .querySelector('#download-profile-pdf-btn')
+    ?.addEventListener('click', async () => {
+      await ensureJsPDF();
+      const doc = new jsPDF();
+      doc.setFontSize(15);
+      doc.text(`${schoolName} - Admin Profile`, 10, 20);
+      doc.setFontSize(11);
+      const lines = [
+        `Name: ${name}`,
+        `Email: ${email}`,
+        `Phone: ${phone}`,
+        `Company Name: ${companyName}`,
+        `Company Address: ${companyAddress}`,
+        `Emergency Contact: ${emergencyContactName || ''} (${emergencyContactRelation || ''}) ${emergencyContactPhone || ''}`,
+        `Admin Waiver Signed: ${adminWaiverSigned ? 'Yes' : 'No'}`,
+        `Signature: ${adminSignature}`,
+        `Notes: ${adminNotes}`,
+      ];
+      let y = 34;
+      lines.forEach((line) => {
+        doc.text(line, 10, y);
+        y += 8;
+      });
+      doc.save(`admin-profile-${new Date().toISOString().slice(0, 10)}.pdf`);
+    });
 }

@@ -17,28 +17,51 @@ export {
   renderAdminReports,
 };
 
-// === ADMIN NAVIGATION HANDLER ===
+/** Route handler for all admin navigation.
+ *  @param {string} page - The admin page (e.g. 'admin-dashboard')
+ *  @param {...any} args - Any extra args (2nd arg is usually container)
+ */
 export function handleAdminNav(page, ...args) {
-  const container = args[1] || document.getElementById('app');
-  window.currentUserRole = 'admin';
+  let container = args[1] || document.getElementById('app');
+  if (!container) container = document.body; // Defensive
 
+  // --- Admin Auth Check (Fail Closed) ---
+  const role = window.currentUserRole || localStorage.getItem('userRole');
+  if (role !== 'admin') {
+    container.innerHTML = `
+      <div class="dashboard-card" style="margin:2em auto;max-width:460px;">
+        <h2>🔒 Access Denied</h2>
+        <p>This page is for admin users only. Please log in with an admin account.</p>
+      </div>
+    `;
+    document.title = 'Admin | Access Denied - CDL Trainer';
+    return;
+  }
+
+  // --- Page Routing ---
   switch ((page || '').toLowerCase()) {
     case 'admin-dashboard':
+      document.title = 'Admin Dashboard - CDL Trainer';
       renderAdminDashboard(container);
       break;
     case 'admin-profile':
+      document.title = 'Admin Profile - CDL Trainer';
       renderAdminProfile(container);
       break;
     case 'admin-users':
+      document.title = 'Manage Users - CDL Trainer';
       renderAdminUsers(container);
       break;
     case 'admin-companies':
+      document.title = 'Manage Companies - CDL Trainer';
       renderAdminCompanies(container);
       break;
     case 'admin-reports':
+      document.title = 'Reports & Export - CDL Trainer';
       renderAdminReports(container);
       break;
     default:
+      document.title = 'Admin Dashboard - CDL Trainer';
       renderAdminDashboard(container);
   }
 }
