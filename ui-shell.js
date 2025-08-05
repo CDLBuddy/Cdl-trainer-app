@@ -21,7 +21,18 @@ function getNavForRole(role) {
       </nav>
     `;
   }
-  // TODO: Add instructor, admin, superadmin navs as needed
+  if (role === 'instructor') {
+    return `
+      <nav class="dash-rail glass-card" style="padding:1.2em 0 1em 0;">
+        <button class="rail-btn dashboard" data-nav="instructor-dashboard" aria-label="Dashboard">🏠<span class="label">Dashboard</span></button>
+        <button class="rail-btn profile" data-nav="instructor-profile" aria-label="Profile">👤<span class="label">Profile</span></button>
+        <button class="rail-btn students" data-nav="instructor-student-list" aria-label="Students">🧑‍🎓<span class="label">Students</span></button>
+        <button class="rail-btn checklist-review" data-nav="instructor-checklist-review" aria-label="Checklist Review">📋<span class="label">Checklist</span></button>
+        <button class="rail-btn logout" data-nav="logout" aria-label="Logout">🚪<span class="label">Logout</span></button>
+      </nav>
+    `;
+  }
+  // TODO: Add admin, superadmin navs as needed
   return '';
 }
 
