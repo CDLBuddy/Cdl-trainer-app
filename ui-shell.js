@@ -3,62 +3,49 @@
 import { getCurrentSchoolBranding } from './school-branding.js';
 import { handleNavigation } from './navigation.js';
 
-// Helper: Format role for badge/tag
+// Utility: Capitalize first letter for role label
 function roleLabel(role) {
-  if (!role) return 'Student';
-  return role.charAt(0).toUpperCase() + role.slice(1);
+  if (!role) return '';
+  return role[0].toUpperCase() + role.slice(1);
 }
 
-// === ROLE-BASED NAV GENERATOR ===
+// --- ROLE-BASED NAVIGATION (Add more as needed) ---
 function getNavForRole(role) {
-  switch (role) {
-    case 'student':
-      return `
-        <nav class="dash-rail glass-card">
-          <button class="rail-btn profile" data-nav="student-profile" aria-label="Profile">
-            <span class="icon">👤</span><span class="label">Profile</span>
-          </button>
-          <button class="rail-btn checklist" data-nav="student-checklists" aria-label="Checklist">
-            <span class="icon">✅</span><span class="label">Checklist</span>
-          </button>
-          <button class="rail-btn testing" data-nav="student-practice-tests" aria-label="Testing">
-            <span class="icon">📝</span><span class="label">Testing</span>
-          </button>
-          <button class="rail-btn flashcards" data-nav="student-flashcards" aria-label="Flashcards">
-            <span class="icon">🗂️</span><span class="label">Flashcards</span>
-          </button>
-          <button class="rail-btn logout" data-nav="logout" aria-label="Logout">
-            <span class="icon">🚪</span><span class="label">Logout</span>
-          </button>
-        </nav>
-      `;
-    case 'instructor':
-      return `
-        <nav class="dash-rail glass-card">
-          <button class="rail-btn dashboard" data-nav="instructor-dashboard" aria-label="Dashboard">
-            <span class="icon">🏠</span><span class="label">Dashboard</span>
-          </button>
-          <button class="rail-btn profile" data-nav="instructor-profile" aria-label="Profile">
-            <span class="icon">👤</span><span class="label">Profile</span>
-          </button>
-          <button class="rail-btn students" data-nav="instructor-student-list" aria-label="Students">
-            <span class="icon">🧑‍🎓</span><span class="label">Students</span>
-          </button>
-          <button class="rail-btn checklist-review" data-nav="instructor-checklist-review" aria-label="Checklist Review">
-            <span class="icon">📋</span><span class="label">Checklist</span>
-          </button>
-          <button class="rail-btn logout" data-nav="logout" aria-label="Logout">
-            <span class="icon">🚪</span><span class="label">Logout</span>
-          </button>
-        </nav>
-      `;
-    // TODO: Expand for admin/superadmin when ready
-    default:
-      return '';
+  if (role === 'student') {
+    return `
+      <nav class="dash-rail glass-card" style="padding:1.2em 0 1em 0;">
+        <button class="rail-btn profile" data-nav="student-profile" aria-label="Profile">👤<span class="label">Profile</span></button>
+        <button class="rail-btn checklist" data-nav="student-checklists" aria-label="Checklist">✅<span class="label">Checklist</span></button>
+        <button class="rail-btn testing" data-nav="student-practice-tests" aria-label="Testing">📝<span class="label">Testing</span></button>
+        <button class="rail-btn flashcards" data-nav="student-flashcards" aria-label="Flashcards">🗂️<span class="label">Flashcards</span></button>
+      </nav>
+    `;
   }
+  if (role === 'instructor') {
+    return `
+      <nav class="dash-rail glass-card" style="padding:1.2em 0 1em 0;">
+        <button class="rail-btn dashboard" data-nav="instructor-dashboard" aria-label="Dashboard">🏠<span class="label">Dashboard</span></button>
+        <button class="rail-btn profile" data-nav="instructor-profile" aria-label="Profile">👤<span class="label">Profile</span></button>
+        <button class="rail-btn students" data-nav="instructor-student-list" aria-label="Students">🧑‍🎓<span class="label">Students</span></button>
+        <button class="rail-btn checklist-review" data-nav="instructor-checklist-review" aria-label="Checklist Review">📋<span class="label">Checklist</span></button>
+      </nav>
+    `;
+  }
+  if (role === 'admin') {
+    return `
+      <nav class="dash-rail glass-card" style="padding:1.2em 0 1em 0;">
+        <button class="rail-btn dashboard" data-nav="admin-dashboard" aria-label="Dashboard">🏠<span class="label">Dashboard</span></button>
+        <button class="rail-btn users" data-nav="admin-users" aria-label="Users">👥<span class="label">Users</span></button>
+        <button class="rail-btn companies" data-nav="admin-companies" aria-label="Companies">🏢<span class="label">Companies</span></button>
+        <button class="rail-btn reports" data-nav="admin-reports" aria-label="Reports">📄<span class="label">Reports</span></button>
+      </nav>
+    `;
+  }
+  // TODO: Add superadmin nav if needed
+  return '';
 }
 
-// === MAIN APP SHELL RENDERER ===
+// --- MAIN SHELL RENDER ---
 export async function renderAppShell({
   role = 'student',
   user = {},
@@ -111,60 +98,54 @@ export async function renderAppShell({
     </header>
   `;
 
-  // === MAIN: NAV + METRICS/CONTENT ===
+  // === MAIN + RAIL + DASHBOARD ===
   const main = `
-    <main class="main-content screen-wrapper" style="padding:3vw 0.9em 5vw 0.9em;max-width:1200px;margin:0 auto;">
-      <div class="dash-layout" style="display:flex;gap:2rem;">
-        <div style="flex-shrink:0;">${getNavForRole(role)}</div>
-        <div class="dash-metrics" style="flex:1;min-width:0;">${mainContent}</div>
+    <main class="main-content screen-wrapper" style="padding:2.5vw 0.8em 4.5vw 0.8em;max-width:1200px;margin:0 auto;">
+      <div class="dash-layout">
+        ${getNavForRole(role)}
+        <div class="dash-metrics">${mainContent}</div>
       </div>
-      <button id="ai-coach-fab" aria-label="Ask AI Coach" class="fab" style="position:fixed;bottom:70px;right:18px;z-index:999;">
+      <button id="ai-coach-fab" aria-label="Ask AI Coach" class="fab" style="position:fixed;bottom:70px;right:22px;z-index:999;">
         <span style="font-size:2em;">💬</span>
+      </button>
+      <button id="logout-bottom-btn" class="wide-logout glass-card" style="display:block;margin:48px auto 0 auto;max-width:440px;width:75%;min-width:180px;padding:0.8em 0.5em 0.7em 0.5em;font-size:1.09em;box-shadow:0 2px 14px #112;letter-spacing:.01em;position:relative;">
+        <span style="display:flex;align-items:center;justify-content:center;gap:10px;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <rect x="4" y="4" width="12" height="16" rx="2" stroke="#ff8080" stroke-width="2"/>
+            <path d="M17 15l4-3-4-3m4 3H10" stroke="#ff8080" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="label" style="font-weight:600;">Logout</span>
+        </span>
       </button>
     </main>
   `;
-  <div class="logout-shell-row">
-  <button class="logout-btn-fat" data-nav="logout" aria-label="Logout">
-    <span style="font-size:1.6em;margin-right:7px;">🚪</span> Logout
-  </button>
-</div>
 
   // === FOOTER ===
   const footer = showFooter
     ? `
-      <footer class="app-footer glass-card" style="margin:40px auto 16px auto;padding:0.7em 1.2em;font-size:1.03em;max-width:600px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 24px #1113;">
-        <div style="margin-bottom:3px;">
-          Contact: ${contact || '-'} &bull; Website: ${website || '-'}
-        </div>
-        <div style="font-size:0.97em;">
-          &copy; ${new Date().getFullYear()} CDL Trainer. Powered by CDL Buddy.
-        </div>
-        <div style="font-size:0.89em;opacity:0.69;">
-          App Version 1.0.0 &bull;
-          <a href="https://cdltrainerapp.com/help" target="_blank" class="footer-link">Help Center</a>
-          &bull;
-          <a href="https://cdltrainerapp.com/docs" target="_blank" class="footer-link">Docs</a>
-        </div>
-      </footer>
-    `
+    <footer class="app-footer glass-card" style="margin:40px auto 16px auto;padding:0.7em 1.2em;font-size:1.03em;max-width:600px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 24px #1113;">
+      <div style="margin-bottom:3px;">
+        Contact: ${contact || '-'} &bull; Website: ${website || '-'}
+      </div>
+      <div style="font-size:0.97em;">
+        &copy; ${new Date().getFullYear()} CDL Trainer. Powered by CDL Buddy.
+      </div>
+      <div style="font-size:0.89em;opacity:0.69;">
+        App Version 1.0.0 &bull; <a href="https://cdltrainerapp.com/help" target="_blank" class="footer-link">Help Center</a>
+        <a href="https://cdltrainerapp.com/docs" target="_blank" class="footer-link">Docs</a>
+      </div>
+    </footer>
+  `
     : '';
 
-  // === RENDER TO DOM ===
   container.innerHTML = `${header}${main}${footer}`;
 
-  // === EVENT HANDLERS ===
-  // Nav/rail buttons
+  // --- EVENT HANDLERS ---
+  // Rail/Nav
   container.querySelectorAll('[data-nav]').forEach((btn) =>
     btn.addEventListener('click', async (e) => {
       const page = btn.getAttribute('data-nav');
-      if (page === 'logout') {
-        if (window.handleLogout) return window.handleLogout();
-        localStorage.removeItem('fullName');
-        localStorage.removeItem('userRole');
-        location.reload();
-      } else if (page) {
-        handleNavigation(page);
-      }
+      if (page) handleNavigation(page);
     })
   );
   // AI Coach FAB
@@ -177,16 +158,26 @@ export async function renderAppShell({
     ?.addEventListener('click', () =>
       document.body.classList.toggle('dark-mode')
     );
-  // Help button
+  // Help
   container
     .querySelector('.icon-btn[aria-label="Help"]')
     ?.addEventListener('click', () =>
       window.open('https://cdltrainerapp.com/help', '_blank')
     );
-  // Notifications (demo)
+  // Notifications (placeholder, real logic TBD)
   container
     .querySelector('.notif-btn')
     ?.addEventListener('click', () => {
       alert('Notifications coming soon!');
+    });
+
+  // Robust logout: bottom bar
+  container
+    .querySelector('#logout-bottom-btn')
+    ?.addEventListener('click', async () => {
+      if (window.handleLogout) return window.handleLogout();
+      // fallback:
+      localStorage.clear();
+      location.reload();
     });
 }
