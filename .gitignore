@@ -1,0 +1,145 @@
+# ========================================
+# ✅ CORE GITIGNORE FOR CDL BUDDY APP
+# ========================================
+
+# ----------------------------------------
+# 🗂 LOGS
+# ----------------------------------------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ----------------------------------------
+# 📦 DEPENDENCIES
+# ----------------------------------------
+node_modules/
+bower_components/
+
+# ----------------------------------------
+# 🔥 FIREBASE LOCAL FILES
+# ----------------------------------------
+.firebase/
+.firebaserc
+firebase-debug.log
+firebase-debug.*
+firebase-emulator-*
+firebase.json     # Optional: comment this out if you want to track it
+
+# ----------------------------------------
+# 📦 BUILD OUTPUTS
+# ----------------------------------------
+dist/
+build/
+out/
+public/build/
+public/dist/
+coverage/
+
+# ----------------------------------------
+# 🔐 ENVIRONMENT VARIABLES
+# ----------------------------------------
+.env
+.env.*
+.env.local
+.env.*.local
+.env.development.local
+.env.production.local
+
+# ----------------------------------------
+# 🍎 MAC OS SYSTEM FILES
+# ----------------------------------------
+.DS_Store
+
+# 🪟 WINDOWS SYSTEM FILES
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ----------------------------------------
+# 🛠️ IDE + EDITOR SETTINGS
+# ----------------------------------------
+# Ignore all IDE config except VS Code settings
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# VS Code: track only settings.json
+.vscode/*
+!.vscode/settings.json
+
+# ----------------------------------------
+# 🧹 BACKUPS + TEMP FILES
+# ----------------------------------------
+*.bak
+*.tmp
+*.swp
+*~
+.cache/
+*.pid
+*.seed
+*.orig
+
+# ----------------------------------------
+# 📦 ARCHIVES
+# ----------------------------------------
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+
+# ----------------------------------------
+# ✅ TEST + COVERAGE
+# ----------------------------------------
+*.spec.js
+*.test.js
+*.test.html
+coverage/
+nyc_output/
+.jest/
+.jest-cache/
+.jest-config/
+
+# ----------------------------------------
+# 🧪 FRONTEND TOOLING (OPTIONAL)
+# ----------------------------------------
+.parcel-cache/
+.next/
+out/
+.svelte-kit/
+.svelte/
+.storybook/
+.cache/
+.npm/
+.pnpm-debug.log
+
+# ----------------------------------------
+# 🚫 GITHUB PAGES (Optional)
+CNAME
+
+# ----------------------------------------
+# 📁 USER/DEV FILES
+local.*
+scripts/
+tools/
+
+# ----------------------------------------
+# 🎨 DESIGN EXPORTS & TEMP IMAGES
+*.sketch
+*.ai
+*.psd
+*.xcf
+*.svg~*
+*Icon?*.png
+*Logo?*.png
+
+# ----------------------------------------
+# 📤 TEMP UPLOADS
+uploads/
+tmp/
+temp/
+
+# ----------------------------------------
+# 🧪 LOCAL DIAGNOSTIC SCRIPTS (DEV ONLY)
+# ----------------------------------------
+route-diagnostic-checker.js

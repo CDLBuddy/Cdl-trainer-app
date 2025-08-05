@@ -1,0 +1,41 @@
+{
+  "name": "cdl-trainer-app",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Interactive AI-Powered Web App for CDL Training and ELDT Compliance",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "diagnose": "node route-diagnostic-checker.js",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CDLBuddy/Cdl-trainer-app.git"
+  },
+  "keywords": [
+    "CDL",
+    "ELDT",
+    "AI",
+    "training",
+    "webapp"
+  ],
+  "author": "Kyle Lucas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CDLBuddy/Cdl-trainer-app/issues"
+  },
+  "homepage": "https://github.com/CDLBuddy/Cdl-trainer-app#readme",
+  "devDependencies": {
+    "@eslint/css": "^0.10.0",
+    "@eslint/json": "^0.13.1",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.3",
+    "globals": "^16.3.0",
+    "prettier": "^3.6.2"
+  },
+  "dependencies": {
+    "debug": "^4.4.1"
+  }
+}
