@@ -7,7 +7,7 @@ import { renderAdminUsers } from './admin-users.js';
 import { renderAdminCompanies } from './admin-companies.js';
 import { renderAdminReports } from './admin-reports.js';
 
-// === ADMIN MODULE BARREL EXPORTS ===
+// === BARREL EXPORTS ===
 export {
   renderAdminDashboard,
   currentUserEmail,
@@ -17,9 +17,10 @@ export {
   renderAdminReports,
 };
 
-/** Route handler for all admin navigation.
- *  @param {string} page - The admin page (e.g. 'admin-dashboard')
- *  @param {...any} args - Any extra args (2nd arg is usually container)
+/**
+ * Route handler for all admin navigation.
+ * @param {string} page - The admin page (e.g. 'admin-dashboard')
+ * @param {...any} args - Any extra args (2nd arg is usually container)
  */
 export function handleAdminNav(page, ...args) {
   let container = args[1] || document.getElementById('app');
@@ -42,27 +43,22 @@ export function handleAdminNav(page, ...args) {
   switch ((page || '').toLowerCase()) {
     case 'admin-dashboard':
       document.title = 'Admin Dashboard - CDL Trainer';
-      renderAdminDashboard(container);
-      break;
+      return renderAdminDashboard(container);
     case 'admin-profile':
       document.title = 'Admin Profile - CDL Trainer';
-      renderAdminProfile(container);
-      break;
+      return renderAdminProfile(container);
     case 'admin-users':
       document.title = 'Manage Users - CDL Trainer';
-      renderAdminUsers(container);
-      break;
+      return renderAdminUsers(container);
     case 'admin-companies':
       document.title = 'Manage Companies - CDL Trainer';
-      renderAdminCompanies(container);
-      break;
+      return renderAdminCompanies(container);
     case 'admin-reports':
       document.title = 'Reports & Export - CDL Trainer';
-      renderAdminReports(container);
-      break;
+      return renderAdminReports(container);
     default:
       document.title = 'Admin Dashboard - CDL Trainer';
-      renderAdminDashboard(container);
+      return renderAdminDashboard(container);
   }
 }
 
