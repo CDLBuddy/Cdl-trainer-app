@@ -107,7 +107,6 @@ export async function renderAppShell({
           <span>Hi, <strong>${name}</strong></span>
           <span class="role-badge ${role}" style="margin-left:4px;">${roleName}</span>
         </span>
-        <button class="btn btn-sm" aria-label="Logout" data-nav="logout">Logout</button>
       </div>
     </header>
   `;
@@ -124,6 +123,11 @@ export async function renderAppShell({
       </button>
     </main>
   `;
+  <div class="logout-shell-row">
+  <button class="logout-btn-fat" data-nav="logout" aria-label="Logout">
+    <span style="font-size:1.6em;margin-right:7px;">🚪</span> Logout
+  </button>
+</div>
 
   // === FOOTER ===
   const footer = showFooter
