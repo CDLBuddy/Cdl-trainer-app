@@ -35,53 +35,44 @@ export function handleStudentNav(page, ...args) {
 
   switch (page) {
     case 'student-dashboard':
-      renderStudentDashboard(container);
-      break;
+      return renderStudentDashboard(container);
     case 'student-profile':
-      renderProfile(container);
-      break;
+      return renderProfile(container);
     case 'student-coach':
-      renderAICoach(container);
-      break;
+      return renderAICoach(container);
     case 'student-walkthrough':
-      renderWalkthrough(container);
-      break;
+      return renderWalkthrough(container);
     case 'student-checklists':
-      renderChecklists(container);
-      break;
+      return renderChecklists(container);
     case 'student-practice-tests':
-      renderPracticeTests(container);
-      break;
+      return renderPracticeTests(container);
     case 'student-test-review':
-      renderTestReview(container);
-      break;
+      return renderTestReview(container);
     case 'student-flashcards':
-      renderFlashcards(container);
-      break;
+      return renderFlashcards(container);
     case 'student-results':
-      renderTestResults(container);
-      break;
+      return renderTestResults(container);
     case 'student-test-engine':
-      renderTestEngine(container);
-      break;
+      return renderTestEngine(container);
     default:
-      renderStudentDashboard(container);
+      // Default fallback to dashboard
+      return renderStudentDashboard(container);
   }
 }
 
-// --- Standalone student entry for direct page loads ---
+// --- Hash-based SPA entry for direct student page loads ---
 window.addEventListener('DOMContentLoaded', () => {
   if (location.hash.startsWith('#student-')) {
-    const match = location.hash.match(/^#student-([a-zA-Z-]+)/);
+    const match = location.hash.match(/^#student-([\w-]+)/);
     const page = match ? `student-${match[1]}` : 'student-dashboard';
     handleStudentNav(page);
   }
 });
 
-// --- Student-specific popstate handling ---
+// --- Student-specific popstate handling (browser nav) ---
 window.addEventListener('popstate', () => {
   if (!location.hash.startsWith('#student-')) return;
-  const match = location.hash.match(/^#student-([a-zA-Z-]+)/);
+  const match = location.hash.match(/^#student-([\w-]+)/);
   const page = match ? `student-${match[1]}` : 'student-dashboard';
   handleStudentNav(page);
 });
