@@ -3,30 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#b48aff" />
+  <meta name="theme-color" content="#004d66" />
   <title>CDL Trainer</title>
+
+  <!-- ===== GLOBAL & THEME STYLES ===== -->
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="ui-shell.css" />
+
+  <!-- ===== ROLE-SPECIFIC DASHBOARD STYLES (add as needed) ===== -->
+  <!-- <link rel="stylesheet" href="student.css" /> -->
+  <!-- <link rel="stylesheet" href="instructor.css" /> -->
+  <!-- <link rel="stylesheet" href="admin.css" /> -->
+  <!-- <link rel="stylesheet" href="superadmin.css" /> -->
 
   <!-- =======================
      GLOBAL DEBUG SETTINGS
      ======================= -->
-  <!--
   <script>
-    alert('🟢 [debug] Inline JS executed at HEAD');
-    console.log('[debug] Inline JS executed at HEAD');
+    // Toggle these flags to enable/disable specific debugging features
     window.APP_DEBUG = {
       htmlAlerts: true,
       moduleAlerts: true,
       fetchTest: true,
       globalErrors: true,
-      verboseLogs: true,
+      verboseLogs: false,   // Set to true for ALL console.log alerts!
       navTracer: true,
       authEvents: true,
       featureFlags: true,
-      simulateLatency: true,
+      simulateLatency: false,
     };
     window.FEATURE_BILLING_V2 = window.APP_DEBUG.featureFlags;
     const D = window.APP_DEBUG || {};
+
     if (D.htmlAlerts) {
       alert('✅ [debug] HTML <head> parsed');
       console.log('[debug] HTML <head> parsed');
@@ -74,30 +82,29 @@
       };
     }
   </script>
-  -->
 </head>
 <body>
-  <!-- Global Loader Overlay -->
+  <!-- ===== Loader Overlay ===== -->
   <div id="app-loader" class="loader-overlay" style="display:none;">
     <div class="loading-spinner"></div>
     <p>Loading…</p>
   </div>
 
-  <!-- Global JS Error Overlay -->
+  <!-- ===== JS Error Overlay ===== -->
   <div id="js-error" class="error-overlay hidden" style="display:none;">
     <p>JavaScript failed to load! Please refresh.</p>
   </div>
 
-  <!-- Main App Loading Screen (for initial boot, not overlay) -->
+  <!-- ===== Main Loading Screen ===== -->
   <div id="loading-screen" class="screen-wrapper fade-in" style="display:none;">
     <div class="loading-spinner"></div>
     <p>Loading CDL Trainer…</p>
   </div>
 
-  <!-- Main App Root -->
+  <!-- ===== Main App Root ===== -->
   <div id="app"></div>
 
-  <!-- App Entry -->
+  <!-- ===== App Entry (ES Module) ===== -->
   <script type="module" src="./app.js"></script>
 </body>
 </html>
