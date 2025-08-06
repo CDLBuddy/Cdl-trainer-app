@@ -30,7 +30,9 @@ const PERMISSIONS_LIST = [
 // --- Fetch all schools for assignment ---
 async function fetchSchools() {
   try {
-    const snap = await getDocs(query(collection(db, 'schools'), orderBy('name')));
+    const snap = await getDocs(
+      query(collection(db, 'schools'), orderBy('name'))
+    );
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
     return [];
@@ -293,15 +295,12 @@ export async function renderPermissions(
         });
 
         // Log change to audit trail
-        await addDoc(
-          collection(db, 'users', userId, 'permissionsLog'),
-          {
-            timestamp: new Date().toISOString(),
-            actorEmail: localStorage.getItem('currentUserEmail'),
-            actorName: localStorage.getItem('fullName'),
-            details: `Role: ${newRole}, Schools: [${assignedSchools.join(', ')}], Perms: [${permissions.join(', ')}], Status: ${status}, Expiry: ${expiryDate}`,
-          }
-        );
+        await addDoc(collection(db, 'users', userId, 'permissionsLog'), {
+          timestamp: new Date().toISOString(),
+          actorEmail: localStorage.getItem('currentUserEmail'),
+          actorName: localStorage.getItem('fullName'),
+          details: `Role: ${newRole}, Schools: [${assignedSchools.join(', ')}], Perms: [${permissions.join(', ')}], Status: ${status}, Expiry: ${expiryDate}`,
+        });
 
         showToast(`User permissions updated.`);
         btn.disabled = true;

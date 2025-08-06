@@ -12,7 +12,9 @@ import { renderAppShell } from '../ui-shell.js';
 
 // Helper: Fetch Superadmin Platform Stats
 async function getSuperadminStats() {
-  let schools = 0, users = 0, complianceAlerts = 0;
+  let schools = 0,
+    users = 0,
+    complianceAlerts = 0;
   try {
     const schoolsSnap = await getDocs(collection(db, 'schools'));
     schools = schoolsSnap.size;
@@ -33,7 +35,8 @@ async function getSuperadminStats() {
 // === Main Superadmin Dashboard Renderer ===
 export async function renderSuperadminDashboard() {
   // ---- Auth Check ----
-  const currentUserRole = localStorage.getItem('userRole') || window.currentUserRole;
+  const currentUserRole =
+    localStorage.getItem('userRole') || window.currentUserRole;
   if (currentUserRole !== 'superadmin') {
     showToast('Access denied: Super Admins only.');
     if (window.handleLogout) window.handleLogout();
@@ -41,7 +44,8 @@ export async function renderSuperadminDashboard() {
   }
 
   // ---- Fetch Current Superadmin Info ----
-  const currentUserEmail = localStorage.getItem('currentUserEmail') || window.currentUserEmail || null;
+  const currentUserEmail =
+    localStorage.getItem('currentUserEmail') || window.currentUserEmail || null;
   let userData = {};
   try {
     const usersQuery = query(
@@ -126,5 +130,4 @@ export async function renderSuperadminDashboard() {
   // --- Dashboard-specific wiring if needed (none here, all SPA nav)
   // All nav handled via data-nav in shell. If you want custom actions:
   // document.querySelector('[data-nav="superadmin-schools"]')?.addEventListener('click', ...)
-
 }

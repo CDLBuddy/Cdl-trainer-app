@@ -93,7 +93,9 @@ export async function renderAdminDashboard() {
 
   // --- Metrics and Alerts ---
   const studentCount = allUsers.filter((u) => u.role === 'student').length;
-  const instructorCount = allUsers.filter((u) => u.role === 'instructor').length;
+  const instructorCount = allUsers.filter(
+    (u) => u.role === 'instructor'
+  ).length;
   const adminCount = allUsers.filter((u) => u.role === 'admin').length;
   const permitSoon = allUsers.filter((u) => expirySoon(u.permitExpiry)).length;
   const medSoon = allUsers.filter((u) => expirySoon(u.medCardExpiry)).length;
@@ -262,9 +264,11 @@ export async function renderAdminDashboard() {
   });
 
   // --- PDF Export ---
-  document.getElementById('export-pdf-btn')?.addEventListener('click', async () => {
-    await exportUsersToPDF(filteredUserRows());
-  });
+  document
+    .getElementById('export-pdf-btn')
+    ?.addEventListener('click', async () => {
+      await exportUsersToPDF(filteredUserRows());
+    });
 
   // --- Expiring Permits Export ---
   document.getElementById('expiring-btn')?.addEventListener('click', () => {

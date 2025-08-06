@@ -236,7 +236,8 @@ export async function renderSettings(
             renderSettings(container);
           });
       } else {
-        container.querySelector('#school-settings-form-container').innerHTML = '';
+        container.querySelector('#school-settings-form-container').innerHTML =
+          '';
       }
     });
 

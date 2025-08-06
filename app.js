@@ -63,7 +63,7 @@ window.currentUserRole = null;
 window.schoolId = null;
 
 // --- GLOBAL LOGOUT HANDLER ---
-window.handleLogout = async function() {
+window.handleLogout = async function () {
   try {
     if (auth && typeof auth.signOut === 'function') {
       await signOut(auth);

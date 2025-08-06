@@ -1,7 +1,7 @@
 // admin/index.js
 
 // === ADMIN MODULE BARREL IMPORTS ===
-import { renderAdminDashboard, currentUserEmail } from './admin-dashboard.js';
+import { renderAdminDashboard } from './admin-dashboard.js';
 import { renderAdminProfile } from './admin-profile.js';
 import { renderAdminUsers } from './admin-users.js';
 import { renderAdminCompanies } from './admin-companies.js';
@@ -10,7 +10,6 @@ import { renderAdminReports } from './admin-reports.js';
 // === BARREL EXPORTS ===
 export {
   renderAdminDashboard,
-  currentUserEmail,
   renderAdminProfile,
   renderAdminUsers,
   renderAdminCompanies,

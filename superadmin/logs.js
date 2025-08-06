@@ -23,8 +23,8 @@ async function fetchLogs({
 } = {}) {
   // Firestore v9+ modular syntax (CDN)
   const ref = query(
-    collection(db, "systemLogs"),
-    orderBy("timestamp", "desc"),
+    collection(db, 'systemLogs'),
+    orderBy('timestamp', 'desc'),
     limit(400)
   );
   const snap = await getDocs(ref);
@@ -34,7 +34,7 @@ async function fetchLogs({
     logs = logs.filter((l) => l.timestamp && l.timestamp >= dateFrom);
   if (dateTo)
     logs = logs.filter(
-      (l) => l.timestamp && l.timestamp <= dateTo + "T23:59:59"
+      (l) => l.timestamp && l.timestamp <= dateTo + 'T23:59:59'
     );
   if (user)
     logs = logs.filter((l) => l.userEmail && l.userEmail.includes(user));
@@ -45,8 +45,8 @@ async function fetchLogs({
   if (keyword)
     logs = logs.filter(
       (l) =>
-        (l.details || "").toLowerCase().includes(keyword.toLowerCase()) ||
-        (l.target || "").toLowerCase().includes(keyword.toLowerCase())
+        (l.details || '').toLowerCase().includes(keyword.toLowerCase()) ||
+        (l.target || '').toLowerCase().includes(keyword.toLowerCase())
     );
   return logs;
 }
