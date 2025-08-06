@@ -90,6 +90,18 @@ body {
   z-index: 4;
   box-shadow: 0 2px 8px rgba(0,0,0,0.13);
 }
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  font-size: 1.16em;
+  margin-top: 0.5em;
+  margin-bottom: 1.2em;
+  font-weight: 600;
+  color: #e8f4ff;
+}
+.profile-header .emoji { font-size: 1.7em; }
+
 
 /* ==== 4. USER INFO & ROLE BADGE ==== */
 .user-info img {
