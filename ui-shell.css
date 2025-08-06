@@ -209,23 +209,36 @@ body {
 }
 
 /* ==== 7. ADMIN DASHBOARD CARDS & TABLE ==== */
+
+/* Dashboard Card */
 .dashboard-card {
-  background: rgba(255,255,255,0.13);
+  background: rgba(255, 255, 255, 0.13);
   border-radius: 22px;
   padding: 2em 2.5em 2em 2.5em;
-  margin: 1.5em 0;
+  margin: 1.7em 0;
   box-shadow: 0 4px 24px #00285b18;
   position: relative;
   z-index: 1;
   max-width: 100%;
   overflow: visible;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, background 0.15s;
+  border: 1.5px solid var(--brand-light, #4e91ad33);
 }
 @media (max-width: 1000px) {
-  .dashboard-card { padding: 1.2em 0.5em; margin-left: 0; margin-right: 0; }
+  .dashboard-card { padding: 1.2em 0.5em; }
 }
 .dashboard-card + .dashboard-card { margin-top: 2.2em; }
 
+/* Card Header/Section Title */
+.dashboard-card .section-title {
+  font-size: 1.23em;
+  font-weight: 700;
+  color: var(--brand-light, #b1e4ff);
+  margin-bottom: 1.2em;
+  letter-spacing: 0.02em;
+}
+
+/* Scrollable Table Wrapper */
 .user-table-scroll {
   overflow-x: auto;
   width: 100%;
@@ -233,10 +246,12 @@ body {
   border-radius: 14px;
   background: rgba(10,40,60,0.09);
   box-shadow: 0 1.5px 12px 0 #004d6631;
+  padding-bottom: 2px;
 }
 
+/* Table Layout */
 .user-table {
-  min-width: 950px;
+  min-width: 980px;
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
@@ -244,9 +259,10 @@ body {
   font-size: 1em;
 }
 .user-table thead tr {
-  background: rgba(20, 65, 110, 0.13);
-  color: #f2fdff;
+  background: linear-gradient(90deg, #19354c 60%, #3c93c9 100%);
+  color: #e9f9fe;
   font-weight: 700;
+  letter-spacing: 0.01em;
 }
 .user-table th, .user-table td {
   padding: 0.7em 1.1em;
@@ -255,38 +271,107 @@ body {
   background: none;
   position: relative;
   z-index: 2;
+  vertical-align: middle;
+  transition: background 0.12s;
 }
 .user-table th {
   position: sticky;
   top: 0;
-  background: rgba(10,40,60,0.20);
+  background: linear-gradient(90deg, #19354c 60%, #3c93c9 100%);
   z-index: 5;
+  font-size: 1.05em;
 }
 .user-table tr { transition: background 0.13s; }
-.user-table tr:hover { background: rgba(110,220,255,0.04); }
+.user-table tr:hover { background: rgba(100, 230, 255, 0.045); }
+
+.user-table .role-badge {
+  background: var(--brand-light, #4e91ad);
+  color: #fff;
+  border-radius: 6px;
+  padding: 2.5px 11px 2.5px 11px;
+  font-size: 0.98em;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-left: 0.3em;
+}
 
 @media (max-width: 1050px) {
   .user-table { min-width: 700px; font-size: 0.97em; }
 }
 @media (max-width: 750px) {
-  .user-table { min-width: 520px; font-size: 0.91em; }
+  .user-table { min-width: 530px; font-size: 0.91em; }
   .dashboard-card { padding: 1.1em 0.1em; }
 }
 
 /* Export & Filter Buttons Row */
+.dashboard-card .dashboard-controls,
 .dashboard-card > div[style*="display:flex"] {
   flex-wrap: wrap;
   gap: 0.8em;
   margin-bottom: 1em;
+  display: flex;
+  align-items: center;
 }
 .dashboard-card .btn,
 .dashboard-card button {
-  position: relative;
-  z-index: 2;
   margin-bottom: 0.5em;
   margin-top: 0.3em;
+  font-size: 1.01em;
+  font-weight: 600;
+  border-radius: 9px;
+  box-shadow: 0 2px 8px #0e1b1b1b;
+  border: none;
+  transition: background 0.14s, color 0.12s, box-shadow 0.14s;
+  background: var(--brand-light, #4e91ad);
+  color: #fff;
+  padding: 7px 20px;
+  cursor: pointer;
+  outline: none;
+  z-index: 3;
+  position: relative;
 }
+.dashboard-card .btn:hover,
+.dashboard-card button:hover,
+.dashboard-card .btn:focus,
+.dashboard-card button:focus {
+  background: #175876;
+  color: #fff;
+  box-shadow: 0 4px 16px #3c93c944;
+}
+
+.dashboard-card .btn-outline,
+.dashboard-card button.btn-outline {
+  background: #fff;
+  color: var(--brand-light, #4e91ad);
+  border: 1.5px solid var(--brand-light, #4e91ad);
+}
+.dashboard-card .btn-outline:hover,
+.dashboard-card button.btn-outline:hover,
+.dashboard-card .btn-outline:focus,
+.dashboard-card button.btn-outline:focus {
+  background: #bbefff;
+  color: #154d66;
+  border-color: #1e7a99;
+}
+
+/* Remove Button (Destructive) */
+.btn-remove-user {
+  background: #ffeded;
+  color: #c44c4c;
+  border: 1.5px solid #fa9393;
+  font-weight: 700;
+  transition: background 0.16s, color 0.16s;
+}
+.btn-remove-user:hover,
+.btn-remove-user:focus {
+  background: #f55a5a;
+  color: #fff;
+  border-color: #ffbcbc;
+}
+
+/* Responsive controls */
 @media (max-width: 600px) {
+  .dashboard-card .dashboard-controls,
   .dashboard-card > div[style*="display:flex"] {
     flex-direction: column;
     align-items: stretch;
@@ -295,9 +380,45 @@ body {
   .dashboard-card .btn,
   .dashboard-card button { width: 100%; margin-bottom: 0.6em; }
 }
-.btn-remove-user, .dashboard-card .btn-outline, .dashboard-card .btn {
-  z-index: 3 !important;
-  position: relative;
+
+/* Accessibility: Focus visible for tab users */
+.dashboard-card .btn:focus-visible,
+.dashboard-card button:focus-visible {
+  outline: 3px solid #b1e4ff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px #b1e4ff55;
+}
+
+/* Filter/Dropdowns */
+.dashboard-card select,
+.dashboard-card input[type="search"] {
+  border-radius: 6px;
+  border: 1.1px solid #bbefff;
+  padding: 7px 10px;
+  font-size: 1em;
+  background: #f3faff;
+  color: #104060;
+  margin-right: 0.6em;
+  margin-bottom: 0.5em;
+  transition: border 0.13s, box-shadow 0.12s;
+}
+.dashboard-card select:focus,
+.dashboard-card input[type="search"]:focus {
+  border-color: #1e7a99;
+  box-shadow: 0 2px 8px #4e91ad33;
+}
+
+/* Miscellaneous: */
+.dashboard-card .export-btn-special {
+  background: #fff3d2;
+  color: #a65d00;
+  border: 1.5px solid #ffe09c;
+}
+.dashboard-card .export-btn-special:hover,
+.dashboard-card .export-btn-special:focus {
+  background: #ffd37b;
+  color: #7b4c00;
+  border-color: #e0a944;
 }
 
 /* ==== 8. FOOTER ==== */
