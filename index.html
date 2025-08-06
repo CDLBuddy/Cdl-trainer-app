@@ -6,82 +6,24 @@
   <meta name="theme-color" content="#004d66" />
   <title>CDL Trainer</title>
 
-  <!-- ===== GLOBAL & THEME STYLES ===== -->
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="ui-shell.css" />
+  <!-- ===== Global/Theme Styles ===== -->
+  <link rel="stylesheet" href="style.css" />          <!-- Base/Reset (if you use it) -->
+  <link rel="stylesheet" href="ui-shell.css" />       <!-- Glassmorphic shell & dashboard layout -->
 
-  <!-- ===== ROLE-SPECIFIC DASHBOARD STYLES (add as needed) ===== -->
-  <!-- <link rel="stylesheet" href="student.css" /> -->
-  <!-- <link rel="stylesheet" href="instructor.css" /> -->
-  <!-- <link rel="stylesheet" href="admin.css" /> -->
-  <!-- <link rel="stylesheet" href="superadmin.css" /> -->
+  <!-- ===== Role-Specific Dashboards (add only if these files exist) ===== -->
+ <link rel="stylesheet" href="student.css" /> 
+ <link rel="stylesheet" href="instructor.css" /> 
+ <link rel="stylesheet" href="admin.css" /> 
+ <link rel="stylesheet" href="superadmin.css" /> 
 
-  <!-- =======================
-     GLOBAL DEBUG SETTINGS
-     ======================= -->
-  <script>
-    // Toggle these flags to enable/disable specific debugging features
-    window.APP_DEBUG = {
-      htmlAlerts: true,
-      moduleAlerts: true,
-      fetchTest: true,
-      globalErrors: true,
-      verboseLogs: false,   // Set to true for ALL console.log alerts!
-      navTracer: true,
-      authEvents: true,
-      featureFlags: true,
-      simulateLatency: false,
-    };
-    window.FEATURE_BILLING_V2 = window.APP_DEBUG.featureFlags;
-    const D = window.APP_DEBUG || {};
-
-    if (D.htmlAlerts) {
-      alert('✅ [debug] HTML <head> parsed');
-      console.log('[debug] HTML <head> parsed');
-    }
-    if (D.moduleAlerts) {
-      window.addEventListener('DOMContentLoaded', () => {
-        alert('🧪 [debug] DOMContentLoaded - Module inline');
-        console.log('[debug] DOMContentLoaded - Module inline');
-      });
-    }
-    if (D.fetchTest) {
-      fetch('./app.js')
-        .then((r) => {
-          alert('🔍 [debug] fetch app.js → ' + r.status);
-          console.log('[debug] fetch app.js →', r.status);
-        })
-        .catch((e) => {
-          alert('❌ [debug] fetch app.js error: ' + e.message);
-          console.error('[debug] fetch app.js error:', e);
-        });
-    }
-    if (D.globalErrors) {
-      window.addEventListener('error', (e) => {
-        alert('🚨 [debug] JS Global Error: ' + e.message);
-        console.error('[debug] JS Global Error:', e);
-      });
-      window.addEventListener('unhandledrejection', (e) => {
-        alert(
-          '🚨 [debug] Promise Rejection: ' +
-            (e.reason && e.reason.message ? e.reason.message : e.reason)
-        );
-        console.error('[debug] Promise Rejection:', e.reason);
-      });
-    }
-    if (D.verboseLogs) {
-      const oldLog = console.log;
-      console.log = function (...args) {
-        oldLog.apply(console, args);
-        alert(
-          '[console.log] ' +
-            args
-              .map((a) => (typeof a === 'object' ? JSON.stringify(a) : a))
-              .join(' ')
-        );
-      };
-    }
-  </script>
+  <!--
+    ===========================
+    DEV DEBUG SETTINGS (optional)
+    ===========================
+    <script>
+      // Debugging JS (leave commented out for prod)
+    </script>
+  -->
 </head>
 <body>
   <!-- ===== Loader Overlay ===== -->
@@ -104,7 +46,7 @@
   <!-- ===== Main App Root ===== -->
   <div id="app"></div>
 
-  <!-- ===== App Entry (ES Module) ===== -->
+  <!-- ===== App Entry ===== -->
   <script type="module" src="./app.js"></script>
 </body>
 </html>
