@@ -2,22 +2,22 @@
 
 import { getCurrentSchoolBranding } from '../school-branding.js';
 
-// --- Role/context helpers ---
+// Context: Always work in the current school
 const currentSchoolId = window.schoolId || localStorage.getItem('schoolId');
 const adminRole = window.userRole || localStorage.getItem('userRole') || '';
 
-// --- Lazy load jsPDF ---
+/** ========== PDF Export Utility ========== */
 async function ensureJsPDF() {
   if (window.jspdf?.jsPDF) return window.jspdf.jsPDF;
   await import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');
   return window.jspdf?.jsPDF || null;
 }
 
-// --- Main renderer ---
+/** ========== Main Renderer ========== */
 export function renderAdminReports(container = document.getElementById('app')) {
   if (!container) return;
 
-  // --- Role guard ---
+  // Role guard
   if (adminRole !== 'admin') {
     container.innerHTML = `
       <div class="dashboard-card" style="margin:2em auto;max-width:440px;">
@@ -28,10 +28,16 @@ export function renderAdminReports(container = document.getElementById('app')) {
     return;
   }
 
+  // --- Core data ---
+  const users = (window.adminUserList || []).filter(u => u.schoolId === currentSchoolId);
+  const companies = (window.adminCompanyList || []).filter(c => c.schoolId === currentSchoolId);
+
   container.innerHTML = `
-    <div class="screen-wrapper fade-in" style="max-width:860px;margin:0 auto;">
-      <h2 class="dash-head">📄 Admin Reports</h2>
-      <section class="dashboard-card compliance-checklist-card" style="margin-bottom: 1.6em;">
+    <div class="screen-wrapper fade-in" style="max-width:940px;margin:0 auto;">
+      <h2 class="dash-head">📄 Admin Reports & Messaging</h2>
+
+      <!-- Compliance Checklist -->
+      <section class="dashboard-card compliance-checklist-card" style="margin-bottom: 1.5em;">
         <h3>📝 DOT/ELDT Compliance Checklist (Indiana)</h3>
         <ul style="margin-left:1em;">
           <li>☐ School/provider <b>registered in FMCSA TPR</b></li>
@@ -53,10 +59,20 @@ export function renderAdminReports(container = document.getElementById('app')) {
         </button>
       </section>
 
-      <div class="dashboard-card" style="margin-bottom:1.5em;">
-        <div class="section-title">Reports & Exports</div>
-        <div class="dashboard-controls" style="flex-wrap:wrap;gap:1.2em;">
-          <div>
+      <!-- Exports Card -->
+      <section class="dashboard-card" style="margin-bottom:2em;">
+        <div class="section-title">Reports & Data Export</div>
+        <div class="dashboard-controls" style="flex-wrap:wrap;gap:1.2em;margin-bottom:1em;">
+          <div style="min-width:280px;">
+            <label for="user-role-filter"><b>Filter Users by Role:</b></label>
+            <select id="user-role-filter" class="glass-select" style="margin-left:7px;">
+              <option value="">All</option>
+              <option value="student">Student</option>
+              <option value="instructor">Instructor</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div style="min-width:260px;">
             <label for="export-users-type"><b>Export Users:</b></label>
             <select id="export-users-type" class="glass-select" style="margin-left:7px;">
               <option value="csv">CSV</option>
@@ -65,7 +81,7 @@ export function renderAdminReports(container = document.getElementById('app')) {
             </select>
             <button class="btn" id="export-users-btn" style="margin-left:7px;">Download</button>
           </div>
-          <div>
+          <div style="min-width:260px;">
             <label for="export-companies-type"><b>Export Companies:</b></label>
             <select id="export-companies-type" class="glass-select" style="margin-left:7px;">
               <option value="csv">CSV</option>
@@ -74,17 +90,45 @@ export function renderAdminReports(container = document.getElementById('app')) {
             <button class="btn" id="export-companies-btn" style="margin-left:7px;">Download</button>
           </div>
         </div>
-        <div style="margin-top:1.3em;">
-          <input type="text" id="report-search" placeholder="Search users/companies..." style="padding:6px 12px;width:240px;">
+        <div style="margin-bottom:1.3em;">
+          <input type="text" id="report-search" placeholder="Search users/companies..." style="padding:6px 12px;width:260px;">
         </div>
+        <div id="report-table" class="user-table-scroll" style="background:rgba(10,40,60,0.07);border-radius:13px;"></div>
         <small style="color:#77a;display:block;margin-top:1em;">
-          <b>Tips:</b> Use filters to only export data for this school. You can also copy data to clipboard after export.
+          <b>Tips:</b> All exports are scoped to this school only.
+          Use filters and search before downloading.
         </small>
-      </div>
+      </section>
+
+      <!-- Bulk Messaging Card -->
+      <section class="dashboard-card" style="margin-bottom:2em;">
+        <div class="section-title">Mass Messaging & Announcements</div>
+        <div style="margin-bottom:0.8em;">
+          <label for="bulk-message-target"><b>Target:</b></label>
+          <select id="bulk-message-target" class="glass-select" style="margin-left:7px;">
+            <option value="all">All Users</option>
+            <option value="student">All Students</option>
+            <option value="instructor">All Instructors</option>
+            <option value="admin">All Admins</option>
+            <option value="company">All Companies</option>
+          </select>
+        </div>
+        <textarea id="bulk-message-body" rows="4" style="width:99%;max-width:590px;padding:12px;border-radius:8px;border:1.3px solid #bbefff;background:rgba(245,255,255,0.9);font-size:1em;margin-bottom:0.6em;resize:vertical;" placeholder="Write your message or announcement…"></textarea>
+        <div>
+          <button class="btn" id="send-bulk-message-btn">Send Announcement</button>
+          <small id="bulk-message-status" style="margin-left:1em;color:#76b4d6;font-weight:600;"></small>
+        </div>
+        <div style="margin-top:0.9em;">
+          <small style="color:#77a;">
+            Use for school-wide announcements, reminders, or urgent alerts.<br>
+            <b>Note:</b> Private messaging to individual users is coming soon.
+          </small>
+        </div>
+      </section>
     </div>
   `;
 
-  // --- Export checklist as PDF ---
+  /** ========== Checklist PDF Download ========== */
   document.getElementById('download-checklist-btn').onclick = async () => {
     const jsPDF = await ensureJsPDF();
     if (!jsPDF) return alert('PDF export requires jsPDF.');
@@ -111,41 +155,113 @@ export function renderAdminReports(container = document.getElementById('app')) {
     doc.save('IN_DOT_ELDT_Checklist.pdf');
   };
 
-  // --- Export users based on dropdown selection ---
+  /** ========== Export Users Logic ========== */
   document.getElementById('export-users-btn').onclick = async () => {
     const type = document.getElementById('export-users-type').value;
-    if (!window.adminUserList?.length) return alert('No users to export.');
-    if (type === 'csv') exportUsersToCSV(window.adminUserList);
-    else if (type === 'pdf') await exportUsersToPDF(window.adminUserList);
-    else if (type === 'expiring') exportUsersExpiringToCSV(window.adminUserList, 30);
+    const roleFilter = document.getElementById('user-role-filter').value;
+    const filtered = users.filter(u => !roleFilter || u.role === roleFilter);
+    if (!filtered.length) return alert('No users to export.');
+    if (type === 'csv') exportUsersToCSV(filtered);
+    else if (type === 'pdf') await exportUsersToPDF(filtered);
+    else if (type === 'expiring') exportUsersExpiringToCSV(filtered, 30);
   };
 
-  // --- Export companies based on dropdown selection ---
+  /** ========== Export Companies Logic ========== */
   document.getElementById('export-companies-btn').onclick = async () => {
     const type = document.getElementById('export-companies-type').value;
-    if (!window.adminCompanyList?.length) return alert('No companies to export.');
-    if (type === 'csv') exportCompaniesToCSV(window.adminCompanyList);
-    else if (type === 'pdf') await exportCompaniesToPDF(window.adminCompanyList);
+    if (!companies.length) return alert('No companies to export.');
+    if (type === 'csv') exportCompaniesToCSV(companies);
+    else if (type === 'pdf') await exportCompaniesToPDF(companies);
   };
 
-  // --- Live search (future: filter in DOM) ---
+  /** ========== Live Search & Table Filtering ========== */
+  let lastSearch = '';
+  function renderTable() {
+    const role = document.getElementById('user-role-filter').value;
+    const q = lastSearch.toLowerCase().trim();
+    let filtered = users;
+    if (role) filtered = filtered.filter(u => u.role === role);
+    if (q) {
+      filtered = filtered.filter(
+        u =>
+          (u.name && u.name.toLowerCase().includes(q)) ||
+          (u.email && u.email.toLowerCase().includes(q)) ||
+          (u.assignedCompany && u.assignedCompany.toLowerCase().includes(q))
+      );
+    }
+    if (!filtered.length) {
+      document.getElementById('report-table').innerHTML = `<div style="padding:2em;text-align:center;color:#789;">No users found.</div>`;
+      return;
+    }
+    // Table
+    document.getElementById('report-table').innerHTML = `
+      <table class="user-table" style="width:100%;min-width:650px;">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Company</th>
+            <th>Permit Expiry</th>
+            <th>Profile %</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered
+            .map(
+              (u) => `
+            <tr>
+              <td>${u.name || ''}</td>
+              <td>${u.email || ''}</td>
+              <td><span class="role-badge ${u.role || ''}">${u.role || ''}</span></td>
+              <td>${u.assignedCompany || ''}</td>
+              <td>${u.permitExpiry || ''}</td>
+              <td>${u.profileProgress != null ? u.profileProgress + '%' : ''}</td>
+            </tr>
+          `
+            )
+            .join('')}
+        </tbody>
+      </table>
+    `;
+  }
+  document.getElementById('user-role-filter').onchange = renderTable;
   document.getElementById('report-search').oninput = function () {
-    const val = this.value.trim().toLowerCase();
-    // TODO: Live filter for users/companies in the DOM in a future upgrade.
-    showToast('Live search will filter data in a future upgrade.');
+    lastSearch = this.value;
+    renderTable();
+  };
+  renderTable();
+
+  /** ========== Bulk Messaging/Announcements ========== */
+  document.getElementById('send-bulk-message-btn').onclick = async () => {
+    const target = document.getElementById('bulk-message-target').value;
+    const body = document.getElementById('bulk-message-body').value.trim();
+    const status = document.getElementById('bulk-message-status');
+    status.textContent = '';
+    if (!body) {
+      status.textContent = 'Please enter a message.';
+      status.style.color = '#e44';
+      return;
+    }
+    // Simulate sending (replace with real backend call)
+    status.textContent = 'Sending...';
+    status.style.color = '#76b4d6';
+    setTimeout(() => {
+      status.textContent = 'Announcement sent!';
+      status.style.color = '#28c47c';
+      document.getElementById('bulk-message-body').value = '';
+    }, 900);
   };
 }
 
-// --- CSV Export Users ---
+/** ========== Export Helpers ========== */
 export function exportUsersToCSV(users) {
   if (!users?.length) return alert('No users to export.');
-  const filteredUsers = users.filter((u) => u.schoolId === currentSchoolId);
-  if (!filteredUsers.length) return alert('No users to export for this school.');
   const headers = [
     'Name', 'Email', 'Role', 'Assigned Instructor', 'Company',
     'Profile Progress', 'Permit Expiry', 'MedCard Expiry', 'Payment Status', 'Compliance',
   ];
-  const rows = filteredUsers.map((u) => [
+  const rows = users.map((u) => [
     `"${u.name || ''}"`, `"${u.email || ''}"`, `"${u.role || ''}"`,
     `"${u.assignedInstructor || ''}"`, `"${u.assignedCompany || ''}"`,
     `"${u.profileProgress || 0}"`, `"${u.permitExpiry || ''}"`,
@@ -164,11 +280,8 @@ export function exportUsersToCSV(users) {
   setTimeout(() => URL.revokeObjectURL(url), 1200);
 }
 
-// --- PDF Export Users ---
 export async function exportUsersToPDF(users) {
   if (!users?.length) return alert('No users to export.');
-  const filteredUsers = users.filter((u) => u.schoolId === currentSchoolId);
-  if (!filteredUsers.length) return alert('No users to export for this school.');
   const jsPDF = await ensureJsPDF();
   if (!jsPDF) return;
   const doc = new jsPDF();
@@ -176,7 +289,7 @@ export async function exportUsersToPDF(users) {
     'Name', 'Email', 'Role', 'Instructor', 'Company',
     'Profile %', 'Permit Exp.', 'Med Exp.', 'Payment', 'Compliance',
   ];
-  const rows = filteredUsers.map((u) => [
+  const rows = users.map((u) => [
     u.name || '', u.email || '', u.role || '', u.assignedInstructor || '',
     u.assignedCompany || '', (u.profileProgress || 0) + '%',
     u.permitExpiry || '', u.medCardExpiry || '', u.paymentStatus || '', u.compliance || '',
@@ -200,13 +313,10 @@ export async function exportUsersToPDF(users) {
   doc.save('cdl-users-export.pdf');
 }
 
-// --- Export Companies as CSV ---
 export function exportCompaniesToCSV(companies) {
   if (!companies?.length) return alert('No companies to export.');
-  const filteredCompanies = companies.filter((c) => c.schoolId === currentSchoolId);
-  if (!filteredCompanies.length) return alert('No companies to export for this school.');
   const headers = ['Name', 'Contact', 'Address', 'Active'];
-  const rows = filteredCompanies.map((c) => [
+  const rows = companies.map((c) => [
     `"${c.name || ''}"`, `"${c.contact || ''}"`, `"${c.address || ''}"`, `"${c.active ? 'Yes' : 'No'}"`,
   ]);
   const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\r\n');
@@ -221,16 +331,13 @@ export function exportCompaniesToCSV(companies) {
   setTimeout(() => URL.revokeObjectURL(url), 1200);
 }
 
-// --- Export Companies as PDF ---
 export async function exportCompaniesToPDF(companies) {
   if (!companies?.length) return alert('No companies to export.');
-  const filteredCompanies = companies.filter((c) => c.schoolId === currentSchoolId);
-  if (!filteredCompanies.length) return alert('No companies to export for this school.');
   const jsPDF = await ensureJsPDF();
   if (!jsPDF) return;
   const doc = new jsPDF();
   const colHeaders = ['Name', 'Contact', 'Address', 'Active'];
-  const rows = filteredCompanies.map((c) => [
+  const rows = companies.map((c) => [
     c.name || '', c.contact || '', c.address || '', c.active ? 'Yes' : 'No',
   ]);
   doc.setFontSize(16);
@@ -252,14 +359,12 @@ export async function exportCompaniesToPDF(companies) {
   doc.save('cdl-companies-export.pdf');
 }
 
-// --- Export Only Users with Expiring Permits ---
 export function exportUsersExpiringToCSV(users, days = 30) {
   if (!users?.length) return alert('No users to export.');
   const now = Date.now();
   const ms = days * 24 * 3600 * 1000;
   const soon = now + ms;
   const filtered = users.filter((u) => {
-    if (u.schoolId !== currentSchoolId) return false;
     if (!u.permitExpiry) return false;
     const d = new Date(u.permitExpiry);
     return d.getTime() >= now && d.getTime() <= soon;
