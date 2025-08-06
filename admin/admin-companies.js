@@ -1,4 +1,5 @@
 // admin/admin-companies.js
+
 import { db, auth } from '../firebase.js';
 import {
   collection,
@@ -10,10 +11,15 @@ import {
   query,
   where,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
-import { showToast, setupNavigation } from '../ui-helpers.js';
+import {
+  getCurrentUserRole,
+  getCurrentSchoolId,
+  showToast,
+  setupNavigation,
+} from '../ui-helpers.js';
 import { getCurrentSchoolBranding } from '../school-branding.js';
 
-// --- Load jsPDF only on demand ---
+// === Lazy Load jsPDF for PDF export (only on demand) ===
 let jsPDF = null;
 async function ensureJsPDF() {
   if (!jsPDF) {
@@ -24,17 +30,7 @@ async function ensureJsPDF() {
   }
 }
 
-// --- Get current schoolId from localStorage or window
-function getCurrentSchoolId() {
-  return localStorage.getItem('schoolId') || window.schoolId;
-}
-
-// --- Get current user role ---
-function getCurrentUserRole() {
-  return localStorage.getItem('userRole') || window.currentUserRole || '';
-}
-
-// --- Only fetch companies for this school ---
+// === Fetch all companies for a given schoolId ===
 async function fetchCompanyListForSchool(schoolId) {
   if (!schoolId) return [];
   const companiesSnap = await getDocs(
@@ -101,7 +97,7 @@ async function exportCompaniesToPDF(companies) {
   doc.save(`companies-export-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
-// === BULK IMPORT FROM CSV (add companies for this school) ===
+// === Bulk Import from CSV ===
 async function bulkImportCompaniesFromCSV(csvText, schoolId, onComplete) {
   try {
     const lines = csvText
@@ -149,7 +145,7 @@ async function bulkImportCompaniesFromCSV(csvText, schoolId, onComplete) {
   }
 }
 
-// === SEARCH/FILTER UTILITY ===
+// === Search/Filter Companies Utility ===
 function filterCompanies(companies, searchTerm) {
   if (!searchTerm) return companies;
   const term = searchTerm.toLowerCase();
@@ -161,7 +157,7 @@ function filterCompanies(companies, searchTerm) {
   );
 }
 
-/** Render the Admin Companies Management page */
+// === Main Page Renderer ===
 export async function renderAdminCompanies(
   container = document.getElementById('app')
 ) {
@@ -169,7 +165,7 @@ export async function renderAdminCompanies(
   const schoolId = getCurrentSchoolId();
   const userRole = getCurrentUserRole();
 
-  // --- Permissions: only admins/instructors can access ---
+  // --- Permissions: only admins/instructors/superadmins can access ---
   if (!['admin', 'instructor', 'superadmin'].includes(userRole)) {
     container.innerHTML = `<div style="padding:2em;color:#b22;"><b>Access denied.</b><br>You do not have permission to manage companies.</div>`;
     return;
@@ -188,7 +184,7 @@ export async function renderAdminCompanies(
   const schoolName = brand.schoolName || 'CDL Trainer';
   const accent = brand.primaryColor || '#b48aff';
 
-  // --- Companies for THIS SCHOOL ---
+  // --- Fetch Companies for this School ---
   let companies = [];
   try {
     companies = await fetchCompanyListForSchool(schoolId);
