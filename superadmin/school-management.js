@@ -18,9 +18,12 @@ import { renderSuperadminDashboard } from './superadmin-dashboard.js';
 async function getNextSchoolId() {
   const snap = await getDocs(collection(db, 'schools'));
   const ids = snap.docs
-    .map(doc => doc.id)
-    .filter(id => /^school\d+$/.test(id));
-  const maxNum = Math.max(0, ...ids.map(id => parseInt(id.replace('school', ''))));
+    .map((doc) => doc.id)
+    .filter((id) => /^school\d+$/.test(id));
+  const maxNum = Math.max(
+    0,
+    ...ids.map((id) => parseInt(id.replace('school', '')))
+  );
   const nextNum = (maxNum + 1).toString().padStart(3, '0');
   return `school${nextNum}`;
 }
@@ -139,7 +142,9 @@ export async function renderSchoolManagement(
   // --- Fetch and Render Schools ---
   let schools = [];
   try {
-    const snap = await getDocs(query(collection(db, 'schools'), orderBy('name')));
+    const snap = await getDocs(
+      query(collection(db, 'schools'), orderBy('name'))
+    );
     schools = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
     showToast('Failed to load schools.');
@@ -420,7 +425,9 @@ export async function renderSchoolManagement(
       }
 
       // 5. Refresh schools table & reset form
-      const snap = await getDocs(query(collection(db, 'schools'), orderBy('name')));
+      const snap = await getDocs(
+        query(collection(db, 'schools'), orderBy('name'))
+      );
       schools = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       renderSchoolsTable(document.getElementById('school-search').value);
       e.target.reset();

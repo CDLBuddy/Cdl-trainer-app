@@ -1,14 +1,14 @@
 // superadmin/index.js
 
 // === SUPERADMIN MODULE BARREL IMPORTS ===
-import { renderSuperadminDashboard }   from './superadmin-dashboard.js';
-import { renderSchoolManagement }      from './school-management.js';
-import { renderUserManagement }        from './user-management.js';
-import { renderComplianceCenter }      from './compliance-center.js';
-import { renderBilling }               from './billing.js';
-import { renderSettings }              from './settings.js';
-import { renderPermissions }           from './permissions.js';
-import { renderLogs }                  from './logs.js';
+import { renderSuperadminDashboard } from './superadmin-dashboard.js';
+import { renderSchoolManagement } from './school-management.js';
+import { renderUserManagement } from './user-management.js';
+import { renderComplianceCenter } from './compliance-center.js';
+import { renderBilling } from './billing.js';
+import { renderSettings } from './settings.js';
+import { renderPermissions } from './permissions.js';
+import { renderLogs } from './logs.js';
 
 // === SUPERADMIN MODULE BARREL EXPORTS ===
 export {
@@ -32,7 +32,8 @@ export function handleSuperadminNav(page, ...args) {
   window.currentUserRole = 'superadmin';
 
   // Defensive: Scroll to top on navigation (SPA feel)
-  if (container && container.scrollIntoView) container.scrollIntoView({ behavior: 'smooth' });
+  if (container && container.scrollIntoView)
+    container.scrollIntoView({ behavior: 'smooth' });
 
   switch ((page || '').toLowerCase()) {
     case 'superadmin-dashboard':

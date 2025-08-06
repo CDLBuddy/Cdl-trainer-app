@@ -1,7 +1,14 @@
-/* ==== 1. SHELL LAYOUT AND BACKGROUND ==== */
+/* 
+==========================================================
+  UI SHELL & DASHBOARD LAYOUT CSS (Polished)
+  - Unified styles for glassmorphic dashboards, role navs,
+    cards, user tables, admin panel, and responsive layout.
+  - Version: 2025.08.05
+==========================================================
+*/
+
+/* ==== 1. SHELL LAYOUT & BACKGROUND ==== */
 body {
-  /* Already has your brand gradient and dark-mode rules */
-  /* These just make sure nothing breaks if shell is first loaded */
   min-height: 100vh;
   background: var(--brand-dark, #0e1b1b);
   color: var(--text-light, #fff);
@@ -29,27 +36,28 @@ body {
   box-sizing: border-box;
   position: relative;
   z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.8em;
   min-height: 64px;
 }
-
 .school-name {
   font-size: 1.15em;
   font-weight: bold;
   letter-spacing: .02em;
   color: var(--accent, #c4dbe8);
 }
-
 .school-headline {
   font-size: .97em;
   color: #b8d2e6;
   opacity: .77;
 }
-
 .header-actions {
   gap: 0.8em;
+  display: flex;
+  align-items: center;
 }
-
 .icon-btn {
   background: none;
   border: none;
@@ -69,7 +77,6 @@ body {
   background: rgba(200, 235, 255, 0.09);
   color: #fff;
 }
-
 .notif-btn .notify-bubble {
   position: absolute;
   top: 1px;
@@ -83,6 +90,18 @@ body {
   z-index: 4;
   box-shadow: 0 2px 8px rgba(0,0,0,0.13);
 }
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  font-size: 1.16em;
+  margin-top: 0.5em;
+  margin-bottom: 1.2em;
+  font-weight: 600;
+  color: #e8f4ff;
+}
+.profile-header .emoji { font-size: 1.7em; }
+
 
 /* ==== 4. USER INFO & ROLE BADGE ==== */
 .user-info img {
@@ -93,7 +112,6 @@ body {
   box-shadow: 0 1px 6px #112;
   background: #34495e;
 }
-
 .role-badge {
   background: var(--brand-light, #4e91ad);
   color: #fff;
@@ -107,11 +125,12 @@ body {
   display: inline-block;
   line-height: 1.08em;
 }
-.role-badge.instructor { background: #3d98af; }
-.role-badge.admin { background: #3d67af; }
-.role-badge.superadmin { background: #683daf; }
-.role-badge.student { background: #4e91ad; }
-
+.role-badge.instructor,
+.role-badge.admin,
+.role-badge.superadmin,
+.role-badge.student {
+  background: #4d90ac;
+}
 .btn.btn-sm {
   font-size: .95em;
   padding: 5.5px 16px;
@@ -142,8 +161,6 @@ body {
     padding: 0.8em 0 0.5em 0;
   }
 }
-
-/* Nav Rail Button */
 .rail-btn {
   display: flex;
   flex-direction: column;
@@ -167,37 +184,12 @@ body {
   padding: 9px 0 8px 0;
   gap: 3px;
 }
-.rail-btn .icon {
-  font-size: 1.38em;
-  display: block;
-  margin-bottom: 3px;
-  filter: drop-shadow(0 1px 3px rgba(40,70,120,.10));
-}
-.rail-btn .label {
-  font-size: 1.01em;
-  margin-top: 1.5px;
-  text-align: center;
-}
-.rail-btn:active,
-.rail-btn:focus {
-  background: rgba(160, 230, 255, 0.18);
-  color: var(--accent, #c4dbe8);
-}
-.rail-btn:hover {
-  background: rgba(200, 235, 255, 0.16);
-  color: #fff;
-  box-shadow: 0 4px 16px rgba(50,110,180,0.16);
-  transform: translateY(-2px) scale(1.04);
-}
-.rail-btn.logout {
-  margin-top: 22px;
-  background: rgba(230, 80, 80, 0.13);
-}
-.rail-btn.logout:hover, .rail-btn.logout:focus {
-  background: rgba(255,80,80,0.23);
-  color: #fff;
-}
-
+.rail-btn .icon { font-size: 1.38em; display: block; margin-bottom: 3px; filter: drop-shadow(0 1px 3px rgba(40,70,120,.10)); }
+.rail-btn .label { font-size: 1.01em; margin-top: 1.5px; text-align: center; }
+.rail-btn:active, .rail-btn:focus { background: rgba(160, 230, 255, 0.18); color: var(--accent, #c4dbe8); }
+.rail-btn:hover { background: rgba(200, 235, 255, 0.16); color: #fff; box-shadow: 0 4px 16px rgba(50,110,180,0.16); transform: translateY(-2px) scale(1.04); }
+.rail-btn.logout { margin-top: 22px; background: rgba(230, 80, 80, 0.13); }
+.rail-btn.logout:hover, .rail-btn.logout:focus { background: rgba(255,80,80,0.23); color: #fff; }
 @media (max-width: 800px) {
   .rail-btn {
     min-width: 90px;
@@ -207,15 +199,8 @@ body {
   }
 }
 
-/* ==== 6. MAIN CONTENT ==== */
-.screen-wrapper {
-  min-height: 100vh;
-  width: 100%;
-  background: none;
-  padding: 0;
-}
-
-/* Dashboard layout */
+/* ==== 6. MAIN CONTENT & DASHBOARD LAYOUT ==== */
+.screen-wrapper { min-height: 100vh; width: 100%; background: none; padding: 0; }
 .dash-layout {
   display: flex;
   align-items: flex-start;
@@ -225,14 +210,8 @@ body {
   margin-top: 1.3rem;
 }
 @media (max-width: 800px) {
-  .dash-layout {
-    flex-direction: column;
-    gap: 1.2rem;
-    margin-top: 0.4rem;
-  }
+  .dash-layout { flex-direction: column; gap: 1.2rem; margin-top: 0.4rem; }
 }
-
-/* .dash-metrics can be your card grid */
 .dash-metrics {
   display: flex;
   flex-direction: column;
@@ -241,7 +220,220 @@ body {
   min-width: 0;
 }
 
-/* ==== 7. FOOTER ==== */
+/* ==== 7. ADMIN DASHBOARD CARDS & TABLE ==== */
+
+/* Dashboard Card */
+.dashboard-card {
+  background: rgba(255, 255, 255, 0.13);
+  border-radius: 22px;
+  padding: 2em 2.5em 2em 2.5em;
+  margin: 1.7em 0;
+  box-shadow: 0 4px 24px #00285b18;
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  overflow: visible;
+  transition: box-shadow 0.2s, background 0.15s;
+  border: 1.5px solid var(--brand-light, #4e91ad33);
+}
+@media (max-width: 1000px) {
+  .dashboard-card { padding: 1.2em 0.5em; }
+}
+.dashboard-card + .dashboard-card { margin-top: 2.2em; }
+
+/* Card Header/Section Title */
+.dashboard-card .section-title {
+  font-size: 1.23em;
+  font-weight: 700;
+  color: var(--brand-light, #b1e4ff);
+  margin-bottom: 1.2em;
+  letter-spacing: 0.02em;
+}
+
+/* Scrollable Table Wrapper */
+.user-table-scroll {
+  overflow-x: auto;
+  width: 100%;
+  margin-bottom: 1.5em;
+  border-radius: 14px;
+  background: rgba(10,40,60,0.09);
+  box-shadow: 0 1.5px 12px 0 #004d6631;
+  padding-bottom: 2px;
+}
+
+/* Table Layout */
+.user-table {
+  min-width: 980px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: none;
+  font-size: 1em;
+}
+.user-table thead tr {
+  background: linear-gradient(90deg, #19354c 60%, #3c93c9 100%);
+  color: #e9f9fe;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.user-table th, .user-table td {
+  padding: 0.7em 1.1em;
+  text-align: left;
+  border-bottom: 1.2px solid #cbeafe22;
+  background: none;
+  position: relative;
+  z-index: 2;
+  vertical-align: middle;
+  transition: background 0.12s;
+}
+.user-table th {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(90deg, #19354c 60%, #3c93c9 100%);
+  z-index: 5;
+  font-size: 1.05em;
+}
+.user-table tr { transition: background 0.13s; }
+.user-table tr:hover { background: rgba(100, 230, 255, 0.045); }
+
+.user-table .role-badge {
+  background: var(--brand-light, #4e91ad);
+  color: #fff;
+  border-radius: 6px;
+  padding: 2.5px 11px 2.5px 11px;
+  font-size: 0.98em;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-left: 0.3em;
+}
+
+@media (max-width: 1050px) {
+  .user-table { min-width: 700px; font-size: 0.97em; }
+}
+@media (max-width: 750px) {
+  .user-table { min-width: 530px; font-size: 0.91em; }
+  .dashboard-card { padding: 1.1em 0.1em; }
+}
+
+/* Export & Filter Buttons Row */
+.dashboard-card .dashboard-controls,
+.dashboard-card > div[style*="display:flex"] {
+  flex-wrap: wrap;
+  gap: 0.8em;
+  margin-bottom: 1em;
+  display: flex;
+  align-items: center;
+}
+.dashboard-card .btn,
+.dashboard-card button {
+  margin-bottom: 0.5em;
+  margin-top: 0.3em;
+  font-size: 1.01em;
+  font-weight: 600;
+  border-radius: 9px;
+  box-shadow: 0 2px 8px #0e1b1b1b;
+  border: none;
+  transition: background 0.14s, color 0.12s, box-shadow 0.14s;
+  background: var(--brand-light, #4e91ad);
+  color: #fff;
+  padding: 7px 20px;
+  cursor: pointer;
+  outline: none;
+  z-index: 3;
+  position: relative;
+}
+.dashboard-card .btn:hover,
+.dashboard-card button:hover,
+.dashboard-card .btn:focus,
+.dashboard-card button:focus {
+  background: #175876;
+  color: #fff;
+  box-shadow: 0 4px 16px #3c93c944;
+}
+
+.dashboard-card .btn-outline,
+.dashboard-card button.btn-outline {
+  background: #fff;
+  color: var(--brand-light, #4e91ad);
+  border: 1.5px solid var(--brand-light, #4e91ad);
+}
+.dashboard-card .btn-outline:hover,
+.dashboard-card button.btn-outline:hover,
+.dashboard-card .btn-outline:focus,
+.dashboard-card button.btn-outline:focus {
+  background: #bbefff;
+  color: #154d66;
+  border-color: #1e7a99;
+}
+
+/* Remove Button (Destructive) */
+.btn-remove-user {
+  background: #ffeded;
+  color: #c44c4c;
+  border: 1.5px solid #fa9393;
+  font-weight: 700;
+  transition: background 0.16s, color 0.16s;
+}
+.btn-remove-user:hover,
+.btn-remove-user:focus {
+  background: #f55a5a;
+  color: #fff;
+  border-color: #ffbcbc;
+}
+
+/* Responsive controls */
+@media (max-width: 600px) {
+  .dashboard-card .dashboard-controls,
+  .dashboard-card > div[style*="display:flex"] {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5em;
+  }
+  .dashboard-card .btn,
+  .dashboard-card button { width: 100%; margin-bottom: 0.6em; }
+}
+
+/* Accessibility: Focus visible for tab users */
+.dashboard-card .btn:focus-visible,
+.dashboard-card button:focus-visible {
+  outline: 3px solid #b1e4ff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px #b1e4ff55;
+}
+
+/* Filter/Dropdowns */
+.dashboard-card select,
+.dashboard-card input[type="search"] {
+  border-radius: 6px;
+  border: 1.1px solid #bbefff;
+  padding: 7px 10px;
+  font-size: 1em;
+  background: #f3faff;
+  color: #104060;
+  margin-right: 0.6em;
+  margin-bottom: 0.5em;
+  transition: border 0.13s, box-shadow 0.12s;
+}
+.dashboard-card select:focus,
+.dashboard-card input[type="search"]:focus {
+  border-color: #1e7a99;
+  box-shadow: 0 2px 8px #4e91ad33;
+}
+
+/* Miscellaneous: */
+.dashboard-card .export-btn-special {
+  background: #fff3d2;
+  color: #a65d00;
+  border: 1.5px solid #ffe09c;
+}
+.dashboard-card .export-btn-special:hover,
+.dashboard-card .export-btn-special:focus {
+  background: #ffd37b;
+  color: #7b4c00;
+  border-color: #e0a944;
+}
+
+/* ==== 8. FOOTER ==== */
 .app-footer {
   width: 100%;
   max-width: 600px;
@@ -266,7 +458,7 @@ body {
 }
 .app-footer .footer-link:hover { color: #8bbae6; opacity: 1; }
 
-/* ==== 8. AI COACH FAB ==== */
+/* ==== 9. AI COACH FAB ==== */
 .fab, #ai-coach-fab {
   background: linear-gradient(135deg, #f2fdff 65%, #bbefff 100%);
   color: #1a2e3a;
@@ -300,7 +492,7 @@ body {
   }
 }
 
-/* ==== 9. DARK MODE ==== */
+/* ==== 10. DARK MODE ==== */
 body.dark-mode, .dark-mode .glass-card {
   background: #11192a !important;
   color: #e8f4ff !important;
@@ -321,7 +513,7 @@ body.dark-mode .fab, body.dark-mode #ai-coach-fab {
   color: #e8f4ff;
 }
 
-/* ==== 10. UTILITY ==== */
+/* ==== 11. UTILITY ==== */
 @media (max-width: 650px) {
   .app-header, .app-footer {
     margin-left: 4px;
@@ -329,7 +521,5 @@ body.dark-mode .fab, body.dark-mode #ai-coach-fab {
     padding-left: 0.5em;
     padding-right: 0.5em;
   }
-  .glass-card, .app-header, .app-footer {
-    border-radius: 13px;
-  }
+  .glass-card, .app-header, .app-footer { border-radius: 13px; }
 }
