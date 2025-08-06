@@ -176,11 +176,9 @@ export async function renderAppShell({
       window.open('https://cdltrainerapp.com/help', '_blank')
     );
   // Notifications (placeholder, real logic TBD)
-  container
-    .querySelector('.notif-btn')
-    ?.addEventListener('click', () => {
-      alert('Notifications coming soon!');
-    });
+  container.querySelector('.notif-btn')?.addEventListener('click', () => {
+    alert('Notifications coming soon!');
+  });
 
   // Robust logout (bottom button only!)
   container
