@@ -1,0 +1,255 @@
+/* ==============================================================
+   ADMIN REPORTS PAGE STYLES (Polished Glassmorphic Theme)
+   Matches: dashboard cards, buttons, table, messaging, forms
+   Filename: admin-reports.css
+   ============================================================== */
+
+/* --- General Layout --- */
+.admin-reports-page .dashboard-card {
+  background: rgba(255,255,255,0.13);
+  border-radius: 22px;
+  padding: 2em 2.5em 2em 2.5em;
+  margin: 0 0 2em 0;
+  box-shadow: 0 4px 24px #00285b18;
+  border: 1.5px solid var(--brand-light, #4e91ad33);
+  max-width: 100%;
+  transition: box-shadow 0.2s, background 0.15s;
+}
+
+@media (max-width: 1000px) {
+  .admin-reports-page .dashboard-card { padding: 1.2em 0.5em; }
+}
+
+.admin-reports-page h2.dash-head {
+  font-size: 1.6em;
+  margin-bottom: 1.6em;
+  color: var(--accent, #c4dbe8);
+  letter-spacing: 0.01em;
+  font-weight: bold;
+}
+
+/* --- Compliance Checklist --- */
+.compliance-checklist-card {
+  background: linear-gradient(120deg, #e9faff 65%, #d6e7f6 100%);
+  border: 1.5px solid #bce9ff;
+  color: #173242;
+  box-shadow: 0 4px 14px #73cdfa15;
+  margin-bottom: 2em;
+}
+.compliance-checklist-card h3 {
+  color: #3184aa;
+  margin-bottom: 0.7em;
+  font-size: 1.18em;
+  font-weight: 700;
+}
+.compliance-checklist-card ul {
+  margin-left: 0.4em;
+  padding-left: 0.4em;
+  font-size: 1em;
+}
+.compliance-checklist-card li {
+  margin-bottom: 0.47em;
+  line-height: 1.3em;
+  font-size: 1em;
+}
+.compliance-checklist-card small {
+  color: #468cb2;
+}
+
+/* --- Dashboard Controls & Exports --- */
+.admin-reports-page .dashboard-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  align-items: center;
+  margin-bottom: 1.1em;
+}
+.admin-reports-page .dashboard-controls label {
+  font-weight: 500;
+  margin-right: 0.4em;
+}
+.admin-reports-page .glass-select {
+  border-radius: 8px;
+  border: 1.2px solid #bbefff;
+  padding: 7px 12px;
+  font-size: 1em;
+  background: #f4fcff;
+  color: #153141;
+  transition: border 0.13s;
+  min-width: 80px;
+  max-width: 150px;
+}
+.admin-reports-page .glass-select:focus {
+  border-color: var(--brand-light, #4e91ad);
+  outline: none;
+}
+.admin-reports-page .btn,
+.admin-reports-page button.btn {
+  font-size: 1.03em;
+  font-weight: 600;
+  border-radius: 9px;
+  margin: 0.25em 0.4em 0.25em 0;
+  padding: 8px 19px;
+  box-shadow: 0 2px 8px #4e91ad1a;
+  border: none;
+  background: var(--brand-light, #4e91ad);
+  color: #fff;
+  transition: background 0.15s, color 0.13s, box-shadow 0.14s;
+}
+.admin-reports-page .btn-outline,
+.admin-reports-page button.btn-outline {
+  background: #fff;
+  color: var(--brand-light, #4e91ad);
+  border: 1.5px solid var(--brand-light, #4e91ad);
+}
+.admin-reports-page .btn-outline:hover,
+.admin-reports-page button.btn-outline:hover {
+  background: #bbefff;
+  color: #154d66;
+  border-color: #1e7a99;
+}
+.admin-reports-page .btn:hover,
+.admin-reports-page button:hover {
+  background: #175876;
+  color: #fff;
+}
+
+.admin-reports-page .section-title {
+  font-size: 1.19em;
+  font-weight: 700;
+  color: var(--brand-light, #b1e4ff);
+  margin-bottom: 1.2em;
+  letter-spacing: 0.01em;
+}
+
+/* --- Search Bar --- */
+#report-search {
+  border-radius: 8px;
+  border: 1.1px solid #cbeafe;
+  padding: 7px 12px;
+  font-size: 1em;
+  background: #f5fbff;
+  color: #153141;
+  min-width: 160px;
+  max-width: 260px;
+  transition: border 0.14s;
+  margin-bottom: 0;
+}
+#report-search:focus {
+  border-color: var(--brand-light, #4e91ad);
+  outline: none;
+}
+
+/* --- Table --- */
+.user-table-scroll {
+  overflow-x: auto;
+  width: 100%;
+  margin-bottom: 1.5em;
+  border-radius: 14px;
+  background: rgba(10,40,60,0.07);
+  box-shadow: 0 1.5px 12px 0 #004d6631;
+  padding-bottom: 2px;
+}
+.user-table {
+  min-width: 650px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: none;
+  font-size: 1em;
+  margin-bottom: 0;
+}
+.user-table thead tr {
+  background: linear-gradient(90deg, #19354c 60%, #3c93c9 100%);
+  color: #e9f9fe;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.user-table th, .user-table td {
+  padding: 0.75em 1.05em;
+  text-align: left;
+  border-bottom: 1.2px solid #cbeafe22;
+  background: none;
+  position: relative;
+  z-index: 2;
+  vertical-align: middle;
+  transition: background 0.12s;
+  font-size: 1em;
+}
+.user-table th {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(90deg, #19354c 60%, #3c93c9 100%);
+  z-index: 5;
+  font-size: 1.05em;
+}
+.user-table tr { transition: background 0.13s; }
+.user-table tr:hover { background: rgba(100, 230, 255, 0.045); }
+
+.user-table .role-badge {
+  background: var(--brand-light, #4e91ad);
+  color: #fff;
+  border-radius: 6px;
+  padding: 2.5px 11px 2.5px 11px;
+  font-size: 0.98em;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-left: 0.3em;
+}
+
+/* --- Messaging Card --- */
+.admin-reports-page textarea#bulk-message-body {
+  width: 99%;
+  max-width: 590px;
+  min-width: 200px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1.3px solid #bbefff;
+  background: rgba(245,255,255,0.94);
+  font-size: 1em;
+  color: #173242;
+  margin-bottom: 0.6em;
+  resize: vertical;
+  box-shadow: 0 1.5px 8px #4e91ad17;
+  transition: border 0.13s, box-shadow 0.13s;
+}
+.admin-reports-page textarea#bulk-message-body:focus {
+  border-color: #4e91ad;
+  box-shadow: 0 4px 12px #4e91ad33;
+}
+
+#bulk-message-status {
+  font-weight: 600;
+  font-size: 0.99em;
+  transition: color 0.15s;
+}
+
+.admin-reports-page .dashboard-card small {
+  color: #77a;
+  font-size: 0.97em;
+}
+
+/* --- Responsive Tweaks --- */
+@media (max-width: 750px) {
+  .admin-reports-page .dashboard-card { padding: 1.1em 0.4em; }
+  .user-table th, .user-table td { padding: 0.54em 0.6em; font-size: 0.97em; }
+  .admin-reports-page .dashboard-controls { flex-direction: column; gap: 0.6em; }
+  .admin-reports-page .section-title { font-size: 1.06em; }
+  .compliance-checklist-card ul, .compliance-checklist-card li { font-size: 0.97em; }
+}
+@media (max-width: 600px) {
+  .admin-reports-page .dashboard-card {
+    padding-left: 4px;
+    padding-right: 4px;
+    border-radius: 13px;
+  }
+  .admin-reports-page h2.dash-head { font-size: 1.09em; }
+}
+
+/* --- Accessibility & Focus --- */
+.admin-reports-page .btn:focus-visible,
+.admin-reports-page button:focus-visible {
+  outline: 3px solid #b1e4ff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px #b1e4ff44;
+}
