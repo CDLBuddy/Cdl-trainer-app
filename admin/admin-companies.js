@@ -166,16 +166,23 @@ function showCSVImportPreview(headers, rows, onConfirm) {
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
-  overlay.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,18,30,0.64);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  overlay.style =
+    'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,18,30,0.64);z-index:9999;display:flex;align-items:center;justify-content:center;';
   overlay.innerHTML = `
     <div class="modal-card" style="background:#fff;border-radius:13px;box-shadow:0 4px 44px #023  ;max-width:97vw;min-width:270px;width:380px;padding:2em;">
       <h3 style="margin-top:0;">Preview Import</h3>
       <table style="font-size:.98em;width:100%;border-collapse:collapse;margin-bottom:1.2em;">
         <thead>
-          <tr>${headers.map(h => `<th style="font-weight:600;text-align:left;border-bottom:1.3px solid #b8e2ff;padding:5px 7px;">${h}</th>`).join('')}</tr>
+          <tr>${headers.map((h) => `<th style="font-weight:600;text-align:left;border-bottom:1.3px solid #b8e2ff;padding:5px 7px;">${h}</th>`).join('')}</tr>
         </thead>
         <tbody>
-          ${rows.slice(0, 7).map(row => `<tr>${row.map((cell, i) => `<td style="padding:5px 7px;border-bottom:1px solid #e0f6ff;">${cell || ''}</td>`).join('')}</tr>`).join('')}
+          ${rows
+            .slice(0, 7)
+            .map(
+              (row) =>
+                `<tr>${row.map((cell, i) => `<td style="padding:5px 7px;border-bottom:1px solid #e0f6ff;">${cell || ''}</td>`).join('')}</tr>`
+            )
+            .join('')}
         </tbody>
       </table>
       <div style="font-size:.95em;color:#6a7e99;margin-bottom:.6em;">
@@ -195,7 +202,12 @@ function showCSVImportPreview(headers, rows, onConfirm) {
 }
 
 // === Bulk Import from CSV ===
-async function bulkImportCompaniesFromCSV(csvText, schoolId, userEmail, onComplete) {
+async function bulkImportCompaniesFromCSV(
+  csvText,
+  schoolId,
+  userEmail,
+  onComplete
+) {
   try {
     const lines = csvText
       .split('\n')
@@ -210,9 +222,10 @@ async function bulkImportCompaniesFromCSV(csvText, schoolId, userEmail, onComple
     if (nameIdx === -1) throw new Error('CSV must have a "name" column.');
 
     // Preview: let user review parsed data before importing
-    const rows = lines.slice(1).map(line => line.split(','));
+    const rows = lines.slice(1).map((line) => line.split(','));
     showCSVImportPreview(headers, rows, async () => {
-      let added = 0, skipped = 0;
+      let added = 0,
+        skipped = 0;
       for (let i = 1; i < lines.length; i++) {
         const vals = lines[i].split(',').map((v) => v.trim());
         const name = vals[nameIdx];
@@ -365,11 +378,12 @@ export async function renderAdminCompanies(
             </tr>
           </thead>
           <tbody id="companies-tbody">
-            ${companies.length === 0
-              ? `<tr><td colspan="7" style="text-align:center;color:#799;">No companies found for this school.</td></tr>`
-              : companies
-                  .map(
-                    (c) => `
+            ${
+              companies.length === 0
+                ? `<tr><td colspan="7" style="text-align:center;color:#799;">No companies found for this school.</td></tr>`
+                : companies
+                    .map(
+                      (c) => `
                 <tr data-company-id="${c.id}">
                   <td><input type="checkbox" class="select-company" data-id="${c.id}"></td>
                   <td><input class="company-name-input" value="${c.name}" maxlength="60" style="width:97%;padding:2px 7px;" /></td>
@@ -393,8 +407,9 @@ export async function renderAdminCompanies(
                   </td>
                 </tr>
               `
-                  )
-                  .join('')}
+                    )
+                    .join('')
+            }
           </tbody>
         </table>
         </div>
@@ -479,9 +494,7 @@ export async function renderAdminCompanies(
   bulkDeleteBtn.addEventListener('click', async () => {
     if (!selectedIds.size) return;
     if (
-      !confirm(
-        `Delete ${selectedIds.size} companies? This cannot be undone!`
-      )
+      !confirm(`Delete ${selectedIds.size} companies? This cannot be undone!`)
     )
       return;
     for (const id of selectedIds) {
@@ -503,9 +516,11 @@ export async function renderAdminCompanies(
   container.querySelector('#export-pdf-btn')?.addEventListener('click', () => {
     exportCompaniesToPDF(filteredCompanies);
   });
-  container.querySelector('#download-template-btn')?.addEventListener('click', () => {
-    downloadCompanyTemplateCSV();
-  });
+  container
+    .querySelector('#download-template-btn')
+    ?.addEventListener('click', () => {
+      downloadCompanyTemplateCSV();
+    });
 
   // --- Bulk Import Handler ---
   const importInput = container.querySelector('#import-csv-input');
@@ -513,14 +528,19 @@ export async function renderAdminCompanies(
     const file = e.target.files[0];
     if (!file) return;
     const text = await file.text();
-    bulkImportCompaniesFromCSV(text, schoolId, userEmail, ({ added, skipped }) => {
-      showToast(
-        `Imported: ${added}, Skipped duplicates: ${skipped}`,
-        4300,
-        'success'
-      );
-      renderAdminCompanies(container);
-    });
+    bulkImportCompaniesFromCSV(
+      text,
+      schoolId,
+      userEmail,
+      ({ added, skipped }) => {
+        showToast(
+          `Imported: ${added}, Skipped duplicates: ${skipped}`,
+          4300,
+          'success'
+        );
+        renderAdminCompanies(container);
+      }
+    );
   });
 
   // --- Add company handler (scoped to this school only) ---

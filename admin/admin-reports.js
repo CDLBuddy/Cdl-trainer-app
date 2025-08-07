@@ -9,7 +9,9 @@ const adminRole = window.userRole || localStorage.getItem('userRole') || '';
 /** ========== PDF Export Utility ========== */
 async function ensureJsPDF() {
   if (window.jspdf?.jsPDF) return window.jspdf.jsPDF;
-  await import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');
+  await import(
+    'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'
+  );
   return window.jspdf?.jsPDF || null;
 }
 
@@ -29,8 +31,12 @@ export function renderAdminReports(container = document.getElementById('app')) {
   }
 
   // --- Core data ---
-  const users = (window.adminUserList || []).filter(u => u.schoolId === currentSchoolId);
-  const companies = (window.adminCompanyList || []).filter(c => c.schoolId === currentSchoolId);
+  const users = (window.adminUserList || []).filter(
+    (u) => u.schoolId === currentSchoolId
+  );
+  const companies = (window.adminCompanyList || []).filter(
+    (c) => c.schoolId === currentSchoolId
+  );
 
   container.innerHTML = `
     <div class="screen-wrapper fade-in" style="max-width:940px;margin:0 auto;">
@@ -159,7 +165,7 @@ export function renderAdminReports(container = document.getElementById('app')) {
   document.getElementById('export-users-btn').onclick = async () => {
     const type = document.getElementById('export-users-type').value;
     const roleFilter = document.getElementById('user-role-filter').value;
-    const filtered = users.filter(u => !roleFilter || u.role === roleFilter);
+    const filtered = users.filter((u) => !roleFilter || u.role === roleFilter);
     if (!filtered.length) return alert('No users to export.');
     if (type === 'csv') exportUsersToCSV(filtered);
     else if (type === 'pdf') await exportUsersToPDF(filtered);
@@ -180,17 +186,18 @@ export function renderAdminReports(container = document.getElementById('app')) {
     const role = document.getElementById('user-role-filter').value;
     const q = lastSearch.toLowerCase().trim();
     let filtered = users;
-    if (role) filtered = filtered.filter(u => u.role === role);
+    if (role) filtered = filtered.filter((u) => u.role === role);
     if (q) {
       filtered = filtered.filter(
-        u =>
+        (u) =>
           (u.name && u.name.toLowerCase().includes(q)) ||
           (u.email && u.email.toLowerCase().includes(q)) ||
           (u.assignedCompany && u.assignedCompany.toLowerCase().includes(q))
       );
     }
     if (!filtered.length) {
-      document.getElementById('report-table').innerHTML = `<div style="padding:2em;text-align:center;color:#789;">No users found.</div>`;
+      document.getElementById('report-table').innerHTML =
+        `<div style="padding:2em;text-align:center;color:#789;">No users found.</div>`;
       return;
     }
     // Table
@@ -258,17 +265,33 @@ export function renderAdminReports(container = document.getElementById('app')) {
 export function exportUsersToCSV(users) {
   if (!users?.length) return alert('No users to export.');
   const headers = [
-    'Name', 'Email', 'Role', 'Assigned Instructor', 'Company',
-    'Profile Progress', 'Permit Expiry', 'MedCard Expiry', 'Payment Status', 'Compliance',
+    'Name',
+    'Email',
+    'Role',
+    'Assigned Instructor',
+    'Company',
+    'Profile Progress',
+    'Permit Expiry',
+    'MedCard Expiry',
+    'Payment Status',
+    'Compliance',
   ];
   const rows = users.map((u) => [
-    `"${u.name || ''}"`, `"${u.email || ''}"`, `"${u.role || ''}"`,
-    `"${u.assignedInstructor || ''}"`, `"${u.assignedCompany || ''}"`,
-    `"${u.profileProgress || 0}"`, `"${u.permitExpiry || ''}"`,
-    `"${u.medCardExpiry || ''}"`, `"${u.paymentStatus || ''}"`,
+    `"${u.name || ''}"`,
+    `"${u.email || ''}"`,
+    `"${u.role || ''}"`,
+    `"${u.assignedInstructor || ''}"`,
+    `"${u.assignedCompany || ''}"`,
+    `"${u.profileProgress || 0}"`,
+    `"${u.permitExpiry || ''}"`,
+    `"${u.medCardExpiry || ''}"`,
+    `"${u.paymentStatus || ''}"`,
     `"${u.compliance || ''}"`,
   ]);
-  const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\r\n');
+  const csvContent = [
+    headers.join(','),
+    ...rows.map((row) => row.join(',')),
+  ].join('\r\n');
   const blob = new Blob([csvContent], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -286,13 +309,28 @@ export async function exportUsersToPDF(users) {
   if (!jsPDF) return;
   const doc = new jsPDF();
   const colHeaders = [
-    'Name', 'Email', 'Role', 'Instructor', 'Company',
-    'Profile %', 'Permit Exp.', 'Med Exp.', 'Payment', 'Compliance',
+    'Name',
+    'Email',
+    'Role',
+    'Instructor',
+    'Company',
+    'Profile %',
+    'Permit Exp.',
+    'Med Exp.',
+    'Payment',
+    'Compliance',
   ];
   const rows = users.map((u) => [
-    u.name || '', u.email || '', u.role || '', u.assignedInstructor || '',
-    u.assignedCompany || '', (u.profileProgress || 0) + '%',
-    u.permitExpiry || '', u.medCardExpiry || '', u.paymentStatus || '', u.compliance || '',
+    u.name || '',
+    u.email || '',
+    u.role || '',
+    u.assignedInstructor || '',
+    u.assignedCompany || '',
+    (u.profileProgress || 0) + '%',
+    u.permitExpiry || '',
+    u.medCardExpiry || '',
+    u.paymentStatus || '',
+    u.compliance || '',
   ]);
   doc.setFontSize(16);
   doc.text('CDL User Export', 14, 18);
@@ -317,9 +355,15 @@ export function exportCompaniesToCSV(companies) {
   if (!companies?.length) return alert('No companies to export.');
   const headers = ['Name', 'Contact', 'Address', 'Active'];
   const rows = companies.map((c) => [
-    `"${c.name || ''}"`, `"${c.contact || ''}"`, `"${c.address || ''}"`, `"${c.active ? 'Yes' : 'No'}"`,
+    `"${c.name || ''}"`,
+    `"${c.contact || ''}"`,
+    `"${c.address || ''}"`,
+    `"${c.active ? 'Yes' : 'No'}"`,
   ]);
-  const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\r\n');
+  const csvContent = [
+    headers.join(','),
+    ...rows.map((row) => row.join(',')),
+  ].join('\r\n');
   const blob = new Blob([csvContent], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -338,7 +382,10 @@ export async function exportCompaniesToPDF(companies) {
   const doc = new jsPDF();
   const colHeaders = ['Name', 'Contact', 'Address', 'Active'];
   const rows = companies.map((c) => [
-    c.name || '', c.contact || '', c.address || '', c.active ? 'Yes' : 'No',
+    c.name || '',
+    c.contact || '',
+    c.address || '',
+    c.active ? 'Yes' : 'No',
   ]);
   doc.setFontSize(16);
   doc.text('CDL Company Export', 14, 18);
@@ -370,12 +417,26 @@ export function exportUsersExpiringToCSV(users, days = 30) {
     return d.getTime() >= now && d.getTime() <= soon;
   });
   if (!filtered.length) return alert('No permits expiring soon.');
-  const headers = ['Name', 'Email', 'Permit Expiry', 'Role', 'Assigned Instructor', 'Company'];
+  const headers = [
+    'Name',
+    'Email',
+    'Permit Expiry',
+    'Role',
+    'Assigned Instructor',
+    'Company',
+  ];
   const rows = filtered.map((u) => [
-    `"${u.name || ''}"`, `"${u.email || ''}"`, `"${u.permitExpiry || ''}"`,
-    `"${u.role || ''}"`, `"${u.assignedInstructor || ''}"`, `"${u.assignedCompany || ''}"`,
+    `"${u.name || ''}"`,
+    `"${u.email || ''}"`,
+    `"${u.permitExpiry || ''}"`,
+    `"${u.role || ''}"`,
+    `"${u.assignedInstructor || ''}"`,
+    `"${u.assignedCompany || ''}"`,
   ]);
-  const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\r\n');
+  const csvContent = [
+    headers.join(','),
+    ...rows.map((row) => row.join(',')),
+  ].join('\r\n');
   const blob = new Blob([csvContent], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
