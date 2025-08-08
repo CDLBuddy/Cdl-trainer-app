@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { db, auth } from "../utils/firebase"; // Update to your path
+import { db, auth } from "../utils/firebase";
 import {
   collection,
   query,
@@ -11,7 +11,7 @@ import {
   showLatestUpdate,
   getRandomAITip,
   getNextChecklistAlert,
-} from "../utils/ui-helpers"; // Update as needed
+} from "../utils/ui-helpers";
 
 function getCurrentUserEmail() {
   return (
@@ -22,19 +22,18 @@ function getCurrentUserEmail() {
   );
 }
 
-const StudentDashboard = () => {
+export default function StudentDashboard() {
   const navigate = useNavigate();
 
-  // ----- STATE -----
+  // State
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [userData, setUserData] = useState({});
   const [checklistPct, setChecklistPct] = useState(0);
   const [lastTestStr, setLastTestStr] = useState("No tests taken yet.");
   const [streak, setStreak] = useState(0);
   const [aiTip, setAiTip] = useState("");
-  const [error, setError] = useState("");
 
-  // ----- DATA FETCH -----
   useEffect(() => {
     let isMounted = true;
 
@@ -46,9 +45,10 @@ const StudentDashboard = () => {
           return;
         }
 
-        // --- Fetch user profile ---
-        const usersRef = collection(db, "users");
-        const userSnap = await getDocs(query(usersRef, where("email", "==", email)));
+        // Fetch user profile
+        const userSnap = await getDocs(
+          query(collection(db, "users"), where("email", "==", email))
+        );
         let profile = {};
         let userRole = "student";
         if (!userSnap.empty) {
@@ -64,7 +64,7 @@ const StudentDashboard = () => {
         setUserData(profile);
         setChecklistPct(profile.profileProgress || 0);
 
-        // --- Fetch last test score ---
+        // Fetch last test score
         const testsSnap = await getDocs(
           query(collection(db, "testResults"), where("studentId", "==", email))
         );
@@ -81,28 +81,23 @@ const StudentDashboard = () => {
             ? latest.timestamp.toDate().toLocaleDateString()
             : new Date(latest.timestamp).toLocaleDateString();
           setLastTestStr(`${latest.testName} – ${pct}% on ${dateStr}`);
-        } else {
-          setLastTestStr("No tests taken yet.");
         }
 
-        // --- Study streak ---
-        try {
-          const today = new Date().toDateString();
-          let log = JSON.parse(localStorage.getItem("studyLog") || "[]");
-          if (!log.includes(today)) {
-            log.push(today);
-            localStorage.setItem("studyLog", JSON.stringify(log));
-          }
-          const cutoff = new Date();
-          cutoff.setDate(cutoff.getDate() - 6);
-          setStreak(log.filter((d) => new Date(d) >= cutoff).length);
-        } catch {
-          setStreak(0);
+        // Study streak
+        const today = new Date().toDateString();
+        let log = JSON.parse(localStorage.getItem("studyLog") || "[]");
+        if (!log.includes(today)) {
+          log.push(today);
+          localStorage.setItem("studyLog", JSON.stringify(log));
         }
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - 6);
+        setStreak(log.filter((d) => new Date(d) >= cutoff).length);
 
+        // AI tip
         setAiTip(getRandomAITip());
 
-        // --- Show latest update ---
+        // Latest update animation
         setTimeout(showLatestUpdate, 300);
 
         setLoading(false);
@@ -113,26 +108,25 @@ const StudentDashboard = () => {
     }
 
     fetchDashboardData();
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
     // eslint-disable-next-line
   }, []);
 
-  // ----- RENDER -----
+  // Loading state
   if (loading) {
     return (
-      <div style={{ textAlign: "center", marginTop: 40 }}>
+      <div className="loading-container">
         <div className="spinner" />
-        <p>Loading your dashboard…</p>
+        <p>Loading Student Dashboard…</p>
       </div>
     );
   }
 
+  // Error state
   if (error) {
     return (
-      <div className="dashboard-error" style={{ textAlign: "center", marginTop: 40 }}>
-        <p style={{ color: "#e35656" }}>{error}</p>
+      <div className="dashboard-error">
+        <p className="error-text">{error}</p>
         <button className="btn" onClick={() => window.location.reload()}>
           Retry
         </button>
@@ -141,68 +135,87 @@ const StudentDashboard = () => {
   }
 
   return (
-    <div className="student-dashboard">
-      {/* Latest Updates Area */}
-      <div id="latest-update-card" className="dashboard-card update-area"></div>
+    <div className="student-page container">
+      {/* Header */}
+      <h2 className="dash-head">
+        🎓 Student Dashboard{" "}
+        <span className="role-badge student">Student</span>
+      </h2>
+
+      {/* Stats bar */}
+      <div className="stats-bar">
+        <span>✅ Checklist: <b>{checklistPct}%</b></span>
+        <span>🔥 Streak: <b>{streak} days</b></span>
+        <span>🧪 Last Test: <b>{lastTestStr}</b></span>
+      </div>
 
       {/* Checklist Progress */}
       <div className="dashboard-card">
-        <h3>✅ Checklist Progress</h3>
+        <h3>Checklist Progress</h3>
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${checklistPct}%` }}></div>
         </div>
-        <div className="progress-percent">
-          <strong id="checklist-pct">{checklistPct}</strong>% complete
-        </div>
+        <div className="progress-percent">{checklistPct}% complete</div>
         <div className="checklist-alert warning">
-          <span>{getNextChecklistAlert(userData)}</span>
+          {getNextChecklistAlert(userData)}
         </div>
       </div>
 
-      {/* Walkthrough Card */}
-      <div className="dashboard-card">
-        <h3>🧭 Walkthrough</h3>
-        <p>Practice the CDL inspection walkthrough and memorize critical phrases.</p>
-        <button className="btn" onClick={() => navigate("/student-walkthrough")}>
-          Open Walkthrough
+      {/* AI Tip */}
+      <div className="dashboard-card ai-tip">
+        <strong>💡 AI Tip of the Day</strong>
+        <p>{aiTip}</p>
+        <button className="btn" onClick={() => navigate("/student-coach")}>
+          💬 Ask AI Coach
         </button>
       </div>
 
-      {/* Study Streak Card */}
-      <div className="glass-card metric">
-        <h3>🔥 Study Streak</h3>
-        <p>
-          <span className="big-num" id="streak-days">{streak}</span>
-          {" "}day{streak !== 1 ? "s" : ""} active this week
-        </p>
-      </div>
-
-      {/* AI Tip Card */}
-      <div className="dashboard-card ai-tip-card">
-        <div
-          className="ai-tip-title"
-          style={{ fontWeight: 600, fontSize: "1.12em", color: "var(--accent)", marginBottom: "0.5em" }}
-        >
-          🤖 AI Tip of the Day
-        </div>
-        <div className="ai-tip-content" style={{ marginBottom: "0.8em", fontSize: "1.03em" }}>
-          {aiTip}
-        </div>
-        <button className="btn ai-tip" onClick={() => navigate("/student-coach")} aria-label="Open AI Coach">
-          <span style={{ fontSize: "1.1em" }}>💬</span> Ask AI Coach
-        </button>
-      </div>
-
-      {/* Last Test Score */}
-      <div className="dashboard-card last-test-card">
-        <h3>🧪 Last Test Score</h3>
-        <p>{lastTestStr}</p>
-        <button className="btn" onClick={() => navigate("/student-practice-tests")}>
-          Take a Test
-        </button>
+      {/* Feature Grid */}
+      <div className="dash-layout">
+        <StudentCard
+          title="📝 Practice Tests"
+          desc="Take CDL practice exams and track your scores."
+          btn="Start Tests"
+          nav="/student-practice-tests"
+        />
+        <StudentCard
+          title="🧭 Walkthrough"
+          desc="Practice your CDL inspection and brake check script."
+          btn="Open Walkthrough"
+          nav="/student-walkthrough"
+        />
+        <StudentCard
+          title="📋 Checklists"
+          desc="Track your training progress and required steps."
+          btn="View Checklist"
+          nav="/student-checklists"
+        />
+        <StudentCard
+          title="📚 Flashcards"
+          desc="Review CDL terms and concepts."
+          btn="Open Flashcards"
+          nav="/student-flashcards"
+        />
+        <StudentCard
+          title="📊 Test Results"
+          desc="View past test attempts and scores."
+          btn="View Results"
+          nav="/student-results"
+        />
       </div>
     </div>
   );
-};
+}
 
-export default StudentDashboard;
+function StudentCard({ title, desc, btn, nav }) {
+  const navigate = useNavigate();
+  return (
+    <div className="dashboard-card feature-card">
+      <h3>{title}</h3>
+      <p>{desc}</p>
+      <button className="btn wide" onClick={() => navigate(nav)}>
+        {btn}
+      </button>
+    </div>
+  );
+}

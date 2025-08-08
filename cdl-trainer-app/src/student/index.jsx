@@ -1,60 +1,76 @@
 // src/student/index.jsx
-import React from "react";
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+// ===== STUDENT BARREL INDEX =====
+// Central export hub for all student pages, components, hooks, and utilities
+// Matches actual files in /student directory
 
-// --- Import all student pages (adjust paths as needed) ---
-import StudentDashboard from "../pages/StudentDashboard";
-import Profile from "../pages/Profile";
-import Checklists from "../pages/Checklists";
-import PracticeTests from "../pages/PracticeTests";
-import TestEngine from "../pages/TestEngine";
-import TestReview from "../pages/TestReview";
-import TestResults from "../pages/TestResults";
-import Walkthrough from "../pages/Walkthrough";
-import Flashcards from "../pages/Flashcards";
+import React, { lazy } from "react";
 
-// --- (Optional) Student-specific layout wrapper ---
-function StudentLayout() {
-  // You could add sidebar, topbar, etc. here for students only
-  return (
-    <div className="student-layout">
-      {/* Example: <StudentSidebar /> */}
-      <main>
-        <Outlet />
-      </main>
-    </div>
-  );
-}
+/* =========================
+   ROUTE CONSTANTS
+   ========================= */
+export const STUDENT_BASE             = "/student";
+export const STUDENT_ROUTE_DASH       = `${STUDENT_BASE}/dashboard`;
+export const STUDENT_ROUTE_PROFILE    = `${STUDENT_BASE}/profile`;
+export const STUDENT_ROUTE_CHECKLISTS = `${STUDENT_BASE}/checklists`;
+export const STUDENT_ROUTE_TESTS      = `${STUDENT_BASE}/practice-tests`;
+export const STUDENT_ROUTE_ENGINE     = `${STUDENT_BASE}/test-engine/:testName`;
+export const STUDENT_ROUTE_REVIEW     = `${STUDENT_BASE}/test-review/:testName`;
+export const STUDENT_ROUTE_RESULTS    = `${STUDENT_BASE}/test-results`;
+export const STUDENT_ROUTE_WALKTHROUGH= `${STUDENT_BASE}/walkthrough`;
+export const STUDENT_ROUTE_FLASHCARDS = `${STUDENT_BASE}/flashcards`;
+export const STUDENT_ROUTE_AICOACH    = `${STUDENT_BASE}/ai-coach`;
 
-// --- Route param wrappers for dynamic routes, if you need to use useParams, etc. ---
-const TestEngineWrapper = () => <TestEngine />;
-const TestReviewWrapper = () => <TestReview />;
+/* =========================
+   LAZY-LOADED PAGES (for Router)
+   ========================= */
+export const LazyStudentDashboard = lazy(() => import("./StudentDashboard"));
+export const LazyProfile          = lazy(() => import("./Profile"));
+export const LazyChecklists       = lazy(() => import("./Checklists"));
+export const LazyPracticeTests    = lazy(() => import("./PracticeTests"));
+export const LazyTestEngine       = lazy(() => import("./TestEngine"));
+export const LazyTestReview       = lazy(() => import("./TestReview"));
+export const LazyTestResults      = lazy(() => import("./TestResults"));
+export const LazyWalkthrough      = lazy(() => import("./Walkthrough"));
+export const LazyFlashcards       = lazy(() => import("./Flashcards"));
+export const LazyAICoach          = lazy(() => import("./AICoach"));
 
-// --- Main student router (used for /student/*) ---
-export default function StudentRouter() {
-  return (
-    <Routes>
-      {/* Optionally wrap all with a StudentLayout */}
-      <Route element={<StudentLayout />}>
-        {/* Main dashboard */}
-        <Route index element={<StudentDashboard />} />
-        <Route path="dashboard" element={<StudentDashboard />} />
+/* =========================
+   DIRECT (NON-LAZY) EXPORTS
+   ========================= */
+export { default as StudentDashboard } from "./StudentDashboard";
+export { default as Profile }          from "./Profile";
+export { default as Checklists }       from "./Checklists";
+export { default as PracticeTests }    from "./PracticeTests";
+export { default as TestEngine }       from "./TestEngine";
+export { default as TestReview }       from "./TestReview";
+export { default as TestResults }      from "./TestResults";
+export { default as Walkthrough }      from "./Walkthrough";
+export { default as Flashcards }       from "./Flashcards";
+export { default as AICoach }          from "./AICoach";
 
-        {/* Student sub-pages */}
-        <Route path="profile" element={<Profile />} />
-        <Route path="checklists" element={<Checklists />} />
-        <Route path="practice-tests" element={<PracticeTests />} />
-        <Route path="test-results" element={<TestResults />} />
-        <Route path="walkthrough" element={<Walkthrough />} />
-        <Route path="flashcards" element={<Flashcards />} />
+/* =========================
+   ROUTE REGISTRY (optional)
+   ========================= */
+export const STUDENT_ROUTES = [
+  { key: "dashboard",  path: STUDENT_ROUTE_DASH,        element: <LazyStudentDashboard /> },
+  { key: "profile",    path: STUDENT_ROUTE_PROFILE,     element: <LazyProfile /> },
+  { key: "checklists", path: STUDENT_ROUTE_CHECKLISTS,  element: <LazyChecklists /> },
+  { key: "tests",      path: STUDENT_ROUTE_TESTS,       element: <LazyPracticeTests /> },
+  { key: "engine",     path: STUDENT_ROUTE_ENGINE,      element: <LazyTestEngine /> },
+  { key: "review",     path: STUDENT_ROUTE_REVIEW,      element: <LazyTestReview /> },
+  { key: "results",    path: STUDENT_ROUTE_RESULTS,     element: <LazyTestResults /> },
+  { key: "walkthrough",path: STUDENT_ROUTE_WALKTHROUGH, element: <LazyWalkthrough /> },
+  { key: "flashcards", path: STUDENT_ROUTE_FLASHCARDS,  element: <LazyFlashcards /> },
+  { key: "aiCoach",    path: STUDENT_ROUTE_AICOACH,     element: <LazyAICoach /> },
+];
 
-        {/* Dynamic test engine/review pages */}
-        <Route path="test-engine/:testName" element={<TestEngineWrapper />} />
-        <Route path="test-review/:testName" element={<TestReviewWrapper />} />
+/* =========================
+   HOOKS & HELPERS
+   ========================= */
+export * from "../hooks/useStudentData";
+export * from "../utils/student-helpers";
 
-        {/* Fallback: unknown subroute -> dashboard */}
-        <Route path="*" element={<Navigate to="/student/dashboard" replace />} />
-      </Route>
-    </Routes>
-  );
-}
+/* =========================
+   CONTEXT PROVIDERS (optional)
+   ========================= */
+// export { StudentProvider } from "../context/StudentContext";

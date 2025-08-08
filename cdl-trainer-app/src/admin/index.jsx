@@ -1,64 +1,65 @@
 // src/admin/index.jsx
+// ===== ADMIN BARREL INDEX =====
+// Central export hub for all admin pages, components, hooks, and utilities
+// Ensures filenames & component names match your AdminRouter exactly
 
-import React from "react";
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import React, { lazy } from "react";
 
-// === Barrel Imports: Admin page components ===
-import AdminDashboard from "./AdminDashboard";
-import AdminProfile from "./AdminProfile";
-import AdminUsers from "./AdminUsers";
-import AdminCompanies from "./AdminCompanies";
-import AdminReports from "./AdminReports";
+/* =========================
+   ROUTE CONSTANTS
+   ========================= */
+export const ADMIN_BASE          = "/admin";
+export const ADMIN_ROUTE_DASH    = `${ADMIN_BASE}/dashboard`;
+export const ADMIN_ROUTE_PROFILE = `${ADMIN_BASE}/profile`;
+export const ADMIN_ROUTE_USERS   = `${ADMIN_BASE}/users`;
+export const ADMIN_ROUTE_COMPANIES = `${ADMIN_BASE}/companies`;
+export const ADMIN_ROUTE_REPORTS = `${ADMIN_BASE}/reports`;
 
-// === Barrel Exports for direct imports elsewhere ===
-export {
-  AdminDashboard,
-  AdminProfile,
-  AdminUsers,
-  AdminCompanies,
-  AdminReports,
-};
+/* =========================
+   LAZY-LOADED PAGES (for Router)
+   ========================= */
+export const LazyAdminDashboard  = lazy(() => import("./AdminDashboard"));
+export const LazyAdminProfile    = lazy(() => import("./AdminProfile"));
+export const LazyAdminUsers      = lazy(() => import("./AdminUsers"));
+export const LazyAdminCompanies  = lazy(() => import("./AdminCompanies"));
+export const LazyAdminReports    = lazy(() => import("./AdminReports"));
 
-// --- (Optional) Admin layout: for sidebar/topbar, branding, etc. ---
-function AdminLayout() {
-  // Add admin sidebar, header, etc. here if needed
-  return (
-    <div className="admin-layout">
-      {/* <AdminSidebar /> */}
-      <main>
-        <Outlet />
-      </main>
-    </div>
-  );
-}
+/* =========================
+   DIRECT (NON-LAZY) EXPORTS
+   ========================= */
+export { default as AdminDashboard }  from "./AdminDashboard";
+export { default as AdminProfile }    from "./AdminProfile";
+export { default as AdminUsers }      from "./AdminUsers";
+export { default as AdminCompanies }  from "./AdminCompanies";
+export { default as AdminReports }    from "./AdminReports";
 
-/**
- * <AdminRouter />
- * Handles all admin routes. Pass currentUserRole and adminSchoolId as props.
- * Protects routes for admin role only.
- */
-export function AdminRouter({ currentUserRole, adminSchoolId }) {
-  if (currentUserRole !== "admin") {
-    return (
-      <div className="dashboard-card" style={{ margin: "2em auto", maxWidth: 460 }}>
-        <h2>🔒 Access Denied</h2>
-        <p>This page is for admin users only. Please log in with an admin account.</p>
-      </div>
-    );
-  }
+/* =========================
+   ROUTE REGISTRY (optional)
+   ========================= */
+export const ADMIN_ROUTES = [
+  { key: "dashboard", path: ADMIN_ROUTE_DASH,     element: <LazyAdminDashboard /> },
+  { key: "profile",   path: ADMIN_ROUTE_PROFILE,  element: <LazyAdminProfile /> },
+  { key: "users",     path: ADMIN_ROUTE_USERS,    element: <LazyAdminUsers /> },
+  { key: "companies", path: ADMIN_ROUTE_COMPANIES,element: <LazyAdminCompanies /> },
+  { key: "reports",   path: ADMIN_ROUTE_REPORTS,  element: <LazyAdminReports /> },
+];
 
-  return (
-    <Routes>
-      <Route element={<AdminLayout />}>
-        <Route index element={<AdminDashboard adminSchoolId={adminSchoolId} />} />
-        <Route path="dashboard" element={<AdminDashboard adminSchoolId={adminSchoolId} />} />
-        <Route path="profile" element={<AdminProfile adminSchoolId={adminSchoolId} />} />
-        <Route path="users" element={<AdminUsers adminSchoolId={adminSchoolId} />} />
-        <Route path="companies" element={<AdminCompanies adminSchoolId={adminSchoolId} />} />
-        <Route path="reports" element={<AdminReports adminSchoolId={adminSchoolId} />} />
-        {/* 404 fallback for unknown admin routes */}
-        <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
-      </Route>
-    </Routes>
-  );
-}
+/* =========================
+   HOOKS & HELPERS
+   ========================= */
+// Example: export * from "../hooks/useAdminData";
+// Example: export * from "../utils/admin-helpers";
+
+/* =========================
+   ROUTER EXPORT
+   ========================= */
+export { default as AdminRouter } from "./AdminRouter";
+
+/* =========================
+   USAGE NOTES
+   =========================
+- Keep this index in sync with AdminRouter.
+- Import Lazy* exports for route definitions to optimize bundle size.
+- Use direct exports when you need a component outside of routing.
+- ADMIN_ROUTES can be consumed by your router for DRY mapping.
+*/

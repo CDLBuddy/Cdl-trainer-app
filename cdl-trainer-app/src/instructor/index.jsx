@@ -1,28 +1,57 @@
 // src/instructor/index.jsx
+// ===== INSTRUCTOR BARREL INDEX =====
+// Central hub for instructor pages/components. No <Routes> logic here.
 
-// ===============================
-// Instructor Barrel Exports (React SPA)
-// ===============================
+import React, { lazy } from "react";
 
-// --- Page/View Components ---
-export { default as InstructorDashboard } from "../pages/InstructorDashboard";
-export { default as InstructorProfile } from "../pages/InstructorProfile";
-export { default as InstructorStudentProfile } from "../pages/InstructorStudentProfile";
-export { default as InstructorChecklistReview } from "../pages/InstructorChecklistReview";
-export { default as InstructorChecklists } from "../pages/InstructorChecklists";
-// Add more as needed, e.g. InstructorFlashcards, InstructorWalkthrough, etc.
+/* =========================
+   ROUTE CONSTANTS
+   ========================= */
+export const INSTRUCTOR_BASE                 = "/instructor";
+export const INSTRUCTOR_ROUTE_DASH           = `${INSTRUCTOR_BASE}/dashboard`;
+export const INSTRUCTOR_ROUTE_PROFILE        = `${INSTRUCTOR_BASE}/profile`;
+export const INSTRUCTOR_ROUTE_CHECKLIST_REVIEW = `${INSTRUCTOR_BASE}/checklist-review`;
+export const INSTRUCTOR_ROUTE_STUDENT_PROFILE  = `${INSTRUCTOR_BASE}/student-profile/:studentId`;
+// (Add more later as files exist, e.g. `${INSTRUCTOR_BASE}/checklists`)
 
-// --- Modal/Widget Components ---
-export { default as ChecklistReviewModal } from "../components/ChecklistReviewModal";
-// Add more as needed
+/* =========================
+   LAZY-LOADED PAGES (for Router)
+   ========================= */
+export const LazyInstructorDashboard          = lazy(() => import("./InstructorDashboard"));
+export const LazyInstructorProfile            = lazy(() => import("./InstructorProfile"));
+export const LazyChecklistReviewForInstructor = lazy(() => import("./ChecklistReviewForInstructor"));
+export const LazyStudentProfileForInstructor  = lazy(() => import("./StudentProfileForInstructor"));
 
-// --- Instructor-specific hooks and helpers ---
-export * from "../hooks/useInstructorData";
-export * from "../utils/instructor-helpers";
-export { useInstructorNav } from "../hooks/useInstructorNav";
+/* =========================
+   DIRECT (NON-LAZY) EXPORTS
+   ========================= */
+export { default as InstructorDashboard }          from "./InstructorDashboard";
+export { default as InstructorProfile }            from "./InstructorProfile";
+export { default as ChecklistReviewForInstructor } from "./ChecklistReviewForInstructor";
+export { default as StudentProfileForInstructor }  from "./StudentProfileForInstructor";
 
-// --- (Optional) Context providers, navigation helpers, etc. ---
+/* =========================
+   ROUTER EXPORT (so top-level routers can import cleanly)
+   ========================= */
+export { default as InstructorRouter } from "./InstructorRouter";
+
+/* =========================
+   ROUTE REGISTRY (optional DRY map)
+   ========================= */
+export const INSTRUCTOR_ROUTES = [
+  { key: "dashboard",      path: INSTRUCTOR_ROUTE_DASH,            element: <LazyInstructorDashboard /> },
+  { key: "profile",        path: INSTRUCTOR_ROUTE_PROFILE,         element: <LazyInstructorProfile /> },
+  { key: "checklistReview",path: INSTRUCTOR_ROUTE_CHECKLIST_REVIEW,element: <LazyChecklistReviewForInstructor /> },
+  { key: "studentProfile", path: INSTRUCTOR_ROUTE_STUDENT_PROFILE, element: <LazyStudentProfileForInstructor /> },
+];
+
+/* =========================
+   HOOKS & HELPERS (optional)
+   ========================= */
+export * from "../hooks/useInstructorData";   // if present
+export * from "../utils/instructor-helpers";  // if present
+
+/* =========================
+   CONTEXT (optional)
+   ========================= */
 // export { InstructorProvider } from "../context/InstructorContext";
-// export { useInstructorStore } from "../store/instructorStore";
-
-// === (Expand with new pages/utilities as needed) ===
