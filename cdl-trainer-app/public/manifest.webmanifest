@@ -1,0 +1,38 @@
+{
+  "name": "CDL Trainer App",
+  "short_name": "CDL Trainer",
+  "description": "Modern digital platform for CDL students, instructors, and school admins. ELDT, practice, walkthrough, compliance, and more.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e1b1b",
+  "theme_color": "#004d66",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

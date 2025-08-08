@@ -1,21 +1,37 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useSession } from "../App"; // Your session context/hook
-import "./NavBar.css"; // Import your CSS file
-
-// Demo: replace with real school branding context/provider!
-const useBranding = () => ({
-  logoUrl: "/default-logo.svg",
-  name: "CDL Trainer",
-});
+import { useSession } from "../App"; // exposes { loading, isLoggedIn, role, user }
+import {
+  getCachedBrandingSummary,
+  subscribeBrandingUpdated,
+} from "../utils/school-branding";
+import { getDashboardRoute } from "../utils/navigation";
+import "./NavBar.css";
 
 export default function NavBar() {
-  const { role, email, avatarUrl, logout, notifications = 0 } = useSession?.() || {};
-  const branding = useBranding();
+  const session = useSession?.() || {};
+  const { role, user, logout } = session;
+  const email = user?.email || session.email || "";
+  const avatarUrl = user?.photoURL || session.avatarUrl || "/default-avatar.svg";
+  const notifications = session.notifications ?? 0;
+
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const profileRef = useRef();
+  const profileRef = useRef(null);
+
+  // Branding (logo + name) that updates instantly on school switch
+  const [brand, setBrand] = useState(() => getCachedBrandingSummary());
+  useEffect(() => {
+    const unsub = subscribeBrandingUpdated((detail) => {
+      setBrand((prev) => ({
+        logoUrl: detail?.logoUrl ?? prev.logoUrl ?? "/default-logo.svg",
+        schoolName: detail?.schoolName ?? prev.schoolName ?? "CDL Trainer",
+        primaryColor: detail?.primaryColor ?? prev.primaryColor ?? "",
+      }));
+    });
+    return unsub;
+  }, []);
 
   // Accessibility: close dropdown on outside click or ESC
   useEffect(() => {
@@ -25,7 +41,10 @@ export default function NavBar() {
       }
     }
     function handleEsc(e) {
-      if (e.key === "Escape") setProfileOpen(false);
+      if (e.key === "Escape") {
+        setProfileOpen(false);
+        setMenuOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEsc);
@@ -35,59 +54,66 @@ export default function NavBar() {
     };
   }, [profileOpen]);
 
-  // Role-based nav links
-  const roleLinks = {
-    student: [
-      { to: "/student/dashboard", label: "Dashboard" },
-      { to: "/student/checklists", label: "Checklists" },
-      { to: "/student/practice-tests", label: "Practice Tests" },
-      { to: "/student/walkthrough", label: "Walkthrough" },
-    ],
-    instructor: [
-      { to: "/instructor/dashboard", label: "Dashboard" },
-      { to: "/instructor/checklist-review", label: "Checklist Review" },
-    ],
-    admin: [
-      { to: "/admin/dashboard", label: "Dashboard" },
-      { to: "/admin/users", label: "Users" },
-      { to: "/admin/companies", label: "Companies" },
-      { to: "/admin/reports", label: "Reports" },
-    ],
-    superadmin: [
-      { to: "/superadmin/dashboard", label: "Super Admin" },
-      // Add more superadmin links as needed
-    ],
-  };
+  // Role-based links
+  const roleLinks = useMemo(() => {
+    return {
+      student: [
+        { to: "/student/dashboard", label: "Dashboard" },
+        { to: "/student/checklists", label: "Checklists" },
+        { to: "/student/practice-tests", label: "Practice Tests" },
+        { to: "/student/walkthrough", label: "Walkthrough" },
+        { to: "/student/flashcards", label: "Flashcards" },
+      ],
+      instructor: [
+        { to: "/instructor/dashboard", label: "Dashboard" },
+        { to: "/instructor/checklists", label: "Checklists" },
+        { to: "/instructor/checklist-review", label: "Checklist Review" },
+      ],
+      admin: [
+        { to: "/admin/dashboard", label: "Dashboard" },
+        { to: "/admin/users", label: "Users" },
+        { to: "/admin/companies", label: "Companies" },
+        { to: "/admin/reports", label: "Reports" },
+      ],
+      superadmin: [
+        { to: "/superadmin/dashboard", label: "Dashboard" },
+        { to: "/superadmin/schools", label: "Schools" },
+        { to: "/superadmin/users", label: "Users" },
+        { to: "/superadmin/compliance", label: "Compliance" },
+        { to: "/superadmin/billing", label: "Billing" },
+        { to: "/superadmin/settings", label: "Settings" },
+        { to: "/superadmin/logs", label: "Logs" },
+      ],
+    };
+  }, []);
 
-  // Construct links
-  let navLinks = [
-    { to: "/", label: "Home", always: true },
-  ];
-  if (role && roleLinks[role]) {
-    navLinks = [...navLinks, ...roleLinks[role]];
-  }
-  if (!role) {
-    navLinks.push({ to: "/login", label: "Login" });
-    navLinks.push({ to: "/signup", label: "Sign Up" });
-  }
+  // Build visible nav
+  const links = useMemo(() => {
+    const base = [{ to: "/", label: "Home", always: true }];
+    if (role && roleLinks[role]) return [...base, ...roleLinks[role]];
+    return [...base, { to: "/login", label: "Login" }, { to: "/signup", label: "Sign Up" }];
+  }, [role, roleLinks]);
 
   // Profile dropdown options
-  const userMenu = [
-    { label: "Profile", action: () => navigate(`/${role}/profile`) },
-    { label: "Logout", action: logout },
-  ];
+  const userMenu = useMemo(() => {
+    if (!role) return [];
+    return [
+      { label: "Profile", action: () => navigate(`/${role}/profile`) },
+      { label: "Dashboard", action: () => navigate(getDashboardRoute(role)) },
+      { label: "Logout", action: () => (typeof logout === "function" ? logout() : navigate("/login")) },
+    ];
+  }, [navigate, role, logout]);
 
-  // Hamburger toggle
+  // Handlers
   function handleMenuToggle() {
     setMenuOpen((v) => !v);
   }
-
-  // Keyboard menu open
   function handleAvatarKey(e) {
-    if (e.key === "Enter" || e.key === " ") setProfileOpen((v) => !v);
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setProfileOpen((v) => !v);
+    }
   }
-
-  // Theme switcher (optional, add state/context for actual theme toggle)
   function handleThemeSwitch() {
     document.body.classList.toggle("dark-mode");
   }
@@ -95,68 +121,59 @@ export default function NavBar() {
   return (
     <nav className="navbar" aria-label="Main Navigation">
       {/* Branding/Logo */}
-      <div className="navbar-left">
+      <div className="navbar-left" onClick={() => navigate(role ? getDashboardRoute(role) : "/")}>
         <img
-          src={branding.logoUrl}
+          src={brand.logoUrl || "/default-logo.svg"}
           alt="School Logo"
           className="navbar-logo"
+          loading="lazy"
+          decoding="async"
         />
-        <span className="navbar-brand">{branding.name}</span>
+        <span className="navbar-brand">{brand.schoolName || "CDL Trainer"}</span>
       </div>
 
       {/* Desktop nav links */}
-      <div className={`navbar-links ${menuOpen ? "open" : ""}`}>
-        {navLinks.map((link) => (
+      <div className={`navbar-links ${menuOpen ? "open" : ""}`} id="main-navigation">
+        {links.map((link) => (
           <NavLink
             key={link.to}
             to={link.to}
-            className={({ isActive }) =>
-              "navbar-link" + (isActive ? " active" : "")
-            }
-            tabIndex={0}
+            className={({ isActive }) => "navbar-link" + (isActive ? " active" : "")}
             onClick={() => setMenuOpen(false)}
             end
           >
             {link.label}
           </NavLink>
         ))}
-        {/* Optional theme switcher */}
         <button
           className="navbar-theme-btn"
           aria-label="Toggle theme"
           onClick={handleThemeSwitch}
-          tabIndex={0}
+          type="button"
         >
           <span role="img" aria-label="Theme">🌓</span>
         </button>
       </div>
 
       {/* User avatar/profile menu */}
-      {role && (
+      {role ? (
         <div className="navbar-user" ref={profileRef}>
           <button
             className="navbar-avatar-btn"
             onClick={() => setProfileOpen((v) => !v)}
-            aria-haspopup="true"
+            aria-haspopup="menu"
             aria-expanded={profileOpen}
-            tabIndex={0}
             onKeyDown={handleAvatarKey}
             aria-label="Open user menu"
+            type="button"
           >
-            <img
-              src={avatarUrl || "/default-avatar.svg"}
-              alt="User Avatar"
-              className="navbar-avatar"
-            />
-            {/* Notifications badge */}
-            {notifications > 0 && (
-              <span className="navbar-notif-badge">{notifications}</span>
-            )}
+            <img src={avatarUrl} alt="User Avatar" className="navbar-avatar" />
+            {notifications > 0 && <span className="navbar-notif-badge">{notifications}</span>}
           </button>
           {profileOpen && (
             <div className="navbar-dropdown" role="menu">
               <div className="navbar-dropdown-user">
-                <span className="navbar-dropdown-email">{email}</span>
+                <span className="navbar-dropdown-email" title={email}>{email}</span>
                 <span className="navbar-dropdown-role">{role}</span>
               </div>
               {userMenu.map((item) => (
@@ -168,7 +185,7 @@ export default function NavBar() {
                     item.action();
                     setProfileOpen(false);
                   }}
-                  tabIndex={0}
+                  type="button"
                 >
                   {item.label}
                 </button>
@@ -176,7 +193,7 @@ export default function NavBar() {
             </div>
           )}
         </div>
-      )}
+      ) : null}
 
       {/* Hamburger for mobile */}
       <button
@@ -185,6 +202,7 @@ export default function NavBar() {
         aria-label="Toggle navigation menu"
         aria-controls="main-navigation"
         aria-expanded={menuOpen}
+        type="button"
       >
         <span />
         <span />

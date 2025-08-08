@@ -1,24 +1,161 @@
-# Logs
-logs
+# ========================================
+# ✅ CORE GITIGNORE FOR CDL BUDDY APP (Vite + React + Firebase)
+# ========================================
+
+# ----------------------------------------
+# 🗂 LOGS
+# ----------------------------------------
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
+*.pid
 
-node_modules
-dist
-dist-ssr
-*.local
+# ----------------------------------------
+# 📦 DEPENDENCIES
+# ----------------------------------------
+node_modules/
+bower_components/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# ----------------------------------------
+# 🔥 FIREBASE (local/dev)
+# ----------------------------------------
+.firebase/
+firebase-debug.log
+firebase-debug.*
+firebase-emulator-*
+firestore_export/
+# ⚠️ Usually you DO want these tracked. Uncomment to ignore if needed.
+# .firebaserc
+# firebase.json
+
+# ----------------------------------------
+# 🏗️ BUILD OUTPUTS
+# ----------------------------------------
+dist/
+build/
+out/
+coverage/
+public/build/
+public/dist/
+
+# ----------------------------------------
+# 🔐 ENVIRONMENT VARIABLES
+# ----------------------------------------
+.env
+.env.*
+.env.local
+.env.*.local
+.env.development.local
+.env.production.local
+
+# ----------------------------------------
+# 🍎 macOS / 🪟 Windows
+# ----------------------------------------
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ----------------------------------------
+# 🛠️ IDE + EDITOR
+# ----------------------------------------
+.idea/
+*.sublime-workspace
+*.sublime-project
+.vscode/*
+!.vscode/settings.json
+
+# JetBrains Fleet / VS stuff
+.fleet/
+.vs/
+
+# ----------------------------------------
+# 🧹 BACKUPS + TEMP
+# ----------------------------------------
+*.bak
+*.tmp
+*.swp
+*~
+.cache/
+*.seed
+*.orig
+
+# ESLint / Stylelint caches
+.eslintcache
+.stylelintcache
+
+# ----------------------------------------
+# 📦 ARCHIVES
+# ----------------------------------------
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+
+# ----------------------------------------
+# ✅ TEST / E2E
+# ----------------------------------------
+*.spec.js
+*.test.js
+*.test.ts
+*.test.tsx
+coverage/
+nyc_output/
+.jest/
+.playwright/
+test-results/
+cypress/
+cypress/videos/
+cypress/screenshots/
+
+# ----------------------------------------
+# 🧪 FRONTEND TOOLING (framework caches)
+# ----------------------------------------
+.parcel-cache/
+.next/
+.svelte-kit/
+.svelte/
+.storybook/
+.npm/
+.pnpm-store/
+
+# Turborepo / Nx
+.turbo/
+nx-out/
+
+# ----------------------------------------
+# 🚫 GITHUB PAGES (optional)
+# ----------------------------------------
+CNAME
+
+# ----------------------------------------
+# 📁 USER/DEV FILES
+# ----------------------------------------
+local.*
+scripts/
+tools/
+
+# ----------------------------------------
+# 🎨 DESIGN EXPORTS & TEMP IMAGES
+# ----------------------------------------
+*.sketch
+*.ai
+*.psd
+*.xcf
+*.svg~*
+*Icon?*.png
+*Logo?*.png
+
+# ----------------------------------------
+# 📤 TEMP UPLOADS
+# ----------------------------------------
+uploads/
+tmp/
+temp/
+
+# ----------------------------------------
+# 🧪 LOCAL DIAGNOSTICS (DEV ONLY)
+# ----------------------------------------
+route-diagnostic-checker.js

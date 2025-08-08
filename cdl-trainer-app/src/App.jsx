@@ -1,138 +1,121 @@
 // src/App.jsx
+import React, { useEffect, createContext, useContext, useMemo, useState, Suspense, lazy } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
-import React, { useEffect, useMemo, useState, createContext, useContext } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+// Shared guards & utils
+import { RequireRole } from "./utils/RequireRole";
+import { useAuthStatus, getUserRole } from "./utils/auth";
+import { getDashboardRoute } from "./utils/navigation";
+import { subscribeBrandingUpdated, getCachedBrandingSummary } from "./utils/school-branding";
 
-// Components
+// Layout
 import NavBar from "./components/NavBar";
-import SplashScreen from "./components/SplashScreen"; // Simple centered spinner/brand
-import NotFound from "./pages/NotFound";
-import Welcome from "./pages/Welcome";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import SplashScreen from "./components/SplashScreen";
 
-// Role Routers
-import StudentRouter from "./student/StudentRouter";
-import InstructorRouter from "./instructor/InstructorRouter";
-import AdminRouter from "./admin/AdminRouter";
-import SuperadminRouter from "./superadmin/SuperadminRouter";
+// Lazy public pages
+const Welcome = lazy(() => import("./pages/Welcome"));
+const Login   = lazy(() => import("./pages/Login"));
+const Signup  = lazy(() => import("./pages/Signup"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
-// === Session Context: Holds auth/role and exposes login/logout ===
-const SessionContext = createContext();
+// Lazy role routers
+const StudentRouter    = lazy(() => import("./student/StudentRouter"));
+const InstructorRouter = lazy(() => import("./instructor/InstructorRouter"));
+const AdminRouter      = lazy(() => import("./admin/AdminRouter"));
+const SuperadminRouter = lazy(() => import("./superadmin/SuperadminRouter"));
+
+/* =========================================================================
+   Session Context (read-only)
+   We expose the auth snapshot from useAuthStatus() so components can read
+   { loading, isLoggedIn, role, user } anywhere with useSession().
+   ========================================================================= */
+const SessionContext = createContext(null);
 export function useSession() {
   return useContext(SessionContext);
 }
 
-// --- Auth/role loader (simulate async check) ---
-function getRoleFromStorage() {
-  return (
-    localStorage.getItem("userRole") ||
-    window.currentUserRole ||
-    null
-  );
-}
-function getEmailFromStorage() {
-  return (
-    localStorage.getItem("currentUserEmail") ||
-    window.currentUserEmail ||
-    null
-  );
-}
-function useSessionProvider() {
-  const [loading, setLoading] = useState(true);
-  const [role, setRole] = useState(null);
-  const [email, setEmail] = useState(null);
-
-  useEffect(() => {
-    // Simulate async auth (e.g., Firebase onAuthStateChanged)
-    setLoading(true);
-    setTimeout(() => {
-      setRole(getRoleFromStorage());
-      setEmail(getEmailFromStorage());
-      setLoading(false);
-    }, 100); // Replace with real auth listener
-  }, []);
-
-  // Allow live updates if needed
-  const login = (newRole, newEmail) => {
-    setRole(newRole);
-    setEmail(newEmail);
-    localStorage.setItem("userRole", newRole);
-    localStorage.setItem("currentUserEmail", newEmail);
-  };
-  const logout = () => {
-    setRole(null);
-    setEmail(null);
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("currentUserEmail");
-  };
-
-  return useMemo(
-    () => ({ loading, role, email, login, logout }),
-    [loading, role, email]
-  );
-}
-
-// --- Scroll to top on navigation ---
+/* =========================================================================
+   ScrollToTop on route change
+   ========================================================================= */
 function ScrollToTop() {
   const { pathname } = useLocation();
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+  useEffect(() => window.scrollTo(0, 0), [pathname]);
   return null;
 }
 
-// --- Route guards ---
-function RequireRole({ role, children }) {
-  const { loading, role: userRole } = useSession();
-  if (loading) return <SplashScreen />;
-  const allowed = Array.isArray(role) ? role : [role];
-  if (!userRole || !allowed.includes(userRole)) {
-    return <Navigate to="/login" replace />;
-  }
-  return children;
-}
-function RequireNotLoggedIn({ children }) {
-  const { loading, email, role } = useSession();
-  if (loading) return <SplashScreen />;
-  if (email && role) {
-    switch (role) {
-      case "student": return <Navigate to="/student/dashboard" replace />;
-      case "instructor": return <Navigate to="/instructor/dashboard" replace />;
-      case "admin": return <Navigate to="/admin/dashboard" replace />;
-      case "superadmin": return <Navigate to="/superadmin/dashboard" replace />;
-      default: return <Navigate to="/login" replace />;
-    }
-  }
-  return children;
+/* =========================================================================
+   Branding listener (optional)
+   Keeps CSS/UI in sync when school branding changes
+   ========================================================================= */
+function useBrandingSync() {
+  const [brand, setBrand] = useState(getCachedBrandingSummary());
+  useEffect(() => {
+    const unsub = subscribeBrandingUpdated((detail) => {
+      // set CSS variable if present
+      if (detail?.primaryColor) {
+        document.documentElement.style.setProperty("--brand-primary", detail.primaryColor);
+      }
+      setBrand({
+        logoUrl: detail?.logoUrl || "",
+        schoolName: detail?.schoolName || "",
+        primaryColor: detail?.primaryColor || "",
+      });
+    });
+    return unsub;
+  }, []);
+  return brand; // not used here, but you can pass to NavBar if you want
 }
 
-// --- Pattern-matching NavBar hiding (add as needed) ---
-const NAVBAR_HIDDEN_PATHS = [
-  /^\/$/, /^\/login$/, /^\/signup$/, /^\/reset-password/,
-];
+/* =========================================================================
+   NavBar visibility
+   ========================================================================= */
+const NAVBAR_HIDDEN_PATHS = [/^\/$/, /^\/login$/, /^\/signup$/, /^\/reset-password/];
 function useHideNavBar() {
   const { pathname } = useLocation();
-  return NAVBAR_HIDDEN_PATHS.some((pat) =>
-    typeof pat === "string"
-      ? pathname === pat
-      : pat instanceof RegExp
-        ? pat.test(pathname)
-        : false
-  );
+  return NAVBAR_HIDDEN_PATHS.some((pat) => (pat instanceof RegExp ? pat.test(pathname) : pathname === pat));
 }
 function ConditionalNavBar() {
   const hide = useHideNavBar();
   return hide ? null : <NavBar />;
 }
 
-// --- Error boundary (catches all render errors) ---
+/* =========================================================================
+   RequireAuth wrapper: waits for Firebase to resolve; preserves "from"
+   ========================================================================= */
+function RequireAuth({ children }) {
+  const { loading, isLoggedIn } = useAuthStatus();
+  const location = useLocation();
+
+  if (loading) return <SplashScreen />;
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+  return children;
+}
+
+/* =========================================================================
+   NotLoggedInOnly: if already logged in, bounce to proper dashboard
+   ========================================================================= */
+function RequireNotLoggedIn({ children }) {
+  const { loading, isLoggedIn, role } = useAuthStatus();
+  if (loading) return <SplashScreen />;
+  if (!isLoggedIn) return children;
+  return <Navigate to={getDashboardRoute(role || getUserRole())} replace />;
+}
+
+/* =========================================================================
+   RootRedirect: send user to dashboard or login once auth is known
+   ========================================================================= */
+function RootRedirect() {
+  const { loading, isLoggedIn, role } = useAuthStatus();
+  if (loading) return <SplashScreen />;
+  if (!isLoggedIn) return <Navigate to="/login" replace />;
+  return <Navigate to={getDashboardRoute(role || getUserRole())} replace />;
+}
+
+/* =========================================================================
+   Error Boundary (global)
+   ========================================================================= */
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -142,8 +125,7 @@ class ErrorBoundary extends React.Component {
     return { hasError: true, error };
   }
   componentDidCatch(error, info) {
-    // Log error if needed
-    // eslint-disable-next-line
+    // eslint-disable-next-line no-console
     console.error("Uncaught app error:", error, info);
   }
   render() {
@@ -152,11 +134,7 @@ class ErrorBoundary extends React.Component {
         <div className="error-overlay" style={{ textAlign: "center", padding: "6em 1em" }}>
           <h2>Something went wrong.</h2>
           <p style={{ color: "#b22" }}>{this.state.error?.toString() || "Unknown error"}</p>
-          <button
-            className="btn"
-            onClick={() => window.location.reload()}
-            style={{ marginTop: 20 }}
-          >
+          <button className="btn" onClick={() => window.location.reload()} style={{ marginTop: 20 }}>
             Reload App
           </button>
         </div>
@@ -166,24 +144,32 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// --- Main App ---
+/* =========================================================================
+   App
+   ========================================================================= */
 export default function App() {
-  const session = useSessionProvider();
+  const authState = useAuthStatus(); // { loading, isLoggedIn, role, user }
+  useBrandingSync(); // subscribe to branding changes (CSS var + localStorage)
 
-  // You can add a maintenance mode here
-  // if (maintenance) return <MaintenanceScreen />;
+  // memoize session value so consumers don't rerender unnecessarily
+  const sessionValue = useMemo(() => authState, [authState.loading, authState.isLoggedIn, authState.role, authState.user]);
 
   return (
-    <SessionContext.Provider value={session}>
+    <SessionContext.Provider value={sessionValue}>
       <ErrorBoundary>
         <Router>
           <ScrollToTop />
           <ConditionalNavBar />
-          {session.loading ? (
-            <SplashScreen />
-          ) : (
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center", marginTop: "4em" }}>
+                <div className="spinner" />
+                <p>Loading…</p>
+              </div>
+            }
+          >
             <Routes>
-              {/* --- Public routes --- */}
+              {/* Public */}
               <Route
                 path="/"
                 element={
@@ -209,47 +195,59 @@ export default function App() {
                 }
               />
 
-              {/* --- Student --- */}
+              {/* Student */}
               <Route
                 path="/student/*"
                 element={
-                  <RequireRole role="student">
-                    <StudentRouter />
-                  </RequireRole>
-                }
-              />
-              {/* --- Instructor --- */}
-              <Route
-                path="/instructor/*"
-                element={
-                  <RequireRole role="instructor">
-                    <InstructorRouter />
-                  </RequireRole>
-                }
-              />
-              {/* --- Admin --- */}
-              <Route
-                path="/admin/*"
-                element={
-                  <RequireRole role="admin">
-                    <AdminRouter />
-                  </RequireRole>
-                }
-              />
-              {/* --- Superadmin --- */}
-              <Route
-                path="/superadmin/*"
-                element={
-                  <RequireRole role="superadmin">
-                    <SuperadminRouter />
-                  </RequireRole>
+                  <RequireAuth>
+                    <RequireRole role="student">
+                      <StudentRouter />
+                    </RequireRole>
+                  </RequireAuth>
                 }
               />
 
-              {/* --- 404 fallback --- */}
+              {/* Instructor */}
+              <Route
+                path="/instructor/*"
+                element={
+                  <RequireAuth>
+                    <RequireRole role="instructor">
+                      <InstructorRouter />
+                    </RequireRole>
+                  </RequireAuth>
+                }
+              />
+
+              {/* Admin */}
+              <Route
+                path="/admin/*"
+                element={
+                  <RequireAuth>
+                    <RequireRole role="admin">
+                      <AdminRouter />
+                    </RequireRole>
+                  </RequireAuth>
+                }
+              />
+
+              {/* Superadmin */}
+              <Route
+                path="/superadmin/*"
+                element={
+                  <RequireAuth>
+                    <RequireRole role="superadmin">
+                      <SuperadminRouter />
+                    </RequireRole>
+                  </RequireAuth>
+                }
+              />
+
+              {/* Unknown → 404 (or you could use a role-aware redirect) */}
               <Route path="*" element={<NotFound />} />
+              {/* Or: <Route path="*" element={<RootRedirect />} /> */}
             </Routes>
-          )}
+          </Suspense>
         </Router>
       </ErrorBoundary>
     </SessionContext.Provider>

@@ -1,133 +1,139 @@
 // src/navigation/RoleRouter.jsx
-
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { RequireRole } from "../utils/RequireRole"; // your polished guard
+import { useAuthStatus } from "../utils/auth";      // see note below
+import { getDashboardRoute } from "../utils/navigation";
 
-import StudentRouter from "../student/StudentRouter";
-import InstructorRouter from "../instructor/InstructorRouter";
-import AdminRouter from "../admin/AdminRouter";
-import SuperadminRouter from "../superadmin/SuperadminRouter";
+// --- Lazy role routers for better code-splitting ---
+const StudentRouter    = lazy(() => import("../student/StudentRouter"));
+const InstructorRouter = lazy(() => import("../instructor/InstructorRouter"));
+const AdminRouter      = lazy(() => import("../admin/AdminRouter"));
+const SuperadminRouter = lazy(() => import("../superadmin/SuperadminRouter"));
 
-// Shared/public pages (add if needed)
-import Login from "../pages/Login";
-import Signup from "../pages/Signup";
-import Welcome from "../pages/Welcome";
-import NotFound from "../pages/NotFound";
+// --- Shared/public pages (lazy too if you like) ---
+const Login    = lazy(() => import("../pages/Login"));
+const Signup   = lazy(() => import("../pages/Signup"));
+const Welcome  = lazy(() => import("../pages/Welcome"));
+const NotFound = lazy(() => import("../pages/NotFound"));
 
-// Auth helpers (replace with your actual logic)
-import { getUserRole, isLoggedIn } from "../utils/auth";
-
-// --- RequireAuth: Only renders children if user is logged in ---
+// ---- Small wrapper that waits for auth to resolve ----
 function RequireAuth({ children }) {
-  if (!isLoggedIn()) {
-    // Not logged in, redirect to login
-    return <Navigate to="/login" replace />;
+  const { loading, isLoggedIn } = useAuthStatus(); // { loading, isLoggedIn, role }
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "4em" }}>
+        <div className="spinner" />
+        <p>Checking your session…</p>
+      </div>
+    );
+  }
+  if (!isLoggedIn) {
+    // Preserve where the user was heading
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
   return children;
 }
 
-// --- RoleGuard: Only renders children if user has required role(s) ---
-function RequireRole({ role, children }) {
-  const userRole = getUserRole();
-  const allowed = Array.isArray(role) ? role : [role];
-  if (!userRole || !allowed.includes(userRole)) {
-    // Not authorized for this role, send to login or their dashboard
-    return <Navigate to="/login" replace />;
-  }
-  return children;
-}
-
-// --- NotFoundRedirect: Sends user to their home dashboard if unknown route ---
+// ---- Redirect unknown routes to the current role’s dashboard ----
 function NotFoundRedirect() {
-  const role = getUserRole();
-  switch (role) {
-    case "superadmin":
-      return <Navigate to="/superadmin/dashboard" replace />;
-    case "admin":
-      return <Navigate to="/admin/dashboard" replace />;
-    case "instructor":
-      return <Navigate to="/instructor/dashboard" replace />;
-    case "student":
-      return <Navigate to="/student/dashboard" replace />;
-    default:
-      return <Navigate to="/login" replace />;
-  }
+  const { role } = useAuthStatus();
+  if (!role) return <Navigate to="/login" replace />;
+  return <Navigate to={getDashboardRoute(role)} replace />;
 }
 
 export default function RoleRouter() {
-  // If you use context/provider for auth, you can get role that way too
-  // This version uses helper functions (update as needed)
-
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/welcome" element={<Welcome />} />
+    <Suspense
+      fallback={
+        <div style={{ textAlign: "center", marginTop: "4em" }}>
+          <div className="spinner" />
+          <p>Loading…</p>
+        </div>
+      }
+    >
+      <Routes>
+        {/* Public routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/welcome" element={<Welcome />} />
 
-      {/* --- STUDENT ROUTES --- */}
-      <Route
-        path="/student/*"
-        element={
-          <RequireAuth>
-            <RequireRole role="student">
-              <StudentRouter />
-            </RequireRole>
-          </RequireAuth>
-        }
-      />
+        {/* Student */}
+        <Route
+          path="/student/*"
+          element={
+            <RequireAuth>
+              <RequireRole role="student">
+                <StudentRouter />
+              </RequireRole>
+            </RequireAuth>
+          }
+        />
 
-      {/* --- INSTRUCTOR ROUTES --- */}
-      <Route
-        path="/instructor/*"
-        element={
-          <RequireAuth>
-            <RequireRole role="instructor">
-              <InstructorRouter />
-            </RequireRole>
-          </RequireAuth>
-        }
-      />
+        {/* Instructor */}
+        <Route
+          path="/instructor/*"
+          element={
+            <RequireAuth>
+              <RequireRole role="instructor">
+                <InstructorRouter />
+              </RequireRole>
+            </RequireAuth>
+          }
+        />
 
-      {/* --- ADMIN ROUTES --- */}
-      <Route
-        path="/admin/*"
-        element={
-          <RequireAuth>
-            <RequireRole role="admin">
-              <AdminRouter />
-            </RequireRole>
-          </RequireAuth>
-        }
-      />
+        {/* Admin */}
+        <Route
+          path="/admin/*"
+          element={
+            <RequireAuth>
+              <RequireRole role="admin">
+                <AdminRouter />
+              </RequireRole>
+            </RequireAuth>
+          }
+        />
 
-      {/* --- SUPERADMIN ROUTES --- */}
-      <Route
-        path="/superadmin/*"
-        element={
-          <RequireAuth>
-            <RequireRole role="superadmin">
-              <SuperadminRouter />
-            </RequireRole>
-          </RequireAuth>
-        }
-      />
+        {/* Superadmin */}
+        <Route
+          path="/superadmin/*"
+          element={
+            <RequireAuth>
+              <RequireRole role="superadmin">
+                <SuperadminRouter />
+              </RequireRole>
+            </RequireAuth>
+          }
+        />
 
-      {/* --- Root redirect based on login status/role --- */}
-      <Route
-        path="/"
-        element={
-          isLoggedIn() ? (
-            // Send to appropriate dashboard
-            <NotFoundRedirect />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
+        {/* Root: send to dashboard if logged-in, else login */}
+        <Route
+          path="/"
+          element={
+            <RootRedirect />
+          }
+        />
 
-      {/* --- Catch-all: unknown routes --- */}
-      <Route path="*" element={<NotFoundRedirect />} />
-    </Routes>
+        {/* Catch-all */}
+        <Route path="*" element={<NotFoundRedirect />} />
+      </Routes>
+    </Suspense>
   );
+}
+
+// Sends to the right place based on auth state
+function RootRedirect() {
+  const { loading, isLoggedIn, role } = useAuthStatus();
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "4em" }}>
+        <div className="spinner" />
+        <p>Loading…</p>
+      </div>
+    );
+  }
+  if (!isLoggedIn) return <Navigate to="/login" replace />;
+  return <Navigate to={getDashboardRoute(role)} replace />;
 }

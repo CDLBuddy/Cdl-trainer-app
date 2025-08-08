@@ -2,24 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Favicon for all platforms -->
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- App Title and SEO -->
+
+    <!-- Favicons / App Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Viewport & Theme -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#004d66" />
+
+    <!-- SEO -->
     <title>CDL Trainer App</title>
     <meta name="description" content="CDL Trainer App - Modern digital platform for CDL students, instructors, and school admins. ELDT, practice, walkthrough, compliance, and more." />
-    <meta name="theme-color" content="#b48aff" />
-    <!-- Social sharing -->
+
+    <!-- Social -->
     <meta property="og:title" content="CDL Trainer App" />
     <meta property="og:description" content="Digital CDL training and compliance for schools and students." />
-    <meta property="og:image" content="/logo192.png" />
+    <meta property="og:image" content="/icon-512.png" />
     <meta property="og:type" content="website" />
-    <!-- Manifest for PWA (if you ever want installability) -->
-    <!-- <link rel="manifest" href="/manifest.webmanifest" /> -->
-    <!-- Fonts or other global resources can go here -->
+
+    <!-- (Optional) CSP -->
+    <!--
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' https: data:; connect-src 'self' https:;">
+    -->
   </head>
-  <body style="background: #0c0c1c;">
+
+  <body style="background:#0e1b1b;">
+    <noscript>
+      <div style="padding:1rem; color:#ffffff; text-align:center;">
+        This app needs JavaScript enabled.
+      </div>
+    </noscript>
+
     <div id="root"></div>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
