@@ -1,0 +1,336 @@
+/* === NavBar.module.css =======================================================
+   Relies on theme tokens set globally:
+   --brand-dark, --brand-mid, --brand-light, --accent, --text-light, --card-bg-dark
+   --error, --safe-area-inset-top
+============================================================================= */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(120deg, var(--brand-mid), var(--brand-dark) 82%);
+  color: var(--text-light);
+  padding: calc(0.62em + var(--safe-area-inset-top)) 1.7em 0.62em 1.3em;
+  padding-top: max(0.62em, calc(0.62em + var(--safe-area-inset-top)));
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 16px #00285b18;
+  border-bottom: 1.5px solid var(--accent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  transition: box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+/* Scroll elevation accent (hooked up via data-scrolled) */
+.navbar[data-scrolled="true"] {
+  box-shadow: 0 6px 22px #001a2a2b;
+  border-bottom-color: color-mix(in oklab, var(--accent), #000 25%);
+}
+
+/* Fallback if backdrop-filter unsupported */
+@supports not ((backdrop-filter: blur(10px))) {
+  .navbar {
+    background: linear-gradient(
+      120deg,
+      color-mix(in oklab, var(--brand-mid), #000 12%),
+      color-mix(in oklab, var(--brand-dark), #000 12%) 82%
+    );
+  }
+}
+
+/* Left cluster (logo + name).
+   In JSX we render it as a <button> for keyboard a11y.
+*/
+.left {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.left:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--brand-light), white 12%);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+.logo {
+  height: 38px;
+  width: 38px;
+  object-fit: contain;
+  border-radius: 11px;
+  box-shadow: 0 2px 12px #004d6622;
+  background: var(--card-bg-dark);
+  border: 1.3px solid var(--accent);
+}
+
+.brand {
+  font-size: 1.22em;
+  font-weight: 700;
+  color: var(--accent, #c4dbe8);
+  letter-spacing: .01em;
+  margin-left: 2px;
+  text-shadow: 0 2px 7px #0e1b1b55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: clamp(120px, 22vw, 320px);
+}
+
+/* Center/right links */
+.links {
+  display: flex;
+  gap: 1.25em;
+  align-items: center;
+  background: none;
+}
+
+.link {
+  color: var(--text-light, #fff);
+  text-decoration: none;
+  font-weight: 500;
+  opacity: 0.92;
+  font-size: 1.09em;
+  border-radius: 9px;
+  padding: 0.33em 1em;
+  background: transparent;
+  transition:
+    background 0.17s cubic-bezier(0.39, 1.23, 0.57, 1),
+    color 0.11s,
+    box-shadow 0.13s,
+    transform 0.13s;
+  outline: none;
+  position: relative;
+}
+.link:hover { transform: translateY(-1px); }
+
+/* Active state applied from JSX via styles.active */
+.active,
+.link:hover,
+.link:focus-visible {
+  background: linear-gradient(120deg, var(--brand-light) 60%, var(--brand-mid) 100%);
+  color: var(--accent, #c4dbe8);
+  box-shadow: 0 2px 10px #4e91ad32;
+  opacity: 1;
+  text-shadow: 0 2px 8px #4e91ad25;
+}
+
+/* Theme toggle */
+.themeBtn {
+  background: none;
+  border: none;
+  font-size: 1.25em;
+  cursor: pointer;
+  color: var(--accent, #c4dbe8);
+  margin-left: 0.7em;
+  border-radius: 50%;
+  padding: 0.14em 0.22em;
+  transition: background 0.13s, transform 0.13s;
+}
+.themeBtn:hover,
+.themeBtn:focus-visible {
+  background: var(--brand-light, #4e91ad);
+  color: #fff;
+  transform: translateY(-1px);
+  outline: none;
+}
+
+/* User cluster (avatar + dropdown) */
+.user {
+  position: relative;
+  margin-left: 1.1em;
+}
+
+.avatarBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 3.5px;
+  outline: none;
+  position: relative;
+  transition: box-shadow 0.14s, transform 0.12s;
+  box-shadow: 0 0 0 0 var(--brand-light, #4e91ad00);
+}
+.avatarBtn:hover { transform: translateY(-1px); }
+.avatarBtn:focus-visible,
+.avatarBtn:hover {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light), white 30%);
+}
+
+.avatar {
+  height: 38px;
+  width: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #34495e;
+  border: 2px solid var(--accent, #c4dbe8);
+  box-shadow: 0 2px 7px #4e91ad35;
+}
+
+.notifBadge {
+  position: absolute;
+  top: 1.5px;
+  right: 0px;
+  background: var(--error, #e53e3e);
+  color: #fff;
+  border-radius: 999px;
+  font-size: .88em;
+  padding: 2.5px 6px;
+  font-weight: 700;
+  line-height: 1;
+  min-width: 18px;
+  text-align: center;
+  box-shadow: 0 2px 8px #c44c4c44;
+}
+
+/* Dropdown */
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 48px;
+  min-width: 200px;
+  background: linear-gradient(120deg, var(--brand-mid) 60%, var(--brand-light) 100%);
+  box-shadow: 0 4px 18px #0005, 0 2px 12px var(--brand-light, #4e91ad33);
+  border-radius: 15px;
+  padding: 0.9em 0.7em 0.7em 0.8em;
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  gap: 0.23em;
+  animation: fadeInDropdown 0.19s ease-out both;
+  border: 1px solid color-mix(in oklab, var(--accent), #000 25%);
+}
+
+@keyframes fadeInDropdown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropdownUser {
+  font-size: .97em;
+  color: var(--text-light);
+  margin-bottom: 0.55em;
+  font-weight: 600;
+  border-bottom: 1.5px solid var(--accent, #c4dbe8);
+  padding-bottom: 0.34em;
+}
+.dropdownEmail { display: block; }
+.dropdownRole {
+  font-size: .91em;
+  opacity: .7;
+  color: var(--accent, #c4dbe8);
+}
+
+.dropdownItem {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  text-align: left;
+  font-size: 1.03em;
+  font-weight: 500;
+  padding: 0.39em 0.22em;
+  border-radius: 9px;
+  transition: background 0.14s, color 0.13s, transform 0.12s;
+  cursor: pointer;
+}
+.dropdownItem:hover,
+.dropdownItem:focus-visible {
+  background: var(--brand-light, #4e91ad);
+  color: #fff;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+/* Hamburger */
+.burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background: none;
+  border: none;
+  gap: 5px;
+  cursor: pointer;
+  margin-left: 0.9em;
+  z-index: 100;
+  transition: background 0.13s, transform 0.12s;
+  border-radius: 9px;
+}
+.burger:hover,
+.burger:focus-visible {
+  background: color-mix(in oklab, var(--brand-light), #000 70%);
+  outline: none;
+}
+.burger span {
+  display: block;
+  height: 4px;
+  width: 27px;
+  background: var(--accent, #c4dbe8);
+  border-radius: 2px;
+  transition: transform 0.15s, background 0.13s, opacity 0.12s;
+}
+.burgerOpen span:nth-child(2) { opacity: 0; }
+.burgerOpen span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.burgerOpen span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+/* Mobile menu panel */
+@media (max-width: 850px) {
+  .links {
+    position: absolute;
+    top: calc(58px + var(--safe-area-inset-top));
+    left: 0;
+    right: 0;
+    background: linear-gradient(120deg, var(--brand-dark), var(--brand-mid) 96%);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1em;
+    z-index: 99;
+    border-bottom-left-radius: 17px;
+    border-bottom-right-radius: 17px;
+    box-shadow: 0 7px 28px #25212f32;
+    padding: 1.3em 1.1em 1em 1.7em;
+    display: none;
+    border-top: 1px solid color-mix(in oklab, var(--accent), #000 25%);
+  }
+  .linksOpen { display: flex; animation: fadeInDropdown 0.19s ease-out both; }
+  .burger { display: flex; }
+}
+
+/* Extra small tweaks */
+@media (max-width: 500px) {
+  .navbar {
+    padding-left: 0.5em;
+    padding-right: 0.22em;
+  }
+  .links,
+  .linksOpen {
+    padding-left: 0.9em;
+    padding-right: 0.4em;
+  }
+  .brand { max-width: 48vw; }
+}
+
+/* Reduced motion: disable flourishes for sensitive users */
+@media (prefers-reduced-motion: reduce) {
+  .link,
+  .avatarBtn,
+  .dropdown,
+  .burger span {
+    transition: none !important;
+    animation: none !important;
+  }
+  .link:hover,
+  .avatarBtn:hover,
+  .dropdownItem:hover {
+    transform: none !important;
+  }
+}
+
+/* Optional: dark-mode toggle (global selector via :global) */
+:global(body.dark-mode) .navbar {
+  border-bottom-color: color-mix(in oklab, var(--accent), #000 25%);
+}

@@ -1,0 +1,160 @@
+/* SuperAdminDashboard.module.css
+   Uses global tokens from :root and utilities.css (btn, glass, container, etc.)
+   -------------------------------------------------------------------------- */
+
+/* Page wrapper (inside Shell content) */
+.wrapper {
+  display: grid;
+  gap: 18px;
+}
+
+/* === Header ============================================================= */
+.dashHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  color: var(--text-light);
+  margin: 2px 0 6px;
+  text-shadow: 0 2px 8px #0003;
+}
+
+.roleBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: .82rem;
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  background: color-mix(in oklab, var(--brand-mid), #000 30%);
+  color: var(--text-light);
+}
+
+/* tint the badge a bit differently for SA */
+.roleBadge.superadmin {
+  background: color-mix(in oklab, var(--brand-light), #000 45%);
+}
+
+/* === Stats Bar ========================================================== */
+.statsBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklab, var(--accent), #000 45%);
+  background: color-mix(in oklab, var(--brand-dark), #000 10%);
+  box-shadow: 0 8px 26px #0003, inset 0 1px 0 #ffffff12;
+}
+
+.stat {
+  display: inline-flex;
+  gap: 6px;
+  align-items: baseline;
+  color: var(--text-light);
+}
+
+.dangerText {
+  color: #ff9a9a;
+  font-weight: 700;
+}
+
+/* === Profile Card ======================================================= */
+.profileCard {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 12px;
+  align-items: center;
+  border-radius: 14px;
+  padding: 14px;
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
+  box-shadow: 0 14px 36px #0005, inset 0 1px 0 #ffffff10;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+.profilePic {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  box-shadow: 0 8px 20px #00283a66;
+  background: var(--card-bg-dark);
+}
+
+.profilePic.placeholder {
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+/* === Feature Grid ======================================================= */
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.featureCard {
+  grid-column: span 4;
+  border-radius: 16px;
+  padding: 16px 16px 14px;
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
+  box-shadow: 0 16px 42px #0006, inset 0 1px 0 #ffffff12;
+  transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+}
+
+.featureCard:hover,
+.featureCard:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 52px #0007, inset 0 1px 0 #ffffff18;
+  border-color: color-mix(in oklab, var(--brand-light), #000 35%);
+}
+
+.cardTitle {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: .01em;
+  color: var(--accent);
+  margin-bottom: 6px;
+  text-shadow: 0 2px 8px #0003;
+}
+
+.cardDesc {
+  color: color-mix(in oklab, var(--text-light), transparent 15%);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+/* Make the action button stretch nicely if you use .btn.wide */
+.actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* === Responsive ========================================================= */
+@media (max-width: 1100px) {
+  .featureCard { grid-column: span 6; }
+}
+@media (max-width: 640px) {
+  .featureCard { grid-column: span 12; }
+  .statsBar { gap: 8px 12px; }
+}
+
+/* === Reduced Motion ===================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .featureCard { transition: none; }
+}
+
+/* === Optional elevated header glue (if your Shell sets data-scrolled) === */
+:global([data-scrolled="true"]) .statsBar {
+  box-shadow: 0 10px 28px #0004, inset 0 1px 0 #ffffff12;
+}

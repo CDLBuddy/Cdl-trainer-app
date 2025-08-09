@@ -599,12 +599,12 @@ export default function Billings() {
         </div>
 
         <button
-          className="btn outline"
-          style={{ marginTop: "1.2rem" }}
-          onClick={() => navigate("/superadmin-dashboard")}
-        >
-          ⬅ Dashboard
-        </button>
+  className="btn outline"
+  style={{ marginTop: "1.2rem" }}
+  onClick={() => navigate("/superadmin/dashboard")}
+>
+  ⬅ Dashboard
+</button>
       </div>
 
       {/* Modal */}

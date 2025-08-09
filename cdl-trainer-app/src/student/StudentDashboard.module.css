@@ -1,0 +1,297 @@
+/* === StudentDashboard.module.css =========================================
+   Relies on global theme tokens:
+   --brand-dark, --brand-mid, --brand-light, --accent, --text-light
+   --card-bg, --card-bg-dark, --error, --success
+=========================================================================== */
+
+.wrapper {
+  display: grid;
+  gap: 1.1rem;
+}
+
+/* =========================
+   KPI Row
+   ========================= */
+.kpiRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.kpiCard {
+  background: var(--card-bg);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
+  border-radius: 16px;
+  padding: 1rem 1rem .9rem;
+  box-shadow: 0 14px 36px #0007, inset 0 1px 0 #ffffff14;
+}
+
+.kpiTitle {
+  font-size: .95rem;
+  color: color-mix(in oklab, var(--text-light), transparent 20%);
+  margin-bottom: .35rem;
+  letter-spacing: .01em;
+}
+
+.kpiValue {
+  font-weight: 800;
+  font-size: 1.8rem;
+  color: var(--text-light);
+  text-shadow: 0 2px 10px #0005;
+  display: flex;
+  align-items: baseline;
+  gap: .25rem;
+}
+
+.kpiUnit {
+  font-size: .95rem;
+  opacity: .9;
+  color: var(--accent);
+}
+
+.progressTrack {
+  margin-top: .6rem;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--brand-dark), #fff 3%);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 35%);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--brand-light), var(--brand-mid) 90%);
+  box-shadow: 0 6px 16px color-mix(in oklab, var(--brand-light), #000 40%);
+  transition: width 240ms ease;
+}
+
+.kpiHint {
+  margin-top: .55rem;
+  font-size: .92rem;
+  color: color-mix(in oklab, var(--text-light), transparent 22%);
+}
+
+/* =========================
+   "Next Step" Banner
+   ========================= */
+.banner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: .75rem;
+  padding: .85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
+  box-shadow: 0 14px 34px #0006, inset 0 1px 0 #ffffff10;
+  background: linear-gradient(
+    120deg,
+    color-mix(in oklab, var(--brand-dark), #000 4%),
+    color-mix(in oklab, var(--brand-mid), #000 6%) 95%
+  );
+}
+
+.bannerInfo {
+  border-color: color-mix(in oklab, var(--brand-light), transparent 35%);
+}
+
+.bannerSuccess {
+  border-color: color-mix(in oklab, var(--success), transparent 40%);
+  background: linear-gradient(
+    120deg,
+    color-mix(in oklab, var(--brand-dark), var(--success) 6%),
+    color-mix(in oklab, var(--brand-mid), var(--success) 4%) 95%
+  );
+}
+
+.bannerIcon {
+  font-size: 1.25rem;
+  filter: drop-shadow(0 2px 6px #0006);
+}
+
+.bannerText {
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.bannerCta {
+  background: var(--brand-light);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: .5rem .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 18px color-mix(in oklab, var(--brand-light), #000 40%);
+  transition: transform 120ms ease, filter 120ms ease, background 140ms ease;
+}
+.bannerCta:hover,
+.bannerCta:focus-visible {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  outline: none;
+}
+
+/* =========================
+   Quick Links
+   ========================= */
+.quickRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .85rem;
+}
+
+.quickBtn {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: .6rem;
+  text-decoration: none;
+  color: var(--text-light);
+  padding: .8rem .9rem;
+  border-radius: 14px;
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
+  box-shadow: 0 12px 28px #0006, inset 0 1px 0 #ffffff10;
+  transition: transform 120ms ease, background 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+.quickBtn:hover,
+.quickBtn:focus-visible {
+  transform: translateY(-1px);
+  background: color-mix(in oklab, var(--brand-mid), #000 30%);
+  border-color: color-mix(in oklab, var(--brand-light), transparent 40%);
+  outline: none;
+}
+
+.quickIcon {
+  font-size: 1.15rem;
+  filter: drop-shadow(0 2px 8px #0006);
+}
+
+/* =========================
+   "What’s New" Card
+   ========================= */
+.updateCard {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
+  border-radius: 16px;
+  box-shadow: 0 18px 40px #0007, inset 0 1px 0 #ffffff12;
+  overflow: hidden;
+}
+
+.updateHeader {
+  padding: .8rem 1rem;
+  font-weight: 800;
+  color: var(--accent);
+  background: linear-gradient(
+    120deg,
+    color-mix(in oklab, var(--brand-dark), #000 4%),
+    color-mix(in oklab, var(--brand-mid), #000 8%) 100%
+  );
+  border-bottom: 1px solid color-mix(in oklab, var(--accent), transparent 60%);
+}
+
+.updateBody {
+  padding: .9rem 1rem;
+}
+
+.updateContent {
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+.updateMeta {
+  margin-top: .4rem;
+  font-size: .9rem;
+  color: color-mix(in oklab, var(--text-light), transparent 35%);
+}
+
+.updateEmpty {
+  color: color-mix(in oklab, var(--text-light), transparent 28%);
+}
+
+/* Skeleton shimmer */
+.updateSkeleton {
+  height: 12px;
+  width: 92%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #ffffff0a 25%,
+    #ffffff22 37%,
+    #ffffff0a 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1100ms ease-in-out infinite;
+  margin: 8px 0;
+}
+@keyframes shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position:   0% 0; }
+}
+
+/* =========================
+   Tips
+   ========================= */
+.tipsRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .9rem;
+}
+
+.tipCard {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
+  border-radius: 14px;
+  padding: .8rem 1rem;
+  box-shadow: 0 14px 34px #0006, inset 0 1px 0 #ffffff10;
+}
+
+.tipTitle {
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: .3rem;
+}
+
+.tipBody {
+  color: color-mix(in oklab, var(--text-light), transparent 12%);
+  line-height: 1.55;
+}
+
+/* =========================
+   Focus helpers for a11y
+   ========================= */
+.bannerCta:focus-visible,
+.quickBtn:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 12%), 0 12px 28px #0007;
+}
+
+/* =========================
+   Responsive
+   ========================= */
+@media (max-width: 1100px) {
+  .kpiRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quickRow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .kpiRow { grid-template-columns: 1fr; }
+  .quickRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tipsRow { grid-template-columns: 1fr; }
+}
+
+/* =========================
+   Reduced Motion
+   ========================= */
+@media (prefers-reduced-motion: reduce) {
+  .progressFill,
+  .quickBtn,
+  .bannerCta,
+  .updateSkeleton {
+    animation: none !important;
+    transition: none !important;
+  }
+}

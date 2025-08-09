@@ -1,28 +1,86 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { useSession } from "../App"; // exposes { loading, isLoggedIn, role, user }
+// src/components/NavBar.jsx
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  memo,
+} from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useSession } from "../App"; // { loading, isLoggedIn, role, user, logout, notifications? }
 import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,
 } from "../utils/school-branding";
-import { getDashboardRoute } from "../utils/navigation";
-import "./NavBar.css";
+import {
+  getDashboardRoute,
+  getNavLinksForRole, // ⬅ pull top nav from navConfig via navigation helper
+} from "../navigation/navigation";
+import styles from "./NavBar.module.css";
 
-export default function NavBar() {
+/**
+ * Props:
+ * - brand?: { logoUrl?: string; schoolName?: string; primaryColor?: string }
+ *   (Optional override; otherwise the bar listens for branding:updated)
+ */
+function NavBar({ brand: brandProp }) {
   const session = useSession?.() || {};
   const { role, user, logout } = session;
   const email = user?.email || session.email || "";
   const avatarUrl = user?.photoURL || session.avatarUrl || "/default-avatar.svg";
-  const notifications = session.notifications ?? 0;
+  const notifications = Number(session.notifications ?? 0);
 
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false); // elevated navbar on scroll
   const profileRef = useRef(null);
 
-  // Branding (logo + name) that updates instantly on school switch
-  const [brand, setBrand] = useState(() => getCachedBrandingSummary());
+  // Close the mobile menu when route changes
   useEffect(() => {
+    if (menuOpen) setMenuOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  // --- Scroll elevation ---
+  useEffect(() => {
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 6);
+        ticking = false;
+      });
+    };
+    onScroll(); // initialize once
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // --- Branding (prefer prop from App; else cached + live updates) ---
+  const [brand, setBrand] = useState(() => {
+    if (brandProp && (brandProp.logoUrl || brandProp.schoolName)) return brandProp;
+    return getCachedBrandingSummary();
+  });
+
+  // Update when parent passes a new brand
+  useEffect(() => {
+    if (brandProp && (brandProp.logoUrl || brandProp.schoolName)) {
+      setBrand((prev) => ({
+        logoUrl: brandProp.logoUrl ?? prev.logoUrl ?? "/default-logo.svg",
+        schoolName: brandProp.schoolName ?? prev.schoolName ?? "CDL Trainer",
+        primaryColor: brandProp.primaryColor ?? prev.primaryColor ?? "",
+      }));
+    }
+  }, [brandProp?.logoUrl, brandProp?.schoolName, brandProp?.primaryColor]);
+
+  // Subscribe for runtime school switches (only if no prop provided)
+  useEffect(() => {
+    if (brandProp) return; // parent controls branding; no subscription needed
     const unsub = subscribeBrandingUpdated((detail) => {
       setBrand((prev) => ({
         logoUrl: detail?.logoUrl ?? prev.logoUrl ?? "/default-logo.svg",
@@ -31,9 +89,9 @@ export default function NavBar() {
       }));
     });
     return unsub;
-  }, []);
+  }, [brandProp]);
 
-  // Accessibility: close dropdown on outside click or ESC
+  // --- Close dropdowns on outside click / ESC
   useEffect(() => {
     function handleClickOutside(e) {
       if (profileOpen && profileRef.current && !profileRef.current.contains(e.target)) {
@@ -54,99 +112,87 @@ export default function NavBar() {
     };
   }, [profileOpen]);
 
-  // Role-based links
-  const roleLinks = useMemo(() => {
-    return {
-      student: [
-        { to: "/student/dashboard", label: "Dashboard" },
-        { to: "/student/checklists", label: "Checklists" },
-        { to: "/student/practice-tests", label: "Practice Tests" },
-        { to: "/student/walkthrough", label: "Walkthrough" },
-        { to: "/student/flashcards", label: "Flashcards" },
-      ],
-      instructor: [
-        { to: "/instructor/dashboard", label: "Dashboard" },
-        { to: "/instructor/checklists", label: "Checklists" },
-        { to: "/instructor/checklist-review", label: "Checklist Review" },
-      ],
-      admin: [
-        { to: "/admin/dashboard", label: "Dashboard" },
-        { to: "/admin/users", label: "Users" },
-        { to: "/admin/companies", label: "Companies" },
-        { to: "/admin/reports", label: "Reports" },
-      ],
-      superadmin: [
-        { to: "/superadmin/dashboard", label: "Dashboard" },
-        { to: "/superadmin/schools", label: "Schools" },
-        { to: "/superadmin/users", label: "Users" },
-        { to: "/superadmin/compliance", label: "Compliance" },
-        { to: "/superadmin/billing", label: "Billing" },
-        { to: "/superadmin/settings", label: "Settings" },
-        { to: "/superadmin/logs", label: "Logs" },
-      ],
-    };
-  }, []);
-
-  // Build visible nav
+  // --- Build visible nav (from central config) ---
   const links = useMemo(() => {
+    // Always show Home first; rest comes from central config per role
     const base = [{ to: "/", label: "Home", always: true }];
-    if (role && roleLinks[role]) return [...base, ...roleLinks[role]];
-    return [...base, { to: "/login", label: "Login" }, { to: "/signup", label: "Sign Up" }];
-  }, [role, roleLinks]);
+    const roleLinks = getNavLinksForRole(role || "student");
+    return [...base, ...roleLinks];
+  }, [role]);
 
-  // Profile dropdown options
+  // Profile dropdown items
   const userMenu = useMemo(() => {
     if (!role) return [];
     return [
       { label: "Profile", action: () => navigate(`/${role}/profile`) },
       { label: "Dashboard", action: () => navigate(getDashboardRoute(role)) },
-      { label: "Logout", action: () => (typeof logout === "function" ? logout() : navigate("/login")) },
+      {
+        label: "Logout",
+        action: () => (typeof logout === "function" ? logout() : navigate("/login")),
+      },
     ];
   }, [navigate, role, logout]);
 
   // Handlers
-  function handleMenuToggle() {
-    setMenuOpen((v) => !v);
-  }
-  function handleAvatarKey(e) {
+  const handleMenuToggle = useCallback(() => setMenuOpen((v) => !v), []);
+  const handleAvatarKey = useCallback((e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       setProfileOpen((v) => !v);
     }
-  }
-  function handleThemeSwitch() {
+  }, []);
+  const handleThemeSwitch = useCallback(() => {
     document.body.classList.toggle("dark-mode");
-  }
+  }, []);
+  const goHome = useCallback(() => {
+    navigate(role ? getDashboardRoute(role) : "/");
+  }, [navigate, role]);
 
   return (
-    <nav className="navbar" aria-label="Main Navigation">
-      {/* Branding/Logo */}
-      <div className="navbar-left" onClick={() => navigate(role ? getDashboardRoute(role) : "/")}>
+    <nav
+      className={styles.navbar}
+      aria-label="Main Navigation"
+      data-scrolled={scrolled ? "true" : "false"}
+    >
+      {/* Branding */}
+      <button
+        className={styles.left}
+        onClick={goHome}
+        type="button"
+        aria-label="Go to home"
+      >
         <img
-          src={brand.logoUrl || "/default-logo.svg"}
-          alt="School Logo"
-          className="navbar-logo"
+          src={brand?.logoUrl || "/default-logo.svg"}
+          alt={`${brand?.schoolName || "School"} logo`}
+          className={styles.logo}
           loading="lazy"
           decoding="async"
         />
-        <span className="navbar-brand">{brand.schoolName || "CDL Trainer"}</span>
-      </div>
+        <span className={styles.brand}>{brand?.schoolName || "CDL Trainer"}</span>
+      </button>
 
-      {/* Desktop nav links */}
-      <div className={`navbar-links ${menuOpen ? "open" : ""}`} id="main-navigation">
+      {/* Desktop links / mobile panel */}
+      <div
+        className={`${styles.links} ${menuOpen ? styles.linksOpen : ""}`}
+        id="main-navigation"
+        role="menubar"
+      >
         {links.map((link) => (
           <NavLink
             key={link.to}
             to={link.to}
-            className={({ isActive }) => "navbar-link" + (isActive ? " active" : "")}
+            className={({ isActive }) => `${styles.link} ${isActive ? styles.active : ""}`}
             onClick={() => setMenuOpen(false)}
             end
+            role="menuitem"
           >
             {link.label}
           </NavLink>
         ))}
+
+        {/* Theme toggle (optional) */}
         <button
-          className="navbar-theme-btn"
+          className={styles.themeBtn}
           aria-label="Toggle theme"
           onClick={handleThemeSwitch}
           type="button"
@@ -155,11 +201,11 @@ export default function NavBar() {
         </button>
       </div>
 
-      {/* User avatar/profile menu */}
+      {/* User menu */}
       {role ? (
-        <div className="navbar-user" ref={profileRef}>
+        <div className={styles.user} ref={profileRef}>
           <button
-            className="navbar-avatar-btn"
+            className={styles.avatarBtn}
             onClick={() => setProfileOpen((v) => !v)}
             aria-haspopup="menu"
             aria-expanded={profileOpen}
@@ -167,19 +213,24 @@ export default function NavBar() {
             aria-label="Open user menu"
             type="button"
           >
-            <img src={avatarUrl} alt="User Avatar" className="navbar-avatar" />
-            {notifications > 0 && <span className="navbar-notif-badge">{notifications}</span>}
+            <img src={avatarUrl} alt="User avatar" className={styles.avatar} />
+            {notifications > 0 && (
+              <span className={styles.notifBadge} aria-label={`${notifications} notifications`}>
+                {notifications}
+              </span>
+            )}
           </button>
+
           {profileOpen && (
-            <div className="navbar-dropdown" role="menu">
-              <div className="navbar-dropdown-user">
-                <span className="navbar-dropdown-email" title={email}>{email}</span>
-                <span className="navbar-dropdown-role">{role}</span>
+            <div className={styles.dropdown} role="menu">
+              <div className={styles.dropdownUser}>
+                <span className={styles.dropdownEmail} title={email}>{email}</span>
+                <span className={styles.dropdownRole}>{role}</span>
               </div>
               {userMenu.map((item) => (
                 <button
                   key={item.label}
-                  className="navbar-dropdown-item"
+                  className={styles.dropdownItem}
                   role="menuitem"
                   onClick={() => {
                     item.action();
@@ -195,9 +246,9 @@ export default function NavBar() {
         </div>
       ) : null}
 
-      {/* Hamburger for mobile */}
+      {/* Hamburger (mobile) */}
       <button
-        className={`navbar-burger${menuOpen ? " open" : ""}`}
+        className={`${styles.burger} ${menuOpen ? styles.burgerOpen : ""}`}
         onClick={handleMenuToggle}
         aria-label="Toggle navigation menu"
         aria-controls="main-navigation"
@@ -211,3 +262,5 @@ export default function NavBar() {
     </nav>
   );
 }
+
+export default memo(NavBar);

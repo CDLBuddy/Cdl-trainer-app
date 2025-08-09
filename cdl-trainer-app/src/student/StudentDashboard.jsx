@@ -1,221 +1,258 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { db, auth } from "../utils/firebase";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
-import {
-  showLatestUpdate,
-  getRandomAITip,
-  getNextChecklistAlert,
-} from "../utils/ui-helpers";
+// src/student/StudentDashboard.jsx
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
-function getCurrentUserEmail() {
-  return (
-    window.currentUserEmail ||
-    localStorage.getItem("currentUserEmail") ||
-    (auth.currentUser && auth.currentUser.email) ||
-    null
-  );
+import Shell from "../components/Shell.jsx";
+import { useSession } from "../App.jsx";
+
+// Firestore helper for the “What’s New” card
+import { getLatestUpdate } from "../utils/firebase.js";
+
+// Page-scoped styles
+import styles from "./StudentDashboard.module.css";
+
+/* ------------------------------------------------------------------ *
+ * Local helpers
+ * ------------------------------------------------------------------ */
+function computeProfileCompletion(profile = {}) {
+  const keysToCheck = [
+    "name",
+    "dob",
+    "profilePicUrl",
+    "cdlClass",
+    "experience",
+    "cdlPermit",
+    "permitPhotoUrl",
+    "driverLicenseUrl",
+    "medicalCardUrl",
+    "vehicleQualified",
+    "emergencyName",
+    "emergencyPhone",
+    "waiverSigned",
+    "course",
+    "paymentStatus",
+  ];
+  const filled = keysToCheck.filter((k) => Boolean(profile?.[k])).length;
+  return Math.round((filled / keysToCheck.length) * 100);
 }
 
+function getNextChecklistHint(user = {}) {
+  if (!user.cdlClass || !user.cdlPermit || !user.experience) {
+    const missing = [];
+    if (!user.cdlClass) missing.push("CDL class");
+    if (!user.cdlPermit) missing.push("CDL permit status");
+    if (!user.experience) missing.push("experience level");
+    return `Complete your profile: ${missing.join(", ")}.`;
+  }
+  if (user.cdlPermit === "yes" && !user.permitPhotoUrl) {
+    return "Upload a photo of your CDL permit.";
+  }
+  if (user.vehicleQualified === "yes" && (!user.truckPlateUrl || !user.trailerPlateUrl)) {
+    const which = [
+      !user.truckPlateUrl ? "truck" : null,
+      !user.trailerPlateUrl ? "trailer" : null,
+    ]
+      .filter(Boolean)
+      .join(" & ");
+    return `Upload your ${which} data plate photo${which.includes("&") ? "s" : ""}.`;
+  }
+  if (typeof user.lastTestScore === "number" && user.lastTestScore < 80) {
+    return "Pass a practice test (80%+ required).";
+  }
+  if (!user.walkthroughProgress || user.walkthroughProgress < 1) {
+    return "Complete at least one walkthrough drill.";
+  }
+  return "All required steps complete! 🎉";
+}
+
+function formatDate(dateInput) {
+  try {
+    const d = dateInput?.toDate ? dateInput.toDate() : new Date(dateInput);
+    if (Number.isNaN(d.getTime())) return "-";
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  } catch {
+    return "-";
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Component
+ * ------------------------------------------------------------------ */
 export default function StudentDashboard() {
   const navigate = useNavigate();
+  const { user } = useSession?.() || {};
 
-  // State
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [userData, setUserData] = useState({});
-  const [checklistPct, setChecklistPct] = useState(0);
-  const [lastTestStr, setLastTestStr] = useState("No tests taken yet.");
-  const [streak, setStreak] = useState(0);
-  const [aiTip, setAiTip] = useState("");
+  // Profile snapshot (from session.user or defaults)
+  const profile = useMemo(() => user?.profile || user || {}, [user]);
+  const profilePct = useMemo(() => computeProfileCompletion(profile), [profile]);
+  const nextHint = useMemo(() => getNextChecklistHint(profile), [profile]);
+  const isComplete = /All required steps complete!/i.test(nextHint);
+
+  // Latest update (Firestore → utils/firebase.getLatestUpdate)
+  const [latestUpdate, setLatestUpdate] = useState(null);
+  const [updatesLoading, setUpdatesLoading] = useState(true);
 
   useEffect(() => {
-    let isMounted = true;
-
-    async function fetchDashboardData() {
+    let alive = true;
+    (async () => {
       try {
-        const email = getCurrentUserEmail();
-        if (!email) {
-          navigate("/login");
-          return;
-        }
-
-        // Fetch user profile
-        const userSnap = await getDocs(
-          query(collection(db, "users"), where("email", "==", email))
-        );
-        let profile = {};
-        let userRole = "student";
-        if (!userSnap.empty) {
-          profile = userSnap.docs[0].data();
-          userRole = profile.role || "student";
-          localStorage.setItem("userRole", userRole);
-        }
-        if (userRole !== "student") {
-          navigate("/login");
-          return;
-        }
-        if (!isMounted) return;
-        setUserData(profile);
-        setChecklistPct(profile.profileProgress || 0);
-
-        // Fetch last test score
-        const testsSnap = await getDocs(
-          query(collection(db, "testResults"), where("studentId", "==", email))
-        );
-        let latest = null;
-        testsSnap.forEach((d) => {
-          const t = d.data();
-          const tTime = t.timestamp?.toDate?.() || new Date(t.timestamp) || new Date(0);
-          const lTime = latest?.timestamp?.toDate?.() || new Date(latest?.timestamp) || new Date(0);
-          if (!latest || tTime > lTime) latest = t;
-        });
-        if (latest) {
-          const pct = Math.round((latest.correct / latest.total) * 100);
-          const dateStr = latest.timestamp?.toDate
-            ? latest.timestamp.toDate().toLocaleDateString()
-            : new Date(latest.timestamp).toLocaleDateString();
-          setLastTestStr(`${latest.testName} – ${pct}% on ${dateStr}`);
-        }
-
-        // Study streak
-        const today = new Date().toDateString();
-        let log = JSON.parse(localStorage.getItem("studyLog") || "[]");
-        if (!log.includes(today)) {
-          log.push(today);
-          localStorage.setItem("studyLog", JSON.stringify(log));
-        }
-        const cutoff = new Date();
-        cutoff.setDate(cutoff.getDate() - 6);
-        setStreak(log.filter((d) => new Date(d) >= cutoff).length);
-
-        // AI tip
-        setAiTip(getRandomAITip());
-
-        // Latest update animation
-        setTimeout(showLatestUpdate, 300);
-
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to load dashboard. Please try again.");
-        setLoading(false);
+        const data = await getLatestUpdate();
+        if (alive) setLatestUpdate(data || null);
+      } finally {
+        if (alive) setUpdatesLoading(false);
       }
-    }
-
-    fetchDashboardData();
-    return () => { isMounted = false; };
-    // eslint-disable-next-line
+    })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="spinner" />
-        <p>Loading Student Dashboard…</p>
-      </div>
-    );
-  }
+  // Set document title
+  useEffect(() => {
+    const prev = document.title;
+    document.title = "Student Dashboard • CDL Trainer";
+    return () => {
+      document.title = prev;
+    };
+  }, []);
 
-  // Error state
-  if (error) {
-    return (
-      <div className="dashboard-error">
-        <p className="error-text">{error}</p>
-        <button className="btn" onClick={() => window.location.reload()}>
-          Retry
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="student-page container">
-      {/* Header */}
-      <h2 className="dash-head">
-        🎓 Student Dashboard{" "}
-        <span className="role-badge student">Student</span>
-      </h2>
-
-      {/* Stats bar */}
-      <div className="stats-bar">
-        <span>✅ Checklist: <b>{checklistPct}%</b></span>
-        <span>🔥 Streak: <b>{streak} days</b></span>
-        <span>🧪 Last Test: <b>{lastTestStr}</b></span>
-      </div>
-
-      {/* Checklist Progress */}
-      <div className="dashboard-card">
-        <h3>Checklist Progress</h3>
-        <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${checklistPct}%` }}></div>
-        </div>
-        <div className="progress-percent">{checklistPct}% complete</div>
-        <div className="checklist-alert warning">
-          {getNextChecklistAlert(userData)}
-        </div>
-      </div>
-
-      {/* AI Tip */}
-      <div className="dashboard-card ai-tip">
-        <strong>💡 AI Tip of the Day</strong>
-        <p>{aiTip}</p>
-        <button className="btn" onClick={() => navigate("/student-coach")}>
-          💬 Ask AI Coach
-        </button>
-      </div>
-
-      {/* Feature Grid */}
-      <div className="dash-layout">
-        <StudentCard
-          title="📝 Practice Tests"
-          desc="Take CDL practice exams and track your scores."
-          btn="Start Tests"
-          nav="/student-practice-tests"
-        />
-        <StudentCard
-          title="🧭 Walkthrough"
-          desc="Practice your CDL inspection and brake check script."
-          btn="Open Walkthrough"
-          nav="/student-walkthrough"
-        />
-        <StudentCard
-          title="📋 Checklists"
-          desc="Track your training progress and required steps."
-          btn="View Checklist"
-          nav="/student-checklists"
-        />
-        <StudentCard
-          title="📚 Flashcards"
-          desc="Review CDL terms and concepts."
-          btn="Open Flashcards"
-          nav="/student-flashcards"
-        />
-        <StudentCard
-          title="📊 Test Results"
-          desc="View past test attempts and scores."
-          btn="View Results"
-          nav="/student-results"
-        />
-      </div>
-    </div>
+  // Quick links
+  const quickLinks = useMemo(
+    () => [
+      { to: "/student/checklists", label: "Open Checklists", icon: "📋" },
+      { to: "/student/practice-tests", label: "Practice Tests", icon: "📝" },
+      { to: "/student/walkthrough", label: "Walkthrough", icon: "🚚" },
+      { to: "/student/flashcards", label: "Flashcards", icon: "🗂️" },
+    ],
+    []
   );
-}
 
-function StudentCard({ title, desc, btn, nav }) {
-  const navigate = useNavigate();
+  const lastScore = Number.isFinite(profile?.lastTestScore) ? profile.lastTestScore : null;
+  const streakDays = profile?.studyStreakDays ?? 0;
+
   return (
-    <div className="dashboard-card feature-card">
-      <h3>{title}</h3>
-      <p>{desc}</p>
-      <button className="btn wide" onClick={() => navigate(nav)}>
-        {btn}
-      </button>
-    </div>
+    <Shell title="Student Dashboard" showFab showFooter>
+      <div className={styles.wrapper}>
+        {/* Row: KPIs */}
+        <div className={styles.kpiRow}>
+          <div className={styles.kpiCard}>
+            <div className={styles.kpiTitle}>Profile Completion</div>
+            <div className={styles.kpiValue}>
+              {profilePct}
+              <span className={styles.kpiUnit}>%</span>
+            </div>
+            <div className={styles.progressTrack} aria-label="Profile completion">
+              <div
+                className={styles.progressFill}
+                style={{ width: `${Math.min(100, Math.max(0, profilePct))}%` }}
+              />
+            </div>
+            <div className={styles.kpiHint}>
+              {profilePct < 100 ? "Finish your profile to 100%." : "Nice work!"}
+            </div>
+          </div>
+
+          <div className={styles.kpiCard}>
+            <div className={styles.kpiTitle}>Last Practice Score</div>
+            <div className={styles.kpiValue}>
+              {lastScore != null ? lastScore : "--"}
+              <span className={styles.kpiUnit}>{lastScore != null ? "%" : ""}</span>
+            </div>
+            <div className={styles.kpiHint}>
+              {lastScore != null
+                ? lastScore >= 80
+                  ? "Ready to keep going!"
+                  : "Shoot for 80%+ to pass."
+                : "Take a practice test to see a score."}
+            </div>
+          </div>
+
+          <div className={styles.kpiCard}>
+            <div className={styles.kpiTitle}>Study Streak</div>
+            <div className={styles.kpiValue}>
+              {streakDays}
+              <span className={styles.kpiUnit}>d</span>
+            </div>
+            <div className={styles.kpiHint}>
+              {streakDays > 0 ? "Keep that streak alive!" : "Start a session today."}
+            </div>
+          </div>
+        </div>
+
+        {/* Next step banner */}
+        <div
+          className={`${styles.banner} ${isComplete ? styles.bannerSuccess : styles.bannerInfo}`}
+          role="status"
+          aria-live="polite"
+        >
+          <div className={styles.bannerIcon} aria-hidden>
+            {isComplete ? "✅" : "➡️"}
+          </div>
+          <div className={styles.bannerText}>{nextHint}</div>
+          {!isComplete && (
+            <button
+              type="button"
+              className={styles.bannerCta}
+              onClick={() => navigate("/student/profile")}
+            >
+              Fix it
+            </button>
+          )}
+        </div>
+
+        {/* Quick actions */}
+        <div className={styles.quickRow}>
+          {quickLinks.map((q) => (
+            <Link key={q.to} to={q.to} className={styles.quickBtn}>
+              <span className={styles.quickIcon} aria-hidden>
+                {q.icon}
+              </span>
+              <span>{q.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        {/* Latest Update card */}
+        <div className={styles.updateCard}>
+          <div className={styles.updateHeader}>
+            <span>📢 What’s New</span>
+          </div>
+          {updatesLoading ? (
+            <div className={styles.updateBody} aria-busy="true">
+              <div className={styles.updateSkeleton} />
+              <div className={styles.updateSkeleton} style={{ width: "70%" }} />
+            </div>
+          ) : latestUpdate ? (
+            <div className={styles.updateBody}>
+              <div className={styles.updateContent}>
+                {latestUpdate.content || "(No details)"}
+              </div>
+              <div className={styles.updateMeta}>{formatDate(latestUpdate.date)}</div>
+            </div>
+          ) : (
+            <div className={styles.updateBody}>
+              <div className={styles.updateEmpty}>No recent updates.</div>
+            </div>
+          )}
+        </div>
+
+        {/* Helpful tips */}
+        <div className={styles.tipsRow}>
+          <div className={styles.tipCard}>
+            <div className={styles.tipTitle}>Study Tip</div>
+            <div className={styles.tipBody}>
+              Say each step of the <b>three-point brake check</b> out loud during practice. It
+              sticks.
+            </div>
+          </div>
+          <div className={styles.tipCard}>
+            <div className={styles.tipTitle}>Pro Tip</div>
+            <div className={styles.tipBody}>
+              Use <b>Flashcards</b> when you have 5 minutes—on the bus, in line, wherever.
+            </div>
+          </div>
+        </div>
+      </div>
+    </Shell>
   );
 }

@@ -1,69 +1,103 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { ToastContainer } from "./Toast";
 
-const ToastContext = createContext();
-export function useToast() {
-  return useContext(ToastContext);
+/**
+ * ToastContext – exposes:
+ *  - showToast(message | options)
+ *  - success(message, opts?)
+ *  - error(message, opts?)
+ *  - info(message, opts?)
+ *  - warning(message, opts?)
+ *  - close(id)
+ *  - clear()      // clear all
+ *
+ * Provider props:
+ *  - maxToasts = 3        // max on screen
+ *  - position = 'bottom-right'
+ *  - defaultDuration = 3000
+ */
+const ToastContext = createContext(null);
+export const useToast = () => useContext(ToastContext);
+
+let _id = 1;
+function nextId() {
+  return _id++;
 }
 
-export function ToastProvider({ children }) {
-  const [queue, setQueue] = useState([]);
-  const [visible, setVisible] = useState(false);
+export function ToastProvider({
+  children,
+  maxToasts = 3,
+  position = "bottom-right",
+  defaultDuration = 3000,
+}) {
+  const [toasts, setToasts] = useState([]);
+  const pausedRef = useRef(false); // future: global pause on window blur if you want
 
-  const showToast = useCallback((message, duration = 3000, type = "info") => {
-    setQueue((q) => [...q, { message, duration, type }]);
+  const normalize = useCallback(
+    (input, type = "info", extra = {}) => {
+      if (typeof input === "string") {
+        return {
+          id: nextId(),
+          type,
+          message: input,
+          duration: defaultDuration,
+          dismissible: true,
+          ...extra,
+        };
+      }
+      return {
+        id: nextId(),
+        type,
+        duration: defaultDuration,
+        dismissible: true,
+        ...input,
+      };
+    },
+    [defaultDuration]
+  );
+
+  const show = useCallback(
+    (input, extra = {}) => {
+      const t = normalize(input, input?.type || "info", extra);
+      setToasts((curr) => {
+        const next = [...curr, t];
+        // cap stack
+        if (next.length > maxToasts) next.splice(0, next.length - maxToasts);
+        return next;
+      });
+      return t.id;
+    },
+    [normalize, maxToasts]
+  );
+
+  const success = useCallback((msg, opts = {}) => show({ ...opts, type: "success", message: msg }), [show]);
+  const error   = useCallback((msg, opts = {}) => show({ ...opts, type: "error",   message: msg }), [show]);
+  const info    = useCallback((msg, opts = {}) => show({ ...opts, type: "info",    message: msg }), [show]);
+  const warning = useCallback((msg, opts = {}) => show({ ...opts, type: "warning", message: msg }), [show]);
+
+  const close = useCallback((id) => {
+    setToasts((curr) => curr.filter((t) => t.id !== id));
   }, []);
 
-  React.useEffect(() => {
-    if (!visible && queue.length > 0) {
-      setVisible(true);
-      const { message, duration, type } = queue[0];
-      const timer = setTimeout(() => {
-        setQueue((q) => q.slice(1));
-        setVisible(false);
-      }, duration);
+  const clear = useCallback(() => setToasts([]), []);
 
-      return () => clearTimeout(timer);
-    }
-  }, [queue, visible]);
+  // Optional: expose a single function named showToast to match your old API
+  const showToast = show;
+
+  const value = useMemo(
+    () => ({ showToast, success, error, info, warning, close, clear }),
+    [showToast, success, error, info, warning, close, clear]
+  );
 
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={value}>
       {children}
-      {queue.length > 0 && visible && (
-        <div
-          className={`toast-message toast-${queue[0].type}`}
-          role="status"
-          aria-live="polite"
-          tabIndex={0}
-          style={{
-            position: "fixed",
-            bottom: 24,
-            left: "50%",
-            transform: "translateX(-50%)",
-            background:
-              queue[0].type === "error"
-                ? "#e35656"
-                : queue[0].type === "success"
-                ? "#44a368"
-                : "#333",
-            color: "#fff",
-            padding: "12px 26px",
-            fontWeight: 500,
-            borderRadius: 7,
-            opacity: 1,
-            boxShadow: "0 4px 18px 0 rgba(0,0,0,0.15)",
-            transition: "opacity 0.45s cubic-bezier(.4,0,.2,1)",
-            zIndex: 99999,
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            setQueue((q) => q.slice(1));
-            setVisible(false);
-          }}
-        >
-          <span>{queue[0].message}</span>
-        </div>
-      )}
+      {/* Render stacked toasts */}
+      <ToastContainer
+        toasts={toasts}
+        onClose={close}
+        position={position}
+      />
     </ToastContext.Provider>
   );
 }

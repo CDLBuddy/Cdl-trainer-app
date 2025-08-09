@@ -1,17 +1,16 @@
 // src/superadmin/SuperadminRouter.jsx
-import React, { Suspense, lazy, useEffect } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { RequireRole } from "../utils/RequireRole";
+import React, { Suspense, lazy } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 // Lazy-load pages (match filenames exactly)
-const SuperAdminDashboard = lazy(() => import("./SuperAdminDashboard"));
-const SchoolManagement    = lazy(() => import("./SchoolManagement"));
-const UserManagement      = lazy(() => import("./UserManagement"));
-const ComplianceCenter    = lazy(() => import("./ComplianceCenter"));
-const Billing             = lazy(() => import("./Billing"));      // fixed
-const Settings            = lazy(() => import("./Settings"));
-const Logs                = lazy(() => import("./Logs"));
-const Permissions         = lazy(() => import("./Permissions"));  // added
+const SuperAdminDashboard = lazy(() => import("./SuperAdminDashboard.jsx"));
+const SchoolManagement    = lazy(() => import("./SchoolManagement.jsx"));
+const UserManagement      = lazy(() => import("./UserManagement.jsx"));
+const ComplianceCenter    = lazy(() => import("./ComplianceCenter.jsx"));
+const Billings            = lazy(() => import("./Billings.jsx")); // <-- fixed name
+const Settings            = lazy(() => import("./Settings.jsx"));
+const Logs                = lazy(() => import("./Logs.jsx"));
+const Permissions         = lazy(() => import("./Permissions.jsx"));
 
 class SuperadminErrorBoundary extends React.Component {
   constructor(props){ super(props); this.state = { error: null }; }
@@ -30,37 +29,32 @@ class SuperadminErrorBoundary extends React.Component {
   }
 }
 
-function ScrollToTop() {
-  const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: "instant" }); }, [pathname]);
-  return null;
+function Loading() {
+  return (
+    <div style={{ textAlign: "center", marginTop: "4em" }}>
+      <div className="spinner" />
+      <p>Loading super admin panel…</p>
+    </div>
+  );
 }
 
 export default function SuperadminRouter() {
   return (
-    <RequireRole role="superadmin">
-      <ScrollToTop />
-      <SuperadminErrorBoundary>
-        <Suspense fallback={
-          <div style={{ textAlign: "center", marginTop: "4em" }}>
-            <div className="spinner" />
-            <p>Loading super admin panel…</p>
-          </div>
-        }>
-          <Routes>
-            <Route index element={<SuperAdminDashboard />} />
-            <Route path="dashboard" element={<SuperAdminDashboard />} />
-            <Route path="schools" element={<SchoolManagement />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="compliance" element={<ComplianceCenter />} />
-            <Route path="billing" element={<Billing />} />          {/* fixed */}
-            <Route path="settings" element={<Settings />} />
-            <Route path="logs" element={<Logs />} />
-            <Route path="permissions" element={<Permissions />} />  {/* new */}
-            <Route path="*" element={<Navigate to="/superadmin/dashboard" replace />} />
-          </Routes>
-        </Suspense>
-      </SuperadminErrorBoundary>
-    </RequireRole>
+    <SuperadminErrorBoundary>
+      <Suspense fallback={<Loading />}>
+        <Routes>
+          <Route index element={<SuperAdminDashboard />} />
+          <Route path="dashboard" element={<SuperAdminDashboard />} />
+          <Route path="schools" element={<SchoolManagement />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="compliance" element={<ComplianceCenter />} />
+          <Route path="billing" element={<Billings />} /> {/* <-- fixed usage */}
+          <Route path="settings" element={<Settings />} />
+          <Route path="logs" element={<Logs />} />
+          <Route path="permissions" element={<Permissions />} />
+          <Route path="*" element={<Navigate to="/superadmin/dashboard" replace />} />
+        </Routes>
+      </Suspense>
+    </SuperadminErrorBoundary>
   );
 }

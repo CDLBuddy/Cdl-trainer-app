@@ -1,201 +1,178 @@
 // src/superadmin/SuperAdminDashboard.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-
-// Firebase
+import Shell from "../components/Shell";
 import { db } from "../utils/firebase";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
-
-// UI helpers
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { showToast } from "../utils/ui-helpers";
+import styles from "./SuperAdminDashboard.module.css";
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
 
-  // State
   const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState({});
-  const [currentUserEmail, setCurrentUserEmail] = useState("");
-  const [stats, setStats] = useState({
-    schools: 0,
-    users: 0,
-    complianceAlerts: 0,
-  });
+  const [me, setMe] = useState(null);
+  const [email, setEmail] = useState("");
+  const [stats, setStats] = useState({ schools: 0, users: 0, complianceAlerts: 0 });
 
-  // ===== Lifecycle: Fetch Data =====
   useEffect(() => {
-    async function fetchData() {
+    let alive = true;
+    (async () => {
       try {
-        // --- Role guard ---
-        const role =
-          localStorage.getItem("userRole") ||
-          window.currentUserRole ||
-          "";
+        // --- Guard ---
+        const role = (localStorage.getItem("userRole") || window.currentUserRole || "").toLowerCase();
         if (role !== "superadmin") {
-          showToast("Access denied: Super Admins only.");
+          showToast("Access denied: Super Admins only.", 3500, "error");
           if (window.handleLogout) window.handleLogout();
-          navigate("/login");
+          navigate("/login", { replace: true });
           return;
         }
 
         // --- Current user email ---
-        const email =
+        const e =
           localStorage.getItem("currentUserEmail") ||
           window.currentUserEmail ||
           "";
-        setCurrentUserEmail(email);
+        if (alive) setEmail(e);
 
-        // --- Fetch profile ---
-        if (email) {
+        // --- Profile (best-effort) ---
+        if (e) {
           try {
-            const usersQuery = query(
-              collection(db, "users"),
-              where("email", "==", email)
-            );
-            const snap = await getDocs(usersQuery);
-            if (!snap.empty) {
-              setUserData(snap.docs[0].data());
-            }
-          } catch (err) {
-            console.error("Error fetching user data:", err);
+            const qUser = query(collection(db, "users"), where("email", "==", e));
+            const snap = await getDocs(qUser);
+            if (!snap.empty && alive) setMe(snap.docs[0].data());
+          } catch {
+            /* non-fatal */
           }
         }
 
-        // --- Fetch stats ---
+        // --- Stats ---
         try {
           const schoolsSnap = await getDocs(collection(db, "schools"));
           const usersSnap = await getDocs(collection(db, "users"));
-          const alertsQuery = query(
-            collection(db, "complianceAlerts"),
-            where("resolved", "==", false)
+          const alertsSnap = await getDocs(
+            query(collection(db, "complianceAlerts"), where("resolved", "==", false))
           );
-          const alertsSnap = await getDocs(alertsQuery);
-
-          setStats({
-            schools: schoolsSnap.size,
-            users: usersSnap.size,
-            complianceAlerts: alertsSnap.size,
-          });
-        } catch (err) {
-          console.error("Error fetching stats:", err);
+          if (alive) {
+            setStats({
+              schools: schoolsSnap.size,
+              users: usersSnap.size,
+              complianceAlerts: alertsSnap.size,
+            });
+          }
+        } catch {
+          /* non-fatal */
         }
       } finally {
-        setLoading(false);
+        alive && setLoading(false);
       }
-    }
-
-    fetchData();
+    })();
+    return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate]);
+  }, []);
 
-  // ===== Loading state =====
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner" aria-label="Loading" />
-        <p>Loading Super Admin Dashboard…</p>
-      </div>
+      <Shell title="Super Admin Dashboard">
+        <div className="center" style={{ marginTop: 40 }}>
+          <div className="spinner" aria-label="Loading" />
+          <p className="mt-3">Loading super admin dashboard…</p>
+        </div>
+      </Shell>
     );
   }
 
-  // ===== Main render =====
+  const name = me?.name || "Super Admin";
+  const avatar = me?.profilePicUrl || "";
+
   return (
-    <div className="superadmin-page container">
-      {/* Header */}
-      <h2 className="dash-head">
-        🏆 Super Admin Panel{" "}
-        <span className="role-badge superadmin">Super Admin</span>
-      </h2>
+    <Shell title="Super Admin Dashboard">
+      <div className={styles.wrapper}>
+        {/* Header */}
+        <h2 className={styles.dashHead}>
+          🏆 Super Admin Panel{" "}
+          <span className={`${styles.roleBadge} ${styles.superadmin}`}>Super Admin</span>
+        </h2>
 
-      {/* Stats bar */}
-      <div className="stats-bar">
-        <span>🏫 Schools: <b>{stats.schools}</b></span>
-        <span>👤 Users: <b>{stats.users}</b></span>
-        <span className="danger-text">
-          🛡️ Compliance Alerts: <b>{stats.complianceAlerts}</b>
-        </span>
-      </div>
+        {/* Stats bar */}
+        <div className={styles.statsBar}>
+          <span className={styles.stat}>🏫 Schools: <b>{stats.schools}</b></span>
+          <span className={styles.stat}>👤 Users: <b>{stats.users}</b></span>
+          <span className={`${styles.stat} ${styles.dangerText}`}>
+            🛡️ Compliance Alerts: <b>{stats.complianceAlerts}</b>
+          </span>
+        </div>
 
-      {/* Profile card */}
-      <div className="dashboard-card superadmin-profile">
-        {userData.profilePicUrl ? (
-          <img
-            src={userData.profilePicUrl}
-            alt="Profile"
-            className="profile-pic"
+        {/* Profile card */}
+        <div className={styles.profileCard}>
+          {avatar ? (
+            <img src={avatar} alt="Profile" className={styles.profilePic} />
+          ) : (
+            <div className={`${styles.profilePic} ${"placeholder"}`} aria-hidden>SA</div>
+          )}
+          <div>
+            <div className="bold">{name}</div>
+            <div className="muted">{email}</div>
+          </div>
+        </div>
+
+        {/* Feature grid */}
+        <div className={styles.grid}>
+          <FeatureCard
+            title="🏫 School Management"
+            desc="Create, edit, view, or remove CDL training schools. Manage TPR IDs, locations, and compliance status."
+            btn="Manage Schools"
+            to="/superadmin/schools"
           />
-        ) : (
-          <div className="profile-pic placeholder">SA</div>
-        )}
-        <div>
-          <strong>Name:</strong> {userData.name || "Super Admin"}
-          <br />
-          <strong>Email:</strong> {currentUserEmail || ""}
+          <FeatureCard
+            title="👤 User Management"
+            desc="Add, remove, or modify instructor, admin, and student accounts. Set roles, reset passwords, or assign users."
+            btn="Manage Users"
+            to="/superadmin/users"
+          />
+          <FeatureCard
+            title="🛡️ Compliance Center"
+            desc="Audit schools and users for ELDT/FMCSA compliance. Generate reports or track documentation."
+            btn="Open Compliance"
+            to="/superadmin/compliance"
+          />
+          <FeatureCard
+            title="💳 Billing & Licensing"
+            desc="View or manage school billing, subscriptions, and license renewals."
+            btn="Open Billing"
+            to="/superadmin/billing"
+          />
+          <FeatureCard
+            title="⚙️ Platform Settings"
+            desc="Configure system-wide settings, defaults, and advanced options."
+            btn="Open Settings"
+            to="/superadmin/settings"
+          />
+          <FeatureCard
+            title="🪵 Audit Logs"
+            desc="View platform activity logs, user actions, and system events."
+            btn="View Logs"
+            to="/superadmin/logs"
+          />
         </div>
       </div>
-
-      {/* Grid */}
-      <div className="dash-layout">
-        <SuperAdminCard
-          title="🏫 School Management"
-          desc="Create, edit, view, or remove CDL training schools. Manage TPR IDs, locations, and compliance status."
-          btn="Manage Schools"
-          nav="/superadmin-schools"
-        />
-        <SuperAdminCard
-          title="👤 User Management"
-          desc="Add, remove, or modify instructor, admin, and student accounts. Set roles, reset passwords, or assign users."
-          btn="Manage Users"
-          nav="/superadmin-users"
-        />
-        <SuperAdminCard
-          title="🛡️ Compliance Center"
-          desc="Audit schools and users for ELDT and FMCSA/State compliance. Generate reports or upload documentation."
-          btn="Compliance Center"
-          nav="/superadmin-compliance"
-        />
-        <SuperAdminCard
-          title="💳 Billing & Licensing"
-          desc="View or manage school billing info, subscriptions, and license renewals."
-          btn="Billing & Licensing"
-          nav="/superadmin-billing"
-        />
-        <SuperAdminCard
-          title="⚙️ Platform Settings"
-          desc="Configure system-wide settings, defaults, and advanced options."
-          btn="Platform Settings"
-          nav="/superadmin-settings"
-        />
-        <SuperAdminCard
-          title="🪵 Audit Logs"
-          desc="View platform activity logs, user actions, and system events."
-          btn="View Logs"
-          nav="/superadmin-logs"
-        />
-      </div>
-    </div>
+    </Shell>
   );
 }
 
-// ===== Reusable card =====
-function SuperAdminCard({ title, desc, btn, nav }) {
+function FeatureCard({ title, desc, btn, to }) {
   const navigate = useNavigate();
+  const onClick = useCallback(() => navigate(to), [navigate, to]);
+
   return (
-    <div className="dashboard-card feature-card">
-      <h3>{title}</h3>
-      <p>{desc}</p>
-      <button
-        className="btn wide"
-        onClick={() => navigate(nav)}
-        aria-label={btn}
-      >
-        {btn}
-      </button>
+    <div className={styles.featureCard}>
+      <div className={styles.cardTitle}>{title}</div>
+      <p className={styles.cardDesc}>{desc}</p>
+      <div className={styles.actions}>
+        <button className="btn wide" onClick={onClick} aria-label={btn}>
+          {btn}
+        </button>
+      </div>
     </div>
   );
 }

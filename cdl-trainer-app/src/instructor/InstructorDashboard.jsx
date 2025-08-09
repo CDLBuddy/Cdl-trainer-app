@@ -1,126 +1,500 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { db, auth } from "../../utils/firebase"; // Adjust paths!
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
-import { getNextChecklistAlert, showToast } from "../../utils/ui-helpers"; // Adjust paths!
+// src/instructor/InstructorDashboard.jsx
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import Shell from "../components/Shell";
+import { db, auth } from "../utils/firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { getNextChecklistAlert, showToast } from "../utils/ui-helpers";
+import styles from "./InstructorDashboard.module.css";
 
+// ---- helpers ---------------------------------------------------------------
 function getCurrentUserEmail() {
   return (
     window.currentUserEmail ||
     localStorage.getItem("currentUserEmail") ||
-    (auth.currentUser && auth.currentUser.email) ||
+    auth.currentUser?.email ||
     null
   );
 }
+const pct = (n, d) =>
+  d ? Math.max(0, Math.min(100, Math.round((n / d) * 100))) : 0;
 
+const PINNED_KEY = "instructorPinnedStudents";
+const DENSITY_KEY = "instructorDensity"; // "comfortable" | "compact"
+const PIN_FILTER_KEY = "instructorShowPinnedOnly"; // persist pin filter
+
+// ----------------------------------------------------------------------------
 export default function InstructorDashboard() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState({});
-  const [assignedStudents, setAssignedStudents] = useState([]);
-  const [testResultsByStudent, setTestResultsByStudent] = useState({});
+  const [search] = useSearchParams();
 
+  // loading + data
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
+  const [assignedStudents, setAssignedStudents] = useState([]);
+  const [latestByStudent, setLatestByStudent] = useState({});
+
+  // UI state
+  const [queryText, setQueryText] = useState("");
+  const [pinned, setPinned] = useState(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(PINNED_KEY) || "[]"));
+    } catch {
+      return new Set();
+    }
+  });
+  const [density, setDensity] = useState(() => {
+    const saved = localStorage.getItem(DENSITY_KEY);
+    return saved === "compact" ? "compact" : "comfortable";
+  });
+  const [showPinnedOnly, setShowPinnedOnly] = useState(() => {
+    return localStorage.getItem(PIN_FILTER_KEY) === "1";
+  });
+
+  // allow aborting async work on unmount
+  const alive = useRef(true);
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
+
+  // kickoff: fetch instructor profile, students, and latest test results
+  useEffect(() => {
+    const run = async () => {
       const email = getCurrentUserEmail();
       if (!email) {
         showToast("No user found. Please log in again.", 3500, "error");
-        navigate("/login");
+        navigate("/login", { replace: true });
         return;
       }
-      // 1. Instructor Profile & Role
-      let profile = {};
-      let userRole = "instructor";
-      try {
-        const usersRef = collection(db, "users");
-        const q = query(usersRef, where("email", "==", email));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          profile = snap.docs[0].data();
-          userRole = profile.role || "instructor";
-          localStorage.setItem("userRole", userRole);
-        }
-      } catch (e) {
-        profile = {};
-      }
-      if (userRole !== "instructor") {
-        showToast("Access denied: Instructor dashboard only.", 4000, "error");
-        navigate("/login");
-        return;
-      }
-      setUserData(profile);
 
-      // 2. Assigned Students
+      setLoading(true);
+
+      // 1) profile
+      let prof = {};
+      let role = "instructor";
+      try {
+        const snap = await getDocs(
+          query(collection(db, "users"), where("email", "==", email))
+        );
+        if (!snap.empty) {
+          prof = snap.docs[0].data() || {};
+          role = prof.role || "instructor";
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("Profile fetch failed:", err);
+      }
+
+      if (role !== "instructor") {
+        showToast("Access denied: Instructor dashboard only.", 4000, "error");
+        navigate("/login", { replace: true });
+        return;
+      }
+      if (!alive.current) return;
+      setProfile(prof);
+
+      // 2) assigned students
       let students = [];
       try {
-        const assignSnap = await getDocs(
-          query(collection(db, "users"), where("assignedInstructor", "==", email))
+        const sSnap = await getDocs(
+          query(
+            collection(db, "users"),
+            where("assignedInstructor", "==", email)
+          )
         );
-        assignSnap.forEach((doc) => {
-          const d = doc.data();
-          students.push({
-            name: d.name || "Student",
-            email: d.email,
-            cdlClass: d.cdlClass || "Not set",
-            experience: d.experience || "Unknown",
-            cdlPermit: d.cdlPermit || "no",
-            permitPhotoUrl: d.permitPhotoUrl || "",
-            medicalCardUrl: d.medicalCardUrl || "",
-            profileProgress: d.profileProgress || 0,
-            checklistAlerts: getNextChecklistAlert(d),
-            id: doc.id,
-          });
+        students = sSnap.docs.map((d) => {
+          const x = d.data();
+          return {
+            id: d.id,
+            name: x.name || "Student",
+            email: x.email,
+            cdlClass: x.cdlClass || "Not set",
+            experience: x.experience || "Unknown",
+            cdlPermit: x.cdlPermit || "no",
+            permitPhotoUrl: x.permitPhotoUrl || "",
+            medicalCardUrl: x.medicalCardUrl || "",
+            profileProgress: x.profileProgress || 0,
+            checklistAlerts: getNextChecklistAlert(x),
+          };
         });
-      } catch (e) {
-        students = [];
-        showToast("Error fetching assigned students.", 3500, "error");
-        console.error("Assigned students fetch error", e);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("Assigned students fetch error:", err);
+        showToast("Error fetching assigned students.", 3200, "error");
       }
+      if (!alive.current) return;
       setAssignedStudents(students);
 
-      // 3. Latest Test Results by Student
-      let results = {};
+      // 3) latest results per student
+      const results = {};
       try {
-        for (const student of students) {
-          const testsSnap = await getDocs(
-            query(collection(db, "testResults"), where("studentId", "==", student.email))
-          );
-          let latest = null;
-          testsSnap.forEach((doc) => {
-            const t = doc.data();
-            const tTime = t.timestamp?.toDate?.() || new Date(t.timestamp) || new Date(0);
-            const lTime = latest?.timestamp?.toDate?.() || new Date(latest?.timestamp) || new Date(0);
-            if (!latest || tTime > lTime) latest = t;
-          });
-          if (latest) {
-            results[student.email] = {
-              testName: latest.testName,
-              pct: Math.round((latest.correct / latest.total) * 100),
-              date: latest.timestamp?.toDate
+        await Promise.all(
+          students.map(async (s) => {
+            const tSnap = await getDocs(
+              query(
+                collection(db, "testResults"),
+                where("studentId", "==", s.email)
+              )
+            );
+            let latest = null;
+            tSnap.forEach((doc) => {
+              const t = doc.data();
+              const tDate = t.timestamp?.toDate?.() || new Date(t.timestamp || 0);
+              const lDate =
+                latest?.timestamp?.toDate?.() ||
+                new Date(latest?.timestamp || 0);
+              if (!latest || tDate > lDate) latest = t;
+            });
+            if (latest) {
+              const date = latest.timestamp?.toDate?.()
                 ? latest.timestamp.toDate().toLocaleDateString()
-                : new Date(latest.timestamp).toLocaleDateString(),
-            };
-          }
-        }
-      } catch (e) {
-        results = {};
-        showToast("Error fetching test results.", 3200, "error");
-        console.error("Instructor test results error", e);
+                : new Date(latest.timestamp).toLocaleDateString();
+              results[s.email] = {
+                testName: latest.testName,
+                pct: pct(latest.correct, latest.total),
+                date,
+              };
+            }
+          })
+        );
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("Latest test results error:", err);
+        showToast("Error fetching test results.", 3000, "error");
       }
-      setTestResultsByStudent(results);
+      if (!alive.current) return;
+      setLatestByStudent(results);
       setLoading(false);
     };
-    fetchDashboardData();
-    // eslint-disable-next-line
+
+    run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // CSV Export Handler
-  const handleExportCSV = () => {
+  // persist pins, density, and pinned-only toggle
+  useEffect(() => {
+    try {
+      localStorage.setItem(PINNED_KEY, JSON.stringify(Array.from(pinned)));
+    } catch {}
+  }, [pinned]);
+  useEffect(() => {
+    localStorage.setItem(DENSITY_KEY, density);
+  }, [density]);
+  useEffect(() => {
+    localStorage.setItem(PIN_FILTER_KEY, showPinnedOnly ? "1" : "0");
+  }, [showPinnedOnly]);
+
+  // navigation helpers (align with your InstructorRouter)
+  const viewStudentProfile = useCallback(
+    (email) =>
+      navigate(`/instructor/student-profile/${encodeURIComponent(email)}`),
+    [navigate]
+  );
+  const reviewChecklist = useCallback(
+    (email) =>
+      navigate(
+        `/instructor/checklist-review?student=${encodeURIComponent(email)}`
+      ),
+    [navigate]
+  );
+
+  // query param focus
+  const focusStudentEmail = search.get("student") || null;
+
+  // filter + sort (pinned float to top, then name)
+  const filtered = useMemo(() => {
+    const q = queryText.trim().toLowerCase();
+    let list = assignedStudents;
+
+    if (q) {
+      list = list.filter((s) => {
+        const hay = `${s.name || ""} ${s.email || ""}`.toLowerCase();
+        return hay.includes(q);
+      });
+    }
+    if (showPinnedOnly) {
+      list = list.filter((s) => pinned.has(s.email));
+    }
+
+    // sort: pinned first, then alpha by name
+    return [...list].sort((a, b) => {
+      const aPinned = pinned.has(a.email);
+      const bPinned = pinned.has(b.email);
+      if (aPinned !== bPinned) return aPinned ? -1 : 1;
+      return (a.name || "").localeCompare(b.name || "");
+    });
+  }, [assignedStudents, queryText, pinned, showPinnedOnly]);
+
+  const togglePin = useCallback((email) => {
+    setPinned((set) => {
+      const next = new Set(set);
+      if (next.has(email)) next.delete(email);
+      else next.add(email);
+      return next;
+    });
+  }, []);
+
+  // counts for small summary hint
+  const pinnedCount = useMemo(
+    () => assignedStudents.filter((s) => pinned.has(s.email)).length,
+    [assignedStudents, pinned]
+  );
+
+  // skeleton
+  if (loading) {
+    return (
+      <Shell title="Instructor Dashboard">
+        <div style={{ textAlign: "center", marginTop: 40 }}>
+          <div className="spinner" />
+          <p>Loading instructor dashboard…</p>
+        </div>
+      </Shell>
+    );
+  }
+
+  return (
+    <Shell title="Instructor Dashboard">
+      <div className={styles.wrapper}>
+        {/* Toolbar: search + density + export + pin filter */}
+        <div className={styles.actions}>
+          <div className={styles.toolbar}>
+
+            {/* Search */}
+            <div className={styles.search}>
+              <input
+                type="search"
+                value={queryText}
+                onChange={(e) => setQueryText(e.target.value)}
+                placeholder="Search students by name or email…"
+                aria-label="Search students"
+              />
+              {queryText && (
+                <button
+                  className={styles.clearBtn}
+                  type="button"
+                  onClick={() => setQueryText("")}
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Pin filter */}
+            <label className="u-field is-inline" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={showPinnedOnly}
+                onChange={(e) => setShowPinnedOnly(e.target.checked)}
+                aria-label="Show pinned students only"
+              />
+              <span className="u-label" style={{ margin: 0 }}>
+                Show pinned only ({pinnedCount})
+              </span>
+            </label>
+
+            {/* Density */}
+            <div
+              className={styles.densityToggle}
+              role="group"
+              aria-label="Density"
+            >
+              <button
+                type="button"
+                className={density === "comfortable" ? styles.active : ""}
+                onClick={() => setDensity("comfortable")}
+                aria-pressed={density === "comfortable"}
+                title="Comfortable spacing"
+              >
+                Comfortable
+              </button>
+              <button
+                type="button"
+                className={density === "compact" ? styles.active : ""}
+                onClick={() => setDensity("compact")}
+                aria-pressed={density === "compact"}
+                title="Compact spacing"
+              >
+                Compact
+              </button>
+            </div>
+
+            {/* Export */}
+            <button className="btn outline" onClick={handleExportCSV}>
+              ⬇️ Export CSV
+            </button>
+          </div>
+        </div>
+
+        {/* Assigned Students */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>📋 Assigned Students</div>
+
+          {filtered.length === 0 ? (
+            <div className={styles.empty}>
+              {queryText || showPinnedOnly
+                ? "No students match your filters."
+                : "No students assigned to you yet."}
+            </div>
+          ) : (
+            <div
+              className={`${styles.studentGrid} ${
+                density === "compact" ? styles.compact : ""
+              }`}
+            >
+              {filtered.map((s) => {
+                const last = latestByStudent[s.email];
+                const ok =
+                  s.checklistAlerts === "All required steps complete! 🎉";
+                const isPinned = pinned.has(s.email);
+
+                return (
+                  <div
+                    key={s.email}
+                    className={`${styles.studentCard} ${
+                      focusStudentEmail === s.email
+                        ? styles.studentCardFocus
+                        : ""
+                    } ${isPinned ? styles.pinned : ""}`}
+                  >
+                    <div className={styles.studentTop}>
+                      <div className={styles.topRow}>
+                        <button
+                          className={styles.studentNameBtn}
+                          onClick={() => viewStudentProfile(s.email)}
+                          title="Open profile"
+                        >
+                          {s.name}
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.pinBtn}
+                          aria-pressed={isPinned}
+                          onClick={() => togglePin(s.email)}
+                          title={isPinned ? "Unpin" : "Pin"}
+                        >
+                          {isPinned ? "📌" : "📍"}
+                        </button>
+                      </div>
+
+                      <div className={styles.metaRow}>
+                        <span className={styles.meta}>
+                          CDL Class: {s.cdlClass}
+                        </span>
+                        <span className={styles.meta}>
+                          Experience: {s.experience}
+                        </span>
+                      </div>
+                      <div className={styles.metaRow}>
+                        <span className={styles.meta}>
+                          Permit:{" "}
+                          {s.cdlPermit === "yes" && s.permitPhotoUrl
+                            ? "✔️ Uploaded"
+                            : "❌ Not Uploaded"}
+                        </span>
+                        <span className={styles.meta}>
+                          Med Card:{" "}
+                          {s.medicalCardUrl ? "✔️ Uploaded" : "❌ Not Uploaded"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Profile completion */}
+                    <div className={styles.progressBlock}>
+                      <div className={styles.progressLabel}>
+                        Profile Completion
+                      </div>
+                      <div className={styles.progressTrack} aria-hidden="true">
+                        <div
+                          className={styles.progressFill}
+                          style={{
+                            width: `${Math.max(
+                              0,
+                              Math.min(100, s.profileProgress)
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                      <div className={styles.progressPct}>
+                        {s.profileProgress}%
+                      </div>
+                    </div>
+
+                    {/* Checklist status */}
+                    <div
+                      className={`${styles.alert} ${
+                        ok ? styles.alertOk : styles.alertWarn
+                      }`}
+                    >
+                      {ok
+                        ? "✔️ All requirements met"
+                        : `⚠️ ${s.checklistAlerts}`}
+                    </div>
+
+                    {/* Last test */}
+                    <div className={styles.lastTest}>
+                      Last Test:{" "}
+                      {last
+                        ? `${last.testName} – ${last.pct}% on ${last.date}`
+                        : "No recent test"}
+                    </div>
+
+                    {/* Actions */}
+                    <div className={styles.rowActions}>
+                      <button
+                        className="btn"
+                        onClick={() => viewStudentProfile(s.email)}
+                      >
+                        View Profile
+                      </button>
+                      <button
+                        className="btn outline"
+                        onClick={() => reviewChecklist(s.email)}
+                      >
+                        Review Checklist
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Guidance cards */}
+        <div className={styles.twoUp}>
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>✅ Review Checklists</div>
+            <div className={styles.cardBody}>
+              Sign off on student milestones (permit, walkthrough, etc).
+              <br />
+              Select a student above and click <b>“Review Checklist”</b>.
+            </div>
+          </div>
+
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>🧾 Student Test Results</div>
+            <div className={styles.cardBody}>
+              See latest practice and official test results for your assigned
+              students above.
+            </div>
+          </div>
+        </div>
+      </div>
+    </Shell>
+  );
+
+  // ---- CSV export (kept at bottom for readability) -----------------------
+  function handleExportCSV() {
     const headers = [
       "Name",
       "Email",
@@ -132,153 +506,40 @@ export default function InstructorDashboard() {
       "Checklist Alerts",
       "Last Test",
     ];
-    const rows = assignedStudents.map((s) => [
-      `"${s.name}"`,
-      `"${s.email}"`,
-      `"${s.cdlClass}"`,
-      `"${s.experience}"`,
-      `"${s.cdlPermit === "yes" && s.permitPhotoUrl ? "Uploaded" : "Not Uploaded"}"`,
-      `"${s.medicalCardUrl ? "Uploaded" : "Not Uploaded"}"`,
-      `"${s.profileProgress}%"`,
-      `"${s.checklistAlerts.replace(/"/g, "'")}"`,
-      `${
-        testResultsByStudent[s.email]
-          ? testResultsByStudent[s.email].testName +
-            " - " +
-            testResultsByStudent[s.email].pct +
-            "% on " +
-            testResultsByStudent[s.email].date
-          : "No recent test"
-      }"`,
-    ]);
-    const csv = [headers, ...rows].map((row) => row.join(",")).join("\r\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+
+    const rows = filtered.map((s) => {
+      const last = latestByStudent[s.email];
+      const lastStr = last
+        ? `${last.testName} - ${last.pct}% on ${last.date}`
+        : "No recent test";
+      const permitStr =
+        s.cdlPermit === "yes" && s.permitPhotoUrl ? "Uploaded" : "Not Uploaded";
+      const medStr = s.medicalCardUrl ? "Uploaded" : "Not Uploaded";
+      return [
+        `"${(s.name || "").replace(/"/g, '""')}"`,
+        `"${(s.email || "").replace(/"/g, '""')}"`,
+        `"${(s.cdlClass || "").replace(/"/g, '""')}"`,
+        `"${(s.experience || "").replace(/"/g, '""')}"`,
+        `"${permitStr}"`,
+        `"${medStr}"`,
+        `"${s.profileProgress}%"`,
+        `"${(s.checklistAlerts || "").replace(/"/g, '""')}"`,
+        `"${lastStr.replace(/"/g, '""')}"`,
+      ];
+    });
+
+    const csv = [headers, ...rows].map((r) => r.join(",")).join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "assigned-students.csv";
-    document.body.appendChild(link);
-    link.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "assigned-students.csv";
+    document.body.appendChild(a);
+    a.click();
     setTimeout(() => {
       URL.revokeObjectURL(url);
-      link.remove();
-    }, 300);
-    showToast("CSV export downloaded.", 2600, "success");
-  };
-
-  // Student Navigation
-  const handleViewStudentProfile = (studentEmail) => {
-    navigate(`/instructor/student/${encodeURIComponent(studentEmail)}`);
-  };
-  const handleReviewChecklist = (studentEmail) => {
-    navigate(`/instructor/checklist/${encodeURIComponent(studentEmail)}`);
-  };
-
-  if (loading) {
-    return (
-      <div style={{ textAlign: "center", marginTop: 40 }}>
-        <div className="spinner" />
-        <p>Loading instructor dashboard…</p>
-      </div>
-    );
+      a.remove();
+    }, 250);
+    showToast("CSV export downloaded.", 2200, "success");
   }
-
-  return (
-    <div className="instructor-dashboard page-content">
-      <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
-        <button className="btn" style={{ maxWidth: 260 }}
-          onClick={() => navigate("/instructor-profile")}
-        >
-          👤 View/Edit My Profile
-        </button>
-        <button className="btn outline" onClick={handleExportCSV}>
-          ⬇️ Export CSV
-        </button>
-      </div>
-
-      <div className="dashboard-card">
-        <h3>📋 Assigned Students</h3>
-        {assignedStudents.length === 0 ? (
-          <p>No students assigned to you yet.</p>
-        ) : (
-          <div className="assigned-students-list">
-            {assignedStudents.map((student) => (
-              <div className="student-list-card" key={student.email}>
-                <strong className="student-name"
-                  style={{ cursor: "pointer", color: "var(--accent)" }}
-                  onClick={() => handleViewStudentProfile(student.email)}
-                  tabIndex={0}
-                >
-                  {student.name}
-                </strong>
-                <div>Email: {student.email}</div>
-                <div>CDL Class: {student.cdlClass}</div>
-                <div>Experience: {student.experience}</div>
-                <div>
-                  Permit:{" "}
-                  {student.cdlPermit === "yes" && student.permitPhotoUrl
-                    ? "✔️ Uploaded"
-                    : "❌ Not Uploaded"}
-                </div>
-                <div>
-                  Med Card:{" "}
-                  {student.medicalCardUrl ? "✔️ Uploaded" : "❌ Not Uploaded"}
-                </div>
-                <div>
-                  Profile Completion:
-                  <div className="progress-bar" style={{
-                      width: 120, display: "inline-block", marginLeft: 5,
-                    }}>
-                    <div className="progress"
-                      style={{ width: `${student.profileProgress}%` }}>
-                    </div>
-                  </div>
-                  <span style={{ fontSize: ".95em" }}>
-                    {student.profileProgress}%
-                  </span>
-                </div>
-                <div style={{ color: "#f47373", minHeight: 20 }}>
-                  {student.checklistAlerts !== "All required steps complete! 🎉" ? (
-                    <>⚠️ {student.checklistAlerts}</>
-                  ) : (
-                    <span style={{ color: "#56b870" }}>
-                      ✔️ All requirements met
-                    </span>
-                  )}
-                </div>
-                <div>
-                  Last Test:{" "}
-                  {testResultsByStudent[student.email]
-                    ? `${testResultsByStudent[student.email].testName} – ${testResultsByStudent[student.email].pct}% on ${testResultsByStudent[student.email].date}`
-                    : "No recent test"}
-                </div>
-                <button className="btn"
-                  onClick={() => handleViewStudentProfile(student.email)}
-                  style={{ marginTop: 6, marginRight: 6 }}>
-                  View Profile
-                </button>
-                <button className="btn outline"
-                  onClick={() => handleReviewChecklist(student.email)}
-                  style={{ marginTop: 6 }}>
-                  Review Checklist
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="dashboard-card">
-        <h3>✅ Review Checklists</h3>
-        <p>Sign off on student milestones (permit, walkthrough, etc).</p>
-        <p>Select a student above and click "Review Checklist".</p>
-      </div>
-      <div className="dashboard-card">
-        <h3>🧾 Student Test Results</h3>
-        <p>
-          See latest practice and official test results for your assigned students above.
-        </p>
-      </div>
-    </div>
-  );
 }

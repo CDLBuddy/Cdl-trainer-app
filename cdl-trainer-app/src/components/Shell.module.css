@@ -1,0 +1,219 @@
+/* src/components/Shell.module.css
+   Uses global theme tokens:
+   --brand-dark, --brand-mid, --brand-light, --accent, --text-light, --card-bg, --card-bg-dark
+   --error, --safe-area-inset-top
+*/
+
+/* ---------- Page wrapper ---------- */
+.root {
+  min-height: 100vh;
+  color: var(--text-light);
+  background: linear-gradient(120deg, var(--brand-dark), var(--brand-mid) 82%);
+  padding-left: max(12px, env(safe-area-inset-left, 12px));
+  padding-right: max(12px, env(safe-area-inset-right, 12px));
+  padding-top: calc(12px + var(--safe-area-inset-top, 0px));
+}
+
+/* ---------- Generic glass card ---------- */
+.glass {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px #0008, inset 0 1px 0 #ffffff12;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+/* ---------- Header ---------- */
+.header {
+  composes: glass;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  margin: 8px auto 16px;
+  max-width: 1200px;
+}
+
+.brandBtn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: contain;
+  background: var(--card-bg-dark);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
+  box-shadow: 0 2px 10px #002a3a55;
+}
+
+.schoolName {
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 1px 6px #0004;
+}
+
+.schoolSub {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+/* ---------- Grid layout ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* ---------- Rail ---------- */
+.rail {
+  composes: glass;
+  position: sticky;
+  top: calc(12px + var(--safe-area-inset-top, 0px));
+  align-self: start;
+  padding: 10px;
+  border-radius: 14px;
+}
+
+.railNav {
+  display: grid;
+  gap: 8px;
+  grid-auto-rows: minmax(40px, auto);
+}
+
+.railBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 25%);
+  color: var(--text-light);
+  font-weight: 600;
+  box-shadow: 0 2px 10px #0004;
+  transition: transform .14s ease, background .14s ease, box-shadow .14s ease;
+}
+
+.railBtn:hover,
+.railBtn:focus-visible {
+  transform: translateY(-1px);
+  background: linear-gradient(120deg, var(--brand-light) 30%, var(--brand-mid) 100%);
+  box-shadow: 0 6px 16px #0005;
+  outline: none;
+}
+
+.railActive {
+  background: linear-gradient(120deg, var(--brand-light) 30%, var(--brand-mid) 100%);
+  color: var(--text-light);
+}
+
+/* Logout button variant */
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: linear-gradient(120deg, #ff808022, #ff808008 70%);
+  border: 1px solid #ff808055;
+  color: #ffd8d8;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .14s ease, background .14s ease;
+}
+.logoutBtn:hover,
+.logoutBtn:focus-visible {
+  transform: translateY(-1px);
+  background: linear-gradient(120deg, #ff8c8c33, #ff8c8c10 70%);
+  outline: none;
+}
+
+/* ---------- Main content ---------- */
+.content {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.title {
+  margin: 2px;
+  color: var(--text-light);
+  text-shadow: 0 2px 8px #0005;
+}
+
+.card {
+  composes: glass;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+/* ---------- FAB ---------- */
+.fab {
+  position: fixed;
+  right: clamp(12px, 4vw, 24px);
+  bottom: clamp(12px, 4vh, 28px);
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--accent), #000 25%);
+  background: radial-gradient(120% 120% at 50% 10%, var(--brand-light), var(--brand-mid));
+  color: #fff;
+  box-shadow: 0 10px 30px #0007, 0 0 0 3px #ffffff10 inset;
+  cursor: pointer;
+  transition: transform .14s ease, box-shadow .14s ease, filter .14s ease;
+}
+.fab:hover,
+.fab:focus-visible {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+  box-shadow: 0 14px 36px #0008, 0 0 0 3px #ffffff18 inset;
+  outline: none;
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  composes: glass;
+  margin: 24px auto 16px;
+  max-width: 1200px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  color: var(--text-light);
+  display: grid;
+  gap: 6px;
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 940px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .rail {
+    position: static;
+    order: 2;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .railBtn,
+  .logoutBtn,
+  .fab {
+    transition: none !important;
+  }
+}
