@@ -36,6 +36,7 @@
     "prettier": "^3.6.2"
   },
   "dependencies": {
-    "debug": "^4.4.1"
+    "debug": "^4.4.1",
+    "firebase": "^12.1.0"
   }
 }
