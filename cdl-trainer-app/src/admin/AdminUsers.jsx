@@ -1,3 +1,4 @@
+// src/admin/AdminUsers.jsx
 import React, { useEffect, useState, useMemo } from "react";
 import {
   getFirestore,
@@ -10,16 +11,13 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { showToast } from "../utils/ui-helpers";
-import {
-  exportUsersToCSV,
-  exportUsersToPDF,
-  exportUsersExpiringToCSV,
-} from "./AdminReports"; // Update path if needed
+import ExportUsersControls from "./ExportUsersControls"; // ← use the new component
 
 const roles = ["student", "instructor", "admin"];
 
 const fetchSchoolUsers = async (schoolId) => {
   const db = getFirestore();
+  // First try with assignedSchools array
   let usersSnap = await getDocs(
     query(
       collection(db, "users"),
@@ -27,7 +25,9 @@ const fetchSchoolUsers = async (schoolId) => {
       where("assignedSchools", "array-contains", schoolId)
     )
   );
-  let schoolUsers = usersSnap.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+  let schoolUsers = usersSnap.docs.map((d) => ({ ...d.data(), id: d.id }));
+
+  // Fallback to legacy schoolId field
   if (schoolUsers.length === 0) {
     usersSnap = await getDocs(
       query(
@@ -36,11 +36,9 @@ const fetchSchoolUsers = async (schoolId) => {
         where("schoolId", "==", schoolId)
       )
     );
-    schoolUsers = usersSnap.docs.map((doc) => ({
-      ...doc.data(),
-      id: doc.id,
-    }));
+    schoolUsers = usersSnap.docs.map((d) => ({ ...d.data(), id: d.id }));
   }
+
   return schoolUsers;
 };
 
@@ -51,7 +49,7 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
   const [companyFilter, setCompanyFilter] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // --- On mount, fetch users
+  // Load users for this admin's school
   useEffect(() => {
     if (!adminSchoolId) return;
     setLoading(true);
@@ -64,12 +62,14 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
     () => schoolUsers.filter((u) => u.role === "instructor"),
     [schoolUsers]
   );
+
   const companyList = useMemo(
-    () => Array.from(new Set(schoolUsers.map((u) => u.assignedCompany).filter(Boolean))),
+    () =>
+      Array.from(new Set(schoolUsers.map((u) => u.assignedCompany).filter(Boolean))),
     [schoolUsers]
   );
 
-  // --- Filtering logic
+  // Filters
   const filteredUsers = useMemo(() => {
     return schoolUsers.filter((u) => {
       if (roleFilter && u.role !== roleFilter) return false;
@@ -84,14 +84,13 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
     });
   }, [schoolUsers, search, roleFilter, companyFilter]);
 
-  // --- Inline update handlers
+  // Inline updates
   const handleRoleChange = async (user, newRole) => {
     const db = getFirestore();
     try {
       await setDoc(doc(db, "users", user.id), { role: newRole }, { merge: true });
       await setDoc(doc(db, "userRoles", user.id), { role: newRole }, { merge: true });
       showToast(`Role updated for ${user.email}`);
-      // Re-fetch users (simpler than patching state everywhere)
       setLoading(true);
       setSchoolUsers(await fetchSchoolUsers(adminSchoolId));
       setLoading(false);
@@ -128,8 +127,7 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
   };
 
   const handleRemoveUser = async (user) => {
-    if (!window.confirm(`Remove user: ${user.email}? This cannot be undone.`))
-      return;
+    if (!window.confirm(`Remove user: ${user.email}? This cannot be undone.`)) return;
     const db = getFirestore();
     try {
       await deleteDoc(doc(db, "users", user.id));
@@ -149,6 +147,7 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
       </div>
     );
   }
+
   if (!adminSchoolId) {
     return (
       <div className="screen-wrapper">
@@ -158,28 +157,29 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
   }
 
   return (
-    <div className="screen-wrapper fade-in admin-users-page" style={{ padding: 24, maxWidth: 1160, margin: "0 auto" }}>
+    <div
+      className="screen-wrapper fade-in admin-users-page"
+      style={{ padding: 24, maxWidth: 1160, margin: "0 auto" }}
+    >
       <h2>👥 Manage Users</h2>
-      <div style={{ marginBottom: "1em" }}>
+
+      {/* Top controls: search + export */}
+      <div style={{ marginBottom: "1em", display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
         <input
           type="text"
           placeholder="🔍 Search users..."
-          style={{ padding: "6px 14px", width: 220 }}
+          style={{ padding: "6px 14px", width: 240 }}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button className="btn outline small" onClick={() => exportUsersToCSV(filteredUsers)}>
-          Export CSV
-        </button>
-        <button className="btn outline small" onClick={() => exportUsersToPDF(filteredUsers)}>
-          Export PDF
-        </button>
-        <button className="btn outline small" onClick={() => exportUsersExpiringToCSV(filteredUsers, 30)}>
-          Permits Expiring (CSV)
-        </button>
+
+        {/* Replacement for old three buttons */}
+        <ExportUsersControls users={filteredUsers} />
       </div>
+
       <div className="dashboard-card" style={{ marginBottom: "1.3rem" }}>
-        <div style={{ marginBottom: "1em" }}>
+        {/* Filters */}
+        <div style={{ marginBottom: "1em", display: "flex", gap: 16, flexWrap: "wrap" }}>
           <label>
             Filter by Role:
             <select
@@ -193,7 +193,8 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
               <option value="admin">Admins</option>
             </select>
           </label>
-          <label style={{ marginLeft: "1em" }}>
+
+          <label>
             Company:
             <select
               value={companyFilter}
@@ -202,11 +203,15 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
             >
               <option value="">All</option>
               {companyList.map((c) => (
-                <option value={c} key={c}>{c}</option>
+                <option value={c} key={c}>
+                  {c}
+                </option>
               ))}
             </select>
           </label>
         </div>
+
+        {/* Table */}
         <div className="user-table-scroll">
           <table className="user-table">
             <thead>
@@ -245,9 +250,9 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
                     const now = new Date();
                     const exp = new Date(user.permitExpiry);
                     const days = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
-                    if (days >= 0 && days <= 30)
-                      expiring = { color: "#e02", fontWeight: "bold" };
+                    if (days >= 0 && days <= 30) expiring = { color: "#e02", fontWeight: "bold" };
                   }
+
                   return (
                     <tr key={user.id || user.email}>
                       <td>{user.name || "User"}</td>
@@ -258,7 +263,9 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
                           onChange={(e) => handleRoleChange(user, e.target.value)}
                         >
                           {roles.map((r) => (
-                            <option value={r} key={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+                            <option value={r} key={r}>
+                              {r.charAt(0).toUpperCase() + r.slice(1)}
+                            </option>
                           ))}
                         </select>
                       </td>
@@ -268,7 +275,7 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
                           value={user.assignedCompany || ""}
                           onChange={(e) => handleCompanyChange(user, e.target.value)}
                           placeholder="(Company)"
-                          style={{ width: 100 }}
+                          style={{ width: 120 }}
                         />
                       </td>
                       <td>
@@ -305,6 +312,7 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
           </table>
         </div>
       </div>
+
       <button
         className="btn outline wide"
         style={{ marginTop: "1.3rem" }}
