@@ -16,7 +16,7 @@ import {
   markStudentVehicleUploaded,
 } from "../utils/ui-helpers";
 import { getCurrentSchoolBranding } from "../utils/school-branding";
-import { getWalkthroughLabel } from "../utils/walkthrough-data";
+import { getWalkthroughLabel } from "../walkthrough-data";
 
 // ---------- Constants ----------
 const endorsementOptions = [
