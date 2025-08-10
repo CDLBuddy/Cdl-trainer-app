@@ -3,17 +3,16 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useToast } from '@components/ToastContext'
 import { auth, db, storage } from '@utils/firebase.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 import {
-  showToast,
   markStudentProfileComplete,
   markStudentPermitUploaded,
   markStudentVehicleUploaded,
 } from '@utils/ui-helpers.js'
 
 import { getWalkthroughLabel } from '@walkthrough'
-
 // ---------- Constants ----------
 const endorsementOptions = [
   { val: 'H', label: 'Hazmat (H)' },
@@ -67,6 +66,7 @@ function calcProgress(p = {}) {
 export default function Profile() {
   const navigate = useNavigate()
   const email = getCurrentUserEmail()
+  const { showToast } = useToast()
 
   const [brand, setBrand] = useState({
     primaryColor: '',
@@ -173,7 +173,7 @@ export default function Profile() {
         firstLoadRef.current = false
       }
     })()
-  }, [email, navigate])
+  }, [email, navigate, showToast])
 
   // ---------- Apply branding to CSS var ----------
   useEffect(() => {
@@ -207,7 +207,7 @@ export default function Profile() {
         setSaving(false)
       }
     }, AUTOSAVE_DEBOUNCE_MS)
-  }, [p, userRef, email])
+  }, [p, userRef, email, showToast])
 
   useEffect(() => {
     // trigger autosave when p changes (skip initial load)
@@ -255,7 +255,9 @@ export default function Profile() {
       ;(async () => {
         try {
           await markStudentVehicleUploaded(email)
-        } catch (__) {}
+        } catch (__) {
+          // non-fatal, ignore error
+        }
       })()
     }
   }, [p.truckPlateUrl, p.trailerPlateUrl, email])
@@ -266,7 +268,9 @@ export default function Profile() {
       ;(async () => {
         try {
           await markStudentPermitUploaded(email)
-        } catch (__) {}
+        } catch (__) {
+          // non-fatal, ignore error
+        }
       })()
     }
   }, [p.cdlPermit, p.permitPhotoUrl, email])

@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
 import { db } from '@utils/firebase.js'
-import { showToast } from '@utils/ui-helpers.js'
+import { useToast } from '@utils/ui-helpers.js'
 
 import styles from './AdminDashboard.module.css'
 
@@ -33,10 +33,11 @@ function expirySoon(dateStr) {
 // ------------------------ component ---------------------------
 export default function AdminDashboard() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   // state
   const [loading, setLoading] = useState(true)
-  const [userRole, setUserRole] = useState('admin')
+  // const [userRole, setUserRole] = useState('admin')
   const [schoolId, setSchoolId] = useState('')
   const [users, setUsers] = useState([])
 
@@ -93,7 +94,7 @@ export default function AdminDashboard() {
       } catch {
         /* non-fatal */
       }
-      setUserRole(role)
+      // setUserRole(role)
       setSchoolId(sid)
 
       if (role !== 'admin' || !sid) {
@@ -144,7 +145,7 @@ export default function AdminDashboard() {
 
     run()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [showToast])
 
   // derived lists
   const instructorList = useMemo(
@@ -237,7 +238,7 @@ export default function AdminDashboard() {
         showToast('Failed to update user.', 2500, 'error')
       }
     },
-    [schoolId]
+    [schoolId, showToast]
   )
 
   const removeUser = useCallback(async email => {
@@ -250,7 +251,7 @@ export default function AdminDashboard() {
     } catch {
       showToast('Failed to remove user.', 2500, 'error')
     }
-  }, [])
+  }, [showToast])
 
   // exports
   const exportUsersToCSV = useCallback((list, filename = 'users') => {
@@ -273,7 +274,7 @@ export default function AdminDashboard() {
     a.click()
     a.remove()
     URL.revokeObjectURL(url)
-  }, [])
+  }, [showToast])
 
   const exportUsersToPDF = useCallback(list => {
     if (!list.length) return showToast('No users to export.')
@@ -294,7 +295,7 @@ export default function AdminDashboard() {
       }
     })
     docPdf.save(`users-export-${new Date().toISOString().slice(0, 10)}.pdf`)
-  }, [])
+  }, [showToast])
 
   // loading
   if (loading) {

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { getUserRole } from '@utils/auth.js' // role helper (fallback to localStorage if needed)
 import { db } from '@utils/firebase.js' // adjust if your path differs
-import { showToast } from '@utils/ui-helpers.js' // toast hooks into your theme
+import { useToast } from '@utils/ui-helpers.js' // useToast hook for toast context
 // Optional: create a matching stylesheet if you want extra tweaks (glass theme already covers a lot)
 // import "./billings.css";
 
@@ -52,6 +52,7 @@ function Modal({ open, onClose, children, maxWidth = 560 }) {
    Billing View/Edit Modal (reusable)
 ====================================== */
 function BillingFormModal({ mode = 'view', school, onClose, onSaved }) {
+  const { showToast } = useToast()
   const isEdit = mode === 'edit'
   const [form, setForm] = useState(() => ({
     name: school?.name || '',
@@ -287,6 +288,7 @@ function BillingFormModal({ mode = 'view', school, onClose, onSaved }) {
 ====================================== */
 export default function Billings() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   // --- Role guard (defense-in-depth; Router already has guards) ---
   useEffect(() => {
@@ -295,8 +297,7 @@ export default function Billings() {
       showToast('Access denied: Super Admins only.')
       navigate('/login', { replace: true })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [showToast, navigate])
 
   // data
   const [schools, setSchools] = useState([])
@@ -334,7 +335,7 @@ export default function Billings() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [showToast])
 
   // derived view (search/filter/sort)
   const view = useMemo(() => {
@@ -453,211 +454,215 @@ export default function Billings() {
   }
 
   return (
-    <div
-      className="screen-wrapper fade-in billing-page"
-      style={{ maxWidth: 1100, margin: '0 auto' }}
-    >
-      <h2 className="dash-head">
-        💳 Billing & Licensing{' '}
-        <span className="role-badge superadmin">Super Admin</span>
-      </h2>
+    <React.Fragment>
+      <div
+        className="screen-wrapper fade-in billing-page"
+        style={{ maxWidth: 1100, margin: '0 auto' }}
+      >
+        <h2 className="dash-head">
+          💳 Billing & Licensing{' '}
+          <span className="role-badge superadmin">Super Admin</span>
+        </h2>
 
-      <div className="dashboard-card" style={{ overflow: 'hidden' }}>
-        {/* Header row */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '0.7em',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-          }}
-        >
-          <h3 style={{ margin: 0, marginRight: 'auto' }}>
-            Manage School Subscriptions, Licensing & Payments
-          </h3>
-          <button className="btn small outline" onClick={exportCSV}>
-            Export CSV
-          </button>
-        </div>
-
-        {/* Filters */}
-        <div className="dashboard-controls" style={{ marginTop: '0.9em' }}>
-          <input
-            type="search"
-            placeholder="Search name / location / TPR"
-            value={q}
-            onChange={e => setQ(e.target.value)}
-            style={{ minWidth: 220 }}
-          />
-          <select value={plan} onChange={e => setPlan(e.target.value)}>
-            <option value="">All Plans</option>
-            <option value="Standard">Standard</option>
-            <option value="Premium">Premium</option>
-            <option value="Enterprise">Enterprise</option>
-            <option value="Custom">Custom</option>
-          </select>
-          <select value={status} onChange={e => setStatus(e.target.value)}>
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="overdue">Renewal Overdue</option>
-          </select>
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
-            <option value="name">Sort: Name (A→Z)</option>
-            <option value="renewal">Sort: Renewal (oldest first)</option>
-            <option value="lastPayment">
-              Sort: Last Payment (newest first)
-            </option>
-          </select>
-        </div>
-
-        {/* Table */}
-        <div className="user-table-scroll" style={{ marginTop: '1rem' }}>
-          <table
-            className="user-table schools-billing-table"
-            style={{ width: '100%' }}
+        <div className="dashboard-card" style={{ overflow: 'hidden' }}>
+          {/* Header row */}
+          <div
+            style={{
+              display: 'flex',
+              gap: '0.7em',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+            }}
           >
-            <thead>
-              <tr>
-                <th>School Name</th>
-                <th>Location</th>
-                <th>TPR ID</th>
-                <th>Plan</th>
-                <th>Status</th>
-                <th>Renewal</th>
-                <th>Last Payment</th>
-                <th>Invoice</th>
-                <th>Licensing Docs</th>
-                <th>Notes</th>
-                <th style={{ width: 140 }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {view.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={11}
-                    style={{
-                      textAlign: 'center',
-                      padding: '1.6em',
-                      color: '#789',
-                    }}
-                  >
-                    No schools match your filters.
-                  </td>
-                </tr>
-              ) : (
-                view.map(school => {
-                  const overdue =
-                    school.renewalDate &&
-                    new Date(school.renewalDate).getTime() < Date.now()
-                  return (
-                    <tr key={school.id}>
-                      <td>{school.name || '-'}</td>
-                      <td>{school.location || '-'}</td>
-                      <td>{school.tprId || '-'}</td>
-                      <td>{school.billingPlan || 'Standard'}</td>
-                      <td>
-                        {school.isActive ? (
-                          <span className="badge badge-success">Active</span>
-                        ) : (
-                          <span className="badge badge-fail">Inactive</span>
-                        )}{' '}
-                        {overdue && (
-                          <span className="badge badge-fail">
-                            Renewal Overdue
-                          </span>
-                        )}
-                      </td>
-                      <td>
-                        {school.renewalDate
-                          ? formatDate(school.renewalDate)
-                          : '-'}
-                      </td>
-                      <td>
-                        {school.lastPaymentDate
-                          ? formatDate(school.lastPaymentDate)
-                          : '-'}
-                      </td>
-                      <td>
-                        {school.invoiceUrl ? (
-                          <a
-                            href={school.invoiceUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            Download
-                          </a>
-                        ) : (
-                          <span className="badge badge-neutral">
-                            No Invoice
-                          </span>
-                        )}
-                      </td>
-                      <td style={{ maxWidth: 220 }}>
-                        {school.licensingDocs?.length ? (
-                          school.licensingDocs.map((url, i) => (
-                            <React.Fragment key={url}>
-                              <a href={url} target="_blank" rel="noreferrer">
-                                Lic {i + 1}
-                              </a>
-                              {i < school.licensingDocs.length - 1 ? ', ' : ''}
-                            </React.Fragment>
-                          ))
-                        ) : (
-                          <span className="badge badge-neutral">None</span>
-                        )}
-                      </td>
+            <h3 style={{ margin: 0, marginRight: 'auto' }}>
+              Manage School Subscriptions, Licensing & Payments
+            </h3>
+            <button className="btn small outline" onClick={exportCSV}>
+              Export CSV
+            </button>
+          </div>
+
+          {/* Filters */}
+          <div className="dashboard-controls" style={{ marginTop: '0.9em' }}>
+            <input
+              type="search"
+              placeholder="Search name / location / TPR"
+              value={q}
+              onChange={e => setQ(e.target.value)}
+              style={{ minWidth: 220 }}
+            />
+            <select value={plan} onChange={e => setPlan(e.target.value)}>
+              <option value="">All Plans</option>
+              <option value="Standard">Standard</option>
+              <option value="Premium">Premium</option>
+              <option value="Enterprise">Enterprise</option>
+              <option value="Custom">Custom</option>
+            </select>
+            <select value={status} onChange={e => setStatus(e.target.value)}>
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="overdue">Renewal Overdue</option>
+            </select>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+              <option value="name">Sort: Name (A→Z)</option>
+              <option value="renewal">Sort: Renewal (oldest first)</option>
+              <option value="lastPayment">
+                Sort: Last Payment (newest first)
+              </option>
+            </select>
+          </div>
+
+          {/* Table */}
+          <div>
+            <div className="user-table-scroll" style={{ marginTop: '1rem' }}>
+              <table
+                className="user-table schools-billing-table"
+                style={{ width: '100%' }}
+              >
+                <thead>
+                  <tr>
+                    <th>School Name</th>
+                    <th>Location</th>
+                    <th>TPR ID</th>
+                    <th>Plan</th>
+                    <th>Status</th>
+                    <th>Renewal</th>
+                    <th>Last Payment</th>
+                    <th>Invoice</th>
+                    <th>Licensing Docs</th>
+                    <th>Notes</th>
+                    <th style={{ width: 140 }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {view.length === 0 ? (
+                    <tr>
                       <td
+                        colSpan={11}
                         style={{
-                          maxWidth: 240,
-                          wordBreak: 'break-word',
-                          fontSize: '.96em',
+                          textAlign: 'center',
+                          padding: '1.6em',
+                          color: '#789',
                         }}
                       >
-                        {school.billingNotes || ''}
-                      </td>
-                      <td>
-                        <div
-                          style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}
-                        >
-                          <button
-                            className="btn small outline"
-                            onClick={() => openModal(school, 'view')}
-                          >
-                            View
-                          </button>
-                          <button
-                            className="btn small"
-                            onClick={() => openModal(school, 'edit')}
-                          >
-                            Edit
-                          </button>
-                        </div>
+                        No schools match your filters.
                       </td>
                     </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                  ) : (
+                    view.map(school => {
+                      const overdue =
+                        school.renewalDate &&
+                        new Date(school.renewalDate).getTime() < Date.now()
+                      return (
+                        <tr key={school.id}>
+                          <td>{school.name || '-'}</td>
+                          <td>{school.location || '-'}</td>
+                          <td>{school.tprId || '-'}</td>
+                          <td>{school.billingPlan || 'Standard'}</td>
+                          <td>
+                            {school.isActive ? (
+                              <span className="badge badge-success">Active</span>
+                            ) : (
+                              <span className="badge badge-fail">Inactive</span>
+                            )}{' '}
+                            {overdue && (
+                              <span className="badge badge-fail">
+                                Renewal Overdue
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            {school.renewalDate
+                              ? formatDate(school.renewalDate)
+                              : '-'}
+                          </td>
+                          <td>
+                            {school.lastPaymentDate
+                              ? formatDate(school.lastPaymentDate)
+                              : '-'}
+                          </td>
+                          <td>
+                            {school.invoiceUrl ? (
+                              <a
+                                href={school.invoiceUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Download
+                              </a>
+                            ) : (
+                              <span className="badge badge-neutral">
+                                No Invoice
+                              </span>
+                            )}
+                          </td>
+                          <td style={{ maxWidth: 220 }}>
+                            {school.licensingDocs?.length ? (
+                              school.licensingDocs.map((url, i) => (
+                                <React.Fragment key={url}>
+                                  <a href={url} target="_blank" rel="noreferrer">
+                                    Lic {i + 1}
+                                  </a>
+                                  {i < school.licensingDocs.length - 1 ? ', ' : ''}
+                                </React.Fragment>
+                              ))
+                            ) : (
+                              <span className="badge badge-neutral">None</span>
+                            )}
+                          </td>
+                          <td
+                            style={{
+                              maxWidth: 240,
+                              wordBreak: 'break-word',
+                              fontSize: '.96em',
+                            }}
+                          >
+                            {school.billingNotes || ''}
+                          </td>
+                          <td>
+                            <div
+                              style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}
+                            >
+                              <button
+                                className="btn small outline"
+                                onClick={() => openModal(school, 'view')}
+                              >
+                                View
+                              </button>
+                              <button
+                                className="btn small"
+                                onClick={() => openModal(school, 'edit')}
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-        <div
-          className="billing-hint"
-          style={{ margin: '1em 0 .3em', fontSize: '.98em', color: '#77a' }}
-        >
-          <b>Note:</b> All changes are logged for audit. Export full records or
-          upload invoices/licensing docs as needed.
-        </div>
+            <div
+              className="billing-hint"
+              style={{ margin: '1em 0 .3em', fontSize: '.98em', color: '#77a' }}
+            >
+              <b>Note:</b> All changes are logged for audit. Export full records or
+              upload invoices/licensing docs as needed.
+            </div>
 
-        <button
-          className="btn outline"
-          style={{ marginTop: '1.2rem' }}
-          onClick={() => navigate('/superadmin/dashboard')}
-        >
-          ⬅ Dashboard
-        </button>
+            <button
+              className="btn outline"
+              style={{ marginTop: '1.2rem' }}
+              onClick={() => navigate('/superadmin/dashboard')}
+            >
+              ⬅ Dashboard
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Modal */}
@@ -667,6 +672,6 @@ export default function Billings() {
         onClose={closeModal}
         onSaved={refreshAfterSave}
       />
-    </div>
+    </React.Fragment>
   )
 }

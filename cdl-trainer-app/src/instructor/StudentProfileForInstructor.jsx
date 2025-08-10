@@ -1,18 +1,17 @@
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  collection,
-  addDoc,
-  serverTimestamp,
-} from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 
 import ChecklistReviewModal from '@components/ChecklistReviewModal.jsx' // Assume you move modal logic here
-import { db } from '@utils/firebase.js'
+import { useToast } from '@components/ToastContext'
 import {
-  showToast,
+  db,
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  serverTimestamp
+} from '@utils/firebase.js'
+import {
   verifyStudentProfile,
   verifyStudentPermit,
   verifyStudentVehicle,
@@ -20,13 +19,13 @@ import {
 } from '@utils/ui-helpers.js'
 
 export default function InstructorStudentProfile() {
+  const { showToast } = useToast()
   const { studentEmail } = useParams()
   const navigate = useNavigate()
   const [userData, setUserData] = useState(null)
   const [eldtProgress, setEldtProgress] = useState({})
   const [loading, setLoading] = useState(true)
   const [showChecklistModal, setShowChecklistModal] = useState(false)
-
   const currentInstructorEmail =
     window.currentUserEmail || localStorage.getItem('currentUserEmail') || ''
 
@@ -106,7 +105,6 @@ export default function InstructorStudentProfile() {
     endorsements = [],
     restrictions = [],
     experience = '',
-    assignedCompany = '',
     cdlPermit = '',
     permitPhotoUrl = '',
     permitExpiry = '',
@@ -122,7 +120,6 @@ export default function InstructorStudentProfile() {
     emergencyRelation = '',
     waiverSigned = false,
     waiverSignature = '',
-    course = '',
     profileProgress = 0,
     studentNotes = '',
   } = userData
@@ -367,7 +364,7 @@ export default function InstructorStudentProfile() {
             disabled={actions.profile}
             aria-disabled={actions.profile}
             aria-label="Approve Profile"
-            onClick={async e => {
+            onClick={async _ => {
               if (actions.profile) return
               setActions(prev => ({ ...prev, profile: true }))
               await verifyStudentProfile(studentEmail, currentInstructorEmail)
@@ -384,7 +381,7 @@ export default function InstructorStudentProfile() {
             disabled={actions.permit}
             aria-disabled={actions.permit}
             aria-label="Approve Permit"
-            onClick={async e => {
+            onClick={async _ => {
               if (actions.permit) return
               setActions(prev => ({ ...prev, permit: true }))
               await verifyStudentPermit(studentEmail, currentInstructorEmail)
@@ -401,7 +398,7 @@ export default function InstructorStudentProfile() {
             disabled={actions.vehicle}
             aria-disabled={actions.vehicle}
             aria-label="Approve Vehicle"
-            onClick={async e => {
+            onClick={async _ => {
               if (actions.vehicle) return
               setActions(prev => ({ ...prev, vehicle: true }))
               await verifyStudentVehicle(studentEmail, currentInstructorEmail)
@@ -418,7 +415,7 @@ export default function InstructorStudentProfile() {
             disabled={actions.walkthrough}
             aria-disabled={actions.walkthrough}
             aria-label="Review Walkthrough"
-            onClick={async e => {
+            onClick={async _ => {
               if (actions.walkthrough) return
               setActions(prev => ({ ...prev, walkthrough: true }))
               await reviewStudentWalkthrough(

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { getUserRole } from '@utils/auth.js'
 import { db } from '@utils/firebase.js' // adjust path if needed
-import { showToast } from '@utils/ui-helpers.js'
+import { useToast } from '@utils/ui-helpers.js'
 
 /* =========================
    Small Utilities
@@ -87,6 +87,7 @@ function Modal({ open, onClose, maxWidth = 600, children }) {
 ====================================== */
 function ComplianceModal({ school, mode = 'view', onClose, onSaved }) {
   const isEdit = mode === 'edit'
+  const { showToast } = useToast()
   const [form, setForm] = useState(() => ({
     name: school?.name || '',
     tprId: school?.tprId || '',
@@ -330,6 +331,7 @@ function ComplianceModal({ school, mode = 'view', onClose, onSaved }) {
 ====================================== */
 export default function Compliance() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   // role guard
   useEffect(() => {
@@ -338,8 +340,7 @@ export default function Compliance() {
       showToast('Access denied: Super Admins only.')
       navigate('/login', { replace: true })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [showToast, navigate])
 
   const [schools, setSchools] = useState([])
   const [loading, setLoading] = useState(true)
@@ -377,7 +378,7 @@ export default function Compliance() {
     return () => {
       cancel = true
     }
-  }, [])
+  }, [showToast])
 
   const view = useMemo(() => {
     let rows = [...schools]

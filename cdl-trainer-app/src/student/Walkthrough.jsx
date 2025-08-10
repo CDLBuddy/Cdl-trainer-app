@@ -2,13 +2,12 @@ import { collection, query, where, getDocs } from 'firebase/firestore'
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useToast } from '@components/ToastContext'
 import { db, auth } from '@utils/firebase.js'
 import {
-  showToast,
   updateELDTProgress,
   markStudentWalkthroughComplete,
   getUserProgress,
-  setupNavigation,
 } from '@utils/ui-helpers.js'
 
 import { getWalkthroughByClass, getWalkthroughLabel } from '@walkthrough'
@@ -23,10 +22,6 @@ function getCurrentUserEmail() {
   )
 }
 
-// Util: deep clone
-function deepClone(obj) {
-  return JSON.parse(JSON.stringify(obj))
-}
 
 // Drill rendering helpers
 const CRITICAL_KEYWORDS = [
@@ -40,9 +35,10 @@ const CRITICAL_KEYWORDS = [
 ]
 
 const Walkthrough = () => {
+  const { showToast } = useToast()
   const [loading, setLoading] = useState(true)
   const [userData, setUserData] = useState({})
-  const [progress, setProgress] = useState({})
+  // const [progress, setProgress] = useState({})
   const [walkthroughData, setWalkthroughData] = useState(null)
   const [currentDrill, setCurrentDrill] = useState('fill')
   const [completedDrills, setCompletedDrills] = useState({
@@ -81,7 +77,7 @@ const Walkthrough = () => {
         } catch {
           prog = {}
         }
-        setProgress(prog)
+        // setProgress(prog)
 
         // Walkthrough script for this CDL class
         const cdlClass = ud?.cdlClass?.trim().toUpperCase() || ''
@@ -275,7 +271,7 @@ const Walkthrough = () => {
   // 3. Main walkthrough/drill view
   const numCompleted = Object.values(completedDrills).filter(Boolean).length
   return (
-    <div className="screen-wrapper walkthrough-page fade-in" tabIndex={0}>
+    <div className="screen-wrapper walkthrough-page fade-in">
       <h2>
         🧭 CDL Walkthrough Practice{' '}
         {school !== 'N/A' && <span className="school-badge">{school}</span>}
@@ -399,7 +395,6 @@ function FillBlankDrill({ line, keywords, onComplete, alreadyComplete }) {
   // Build blanked version
   const blanks = []
   const parts = []
-  const idx = 0
   const reg = new RegExp(`\\b(${keywords.join('|')})\\b`, 'gi')
   let lastIdx = 0
   let match
@@ -532,7 +527,6 @@ function OrderStepsDrill({ steps, onComplete, alreadyComplete }) {
               cursor: alreadyComplete ? 'default' : 'grab',
               opacity: alreadyComplete ? 0.7 : 1,
             }}
-            tabIndex={0}
             aria-label={`Step ${idx + 1}`}
           >
             <span>{step}</span>

@@ -4,8 +4,9 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
+import { useToast } from '@components/ToastContext'
 import { db, auth } from '@utils/firebase.js'
-import { getNextChecklistAlert, showToast } from '@utils/ui-helpers.js'
+import { getNextChecklistAlert } from '@utils/ui-helpers.js'
 
 import styles from './InstructorDashboard.module.css'
 
@@ -25,14 +26,14 @@ const PINNED_KEY = 'instructorPinnedStudents'
 const DENSITY_KEY = 'instructorDensity' // "comfortable" | "compact"
 const PIN_FILTER_KEY = 'instructorShowPinnedOnly' // persist pin filter
 
-// ----------------------------------------------------------------------------
 export default function InstructorDashboard() {
   const navigate = useNavigate()
   const [search] = useSearchParams()
+  const { showToast } = useToast()
 
   // loading + data
   const [loading, setLoading] = useState(true)
-  const [profile, setProfile] = useState(null)
+  // const [profile, setProfile] = useState(null)
   const [assignedStudents, setAssignedStudents] = useState([])
   const [latestByStudent, setLatestByStudent] = useState({})
 
@@ -95,7 +96,7 @@ export default function InstructorDashboard() {
         return
       }
       if (!alive.current) return
-      setProfile(prof)
+      // setProfile(prof)
 
       // 2) assigned students
       let students = []
@@ -178,7 +179,9 @@ export default function InstructorDashboard() {
   useEffect(() => {
     try {
       localStorage.setItem(PINNED_KEY, JSON.stringify(Array.from(pinned)))
-    } catch {}
+    } catch {
+      // Ignore errors when saving pinned students to localStorage
+    }
   }, [pinned])
   useEffect(() => {
     localStorage.setItem(DENSITY_KEY, density)

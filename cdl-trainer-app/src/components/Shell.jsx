@@ -21,13 +21,13 @@ import styles from './Shell.module.css'
 import { ToastContext } from './ToastContext.jsx'
 
 /**
- * Shell (app-wide dashboard wrapper)
+ * Shell - App-wide dashboard wrapper.
  *
  * Props:
  * - title?: string
  * - children: ReactNode
- * - showFooter?: boolean = true
- * - showFab?: boolean = true
+ * - showFooter?: boolean (default: true)
+ * - showFab?: boolean (default: true)
  * - railOverride?: Array<{to:string,label:string,icon?:string}>
  */
 export default function Shell({
@@ -37,14 +37,16 @@ export default function Shell({
   showFab = true,
   railOverride = null,
 }) {
-  const session = useSession?.() || {}
-  const { role = 'student', logout } = session
+  /* -------------------------- Session & Navigation -------------------------- */
+  const session = useSession()
+  const { role: userRole = 'student', logout } = session || {}
 
   const navigate = useNavigate()
   const { pathname } = useLocation()
 
-  /* ----------------------------- Branding ----------------------------- */
+  /* ----------------------------- Branding State ----------------------------- */
   const [brand, setBrand] = useState(() => getCachedBrandingSummary())
+
   useEffect(() => {
     const unsub = subscribeBrandingUpdated(detail => {
       setBrand(prev => ({
@@ -53,6 +55,7 @@ export default function Shell({
         primaryColor: detail?.primaryColor ?? prev.primaryColor ?? '',
         subHeadline: detail?.subHeadline ?? prev.subHeadline ?? '',
       }))
+
       if (detail?.primaryColor) {
         document.documentElement.style.setProperty(
           '--brand-primary',
@@ -67,17 +70,16 @@ export default function Shell({
   const name = brand?.schoolName || 'CDL Trainer'
   const sub = brand?.subHeadline || ''
 
-  /* -------------------------- Role-aware rail ------------------------- */
+  /* -------------------------- Role-Aware Navigation ------------------------- */
   const rail = useMemo(() => {
     if (Array.isArray(railOverride)) return railOverride
-    const links = getTopNavForRole(String(role).toLowerCase())
+    const links = getTopNavForRole(String(userRole).toLowerCase())
     return Array.isArray(links) ? links : []
-  }, [railOverride, role])
+  }, [railOverride, userRole])
 
-  /* ------------------------------ Handlers --------------------------- */
   const goHome = useCallback(() => {
-    navigate(getDashboardRoute(String(role).toLowerCase()))
-  }, [navigate, role])
+    navigate(getDashboardRoute(String(userRole).toLowerCase()))
+  }, [navigate, userRole])
 
   const handleLogout = useCallback(() => {
     if (typeof logout === 'function') {
@@ -88,35 +90,32 @@ export default function Shell({
     }
   }, [logout, navigate])
 
-  // SR: announce route changes
+  /* ----------------------- Accessibility: Live Announcer --------------------- */
   useEffect(() => {
     const el = document.getElementById('route-change-live')
     if (el) el.textContent = `Navigated to ${pathname}`
   }, [pathname])
 
-  /* ------------------------ Toast Bridge (React) ---------------------- */
-  // Supports either { show(msg, duration?, type?) } or a direct function.
-  const toastApi = useContext(ToastContext) // may be undefined if provider not mounted
+  /* ------------------------ Toast Bridge (React → Utils) --------------------- */
+  const toastApi = useContext(ToastContext)
+
   useEffect(() => {
-    // Build a normalized handler if ToastContext is present
     const handler = toastApi
       ? (msg, opts = {}) => {
           const { duration, type } = opts || {}
           if (typeof toastApi === 'function') {
             toastApi(msg, { duration, type })
           } else if (typeof toastApi?.show === 'function') {
-            toastApi.show(msg, duration, type) // keep your existing signature support
+            toastApi.show(msg, duration, type)
           }
         }
       : null
 
-    // Register with ui-helpers; falls back to DOM toasts if null
     registerToastHandler(handler)
-
     return () => registerToastHandler(null)
   }, [toastApi])
 
-  /* -------------------------- AI Coach Modal ------------------------- */
+  /* -------------------------- AI Coach Modal Logic --------------------------- */
   const [aiOpen, setAiOpen] = useState(false)
   const [aiContext, setAiContext] = useState('dashboard')
 
@@ -158,6 +157,7 @@ export default function Shell({
     }
   }, [aiOpen, openCoach, closeCoach])
 
+  /* ------------------------------ Render Layout ------------------------------ */
   return (
     <div className={styles.root}>
       {/* SR-only live region */}
@@ -167,7 +167,7 @@ export default function Shell({
         className={styles.srOnly}
       />
 
-      {/* ------------------------------ Header ------------------------------ */}
+      {/* Header */}
       <header className={styles.header} role="banner">
         <button
           className={styles.brandBtn}
@@ -187,12 +187,12 @@ export default function Shell({
           />
           <div>
             <div className={styles.schoolName}>{name}</div>
-            {sub ? <div className={styles.schoolSub}>{sub}</div> : null}
+            {sub && <div className={styles.schoolSub}>{sub}</div>}
           </div>
         </button>
       </header>
 
-      {/* ------------------------------ Layout ------------------------------ */}
+      {/* Layout */}
       <div className={styles.layout}>
         {/* Left Rail */}
         <aside className={styles.rail} aria-label="Section navigation">
@@ -247,14 +247,14 @@ export default function Shell({
           </nav>
         </aside>
 
-        {/* Main content */}
+        {/* Main Content */}
         <section className={styles.content} role="main">
-          {title ? <h1 className={styles.title}>{title}</h1> : null}
+          {title && <h1 className={styles.title}>{title}</h1>}
           <div className={styles.card}>{children}</div>
         </section>
       </div>
 
-      {/* AI Coach FAB (premium pop-up) */}
+      {/* AI Coach FAB */}
       {showFab && (
         <button
           className={styles.fab}
@@ -295,7 +295,7 @@ export default function Shell({
         </footer>
       )}
 
-      {/* Mount the modal once at root level of the shell */}
+      {/* AI Coach Modal */}
       <AICoachModal open={aiOpen} onClose={closeCoach} context={aiContext} />
     </div>
   )

@@ -3,13 +3,13 @@ import { collection, query, where, getDocs } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { useToast } from '@components/ToastContext'
 import { db } from '@utils/firebase.js'
 import {
   incrementStudentStudyMinutes,
   logStudySession,
   markStudentTestPassed,
   getUserProgress,
-  showToast,
 } from '@utils/ui-helpers.js'
 
 // Centralized email getter
@@ -39,6 +39,7 @@ export default function TestReview() {
   const [review, setReview] = useState(null)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   useEffect(() => {
     let cancelled = false
@@ -142,7 +143,7 @@ export default function TestReview() {
     return () => {
       cancelled = true
     }
-  }, [testName])
+  }, [testName, showToast])
 
   const goBack = () => navigate('/student/practice-tests')
 

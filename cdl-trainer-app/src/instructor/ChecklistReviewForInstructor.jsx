@@ -7,12 +7,13 @@ import {
   getDoc,
   updateDoc,
   setDoc,
-  serverTimestamp,
+  serverTimestamp
 } from 'firebase/firestore'
 import React, { useEffect, useRef, useState } from 'react'
 
+import { useToast } from '@components/ToastContext'
 import { db } from '@utils/firebase'
-import { showToast, formatDate } from '@utils/ui-helpers'
+import { formatDate } from '@utils/ui-helpers'
 
 // === FIELD CONFIG (expandable for admin/superadmin) ===
 const checklistFields = [
@@ -25,16 +26,15 @@ const checklistFields = [
     label: 'Final Step: In-person walkthrough & driving portion completed',
   },
 ]
-
 export default function ChecklistReviewModal({
   studentEmail,
   role = 'instructor',
   open,
   onClose,
 }) {
+  const { showToast } = useToast()
   const modalRef = useRef()
   const [studentData, setStudentData] = useState({})
-  const [eldtData, setEldtData] = useState({})
   const [auditTrail, setAuditTrail] = useState([])
   const [loading, setLoading] = useState(true)
   const [formState, setFormState] = useState({})
@@ -73,7 +73,7 @@ export default function ChecklistReviewModal({
         showToast('Checklist fetch error.', 3200, 'error')
       }
       setStudentData(_studentData)
-      setEldtData(_eldtData)
+      setStudentData(_studentData)
       setFormState(
         checklistFields.reduce(
           (acc, f) => ({
@@ -88,7 +88,7 @@ export default function ChecklistReviewModal({
       setLoading(false)
     }
     fetchData()
-  }, [studentEmail, open])
+  }, [studentEmail, open, showToast])
 
   // Close on escape, focus trap
   useEffect(() => {
@@ -156,7 +156,6 @@ export default function ChecklistReviewModal({
       <div
         className="modal-card checklist-modal"
         ref={modalRef}
-        tabIndex={0}
         role="dialog"
         aria-modal="true"
         aria-label="Checklist Review"

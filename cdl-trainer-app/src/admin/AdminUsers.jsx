@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore'
 import React, { useEffect, useState, useMemo } from 'react'
 
-import { showToast } from '@utils/ui-helpers.js'
+import { useToast } from '../components/ToastContext'
 
 import ExportUsersControls from './ExportUsersControls' // ← use the new component
 
@@ -50,6 +50,7 @@ const AdminUsers = ({ currentRole, adminSchoolId }) => {
   const [roleFilter, setRoleFilter] = useState('')
   const [companyFilter, setCompanyFilter] = useState('')
   const [loading, setLoading] = useState(false)
+  const { showToast } = useToast()
 
   // Load users for this admin's school
   useEffect(() => {

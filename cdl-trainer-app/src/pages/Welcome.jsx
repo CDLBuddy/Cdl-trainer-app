@@ -23,7 +23,7 @@ const FEATURES = [
 
 // REACT MODAL for school selector
 function SchoolSelectorModal({ open, onSelect, onClose }) {
-  const schools = getAllSchools() || []
+  const schools = React.useMemo(() => getAllSchools() || [], [])
   const [selected, setSelected] = useState(schools[0]?.id || '')
 
   useEffect(() => {
@@ -45,16 +45,31 @@ function SchoolSelectorModal({ open, onSelect, onClose }) {
         bottom: 0,
         zIndex: 50,
       }}
-      onClick={e => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-      onKeyDown={e => {
-        if (e.key === 'Escape') onClose()
-      }}
     >
+      <button
+        type="button"
+        aria-label="Close modal"
+        tabIndex={0}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'transparent',
+          border: 'none',
+          padding: 0,
+          margin: 0,
+          cursor: 'default',
+        }}
+        onClick={onClose}
+        onKeyDown={e => {
+          if (e.key === 'Escape') onClose()
+        }}
+      />
       <div
         className="modal-card school-select-modal"
-        style={{ maxWidth: 410, margin: '10% auto' }}
+        style={{ maxWidth: 410, margin: '10% auto', position: 'relative', zIndex: 1 }}
       >
         <h2>Select Your School</h2>
         <div style={{ marginBottom: '1.2rem' }}>
@@ -137,7 +152,7 @@ function Welcome() {
   }, [navigate])
 
   return (
-    <div className="welcome-screen" tabIndex={0} aria-label="Welcome screen">
+    <div className="welcome-screen" aria-label="Welcome screen">
       {/* School Selector Modal */}
       <SchoolSelectorModal
         open={showSchoolSelector}
@@ -225,7 +240,6 @@ function Welcome() {
         </div>
         <div
           className="features"
-          tabIndex={0}
           aria-label="Feature highlights"
           style={{ marginTop: 30 }}
         >

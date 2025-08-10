@@ -4,7 +4,6 @@ import { useNavigate, Link } from 'react-router-dom'
 
 import { useSession } from '@/App.jsx'
 import Shell from '@components/Shell.jsx'
-
 // Firestore helper for the “What’s New” card
 import { getLatestUpdate } from '@utils/firebase.js'
 

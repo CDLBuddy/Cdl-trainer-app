@@ -121,6 +121,14 @@ export function RequireRole({
   const location = useLocation()
   const { loading, user, role: currentRole } = useUserRole()
 
+  // Signed in, but role not set (or mismatch) - compute before any conditional returns
+  const allowed = useMemo(() => {
+    if (!role) return true // if no role specified, just requires sign-in
+    return Array.isArray(role)
+      ? role.includes(currentRole)
+      : currentRole === role
+  }, [role, currentRole])
+
   // Not signed in → send to login, preserve "from"
   if (!loading && !user) {
     return <Navigate to={redirectTo} state={{ from: location }} replace />
@@ -128,14 +136,6 @@ export function RequireRole({
 
   // Still determining
   if (loading) return fallback
-
-  // Signed in, but role not set (or mismatch)
-  const allowed = useMemo(() => {
-    if (!role) return true // if no role specified, just requires sign-in
-    return Array.isArray(role)
-      ? role.includes(currentRole)
-      : currentRole === role
-  }, [role, currentRole])
 
   if (!allowed) return onDeny
 
