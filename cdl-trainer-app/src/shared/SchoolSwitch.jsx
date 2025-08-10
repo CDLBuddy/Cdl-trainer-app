@@ -12,8 +12,8 @@ import {
   switchSchool,
   getCurrentSchoolId,
   applyBrandingForSchool, // NEW
-} from '@utils/school-switching.js'
-import { showToast } from '@utils/ui-helpers.js'
+} from '@utils/schoolSwitching'
+import { useToast } from '@utils/ui-helpers.js'
 
 export default function SchoolSwitch() {
   const navigate = useNavigate()

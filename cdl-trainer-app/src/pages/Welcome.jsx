@@ -1,3 +1,4 @@
+//src/pages/welcome.jsx
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -5,7 +6,8 @@ import {
   getCurrentSchoolBranding,
   setCurrentSchool,
   getAllSchools,
-} from '@utils/schoolBranding.js'
+} from '@utils/school-branding.js'
+
 import '@styles/ui-shell.css'
 
 // Demo features array
