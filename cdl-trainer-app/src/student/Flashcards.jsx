@@ -3,11 +3,11 @@ import { collection, query, where, getDocs } from 'firebase/firestore'
 import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useToast } from '@components/ToastContext'
 import { db, auth } from '@utils/firebase.js'
 import {
   incrementStudentStudyMinutes,
   logStudySession,
-  showToast,
 } from '@utils/ui-helpers.js'
 
 const defaultFlashcards = [
@@ -29,6 +29,7 @@ const defaultFlashcards = [
 export default function StudentFlashcards() {
   const navigate = useNavigate()
   const flashcardRef = useRef(null)
+  const { showToast } = useToast()
 
   // State
   const [loading, setLoading] = useState(true)
@@ -70,7 +71,9 @@ export default function StudentFlashcards() {
           query(collection(db, 'users'), where('email', '==', userEmail))
         )
         if (!snap.empty) userRole = snap.docs[0].data().role || userRole
-      } catch {}
+      } catch {
+        // Intentionally ignored: user role fallback to localStorage/default
+      }
       if (userRole !== 'student') {
         showToast('Flashcards are only available for students.', 2200, 'error')
         navigate('/student-dashboard')
@@ -118,7 +121,7 @@ export default function StudentFlashcards() {
     }
     card.addEventListener('keydown', onKey)
     return () => card.removeEventListener('keydown', onKey)
-  }, [current])
+  }, [current, flashcards.length, handleNext, handlePrev])
 
   // Touch navigation
   useEffect(() => {
@@ -141,7 +144,7 @@ export default function StudentFlashcards() {
       card.removeEventListener('touchstart', onTouchStart)
       card.removeEventListener('touchend', onTouchEnd)
     }
-  }, [current])
+  }, [current, flashcards.length, handleNext, handlePrev])
 
   // Session complete logging
   useEffect(() => {
@@ -152,22 +155,22 @@ export default function StudentFlashcards() {
       await logStudySession(email, minutes, 'Flashcards')
       showToast('✅ Flashcard session logged!')
     })()
-  }, [completed])
+  }, [completed, email, startedAt, showToast])
 
   // Handlers
   const handleFlip = () => setFlipped(f => !f)
-  const handleNext = () => {
+  const handleNext = React.useCallback(() => {
     if (current < flashcards.length - 1) {
       setCurrent(current + 1)
       setFlipped(false)
     }
-  }
-  const handlePrev = () => {
+  }, [current, flashcards.length])
+  const handlePrev = React.useCallback(() => {
     if (current > 0) {
       setCurrent(current - 1)
       setFlipped(false)
     }
-  }
+  }, [current])
   const handleKnown = () => {
     if (!knownCards.includes(current)) {
       const updated = [...knownCards, current]
@@ -280,9 +283,23 @@ export default function StudentFlashcards() {
         className={`flashcard${flipped ? ' flipped' : ''}`}
         tabIndex={0}
         role="button"
-        aria-label="Flashcard: Press Enter or tap to flip"
+        aria-label="Flashcard: Press Enter, Space, or tap to flip. Use Left/Right arrows to navigate."
         ref={flashcardRef}
         onClick={handleFlip}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            handleFlip()
+          }
+          if (e.key === 'ArrowRight') {
+            e.preventDefault()
+            handleNext()
+          }
+          if (e.key === 'ArrowLeft') {
+            e.preventDefault()
+            handlePrev()
+          }
+        }}
       >
         <div className="flashcard-inner">
           <div className="flashcard-front">Q: {flashcards[current].q}</div>
@@ -295,31 +312,34 @@ export default function StudentFlashcards() {
           className="btn outline"
           onClick={handlePrev}
           disabled={current === 0}
+          aria-label="Previous card"
         >
           ← Prev
         </button>
-        <button className="btn" onClick={handleFlip}>
+        <button className="btn" onClick={handleFlip} aria-label="Flip card">
           🔄 Flip
         </button>
         <button
           className="btn outline"
           onClick={handleNext}
           disabled={current === flashcards.length - 1}
+          aria-label="Next card"
         >
           Next →
         </button>
       </div>
 
       <div className="flashcard-actions">
-        <button className="btn small" onClick={handleKnown}>
+        <button className="btn small" onClick={handleKnown} aria-label="Mark as known">
           ✅ I know this
         </button>
-        <button className="btn wide outline" onClick={handleEndSession}>
+        <button className="btn wide outline" onClick={handleEndSession} aria-label="End session">
           ✅ End Session
         </button>
         <button
           className="btn wide outline"
           onClick={() => navigate('/student-dashboard')}
+          aria-label="Back to Dashboard"
         >
           ⬅ Back to Dashboard
         </button>

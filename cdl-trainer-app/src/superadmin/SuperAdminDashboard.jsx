@@ -4,8 +4,8 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
+import { showToast } from '@components/ToastContext'
 import { db } from '@utils/firebase.js'
-import { showToast } from '@utils/ui-helpers.js'
 
 import styles from './SuperAdminDashboard.module.css'
 

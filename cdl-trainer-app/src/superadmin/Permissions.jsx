@@ -3,7 +3,6 @@ import {
   collection,
   query as fsQuery,
   orderBy,
-  where,
   getDocs,
   doc,
   updateDoc,
@@ -12,9 +11,9 @@ import {
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { showToast } from '@components/ToastContext'
 import { getUserRole } from '@utils/auth.js'
 import { db } from '@utils/firebase.js' // adjust if needed
-import { showToast } from '@utils/ui-helpers.js'
 
 /* =========================
    Constants / Helpers
@@ -101,9 +100,9 @@ function InviteUserModal({ schools, onClose }) {
             <option value="student">Student</option>
           </select>
           <div>
-            <label style={{ display: 'block', marginBottom: 6 }}>
+            <div style={{ display: 'block', marginBottom: 6 }}>
               Assign to School(s)
-            </label>
+            </div>
             <div
               className="glass-card"
               style={{
@@ -143,7 +142,7 @@ function InviteUserModal({ schools, onClose }) {
 /* =========================
    Audit Log Modal
 ========================= */
-function AuditLogModal({ userId, email, onClose, logs }) {
+function AuditLogModal({ email, onClose, logs }) {
   return (
     <div className="modal-overlay fade-in" role="dialog" aria-modal="true">
       <div className="modal-card" style={{ maxWidth: 560 }}>
@@ -259,11 +258,7 @@ export default function Permissions() {
   )
 
   // Helpers to mutate local rows
-  function markDirty(userId) {
-    setUsers(prev =>
-      prev.map(u => (u.id === userId ? { ...u, __dirty: true } : u))
-    )
-  }
+  // removed unused markDirty function (was causing linter error)
   function setField(userId, field, value) {
     setUsers(prev =>
       prev.map(u =>

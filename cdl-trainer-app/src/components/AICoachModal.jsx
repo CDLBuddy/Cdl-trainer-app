@@ -1,6 +1,4 @@
 //src/components/AICoachModal.jsx
-
-import { getUserInitials } from '@utils/uiHelpers' // note: camelCase per your repo
 import React, {
   useCallback,
   useEffect,
@@ -10,6 +8,7 @@ import React, {
   memo,
 } from 'react'
 
+import { getUserInitials } from '@components/ToastContext'
 import { askCDLAI } from '@utils/aiApi.js' // e.g. "../utils/ai-api" -> rename file to aiApi.js for consistency
 import { auth } from '@utils/firebase.js'
 
@@ -278,7 +277,19 @@ function AICoachModal({ open, onClose, context = 'dashboard' }) {
       aria-modal="true"
       aria-label="AI CDL Coach"
     >
-      <div className={styles.backdrop} onClick={onClose} />
+      <div
+        className={styles.backdrop}
+        onClick={onClose}
+        role="button"
+        tabIndex={0}
+        aria-label="Close AI Coach"
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onClose()
+          }
+        }}
+      />
       <div className={`${styles.card} glass`}>
         {/* Header */}
         <div className={styles.header}>

@@ -3,7 +3,6 @@
 import {
   collection,
   doc,
-  getDoc,
   getDocs,
   setDoc,
   updateDoc,
@@ -14,8 +13,8 @@ import {
 } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 
+import { showToast } from '@components/ToastContext' // Optional: swap for your toast solution
 import { db, auth } from '@utils/firebase.js' // Adjust path!
-import { showToast } from '@utils/ui-helpers.js' // Optional: swap for your toast solution
 
 // --- Modal Component ---
 function Modal({ open, onClose, children }) {

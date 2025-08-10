@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { db } from '@utils/firebase.js'
-import { showToast } from '@utils/ui-helpers.js'
+import { useToast } from '@utils/ui-helpers.js'
 
 const QUESTION_BANKS = {
   'General Knowledge': [
@@ -87,6 +87,7 @@ const CHOICE_KEYS = ['1', '2', '3', '4']
 
 export default function TestEngine({ testName, passedUserEmail }) {
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   const [questions, setQuestions] = useState([])
   const [currentIdx, setCurrentIdx] = useState(0)
@@ -205,6 +206,7 @@ export default function TestEngine({ testName, passedUserEmail }) {
     userAnswers,
     testName,
     passedUserEmail,
+    showToast,
   ])
 
   // ---------- Renders ----------

@@ -42,8 +42,6 @@
 
 /* Optional: light mode hook if you ever enable body:not(.dark-mode) */
 @media (prefers-color-scheme: light) {
-  :root {
-    /* You can soften the background if you support light mode */
-    /* --app-bg: #f5f7fb; */
-  }
+  /* You can soften the background if you support light mode */
+  /* :root { --app-bg: #f5f7fb; } */
 }

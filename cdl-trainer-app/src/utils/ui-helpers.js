@@ -334,7 +334,7 @@ export async function adminFlagStudent(studentEmail, adminEmail, note = '') {
     { role: 'admin', logHistory: true }
   )
 }
-export async function adminResetStudentProgress(studentEmail, adminEmail) {
+export async function adminResetStudentProgress(studentEmail, _adminEmail) {
   await updateELDTProgress(
     studentEmail,
     {

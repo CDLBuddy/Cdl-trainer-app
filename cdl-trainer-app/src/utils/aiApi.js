@@ -29,5 +29,5 @@ export async function askCDLAI(question, history = [], meta = {}) {
 
   const data = await res.json().catch(() => ({}))
   // Expect { reply: string }
-  return data.reply || 'Sorry, I couldn’t generate a response right now.'
+  return data.reply || 'Sorry, I couldnt generate a response right now.'
 }

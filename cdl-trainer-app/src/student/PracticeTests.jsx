@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { db, auth } from '@utils/firebase.js'
-import { showToast } from '@utils/ui-helpers.js'
+import { useToast } from '@utils/ui-helpers.js'
 
 // TODO: later move this to Firestore/config
 const TESTS = ['General Knowledge', 'Air Brakes', 'Combination Vehicles']
@@ -20,6 +20,7 @@ function getCurrentUserEmail() {
 
 export default function PracticeTests() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   const [loading, setLoading] = useState(true)
   const [testScores, setTestScores] = useState({}) // { [testName]: { pct, passed, lastResult } }
@@ -80,7 +81,7 @@ export default function PracticeTests() {
     return () => {
       cancelled = true
     }
-  }, [navigate])
+  }, [navigate, showToast])
 
   const pctComplete = useMemo(
     () => Math.round((100 * passedCount) / TESTS.length),
@@ -92,7 +93,7 @@ export default function PracticeTests() {
       showToast(`Starting "${test}"…`)
       navigate(`/student/test-engine/${encodeURIComponent(test)}`)
     },
-    [navigate]
+    [navigate, showToast]
   )
 
   const reviewTest = useCallback(
@@ -100,7 +101,7 @@ export default function PracticeTests() {
       showToast(`Loading your last "${test}" result…`)
       navigate(`/student/test-review/${encodeURIComponent(test)}`)
     },
-    [navigate]
+    [navigate, showToast]
   )
 
   if (loading) {

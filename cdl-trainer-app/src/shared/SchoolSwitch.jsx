@@ -19,9 +19,10 @@ export default function SchoolSwitch() {
   const navigate = useNavigate()
   const email = getCurrentUserEmail()
   const role = getCurrentUserRole('student')
+  const { showToast } = useToast()
 
   const [loading, setLoading] = useState(true)
-  const [allSchools, setAllSchools] = useState([])
+  // Removed unused allSchools state
   const [allowed, setAllowed] = useState([])
   const [selected, setSelected] = useState('')
 
@@ -38,7 +39,6 @@ export default function SchoolSwitch() {
           listAllSchools(),
           getUserAssignedSchoolIds(email),
         ])
-        setAllSchools(schools)
         const allowedSchools = computeAllowedSchools(
           role,
           userSchoolIds,
@@ -70,7 +70,7 @@ export default function SchoolSwitch() {
         setLoading(false)
       }
     })()
-  }, [email, role, navigate])
+  }, [email, role, navigate, showToast])
 
   const currentBrand = useMemo(
     () => allowed.find(s => s.id === selected) || allowed[0],

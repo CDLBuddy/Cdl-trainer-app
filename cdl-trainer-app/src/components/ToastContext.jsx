@@ -1,17 +1,11 @@
 // src/components/ToastContext.jsx
 
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import React, { createContext, useCallback, useMemo, useState } from 'react'
 
 import { __bindToastCompat } from './toast-compat.js'
 import Toast from './Toast.jsx'
 
 const ToastContext = createContext(null)
-
-export function useToast() {
-  const ctx = useContext(ToastContext)
-  if (!ctx) throw new Error('useToast must be used within a ToastProvider')
-  return ctx
-}
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])

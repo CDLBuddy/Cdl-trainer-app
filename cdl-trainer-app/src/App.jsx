@@ -1,8 +1,6 @@
 // src/App.jsx
 import React, {
   useEffect,
-  createContext,
-  useContext,
   useMemo,
   useState,
   Suspense,
@@ -20,6 +18,7 @@ import {
 import NavBar from './components/NavBar.jsx'
 import SplashScreen from './components/SplashScreen.jsx'
 import { getDashboardRoute } from './navigation/navigation.js' // ✅ fixed path
+import { SessionContext } from './session-context.js'
 import { useAuthStatus, getUserRole } from './utils/auth.js'
 import { RequireRole } from './utils/RequireRole.jsx'
 import {
@@ -42,13 +41,10 @@ const AdminRouter = lazy(() => import('./admin/AdminRouter.jsx'))
 const SuperadminRouter = lazy(() => import('./superadmin/SuperadminRouter.jsx'))
 
 /* =========================
+/* =========================
    Session Context (read-only)
    ========================= */
-export const SessionContext = createContext(null)
-export function useSession() {
-  return useContext(SessionContext)
-}
-
+// moved to session-context.js to avoid Fast Refresh warning (non-component exports)
 /* =========================
    ScrollToTop on route change
    ========================= */

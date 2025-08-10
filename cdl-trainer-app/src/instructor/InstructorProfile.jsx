@@ -15,10 +15,12 @@ import { useNavigate } from 'react-router-dom'
 
 import { db, storage } from '@utils/firebase.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
-import { showToast } from '@utils/ui-helpers.js'
+// import { showToast } from '@utils/ui-helpers.js'
+import { useToast } from '@utils/ui-helpers.js'
 
 export default function InstructorProfile() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const [brand, setBrand] = useState({})
   const [profile, setProfile] = useState({})
   const [loading, setLoading] = useState(true)
@@ -139,7 +141,6 @@ export default function InstructorProfile() {
   const {
     name = '',
     email = currentUserEmail,
-    profilePicUrl = '',
     experience = '',
     phone = '',
     availability = '',
@@ -149,7 +150,6 @@ export default function InstructorProfile() {
     preferredContact = '',
     sessionLog = [],
     feedback = '',
-    complianceChecked = false,
     adminNotes = '',
     active = true,
     assignedStudents = [],
@@ -253,7 +253,7 @@ export default function InstructorProfile() {
           {profilePicPreview && (
             <img
               src={profilePicPreview}
-              alt="Profile Picture"
+              alt={name ? `${name}'s profile` : 'Profile'}
               style={{
                 maxWidth: 90,
                 borderRadius: 12,

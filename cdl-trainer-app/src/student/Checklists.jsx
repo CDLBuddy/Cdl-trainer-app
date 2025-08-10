@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { db, auth } from '@utils/firebase.js'
-import { showToast } from '@utils/ui-helpers.js'
+import { useToast } from '@utils/ui-helpers.js'
 
 const studentChecklistSectionsTemplate = [
   {
@@ -82,6 +82,7 @@ export default function StudentChecklists() {
   const [percent, setPercent] = useState(0)
   const [notifyItems, setNotifyItems] = useState([])
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   function getCurrentUserEmail() {
     return (
@@ -114,7 +115,10 @@ export default function StudentChecklists() {
           userRole = profile.role || 'student'
           localStorage.setItem('userRole', userRole)
         }
-      } catch {}
+      } catch (_error) {
+        // Handle error or log it if needed
+        // console.error('Error fetching user profile:', _error);
+      }
       if (userRole !== 'student') {
         showToast(
           'This checklist is only available for students.',
@@ -260,10 +264,6 @@ function ChecklistItem({ item, onAction, sectionIdx, itemIdx }) {
       aria-current={
         item.notify && !item.done && !item.readonly ? 'step' : undefined
       }
-      tabIndex={0}
-      onKeyUp={e =>
-        (e.key === 'Enter' || e.key === ' ') && setExpanded(ex => !ex)
-      }
     >
       {item.notify && !item.done && !item.readonly && (
         <span className="notify-bubble" title="This step needs attention">
@@ -273,9 +273,16 @@ function ChecklistItem({ item, onAction, sectionIdx, itemIdx }) {
       <div
         className="checklist-item-main"
         role="button"
+        tabIndex={0}
         aria-expanded={expanded}
         aria-controls={`details-${sectionIdx}-${itemIdx}`}
         onClick={() => setExpanded(ex => !ex)}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            setExpanded(ex => !ex)
+          }
+        }}
       >
         <span className="checklist-label">{item.label}</span>
         <span className="chevron">{expanded ? '▾' : '▸'}</span>

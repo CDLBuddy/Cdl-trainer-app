@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { db } from '@utils/firebase.js'
-import { showToast } from '@utils/ui-helpers.js'
+import { useToast } from '@utils/ui-helpers.js'
 
 // ---------- helpers ----------
 function toJSDate(ts) {
@@ -57,6 +57,7 @@ function getRole() {
 // ---------- component ----------
 export default function TestResults() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   const [loading, setLoading] = useState(true)
   const [results, setResults] = useState([])
@@ -116,7 +117,7 @@ export default function TestResults() {
     return () => {
       cancelled = true
     }
-  }, [isStaff])
+  }, [isStaff, showToast])
 
   function handleExportCSV() {
     const rows = [

@@ -79,7 +79,7 @@ function NavBar({ brand: brandProp }) {
         primaryColor: brandProp.primaryColor ?? prev.primaryColor ?? '',
       }))
     }
-  }, [brandProp?.logoUrl, brandProp?.schoolName, brandProp?.primaryColor])
+  }, [brandProp])
 
   // Subscribe for runtime school switches (only if no prop provided)
   useEffect(() => {

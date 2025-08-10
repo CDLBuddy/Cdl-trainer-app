@@ -10,12 +10,12 @@ import {
   orderBy,
   query,
 } from 'firebase/firestore'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { showToast } from '@components/ToastContext' // <- global toast, styled to your theme
 import { getUserRole } from '@utils/auth.js' // <- same helper used elsewhere
 import { db } from '@utils/firebase.js' // <- adjust if needed
-import { showToast } from '@utils/ui-helpers.js' // <- global toast, styled to your theme
 
 /* ============================================================================
    Utilities (Firestore CRUD)
@@ -332,14 +332,6 @@ export default function Settings() {
       mounted = false
     }
   }, [])
-
-  const selectedSchoolName = useMemo(
-    () =>
-      selectedSchoolId
-        ? schools.find(s => s.id === selectedSchoolId)?.name
-        : '',
-    [selectedSchoolId, schools]
-  )
 
   // Handlers: Global settings
   async function handleSaveGlobalSettings(values) {

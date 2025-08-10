@@ -131,7 +131,7 @@ function Login() {
             boxShadow: '0 1px 8px #22115533',
           }}
         />
-        <h2 tabIndex={0} style={{ margin: '0 0 8px 0', color: '#fff' }}>
+        <h2 style={{ margin: '0 0 8px 0', color: '#fff' }}>
           🚛 {schoolName} Login
         </h2>
       </div>
@@ -146,7 +146,6 @@ function Login() {
             type="email"
             required
             autoComplete="username"
-            autoFocus
             value={email}
             onChange={e => setEmail(e.target.value)}
           />

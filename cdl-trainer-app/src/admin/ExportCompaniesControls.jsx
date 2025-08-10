@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import { showToast } from '@utils/ui-helpers.js'
+import { useToast } from '@components/ToastContext'
 
 let _jsPDF = null
 async function ensureJsPDF() {
@@ -39,6 +39,7 @@ export default function ExportCompaniesControls({
   className,
 }) {
   const [type, setType] = useState(defaultType)
+  const { showToast } = useToast()
 
   const headers = useMemo(() => ['Name', 'Contact', 'Address', 'Active'], [])
 
@@ -62,7 +63,7 @@ export default function ExportCompaniesControls({
       const csv = toCSV(headers, rowsFromCompanies(list))
       downloadBlob(csv, 'cdl-companies-export.csv', 'text/csv;charset=utf-8;')
     },
-    [headers, rowsFromCompanies]
+    [headers, rowsFromCompanies, showToast]
   )
 
   const exportPDF = useCallback(
@@ -108,7 +109,7 @@ export default function ExportCompaniesControls({
 
       doc.save('cdl-companies-export.pdf')
     },
-    [headers]
+    [headers, showToast]
   )
 
   const handleDownload = useCallback(() => {

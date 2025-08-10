@@ -1,18 +1,18 @@
-// src/main.jsx
-import React, { Suspense } from 'react'
-import { createRoot } from 'react-dom/client'
+//src/main.jsx
+// React & React DOM
+import React, { Suspense } from "react";
+import { createRoot } from "react-dom/client";
 
 // Global styles (tokens + reset + utilities)
-import './styles/index.css'
+import "./styles/index.css";
 
-import App from './App.jsx'
+// Shared components
+import SplashScreen from "@components/SplashScreen.jsx";
+// Global UI providers & core app
+import { ToastProvider } from "@components/ToastContext";
 
-// Global UI providers
-import SplashScreen from './components/SplashScreen.jsx'
-import { ToastProvider } from './components/ToastContext.jsx'
-
+import App from "./App.jsx";
 // Optional: friendly fallback while lazy routes load
-
 // Preload school branding (sets CSS vars + caches logo/name)
 import { getCurrentSchoolBranding } from './utils/school-branding'
 

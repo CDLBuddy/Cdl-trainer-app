@@ -10,10 +10,10 @@ import {
 } from 'firebase/firestore'
 import React, { useEffect, useState, useRef } from 'react'
 
+import { useToast } from '@components/ToastContext'
 import { db, auth } from '@utils/firebase.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
-import { useToast } from '../context/ToastContext'
 // import jsPDF only when needed
 let jsPDF = null
 
@@ -154,11 +154,97 @@ function filterCompanies(companies, searchTerm) {
   )
 }
 
+const CompanyRow = ({ company: c, isSelected, toggleSelect, onSave, onRemove, showToast }) => {
+  const rowRef = useRef(null)
+  return (
+    <tr ref={rowRef}>
+      <td>
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={toggleSelect}
+        />
+      </td>
+      <td>
+        <input
+          className="company-name-input"
+          defaultValue={c.name}
+          maxLength={60}
+          style={{ width: '97%', padding: '2px 7px' }}
+        />
+      </td>
+      <td>
+        <input
+          className="company-contact-input"
+          defaultValue={c.contact}
+          maxLength={60}
+          style={{ width: '97%', padding: '2px 7px' }}
+        />
+      </td>
+      <td>
+        <input
+          className="company-address-input"
+          defaultValue={c.address}
+          maxLength={100}
+          style={{ width: '97%', padding: '2px 7px' }}
+        />
+      </td>
+      <td>
+        <select
+          className="company-status-input"
+          defaultValue={c.status ? 'active' : 'inactive'}
+          style={{ borderRadius: 7 }}
+        >
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </td>
+      <td>
+        <span style={{ fontSize: '.93em' }}>
+          {fmtDate(c.createdAt)}
+        </span>
+        <br />
+        <span style={{ fontSize: '.87em', color: '#999' }}>
+          {c.createdBy || ''}
+        </span>
+      </td>
+      <td>
+        <button
+          className="btn outline btn-save-company"
+          onClick={() => onSave(c.id, rowRef)}
+        >
+          Save
+        </button>
+        <button
+          className="btn outline btn-remove-company"
+          style={{ marginLeft: 6 }}
+          onClick={() => onRemove(c.id)}
+        >
+          Remove
+        </button>
+        <button
+          className="btn outline btn-view-users"
+          style={{ marginLeft: 6 }}
+          onClick={() =>
+            showToast(
+              `Viewing users for company: ${c.name}`,
+              3500,
+              'info'
+            )
+          }
+        >
+          View Users
+        </button>
+      </td>
+    </tr>
+  )
+}
+
 const AdminCompanies = () => {
   const [companies, setCompanies] = useState([])
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(true)
+  // const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(new Set())
   const [brand, setBrand] = useState({})
   const [schoolId, setSchoolId] = useState(
@@ -175,12 +261,10 @@ const AdminCompanies = () => {
 
   useEffect(() => {
     ;(async () => {
-      setLoading(true)
       setBrand((await getCurrentSchoolBranding()) || {})
       const comps = await fetchCompanies(schoolId)
       setCompanies(comps)
       setFiltered(comps)
-      setLoading(false)
     })()
   }, [schoolId])
 
@@ -306,7 +390,6 @@ const AdminCompanies = () => {
   const handleImportCSV = async e => {
     const file = e.target.files[0]
     if (!file) return
-    const text = await file.text()
     // You'd parse CSV here and batch import (see original JS)
     showToast('Bulk import is not yet implemented in this demo.', 3000, 'info')
     // (Implementation of preview modal, confirm, etc, omitted for brevity)
@@ -431,199 +514,84 @@ const AdminCompanies = () => {
           >
             <input
               type="file"
-              ref={importInputRef}
               accept=".csv"
               style={{ display: 'none' }}
+              ref={importInputRef}
               onChange={handleImportCSV}
             />
-            Bulk Import CSV
+            Import CSV
           </label>
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            gap: 10,
-            alignItems: 'center',
-            marginBottom: 7,
-          }}
-        >
           <button
             className="btn outline"
-            onClick={handleBulkDelete}
             disabled={!selected.size}
-            style={{
-              display: selected.size ? '' : 'none',
-            }}
+            onClick={handleBulkDelete}
+            style={{ color: '#c00', borderColor: '#c00' }}
           >
             Delete Selected
           </button>
           <button
             className="btn outline"
-            onClick={handleBulkExport}
             disabled={!selected.size}
-            style={{
-              display: selected.size ? '' : 'none',
-            }}
+            onClick={handleBulkExport}
           >
             Export Selected
           </button>
-          <span
-            id="selected-count"
-            style={{ fontSize: '.95em', color: '#386' }}
-          >
-            {selected.size} selected
-          </span>
         </div>
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: 40 }}>
-            <div className="spinner" />
-            Loading companies…
-          </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table
-              className="company-table"
-              style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                minWidth: 700,
-              }}
-            >
-              <thead>
-                <tr>
-                  <th>
-                    <input
-                      type="checkbox"
-                      checked={
-                        !!filtered.length &&
-                        filtered.every(c => selected.has(c.id))
+        <div style={{ overflowX: 'auto' }}>
+          <table className="companies-table" style={{ width: '100%', minWidth: 700 }}>
+            <thead>
+              <tr>
+                <th>
+                  <input
+                    type="checkbox"
+                    checked={selected.size === filtered.length && filtered.length > 0}
+                    onChange={e => {
+                      if (e.target.checked) {
+                        setSelected(new Set(filtered.map(c => c.id)))
+                      } else {
+                        setSelected(new Set())
                       }
-                      onChange={e => {
-                        if (e.target.checked) {
-                          setSelected(new Set(filtered.map(c => c.id)))
-                        } else {
-                          setSelected(new Set())
-                        }
-                      }}
-                      title="Select all"
-                    />
-                  </th>
-                  <th>Company Name</th>
-                  <th>Contact</th>
-                  <th>Address</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                  <th>Actions</th>
+                    }}
+                  />
+                </th>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Address</th>
+                <th>Status</th>
+                <th>Created / By</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', color: '#799' }}>
+                    No companies found for this school.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      style={{ textAlign: 'center', color: '#799' }}
-                    >
-                      No companies found for this school.
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map(c => {
-                    const rowRef = useRef()
-                    return (
-                      <tr key={c.id} ref={rowRef}>
-                        <td>
-                          <input
-                            type="checkbox"
-                            checked={selected.has(c.id)}
-                            onChange={() => {
-                              setSelected(prev => {
-                                const next = new Set(prev)
-                                if (next.has(c.id)) next.delete(c.id)
-                                else next.add(c.id)
-                                return next
-                              })
-                            }}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="company-name-input"
-                            defaultValue={c.name}
-                            maxLength={60}
-                            style={{ width: '97%', padding: '2px 7px' }}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="company-contact-input"
-                            defaultValue={c.contact}
-                            maxLength={60}
-                            style={{ width: '97%', padding: '2px 7px' }}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="company-address-input"
-                            defaultValue={c.address}
-                            maxLength={100}
-                            style={{ width: '97%', padding: '2px 7px' }}
-                          />
-                        </td>
-                        <td>
-                          <select
-                            className="company-status-input"
-                            defaultValue={c.status ? 'active' : 'inactive'}
-                            style={{ borderRadius: 7 }}
-                          >
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                          </select>
-                        </td>
-                        <td>
-                          <span style={{ fontSize: '.93em' }}>
-                            {fmtDate(c.createdAt)}
-                          </span>
-                          <br />
-                          <span style={{ fontSize: '.87em', color: '#999' }}>
-                            {c.createdBy || ''}
-                          </span>
-                        </td>
-                        <td>
-                          <button
-                            className="btn outline btn-save-company"
-                            onClick={() => handleSaveCompany(c.id, rowRef)}
-                          >
-                            Save
-                          </button>
-                          <button
-                            className="btn outline btn-remove-company"
-                            style={{ marginLeft: 6 }}
-                            onClick={() => handleRemoveCompany(c.id)}
-                          >
-                            Remove
-                          </button>
-                          <button
-                            className="btn outline btn-view-users"
-                            style={{ marginLeft: 6 }}
-                            onClick={() =>
-                              showToast(
-                                `Viewing users for company: ${c.name}`,
-                                3500,
-                                'info'
-                              )
-                            }
-                          >
-                            View Users
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ) : (
+                filtered.map(c => (
+                  <CompanyRow
+                    key={c.id}
+                    company={c}
+                    isSelected={selected.has(c.id)}
+                    toggleSelect={() => {
+                      setSelected(prev => {
+                        const next = new Set(prev)
+                        if (next.has(c.id)) next.delete(c.id)
+                        else next.add(c.id)
+                        return next
+                      })
+                    }}
+                    onSave={handleSaveCompany}
+                    onRemove={handleRemoveCompany}
+                    showToast={showToast}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
         <div style={{ fontSize: '0.98em', color: '#888', marginTop: 7 }}>
           Bulk import supports columns: <b>name</b>, <b>contact</b>,{' '}
           <b>address</b>, <b>status</b> (first row: header). Activity logs and
