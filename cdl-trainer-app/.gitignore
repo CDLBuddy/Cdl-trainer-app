@@ -132,3 +132,8 @@ route-diagnostic-checker.js
 *.bak
 # Debug print from ESLint
 .eslintrc.print.json
+
+# Codemod backups
+*.bak
+# Debug print from ESLint
+.eslintrc.print.json
