@@ -1,46 +1,59 @@
 // src/superadmin/SuperAdminDashboard.jsx
-import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import Shell from "../components/Shell";
-import { db } from "../utils/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { showToast } from "../utils/ui-helpers";
-import styles from "./SuperAdminDashboard.module.css";
+import { collection, getDocs, query, where } from 'firebase/firestore'
+import React, { useEffect, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+import Shell from '@components/Shell.jsx'
+import { db } from '@utils/firebase.js'
+import { showToast } from '@utils/ui-helpers.js'
+
+import styles from './SuperAdminDashboard.module.css'
 
 export default function SuperAdminDashboard() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [loading, setLoading] = useState(true);
-  const [me, setMe] = useState(null);
-  const [email, setEmail] = useState("");
-  const [stats, setStats] = useState({ schools: 0, users: 0, complianceAlerts: 0 });
+  const [loading, setLoading] = useState(true)
+  const [me, setMe] = useState(null)
+  const [email, setEmail] = useState('')
+  const [stats, setStats] = useState({
+    schools: 0,
+    users: 0,
+    complianceAlerts: 0,
+  })
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
+    let alive = true
+    ;(async () => {
       try {
         // --- Guard ---
-        const role = (localStorage.getItem("userRole") || window.currentUserRole || "").toLowerCase();
-        if (role !== "superadmin") {
-          showToast("Access denied: Super Admins only.", 3500, "error");
-          if (window.handleLogout) window.handleLogout();
-          navigate("/login", { replace: true });
-          return;
+        const role = (
+          localStorage.getItem('userRole') ||
+          window.currentUserRole ||
+          ''
+        ).toLowerCase()
+        if (role !== 'superadmin') {
+          showToast('Access denied: Super Admins only.', 3500, 'error')
+          if (window.handleLogout) window.handleLogout()
+          navigate('/login', { replace: true })
+          return
         }
 
         // --- Current user email ---
         const e =
-          localStorage.getItem("currentUserEmail") ||
+          localStorage.getItem('currentUserEmail') ||
           window.currentUserEmail ||
-          "";
-        if (alive) setEmail(e);
+          ''
+        if (alive) setEmail(e)
 
         // --- Profile (best-effort) ---
         if (e) {
           try {
-            const qUser = query(collection(db, "users"), where("email", "==", e));
-            const snap = await getDocs(qUser);
-            if (!snap.empty && alive) setMe(snap.docs[0].data());
+            const qUser = query(
+              collection(db, 'users'),
+              where('email', '==', e)
+            )
+            const snap = await getDocs(qUser)
+            if (!snap.empty && alive) setMe(snap.docs[0].data())
           } catch {
             /* non-fatal */
           }
@@ -48,28 +61,33 @@ export default function SuperAdminDashboard() {
 
         // --- Stats ---
         try {
-          const schoolsSnap = await getDocs(collection(db, "schools"));
-          const usersSnap = await getDocs(collection(db, "users"));
+          const schoolsSnap = await getDocs(collection(db, 'schools'))
+          const usersSnap = await getDocs(collection(db, 'users'))
           const alertsSnap = await getDocs(
-            query(collection(db, "complianceAlerts"), where("resolved", "==", false))
-          );
+            query(
+              collection(db, 'complianceAlerts'),
+              where('resolved', '==', false)
+            )
+          )
           if (alive) {
             setStats({
               schools: schoolsSnap.size,
               users: usersSnap.size,
               complianceAlerts: alertsSnap.size,
-            });
+            })
           }
         } catch {
           /* non-fatal */
         }
       } finally {
-        alive && setLoading(false);
+        alive && setLoading(false)
       }
-    })();
-    return () => { alive = false; };
+    })()
+    return () => {
+      alive = false
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   if (loading) {
     return (
@@ -79,25 +97,31 @@ export default function SuperAdminDashboard() {
           <p className="mt-3">Loading super admin dashboard…</p>
         </div>
       </Shell>
-    );
+    )
   }
 
-  const name = me?.name || "Super Admin";
-  const avatar = me?.profilePicUrl || "";
+  const name = me?.name || 'Super Admin'
+  const avatar = me?.profilePicUrl || ''
 
   return (
     <Shell title="Super Admin Dashboard">
       <div className={styles.wrapper}>
         {/* Header */}
         <h2 className={styles.dashHead}>
-          🏆 Super Admin Panel{" "}
-          <span className={`${styles.roleBadge} ${styles.superadmin}`}>Super Admin</span>
+          🏆 Super Admin Panel{' '}
+          <span className={`${styles.roleBadge} ${styles.superadmin}`}>
+            Super Admin
+          </span>
         </h2>
 
         {/* Stats bar */}
         <div className={styles.statsBar}>
-          <span className={styles.stat}>🏫 Schools: <b>{stats.schools}</b></span>
-          <span className={styles.stat}>👤 Users: <b>{stats.users}</b></span>
+          <span className={styles.stat}>
+            🏫 Schools: <b>{stats.schools}</b>
+          </span>
+          <span className={styles.stat}>
+            👤 Users: <b>{stats.users}</b>
+          </span>
           <span className={`${styles.stat} ${styles.dangerText}`}>
             🛡️ Compliance Alerts: <b>{stats.complianceAlerts}</b>
           </span>
@@ -108,7 +132,12 @@ export default function SuperAdminDashboard() {
           {avatar ? (
             <img src={avatar} alt="Profile" className={styles.profilePic} />
           ) : (
-            <div className={`${styles.profilePic} ${"placeholder"}`} aria-hidden>SA</div>
+            <div
+              className={`${styles.profilePic} ${'placeholder'}`}
+              aria-hidden
+            >
+              SA
+            </div>
           )}
           <div>
             <div className="bold">{name}</div>
@@ -157,12 +186,12 @@ export default function SuperAdminDashboard() {
         </div>
       </div>
     </Shell>
-  );
+  )
 }
 
 function FeatureCard({ title, desc, btn, to }) {
-  const navigate = useNavigate();
-  const onClick = useCallback(() => navigate(to), [navigate, to]);
+  const navigate = useNavigate()
+  const onClick = useCallback(() => navigate(to), [navigate, to])
 
   return (
     <div className={styles.featureCard}>
@@ -174,5 +203,5 @@ function FeatureCard({ title, desc, btn, to }) {
         </button>
       </div>
     </div>
-  );
+  )
 }

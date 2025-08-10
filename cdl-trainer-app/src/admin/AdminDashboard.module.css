@@ -22,7 +22,6 @@
 }
 
 .metricCard {
-  composes: dashboard-card from global;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -46,10 +45,8 @@
 
 /* ===== Users panel ===== */
 .card {
-  composes: dashboard-card from global;
   padding: 16px;
 }
-
 .cardTitle {
   font-weight: 700;
   margin-bottom: 10px;
@@ -68,7 +65,7 @@
 }
 
 .filters :global(select),
-.filters :global(input[type="text"]) {
+.filters :global(input[type='text']) {
   height: 38px;
   padding: 8px 12px;
   border-radius: 10px;
@@ -79,7 +76,7 @@
 }
 
 .filters :global(select:focus),
-.filters :global(input[type="text"]:focus) {
+.filters :global(input[type='text']:focus) {
   border-color: color-mix(in oklab, var(--brand-light), white 12%);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 8%);
 }
@@ -124,7 +121,7 @@
 
 /* Inline controls inside cells */
 .table :global(select),
-.table :global(input[type="text"]) {
+.table :global(input[type='text']) {
   width: 100%;
   max-width: 180px;
   height: 34px;
@@ -137,7 +134,7 @@
 }
 
 .table :global(select:focus),
-.table :global(input[type="text"]:focus) {
+.table :global(input[type='text']:focus) {
   border-color: color-mix(in oklab, var(--brand-light), white 12%);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 8%);
 }
@@ -160,11 +157,8 @@
 
 /* ===== Companies & Reports cards ===== */
 .sectionCard {
-  composes: dashboard-card from global;
   padding: 16px;
 }
-
-/* ===== Responsive ===== */
 @media (max-width: 1200px) {
   .metricsRow {
     grid-template-columns: repeat(3, minmax(180px, 1fr));

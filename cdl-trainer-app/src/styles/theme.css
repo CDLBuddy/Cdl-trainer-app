@@ -5,23 +5,23 @@
 :root {
   /* Brand palette */
   --brand-dark: #0e1b1b;
-  --brand-mid:  #004d66;
-  --brand-light:#4e91ad;
-  --accent:     #c4dbe8;
+  --brand-mid: #004d66;
+  --brand-light: #4e91ad;
+  --accent: #c4dbe8;
 
   /* Text & surfaces */
   --text-light: #ffffff;
-  --text-dark:  #e0e0e0;
-  --card-bg:    rgba(255, 255, 255, 0.06);
+  --text-dark: #e0e0e0;
+  --card-bg: rgba(255, 255, 255, 0.06);
   --card-bg-dark: rgba(10, 15, 20, 0.6);
 
   /* Feedback */
-  --error:   #e53e3e;
+  --error: #e53e3e;
   --success: #48bb78;
   --warning: #f6ad55;
 
   /* Toasts */
-  --toast-bg:   rgba(0, 0, 0, 0.85);
+  --toast-bg: rgba(0, 0, 0, 0.85);
   --toast-text: #ffffff;
 
   /* Layout / misc */
@@ -29,7 +29,9 @@
   --app-bg: var(--brand-dark);
 
   /* Typography */
-  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  --font-body:
+    Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
 
   /* Z layers */
   --z-navbar: 1000;

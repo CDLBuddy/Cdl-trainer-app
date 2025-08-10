@@ -26,17 +26,33 @@
   position: absolute;
   inset: -20% -10% -10% -10%;
   background:
-    radial-gradient(900px 420px at 50% -10%, color-mix(in oklab, var(--splash-accent), transparent 65%) 0%, transparent 70%),
-    radial-gradient(600px 360px at 15% 110%, color-mix(in oklab, var(--splash-accent), #ffffff00 80%) 0%, transparent 70%),
-    radial-gradient(520px 320px at 85% 100%, color-mix(in oklab, var(--accent), transparent 75%) 0%, transparent 70%);
+    radial-gradient(
+      900px 420px at 50% -10%,
+      color-mix(in oklab, var(--splash-accent), transparent 65%) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      600px 360px at 15% 110%,
+      color-mix(in oklab, var(--splash-accent), #ffffff00 80%) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      520px 320px at 85% 100%,
+      color-mix(in oklab, var(--accent), transparent 75%) 0%,
+      transparent 70%
+    );
   filter: blur(0.2px);
   pointer-events: none;
   animation: bgFloat 9s ease-in-out infinite alternate;
-  opacity: .9;
+  opacity: 0.9;
 }
 @keyframes bgFloat {
-  from { transform: translateY(-6px); }
-  to   { transform: translateY(6px); }
+  from {
+    transform: translateY(-6px);
+  }
+  to {
+    transform: translateY(6px);
+  }
 }
 
 /* Card container */
@@ -44,13 +60,13 @@
   width: min(92vw, 520px);
   padding: 28px 28px 24px;
   border-radius: 18px;
-  background: var(--card-bg, rgba(255,255,255,.06));
+  background: var(--card-bg, rgba(255, 255, 255, 0.06));
   border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
   box-shadow:
     0 20px 60px #0008,
     inset 0 1px 0 #ffffff12;
   text-align: center;
-  animation: splashPop .25s cubic-bezier(.22,.9,.32,1.2);
+  animation: splashPop 0.25s cubic-bezier(0.22, 0.9, 0.32, 1.2);
   position: relative;
 }
 
@@ -62,8 +78,14 @@
 
 /* Card pop animation */
 @keyframes splashPop {
-  from { transform: translateY(6px) scale(.985); opacity: .86; }
-  to   { transform: translateY(0)   scale(1);     opacity: 1; }
+  from {
+    transform: translateY(6px) scale(0.985);
+    opacity: 0.86;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
 
 /* Logo & title section */
@@ -79,24 +101,27 @@
   background: var(--card-bg-dark);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
   box-shadow: 0 10px 28px #00283a55;
-  transform: translateY(2px) scale(.98);
+  transform: translateY(2px) scale(0.98);
   opacity: 0;
-  animation: logoIn .38s cubic-bezier(.22,.9,.32,1.2) .05s forwards;
+  animation: logoIn 0.38s cubic-bezier(0.22, 0.9, 0.32, 1.2) 0.05s forwards;
 }
 @keyframes logoIn {
-  to { transform: translateY(0) scale(1); opacity: 1; }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
 
 .splash-title {
   font-weight: 800;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
   font-size: 1.24rem;
   color: var(--accent);
   text-shadow: 0 2px 10px #0004;
 }
 
 .splash-sub {
-  font-size: .95rem;
+  font-size: 0.95rem;
   color: color-mix(in oklab, var(--text-light), transparent 35%);
   margin-top: -2px;
 }
@@ -113,49 +138,80 @@
   height: 12px;
   border-radius: 50%;
   background: var(--splash-accent);
-  box-shadow: 0 0 0 1px #ffffff12, 0 6px 12px #0005;
-  animation: bounce .95s infinite ease-in-out;
+  box-shadow:
+    0 0 0 1px #ffffff12,
+    0 6px 12px #0005;
+  animation: bounce 0.95s infinite ease-in-out;
 }
-.splash-spinner span:nth-child(2) { animation-delay: .15s; }
-.splash-spinner span:nth-child(3) { animation-delay: .30s; }
+.splash-spinner span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.splash-spinner span:nth-child(3) {
+  animation-delay: 0.3s;
+}
 
 @keyframes bounce {
-  0%, 80%, 100% { transform: translateY(0); opacity: .85; }
-  40% { transform: translateY(-7px); opacity: 1; }
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.85;
+  }
+  40% {
+    transform: translateY(-7px);
+    opacity: 1;
+  }
 }
 
 /* Message & tip text */
 .splash-message {
   margin-top: 8px;
   font-size: 1.04rem;
-  opacity: .92;
+  opacity: 0.92;
 }
 
 .splash-tip {
   margin-top: 12px;
-  font-size: .92rem;
+  font-size: 0.92rem;
   color: color-mix(in oklab, var(--text-light), transparent 32%);
 }
 
 /* Reduced motion accessibility */
 @media (prefers-reduced-motion: reduce) {
-  .splash-bg { animation: none; }
-  .splash-logo { animation: none; opacity: 1; transform: none; }
-  .splash-spinner { display: none; }
+  .splash-bg {
+    animation: none;
+  }
+  .splash-logo {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .splash-spinner {
+    display: none;
+  }
   .splash-card::after {
-    content: "";
+    content: '';
     display: block;
     height: 6px;
     margin: 14px auto 6px;
     width: 180px;
     border-radius: 999px;
-    background: linear-gradient(90deg,
-      #ffffff12, color-mix(in oklab, var(--splash-accent), #fff 10%), #ffffff12);
+    background: linear-gradient(
+      90deg,
+      #ffffff12,
+      color-mix(in oklab, var(--splash-accent), #fff 10%),
+      #ffffff12
+    );
   }
 }
 
 /* Tiny devices */
 @media (max-width: 420px) {
-  .splash-card { padding: 22px 18px 18px; }
-  .splash-logo { width: 82px; height: 82px; }
+  .splash-card {
+    padding: 22px 18px 18px;
+  }
+  .splash-logo {
+    width: 82px;
+    height: 82px;
+  }
 }

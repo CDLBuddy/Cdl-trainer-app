@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import React, { useEffect, useRef, useState, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 
 /**
  * Toast - purely presentational.
@@ -16,131 +16,152 @@ import { createPortal } from "react-dom";
 export function Toast({
   id,
   message,
-  type = "info",
+  type = 'info',
   duration = 3000,
   onClose,
   onHoverChange,
   action,
   dismissible = true,
   index = 0,
-  position = "bottom",
+  position = 'bottom',
 }) {
-  const [leaving, setLeaving] = useState(false);
-  const [hovering, setHovering] = useState(false);
-  const [drag, setDrag] = useState(0);
-  const closeRef = useRef(null);
-  const startX = useRef(null);
-  const timerRef = useRef(null);
+  const [leaving, setLeaving] = useState(false)
+  const [hovering, setHovering] = useState(false)
+  const [drag, setDrag] = useState(0)
+  const closeRef = useRef(null)
+  const startX = useRef(null)
+  const timerRef = useRef(null)
 
   // a11y: assertive for errors, polite otherwise
-  const ariaLive = type === "error" ? "assertive" : "polite";
+  const ariaLive = type === 'error' ? 'assertive' : 'polite'
+
+  const beginClose = useCallback(() => {
+    setLeaving(true)
+    // let the animation run before unmounting
+    setTimeout(() => onClose?.(id), 180)
+  }, [id, onClose])
 
   // auto-dismiss
   useEffect(() => {
-    if (hovering) return; // paused
-    timerRef.current = setTimeout(() => beginClose(), duration);
-    return () => clearTimeout(timerRef.current);
-  }, [hovering, duration]);
-
-  function beginClose() {
-    setLeaving(true);
-    // let the animation run before unmounting
-    setTimeout(() => onClose?.(id), 180);
-  }
+    if (hovering) return // paused
+    timerRef.current = setTimeout(() => beginClose(), duration)
+    return () => clearTimeout(timerRef.current)
+  }, [hovering, duration, beginClose])
 
   // hover handlers (pause/resume)
   function onEnter() {
-    setHovering(true);
-    onHoverChange?.(true);
-    clearTimeout(timerRef.current);
+    setHovering(true)
+    onHoverChange?.(true)
+    clearTimeout(timerRef.current)
   }
   function onLeave() {
-    setHovering(false);
-    onHoverChange?.(false);
+    setHovering(false)
+    onHoverChange?.(false)
   }
 
   // swipe to dismiss (mobile)
   function onTouchStart(e) {
-    startX.current = e.changedTouches[0].clientX;
+    startX.current = e.changedTouches[0].clientX
   }
   function onTouchMove(e) {
-    if (startX.current == null) return;
-    const dx = e.changedTouches[0].clientX - startX.current;
-    setDrag(dx);
+    if (startX.current == null) return
+    const dx = e.changedTouches[0].clientX - startX.current
+    setDrag(dx)
   }
   function onTouchEnd() {
     if (Math.abs(drag) > 80) {
-      beginClose();
+      beginClose()
     } else {
-      setDrag(0);
+      setDrag(0)
     }
-    startX.current = null;
+    startX.current = null
   }
 
   // basic theming via CSS variables (from your app)
   const palette = {
-    info:   { bg: "var(--toast-bg, rgba(0,0,0,.85))", fg: "var(--toast-text,#fff)" },
-    success:{ bg: "var(--success,#48bb78)", fg: "#fff" },
-    error:  { bg: "var(--error,#e53e3e)", fg: "#fff" },
-    warning:{ bg: "#d69e2e", fg: "#111" },
-  }[type] || { bg: "var(--toast-bg, rgba(0,0,0,.85))", fg: "var(--toast-text,#fff)" };
+    info: {
+      bg: 'var(--toast-bg, rgba(0,0,0,.85))',
+      fg: 'var(--toast-text,#fff)',
+    },
+    success: { bg: 'var(--success,#48bb78)', fg: '#fff' },
+    error: { bg: 'var(--error,#e53e3e)', fg: '#fff' },
+    warning: { bg: '#d69e2e', fg: '#111' },
+  }[type] || {
+    bg: 'var(--toast-bg, rgba(0,0,0,.85))',
+    fg: 'var(--toast-text,#fff)',
+  }
 
-  const baseOffset = 12 + index * 8; // small offset for stacked toasts
+  const baseOffset = 12 + index * 8 // small offset for stacked toasts
 
   const containerStyle = (() => {
     const common = {
-      position: "fixed",
+      position: 'fixed',
       zIndex: 99999,
-      pointerEvents: "none", // container ignores clicks; toast handles them
-    };
-    switch (position) {
-      case "top":
-        return { ...common, top: baseOffset, left: "50%", transform: "translateX(-50%)" };
-      case "bottom":
-        return { ...common, bottom: baseOffset, left: "50%", transform: "translateX(-50%)" };
-      case "top-left":
-        return { ...common, top: baseOffset, left: baseOffset };
-      case "top-right":
-        return { ...common, top: baseOffset, right: baseOffset };
-      case "bottom-left":
-        return { ...common, bottom: baseOffset, left: baseOffset };
-      case "bottom-right":
-      default:
-        return { ...common, bottom: baseOffset, right: baseOffset };
+      pointerEvents: 'none', // container ignores clicks; toast handles them
     }
-  })();
+    switch (position) {
+      case 'top':
+        return {
+          ...common,
+          top: baseOffset,
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }
+      case 'bottom':
+        return {
+          ...common,
+          bottom: baseOffset,
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }
+      case 'top-left':
+        return { ...common, top: baseOffset, left: baseOffset }
+      case 'top-right':
+        return { ...common, top: baseOffset, right: baseOffset }
+      case 'bottom-left':
+        return { ...common, bottom: baseOffset, left: baseOffset }
+      case 'bottom-right':
+      default:
+        return { ...common, bottom: baseOffset, right: baseOffset }
+    }
+  })()
 
   return createPortal(
     <div style={containerStyle} aria-live={ariaLive}>
       <div
-        className={`toast ${type}${leaving ? " toast--hide" : ""}`}
+        className={`toast ${type}${leaving ? ' toast--hide' : ''}`}
         role="status"
-        tabIndex={0}
         onMouseEnter={onEnter}
         onMouseLeave={onLeave}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
         style={{
-          pointerEvents: "auto",
+          pointerEvents: 'auto',
           background: palette.bg,
           color: palette.fg,
-          padding: "12px 14px",
+          padding: '12px 14px',
           borderRadius: 10,
-          boxShadow: "0 10px 30px rgba(0,0,0,.25)",
+          boxShadow: '0 10px 30px rgba(0,0,0,.25)',
           minWidth: 220,
           maxWidth: 400,
-          display: "flex",
-          alignItems: "center",
+          display: 'flex',
+          alignItems: 'center',
           gap: 10,
           transform: `translateX(${drag}px)`,
-          transition: "transform .15s ease, opacity .18s ease",
+          transition: 'transform .15s ease, opacity .18s ease',
           opacity: leaving ? 0 : 1,
         }}
       >
         {/* icon */}
         <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>
-          {type === "success" ? "✅" : type === "error" ? "⚠️" : type === "warning" ? "🚧" : "💬"}
+          {type === 'success'
+            ? '✅'
+            : type === 'error'
+              ? '⚠️'
+              : type === 'warning'
+                ? '🚧'
+                : '💬'}
         </span>
 
         {/* body */}
@@ -151,17 +172,17 @@ export function Toast({
           <button
             className="toast-action"
             onClick={() => {
-              action.onClick?.();
-              beginClose();
+              action.onClick?.()
+              beginClose()
             }}
             style={{
-              background: "transparent",
-              border: "1px solid currentColor",
-              color: "inherit",
-              padding: "4px 8px",
+              background: 'transparent',
+              border: '1px solid currentColor',
+              color: 'inherit',
+              padding: '4px 8px',
               borderRadius: 7,
               fontWeight: 600,
-              cursor: "pointer",
+              cursor: 'pointer',
             }}
           >
             {action.label}
@@ -175,11 +196,11 @@ export function Toast({
             aria-label="Dismiss notification"
             onClick={beginClose}
             style={{
-              background: "transparent",
+              background: 'transparent',
               border: 0,
-              color: "inherit",
+              color: 'inherit',
               fontSize: 18,
-              cursor: "pointer",
+              cursor: 'pointer',
               marginLeft: 6,
             }}
           >
@@ -189,7 +210,7 @@ export function Toast({
       </div>
     </div>,
     document.body
-  );
+  )
 }
 
 /**
@@ -199,8 +220,14 @@ export function ToastContainer({ toasts, onClose, position }) {
   return (
     <>
       {toasts.map((t, i) => (
-        <Toast key={t.id} index={i} onClose={onClose} position={t.position || position} {...t} />
+        <Toast
+          key={t.id}
+          index={i}
+          onClose={onClose}
+          position={t.position || position}
+          {...t}
+        />
       ))}
     </>
-  );
+  )
 }

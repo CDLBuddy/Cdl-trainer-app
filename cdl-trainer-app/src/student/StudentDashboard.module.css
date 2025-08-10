@@ -24,15 +24,17 @@
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
   border-radius: 16px;
-  padding: 1rem 1rem .9rem;
-  box-shadow: 0 14px 36px #0007, inset 0 1px 0 #ffffff14;
+  padding: 1rem 1rem 0.9rem;
+  box-shadow:
+    0 14px 36px #0007,
+    inset 0 1px 0 #ffffff14;
 }
 
 .kpiTitle {
-  font-size: .95rem;
+  font-size: 0.95rem;
   color: color-mix(in oklab, var(--text-light), transparent 20%);
-  margin-bottom: .35rem;
-  letter-spacing: .01em;
+  margin-bottom: 0.35rem;
+  letter-spacing: 0.01em;
 }
 
 .kpiValue {
@@ -42,17 +44,17 @@
   text-shadow: 0 2px 10px #0005;
   display: flex;
   align-items: baseline;
-  gap: .25rem;
+  gap: 0.25rem;
 }
 
 .kpiUnit {
-  font-size: .95rem;
-  opacity: .9;
+  font-size: 0.95rem;
+  opacity: 0.9;
   color: var(--accent);
 }
 
 .progressTrack {
-  margin-top: .6rem;
+  margin-top: 0.6rem;
   height: 8px;
   border-radius: 999px;
   background: color-mix(in oklab, var(--brand-dark), #fff 3%);
@@ -69,8 +71,8 @@
 }
 
 .kpiHint {
-  margin-top: .55rem;
-  font-size: .92rem;
+  margin-top: 0.55rem;
+  font-size: 0.92rem;
   color: color-mix(in oklab, var(--text-light), transparent 22%);
 }
 
@@ -81,11 +83,13 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: .75rem;
-  padding: .85rem 1rem;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
   border-radius: 14px;
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
-  box-shadow: 0 14px 34px #0006, inset 0 1px 0 #ffffff10;
+  box-shadow:
+    0 14px 34px #0006,
+    inset 0 1px 0 #ffffff10;
   background: linear-gradient(
     120deg,
     color-mix(in oklab, var(--brand-dark), #000 4%),
@@ -121,11 +125,14 @@
   color: #fff;
   border: none;
   border-radius: 10px;
-  padding: .5rem .9rem;
+  padding: 0.5rem 0.9rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 8px 18px color-mix(in oklab, var(--brand-light), #000 40%);
-  transition: transform 120ms ease, filter 120ms ease, background 140ms ease;
+  transition:
+    transform 120ms ease,
+    filter 120ms ease,
+    background 140ms ease;
 }
 .bannerCta:hover,
 .bannerCta:focus-visible {
@@ -140,7 +147,7 @@
 .quickRow {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: .85rem;
+  gap: 0.85rem;
 }
 
 .quickBtn {
@@ -148,15 +155,21 @@
   grid-auto-flow: column;
   grid-template-columns: auto 1fr;
   align-items: center;
-  gap: .6rem;
+  gap: 0.6rem;
   text-decoration: none;
   color: var(--text-light);
-  padding: .8rem .9rem;
+  padding: 0.8rem 0.9rem;
   border-radius: 14px;
   background: var(--card-bg);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
-  box-shadow: 0 12px 28px #0006, inset 0 1px 0 #ffffff10;
-  transition: transform 120ms ease, background 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+  box-shadow:
+    0 12px 28px #0006,
+    inset 0 1px 0 #ffffff10;
+  transition:
+    transform 120ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease;
 }
 .quickBtn:hover,
 .quickBtn:focus-visible {
@@ -178,12 +191,14 @@
   background: var(--card-bg);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
   border-radius: 16px;
-  box-shadow: 0 18px 40px #0007, inset 0 1px 0 #ffffff12;
+  box-shadow:
+    0 18px 40px #0007,
+    inset 0 1px 0 #ffffff12;
   overflow: hidden;
 }
 
 .updateHeader {
-  padding: .8rem 1rem;
+  padding: 0.8rem 1rem;
   font-weight: 800;
   color: var(--accent);
   background: linear-gradient(
@@ -195,7 +210,7 @@
 }
 
 .updateBody {
-  padding: .9rem 1rem;
+  padding: 0.9rem 1rem;
 }
 
 .updateContent {
@@ -204,8 +219,8 @@
 }
 
 .updateMeta {
-  margin-top: .4rem;
-  font-size: .9rem;
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
   color: color-mix(in oklab, var(--text-light), transparent 35%);
 }
 
@@ -229,8 +244,12 @@
   margin: 8px 0;
 }
 @keyframes shimmer {
-  0%   { background-position: 100% 0; }
-  100% { background-position:   0% 0; }
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0% 0;
+  }
 }
 
 /* =========================
@@ -239,21 +258,23 @@
 .tipsRow {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: .9rem;
+  gap: 0.9rem;
 }
 
 .tipCard {
   background: var(--card-bg);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
   border-radius: 14px;
-  padding: .8rem 1rem;
-  box-shadow: 0 14px 34px #0006, inset 0 1px 0 #ffffff10;
+  padding: 0.8rem 1rem;
+  box-shadow:
+    0 14px 34px #0006,
+    inset 0 1px 0 #ffffff10;
 }
 
 .tipTitle {
   font-weight: 800;
   color: var(--accent);
-  margin-bottom: .3rem;
+  margin-bottom: 0.3rem;
 }
 
 .tipBody {
@@ -266,21 +287,33 @@
    ========================= */
 .bannerCta:focus-visible,
 .quickBtn:focus-visible {
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 12%), 0 12px 28px #0007;
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 12%),
+    0 12px 28px #0007;
 }
 
 /* =========================
    Responsive
    ========================= */
 @media (max-width: 1100px) {
-  .kpiRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .quickRow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kpiRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .quickRow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 760px) {
-  .kpiRow { grid-template-columns: 1fr; }
-  .quickRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .tipsRow { grid-template-columns: 1fr; }
+  .kpiRow {
+    grid-template-columns: 1fr;
+  }
+  .quickRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tipsRow {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* =========================

@@ -1,5 +1,6 @@
 //src/components/AICoachModal.jsx
 
+import { getUserInitials } from '@utils/uiHelpers' // note: camelCase per your repo
 import React, {
   useCallback,
   useEffect,
@@ -7,39 +8,42 @@ import React, {
   useRef,
   useState,
   memo,
-} from "react";
-import { auth } from "../utils/firebase";
-import { getUserInitials } from "../utils/uiHelpers"; // note: camelCase per your repo
-import styles from "./AICoachModal.module.css";
+} from 'react'
+
+import { askCDLAI } from '@utils/aiApi.js' // e.g. "../utils/ai-api" -> rename file to aiApi.js for consistency
+import { auth } from '@utils/firebase.js'
+
+import styles from './AICoachModal.module.css'
 
 // If your API util is named differently, update this import:
-import { askCDLAI } from "../utils/aiApi"; // e.g. "../utils/ai-api" -> rename file to aiApi.js for consistency
 
-const MAX_HISTORY = 20;
+const MAX_HISTORY = 20
 
 // super-light sanitizer (keeps bold/links/line-breaks we generate)
 function sanitize(html) {
-  if (!html) return "";
+  if (!html) return ''
   return String(html)
-    .replace(/<\s*script/gi, "&lt;script") // no scripts
-    .replace(/on\w+="[^"]*"/gi, "") // no inline handlers
-    .replace(/javascript:/gi, ""); // strip js: urls
+    .replace(/<\s*script/gi, '&lt;script') // no scripts
+    .replace(/on\w+="[^"]*"/gi, '') // no inline handlers
+    .replace(/javascript:/gi, '') // strip js: urls
 }
 
 function usePerUserKey(base) {
   const email =
-    localStorage.getItem("currentUserEmail") || auth.currentUser?.email || "anon";
-  const schoolId = localStorage.getItem("schoolId") || "default";
-  return `${base}:${schoolId}:${email}`;
+    localStorage.getItem('currentUserEmail') ||
+    auth.currentUser?.email ||
+    'anon'
+  const schoolId = localStorage.getItem('schoolId') || 'default'
+  return `${base}:${schoolId}:${email}`
 }
 
 function useAutosizeTextarea(ref, value) {
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.height = "0px";
-    el.style.height = Math.min(el.scrollHeight, 180) + "px";
-  }, [ref, value]);
+    const el = ref.current
+    if (!el) return
+    el.style.height = '0px'
+    el.style.height = Math.min(el.scrollHeight, 180) + 'px'
+  }, [ref, value])
 }
 
 /**
@@ -48,211 +52,224 @@ function useAutosizeTextarea(ref, value) {
  * - onClose: () => void
  * - context?: "dashboard" | "profile" | "checklists" | "walkthrough" | "practiceTests" | string
  */
-function AICoachModal({ open, onClose, context = "dashboard" }) {
-  const [conversation, setConversation] = useState([]);
-  const [input, setInput] = useState("");
-  const [aiPending, setAiPending] = useState(false);
-  const [isFirstTime, setIsFirstTime] = useState(false);
+function AICoachModal({ open, onClose, context = 'dashboard' }) {
+  const [conversation, setConversation] = useState([])
+  const [input, setInput] = useState('')
+  const [aiPending, setAiPending] = useState(false)
+  const [isFirstTime, setIsFirstTime] = useState(false)
 
-  const chatRef = useRef(null);
-  const inputRef = useRef(null);
-  const sendBtnRef = useRef(null);
-  const closeBtnRef = useRef(null);
+  const chatRef = useRef(null)
+  const inputRef = useRef(null)
+  const sendBtnRef = useRef(null)
+  const closeBtnRef = useRef(null)
 
-  const name = localStorage.getItem("fullName") || "Driver";
-  const userRole = localStorage.getItem("userRole") || "student";
-  const schoolId = localStorage.getItem("schoolId") || "";
+  const name = localStorage.getItem('fullName') || 'Driver'
+  const userRole = localStorage.getItem('userRole') || 'student'
+  const schoolId = localStorage.getItem('schoolId') || ''
   const email =
-    localStorage.getItem("currentUserEmail") || auth.currentUser?.email || "";
+    localStorage.getItem('currentUserEmail') || auth.currentUser?.email || ''
 
-  const storageKey = usePerUserKey("aiCoachHistory");
+  const storageKey = usePerUserKey('aiCoachHistory')
 
   // Starter suggestions by context
   const starterPrompts = useMemo(
     () => ({
       dashboard: [
-        "What should I work on next?",
-        "How do I finish my checklist?",
-        "Explain ELDT in simple terms.",
-        "Give me a CDL study tip.",
+        'What should I work on next?',
+        'How do I finish my checklist?',
+        'Explain ELDT in simple terms.',
+        'Give me a CDL study tip.',
       ],
       profile: [
-        "How do I complete my profile?",
-        "How do I upload my permit?",
-        "What is a DOT medical card?",
-        "What are endorsements?",
+        'How do I complete my profile?',
+        'How do I upload my permit?',
+        'What is a DOT medical card?',
+        'What are endorsements?',
       ],
       checklists: [
-        "What does this checklist step mean?",
-        "How do I know if my checklist is done?",
-        "Why is this checklist important?",
+        'What does this checklist step mean?',
+        'How do I know if my checklist is done?',
+        'Why is this checklist important?',
       ],
       walkthrough: [
-        "Help me memorize the walkthrough.",
-        "How do I do the three-point brake check?",
-        "Show me a memory drill for air brakes.",
+        'Help me memorize the walkthrough.',
+        'How do I do the three-point brake check?',
+        'Show me a memory drill for air brakes.',
       ],
       practiceTests: [
-        "How do I prepare for the general knowledge test?",
-        "Give me a practice question.",
-        "Tips for passing air brakes.",
+        'How do I prepare for the general knowledge test?',
+        'Give me a practice question.',
+        'Tips for passing air brakes.',
       ],
     }),
     []
-  );
+  )
 
-  const suggestions =
-    starterPrompts[context] || starterPrompts.dashboard;
+  const suggestions = starterPrompts[context] || starterPrompts.dashboard
 
   // Open: load history (per school+user), seed greeting
   useEffect(() => {
-    if (!open) return;
+    if (!open) return
 
-    let convo = [];
-    let firstTime = false;
+    let convo = []
+    let firstTime = false
     try {
-      convo = JSON.parse(sessionStorage.getItem(storageKey) || "[]");
+      convo = JSON.parse(sessionStorage.getItem(storageKey) || '[]')
       if (!convo.length) {
-        firstTime = true;
+        firstTime = true
         convo = [
           {
-            role: "assistant",
+            role: 'assistant',
             content:
-              `👋 Hi${name ? `, ${name}` : ""}! I’m your AI CDL Coach.<br>` +
+              `👋 Hi${name ? `, ${name}` : ''}! I’m your AI CDL Coach.<br>` +
               `<b>I can answer CDL questions, help with profile steps, explain checklists, and guide you through the walkthrough.</b>`,
           },
-        ];
+        ]
       }
     } catch {
-      firstTime = true;
+      firstTime = true
       convo = [
-        { role: "assistant", content: `👋 Hi${name ? `, ${name}` : ""}! I’m your AI CDL Coach.` },
-      ];
+        {
+          role: 'assistant',
+          content: `👋 Hi${name ? `, ${name}` : ''}! I’m your AI CDL Coach.`,
+        },
+      ]
     }
-    setConversation(convo);
-    setIsFirstTime(firstTime);
+    setConversation(convo)
+    setIsFirstTime(firstTime)
 
     // focus input after a tick
-    const t = setTimeout(() => inputRef.current?.focus(), 100);
-    return () => clearTimeout(t);
+    const t = setTimeout(() => inputRef.current?.focus(), 100)
+    return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open])
 
   // Persist history + keep scrolled
   useEffect(() => {
-    if (!open) return;
-    sessionStorage.setItem(storageKey, JSON.stringify(conversation.slice(-MAX_HISTORY)));
+    if (!open) return
+    sessionStorage.setItem(
+      storageKey,
+      JSON.stringify(conversation.slice(-MAX_HISTORY))
+    )
     // scroll bottom
     const t = setTimeout(() => {
-      if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
-    }, 50);
-    return () => clearTimeout(t);
-  }, [conversation, open, storageKey]);
+      if (chatRef.current)
+        chatRef.current.scrollTop = chatRef.current.scrollHeight
+    }, 50)
+    return () => clearTimeout(t)
+  }, [conversation, open, storageKey])
 
   // ESC to close
   useEffect(() => {
-    if (!open) return;
-    const handler = (e) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [open, onClose]);
+    if (!open) return
+    const handler = e => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [open, onClose])
 
   // Simple focus trap (close, input, send)
   useEffect(() => {
-    if (!open) return;
-    const focusables = [closeBtnRef.current, inputRef.current, sendBtnRef.current].filter(Boolean);
-    let idx = 1; // start on input
-    inputRef.current?.focus();
+    if (!open) return
+    const focusables = [
+      closeBtnRef.current,
+      inputRef.current,
+      sendBtnRef.current,
+    ].filter(Boolean)
+    let idx = 1 // start on input
+    inputRef.current?.focus()
 
-    const handler = (e) => {
-      if (e.key !== "Tab") return;
-      e.preventDefault();
-      idx = (idx + (e.shiftKey ? -1 : 1) + focusables.length) % focusables.length;
-      focusables[idx]?.focus();
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [open]);
+    const handler = e => {
+      if (e.key !== 'Tab') return
+      e.preventDefault()
+      idx =
+        (idx + (e.shiftKey ? -1 : 1) + focusables.length) % focusables.length
+      focusables[idx]?.focus()
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open])
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
-      if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
-    }, 60);
-  }, []);
+      if (chatRef.current)
+        chatRef.current.scrollTop = chatRef.current.scrollHeight
+    }, 60)
+  }, [])
 
   // Autosize the input
-  useAutosizeTextarea(inputRef, input);
+  useAutosizeTextarea(inputRef, input)
 
   async function handleSend(e) {
-    e?.preventDefault?.();
-    if (!input.trim() || aiPending) return;
+    e?.preventDefault?.()
+    if (!input.trim() || aiPending) return
 
-    const question = input.trim();
-    setInput("");
-    setAiPending(true);
+    const question = input.trim()
+    setInput('')
+    setAiPending(true)
 
     // Push user question + loading bubble
-    setConversation((c) => [
+    setConversation(c => [
       ...c,
-      { role: "user", content: question },
+      { role: 'user', content: question },
       {
-        role: "assistant",
-        content:
-          `<span class='typing-dots'><span>.</span><span>.</span><span>.</span></span>`,
+        role: 'assistant',
+        content: `<span class='typing-dots'><span>.</span><span>.</span><span>.</span></span>`,
       },
-    ]);
-    scrollToBottom();
+    ])
+    scrollToBottom()
 
-    let reply = "";
+    let reply = ''
     try {
       reply = await askCDLAI(question, conversation.slice(-10), {
         role: userRole,
         schoolId,
         email,
         context,
-      });
+      })
     } catch {
-      reply = "Sorry, I couldn't reach the AI right now.";
+      reply = "Sorry, I couldn't reach the AI right now."
     }
 
-    let fmcsatag = "Based on FMCSA regulations, updated 2024";
-    if (/ask your instructor|official FMCSA manual|outside of CDL/i.test(reply)) {
-      fmcsatag = "";
+    let fmcsatag = 'Based on FMCSA regulations, updated 2024'
+    if (
+      /ask your instructor|official FMCSA manual|outside of CDL/i.test(reply)
+    ) {
+      fmcsatag = ''
     }
     if (/i (don'?t|cannot|can't) know|i am not sure|as an ai/i.test(reply)) {
-      reply += `<br><span class='ai-handoff'>[View the <a href="https://www.fmcsa.dot.gov/regulations/title49/section/393.1" target="_blank" rel="noopener">official FMCSA manual</a> or ask your instructor for help]</span>`;
+      reply += `<br><span class='ai-handoff'>[View the <a href="https://www.fmcsa.dot.gov/regulations/title49/section/393.1" target="_blank" rel="noopener">official FMCSA manual</a> or ask your instructor for help]</span>`
     }
 
     // Replace loader with real answer
-    setConversation((c) => {
-      const trimmed = c.slice(0, -1);
-      return [...trimmed, { role: "assistant", content: reply, fmcsatag }];
-    });
+    setConversation(c => {
+      const trimmed = c.slice(0, -1)
+      return [...trimmed, { role: 'assistant', content: reply, fmcsatag }]
+    })
 
-    setAiPending(false);
-    scrollToBottom();
+    setAiPending(false)
+    scrollToBottom()
   }
 
-  const handleSuggestion = (txt) => {
-    setInput(txt);
-    inputRef.current?.focus();
-  };
+  const handleSuggestion = txt => {
+    setInput(txt)
+    inputRef.current?.focus()
+  }
 
   const handleReset = () => {
-    if (!window.confirm("Clear all AI Coach messages?")) return;
+    if (!window.confirm('Clear all AI Coach messages?')) return
     setConversation([
       {
-        role: "assistant",
+        role: 'assistant',
         content:
-          `👋 Hi${name ? `, ${name}` : ""}! I’m your AI CDL Coach.<br>` +
+          `👋 Hi${name ? `, ${name}` : ''}! I’m your AI CDL Coach.<br>` +
           `<b>Let’s get started! I can answer your CDL questions, help with profile steps, explain checklists, and guide you through the walkthrough.</b>`,
       },
-    ]);
-    sessionStorage.removeItem(storageKey);
-    inputRef.current?.focus();
-  };
+    ])
+    sessionStorage.removeItem(storageKey)
+    inputRef.current?.focus()
+  }
 
-  if (!open) return null;
+  if (!open) return null
 
   return (
     <div
@@ -292,7 +309,7 @@ function AICoachModal({ open, onClose, context = "dashboard" }) {
 
         {/* Intro & suggestions */}
         <div className={styles.intro}>
-          👋 Hi{(name ? `, ${name}` : "")}! I’m your AI CDL Coach.
+          👋 Hi{name ? `, ${name}` : ''}! I’m your AI CDL Coach.
           <div className={styles.introSmall}>
             {isFirstTime ? (
               <b>
@@ -300,7 +317,7 @@ function AICoachModal({ open, onClose, context = "dashboard" }) {
                 checklists, and guide you through the walkthrough.
               </b>
             ) : (
-              "Ask me anything about your CDL process!"
+              'Ask me anything about your CDL process!'
             )}
           </div>
         </div>
@@ -321,8 +338,11 @@ function AICoachModal({ open, onClose, context = "dashboard" }) {
         {/* Chat history */}
         <div ref={chatRef} className={styles.history}>
           {conversation.map((msg, idx) => (
-            <div key={idx} className={`${styles.msg} ${styles[`msg_${msg.role}`]}`}>
-              {msg.role === "user" ? (
+            <div
+              key={idx}
+              className={`${styles.msg} ${styles[`msg_${msg.role}`]}`}
+            >
+              {msg.role === 'user' ? (
                 <div className={styles.userAvatar}>{getUserInitials(name)}</div>
               ) : (
                 <div className={styles.coachAvatarMini} />
@@ -334,7 +354,7 @@ function AICoachModal({ open, onClose, context = "dashboard" }) {
                     sanitize(msg.content) +
                     (msg.fmcsatag
                       ? `<div class="${styles.sourceTag}">${sanitize(msg.fmcsatag)}</div>`
-                      : ""),
+                      : ''),
                 }}
               />
             </div>
@@ -348,7 +368,7 @@ function AICoachModal({ open, onClose, context = "dashboard" }) {
             className={styles.input}
             placeholder="Type your CDL question…"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={e => setInput(e.target.value)}
             disabled={aiPending}
             rows={1}
           />
@@ -360,13 +380,17 @@ function AICoachModal({ open, onClose, context = "dashboard" }) {
           >
             Send
           </button>
-          <button type="button" className={`${styles.reset} btn outline`} onClick={handleReset}>
+          <button
+            type="button"
+            className={`${styles.reset} btn outline`}
+            onClick={handleReset}
+          >
             Reset
           </button>
         </form>
       </div>
     </div>
-  );
+  )
 }
 
-export default memo(AICoachModal);
+export default memo(AICoachModal)

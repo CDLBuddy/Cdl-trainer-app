@@ -19,14 +19,15 @@
   background: var(--card-bg);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
   border-radius: 14px;
-  box-shadow: 0 20px 60px #0008, inset 0 1px 0 #ffffff12;
+  box-shadow:
+    0 20px 60px #0008,
+    inset 0 1px 0 #ffffff12;
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
 }
 
 /* ---------- Header ---------- */
 .header {
-  composes: glass;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -79,7 +80,14 @@
 
 /* ---------- Rail ---------- */
 .rail {
-  composes: glass;
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
+  border-radius: 14px;
+  box-shadow:
+    0 20px 60px #0008,
+    inset 0 1px 0 #ffffff12;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
   position: sticky;
   top: calc(12px + var(--safe-area-inset-top, 0px));
   align-self: start;
@@ -105,19 +113,30 @@
   color: var(--text-light);
   font-weight: 600;
   box-shadow: 0 2px 10px #0004;
-  transition: transform .14s ease, background .14s ease, box-shadow .14s ease;
+  transition:
+    transform 0.14s ease,
+    background 0.14s ease,
+    box-shadow 0.14s ease;
 }
 
 .railBtn:hover,
 .railBtn:focus-visible {
   transform: translateY(-1px);
-  background: linear-gradient(120deg, var(--brand-light) 30%, var(--brand-mid) 100%);
+  background: linear-gradient(
+    120deg,
+    var(--brand-light) 30%,
+    var(--brand-mid) 100%
+  );
   box-shadow: 0 6px 16px #0005;
   outline: none;
 }
 
 .railActive {
-  background: linear-gradient(120deg, var(--brand-light) 30%, var(--brand-mid) 100%);
+  background: linear-gradient(
+    120deg,
+    var(--brand-light) 30%,
+    var(--brand-mid) 100%
+  );
   color: var(--text-light);
 }
 
@@ -133,7 +152,9 @@
   color: #ffd8d8;
   font-weight: 700;
   cursor: pointer;
-  transition: transform .14s ease, background .14s ease;
+  transition:
+    transform 0.14s ease,
+    background 0.14s ease;
 }
 .logoutBtn:hover,
 .logoutBtn:focus-visible {
@@ -156,7 +177,13 @@
 }
 
 .card {
-  composes: glass;
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
+  box-shadow:
+    0 20px 60px #0008,
+    inset 0 1px 0 #ffffff12;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
   border-radius: 16px;
   padding: 16px;
 }
@@ -172,27 +199,46 @@
   place-items: center;
   border-radius: 50%;
   border: 1px solid color-mix(in oklab, var(--accent), #000 25%);
-  background: radial-gradient(120% 120% at 50% 10%, var(--brand-light), var(--brand-mid));
+  background: radial-gradient(
+    120% 120% at 50% 10%,
+    var(--brand-light),
+    var(--brand-mid)
+  );
   color: #fff;
-  box-shadow: 0 10px 30px #0007, 0 0 0 3px #ffffff10 inset;
+  box-shadow:
+    0 10px 30px #0007,
+    0 0 0 3px #ffffff10 inset;
   cursor: pointer;
-  transition: transform .14s ease, box-shadow .14s ease, filter .14s ease;
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease,
+    filter 0.14s ease;
 }
 .fab:hover,
 .fab:focus-visible {
   transform: translateY(-2px);
   filter: brightness(1.03);
-  box-shadow: 0 14px 36px #0008, 0 0 0 3px #ffffff18 inset;
+  box-shadow:
+    0 14px 36px #0008,
+    0 0 0 3px #ffffff18 inset;
   outline: none;
 }
 
 /* ---------- Footer ---------- */
 .footer {
-  composes: glass;
+  /* Inlined former `glass` styles (removed unsupported `composes: glass;`) */
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
+  box-shadow:
+    0 20px 60px #0008,
+    inset 0 1px 0 #ffffff12;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-radius: 14px;
+
   margin: 24px auto 16px;
   max-width: 1200px;
   padding: 14px 16px;
-  border-radius: 14px;
   color: var(--text-light);
   display: grid;
   gap: 6px;

@@ -1,22 +1,22 @@
 // src/admin/AdminRouter.jsx
-import React, { Suspense, lazy } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import React, { Suspense, lazy } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 
 // Lazy-load all admin page components
-const AdminDashboard = lazy(() => import("./AdminDashboard.jsx"));
-const AdminProfile   = lazy(() => import("./AdminProfile.jsx"));
-const AdminUsers     = lazy(() => import("./AdminUsers.jsx"));
-const AdminCompanies = lazy(() => import("./AdminCompanies.jsx"));
-const AdminReports   = lazy(() => import("./AdminReports.jsx"));
+const AdminDashboard = lazy(() => import('./AdminDashboard.jsx'))
+const AdminProfile = lazy(() => import('./AdminProfile.jsx'))
+const AdminUsers = lazy(() => import('./AdminUsers.jsx'))
+const AdminCompanies = lazy(() => import('./AdminCompanies.jsx'))
+const AdminReports = lazy(() => import('./AdminReports.jsx'))
 // const AdminBilling = lazy(() => import("./AdminBilling.jsx")); // when ready
 
 function Loading() {
   return (
-    <div style={{ textAlign: "center", marginTop: "4em" }}>
+    <div style={{ textAlign: 'center', marginTop: '4em' }}>
       <div className="spinner" />
       <p>Loading admin page…</p>
     </div>
-  );
+  )
 }
 
 export default function AdminRouter() {
@@ -36,5 +36,5 @@ export default function AdminRouter() {
         <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
       </Routes>
     </Suspense>
-  );
+  )
 }

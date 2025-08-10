@@ -1,7 +1,5 @@
 // src/superadmin/UserManagement.jsx
 
-import React, { useEffect, useState } from "react";
-import { db, auth } from "../utils/firebase"; // Adjust path!
 import {
   collection,
   doc,
@@ -13,12 +11,15 @@ import {
   serverTimestamp,
   query,
   where,
-} from "firebase/firestore";
-import { showToast } from "../utils/ui-helpers"; // Optional: swap for your toast solution
+} from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+
+import { db, auth } from '@utils/firebase.js' // Adjust path!
+import { showToast } from '@utils/ui-helpers.js' // Optional: swap for your toast solution
 
 // --- Modal Component ---
 function Modal({ open, onClose, children }) {
-  if (!open) return null;
+  if (!open) return null
   return (
     <div className="modal-overlay" tabIndex={-1} aria-modal="true">
       <div className="modal-card" style={{ maxWidth: 480 }}>
@@ -28,165 +29,164 @@ function Modal({ open, onClose, children }) {
         {children}
       </div>
     </div>
-  );
+  )
 }
 
 export default function UserManagement() {
   // State
-  const [users, setUsers] = useState([]);
-  const [schools, setSchools] = useState([]);
+  const [users, setUsers] = useState([])
+  const [schools, setSchools] = useState([])
   const [filter, setFilter] = useState({
-    search: "",
-    role: "",
-    school: "",
-    active: "all",
-  });
-  const [modal, setModal] = useState({ open: false, type: "", user: null });
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
+    search: '',
+    role: '',
+    school: '',
+    active: 'all',
+  })
+  const [modal, setModal] = useState({ open: false, type: '', user: null })
+  const [auditLogs, setAuditLogs] = useState([])
+  const [loading, setLoading] = useState(true)
 
   // Fetch all users and schools on mount
   useEffect(() => {
     async function fetchData() {
-      setLoading(true);
+      setLoading(true)
       const [usersSnap, schoolsSnap] = await Promise.all([
-        getDocs(collection(db, "users")),
-        getDocs(collection(db, "schools")),
-      ]);
-      setUsers(usersSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
-      setSchools(schoolsSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
-      setLoading(false);
+        getDocs(collection(db, 'users')),
+        getDocs(collection(db, 'schools')),
+      ])
+      setUsers(usersSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setSchools(schoolsSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setLoading(false)
     }
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   // --- Filtering logic ---
   function filterUsers(users) {
-    return users.filter((u) => {
+    return users.filter(u => {
       const search =
-        filter.search === "" ||
+        filter.search === '' ||
         (u.name && u.name.toLowerCase().includes(filter.search)) ||
-        (u.email && u.email.toLowerCase().includes(filter.search));
-      const role = filter.role === "" || u.role === filter.role;
+        (u.email && u.email.toLowerCase().includes(filter.search))
+      const role = filter.role === '' || u.role === filter.role
       const school =
-        filter.school === "" ||
+        filter.school === '' ||
         (Array.isArray(u.schools)
           ? u.schools.includes(filter.school)
-          : u.assignedSchool === filter.school);
+          : u.assignedSchool === filter.school)
       const status =
-        filter.active === "all"
+        filter.active === 'all'
           ? true
-          : filter.active === "locked"
-          ? u.locked === true
-          : !!u.active === (filter.active === "active");
-      return search && role && school && status;
-    });
+          : filter.active === 'locked'
+            ? u.locked === true
+            : !!u.active === (filter.active === 'active')
+      return search && role && school && status
+    })
   }
 
   // --- Actions ---
   async function updateUserStatus(user, active) {
     try {
-      await updateDoc(doc(db, "users", user.id), { active });
-      await logUserAction(user.id, active ? "activate" : "deactivate");
-      showToast(`User ${active ? "activated" : "deactivated"}.`);
-      reloadUsers();
-    } catch (err) {
-      showToast("Failed to update user status.");
+      await updateDoc(doc(db, 'users', user.id), { active })
+      await logUserAction(user.id, active ? 'activate' : 'deactivate')
+      showToast(`User ${active ? 'activated' : 'deactivated'}.`)
+      reloadUsers()
+    } catch (_err) {
+      showToast('Failed to update user status.')
     }
   }
 
   async function lockUser(user, locked) {
     try {
-      await updateDoc(doc(db, "users", user.id), { locked });
-      await logUserAction(user.id, locked ? "lock" : "unlock");
-      showToast(`User ${locked ? "locked" : "unlocked"}.`);
-      reloadUsers();
+      await updateDoc(doc(db, 'users', user.id), { locked })
+      await logUserAction(user.id, locked ? 'lock' : 'unlock')
+      showToast(`User ${locked ? 'locked' : 'unlocked'}.`)
+      reloadUsers()
     } catch {
-      showToast("Failed to update lock status.");
+      showToast('Failed to update lock status.')
     }
   }
 
   async function deleteUser(user) {
     if (!window.confirm(`Delete user ${user.email}? This cannot be undone!`))
-      return;
+      return
     try {
-      await deleteDoc(doc(db, "users", user.id));
-      await logUserAction(user.id, "delete");
-      showToast("User deleted.");
-      reloadUsers();
+      await deleteDoc(doc(db, 'users', user.id))
+      await logUserAction(user.id, 'delete')
+      showToast('User deleted.')
+      reloadUsers()
     } catch {
-      showToast("Failed to delete user.");
+      showToast('Failed to delete user.')
     }
   }
 
   async function impersonateUser(user) {
-    sessionStorage.setItem("impersonateUserId", user.id);
+    sessionStorage.setItem('impersonateUserId', user.id)
     showToast(
       `Now impersonating ${user.name || user.email} (dev mode, reload page).`
-    );
-    window.location.reload();
+    )
+    window.location.reload()
   }
 
   async function reloadUsers() {
-    const usersSnap = await getDocs(collection(db, "users"));
-    setUsers(usersSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    const usersSnap = await getDocs(collection(db, 'users'))
+    setUsers(usersSnap.docs.map(d => ({ id: d.id, ...d.data() })))
   }
 
   async function logUserAction(userId, action, details = {}) {
-    await setDoc(doc(collection(db, "userLogs")), {
+    await setDoc(doc(collection(db, 'userLogs')), {
       userId,
       action,
       details,
-      changedBy:
-        localStorage.getItem("currentUserEmail") || "superadmin",
+      changedBy: localStorage.getItem('currentUserEmail') || 'superadmin',
       changedAt: serverTimestamp(),
-    });
+    })
   }
 
   // --- Export users to CSV ---
   function exportUsers(usersToExport) {
-    const header = ["Name", "Email", "Role", "Schools", "Status"];
-    const rows = usersToExport.map((u) => [
-      `"${u.name || ""}"`,
+    const header = ['Name', 'Email', 'Role', 'Schools', 'Status']
+    const rows = usersToExport.map(u => [
+      `"${u.name || ''}"`,
       `"${u.email}"`,
       `"${u.role}"`,
       `"${(u.schools || [u.assignedSchool])
-        .map((sid) => schools.find((s) => s.id === sid)?.name)
-        .join(";")}"`,
-      `"${u.locked ? "Locked" : u.active !== false ? "Active" : "Inactive"}"`,
-    ]);
-    const csv = [header, ...rows].map((r) => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "cdl-users.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast("Users exported.");
+        .map(sid => schools.find(s => s.id === sid)?.name)
+        .join(';')}"`,
+      `"${u.locked ? 'Locked' : u.active !== false ? 'Active' : 'Inactive'}"`,
+    ])
+    const csv = [header, ...rows].map(r => r.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'cdl-users.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+    showToast('Users exported.')
   }
 
   // --- Audit Log Modal ---
   async function openAuditLogModal(user) {
     try {
       const logSnap = await getDocs(
-        query(collection(db, "userLogs"), where("userId", "==", user.id))
-      );
-      setAuditLogs(logSnap.docs.map((d) => d.data()));
-      setModal({ open: true, type: "audit", user });
+        query(collection(db, 'userLogs'), where('userId', '==', user.id))
+      )
+      setAuditLogs(logSnap.docs.map(d => d.data()))
+      setModal({ open: true, type: 'audit', user })
     } catch {
-      showToast("Failed to load audit log.");
+      showToast('Failed to load audit log.')
     }
   }
 
   // --- Password Reset ---
   async function resetPassword(user) {
     try {
-      await auth.sendPasswordResetEmail(user.email);
-      showToast("Password reset email sent!");
-      await logUserAction(user.id, "reset_password");
+      await auth.sendPasswordResetEmail(user.email)
+      showToast('Password reset email sent!')
+      await logUserAction(user.id, 'reset_password')
     } catch (err) {
-      showToast("Failed to send reset email: " + err.message);
+      showToast('Failed to send reset email: ' + err.message)
     }
   }
 
@@ -194,44 +194,52 @@ export default function UserManagement() {
   function openUserModal(user = {}, editable = true) {
     setModal({
       open: true,
-      type: "user",
+      type: 'user',
       user,
       editable,
-    });
+    })
   }
 
   function openBulkModal() {
-    setModal({ open: true, type: "bulk" });
+    setModal({ open: true, type: 'bulk' })
   }
 
   // --- Handlers ---
   function handleInput(e) {
-    setFilter((f) => ({
+    setFilter(f => ({
       ...f,
       [e.target.name]: e.target.value,
-    }));
+    }))
   }
 
   // --- Render ---
   if (loading) {
     return (
-      <div style={{ textAlign: "center", marginTop: 60 }}>
+      <div style={{ textAlign: 'center', marginTop: 60 }}>
         <div className="spinner" />
         <p>Loading users…</p>
       </div>
-    );
+    )
   }
 
-  const filteredUsers = filterUsers(users);
+  const filteredUsers = filterUsers(users)
 
   return (
     <div
       className="screen-wrapper fade-in"
-      style={{ maxWidth: 1100, margin: "0 auto", padding: 16 }}
+      style={{ maxWidth: 1100, margin: '0 auto', padding: 16 }}
     >
       <h2 className="dash-head">👥 Super Admin: User Management</h2>
       {/* --- Filter Bar --- */}
-      <div className="user-filter-bar" style={{ marginBottom: 18, display: "flex", flexWrap: "wrap", gap: "0.7em" }}>
+      <div
+        className="user-filter-bar"
+        style={{
+          marginBottom: 18,
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '0.7em',
+        }}
+      >
         <input
           type="text"
           name="search"
@@ -262,7 +270,7 @@ export default function UserManagement() {
           onChange={handleInput}
         >
           <option value="">All schools</option>
-          {schools.map((s) => (
+          {schools.map(s => (
             <option key={s.id} value={s.id}>
               {s.name}
             </option>
@@ -280,9 +288,18 @@ export default function UserManagement() {
           <option value="inactive">Inactive</option>
           <option value="locked">Locked</option>
         </select>
-        <button className="btn outline" onClick={() => openUserModal()}>+ New User</button>
-        <button className="btn outline" onClick={openBulkModal}>Bulk Actions</button>
-        <button className="btn outline" onClick={() => exportUsers(filteredUsers)}>Export</button>
+        <button className="btn outline" onClick={() => openUserModal()}>
+          + New User
+        </button>
+        <button className="btn outline" onClick={openBulkModal}>
+          Bulk Actions
+        </button>
+        <button
+          className="btn outline"
+          onClick={() => exportUsers(filteredUsers)}
+        >
+          Export
+        </button>
       </div>
       {/* --- User Table --- */}
       <div className="user-table-scroll">
@@ -298,48 +315,57 @@ export default function UserManagement() {
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.map((u) => (
+            {filteredUsers.map(u => (
               <tr key={u.id}>
-                <td>{u.name || ""}</td>
+                <td>{u.name || ''}</td>
                 <td>{u.email}</td>
                 <td>{u.role}</td>
                 <td>
                   {Array.isArray(u.schools)
                     ? u.schools
-                        .map((sid) => schools.find((s) => s.id === sid)?.name || "")
-                        .join(", ")
-                    : schools.find((s) => s.id === u.assignedSchool)?.name || "-"}
+                        .map(sid => schools.find(s => s.id === sid)?.name || '')
+                        .join(', ')
+                    : schools.find(s => s.id === u.assignedSchool)?.name || '-'}
                 </td>
                 <td>
                   {u.locked ? (
-                    <span style={{ color: "#e67c7c" }}>Locked</span>
+                    <span style={{ color: '#e67c7c' }}>Locked</span>
                   ) : u.active !== false ? (
-                    "Active"
+                    'Active'
                   ) : (
-                    <span style={{ color: "#c44" }}>Inactive</span>
+                    <span style={{ color: '#c44' }}>Inactive</span>
                   )}
                 </td>
                 <td>
-                  <button className="btn outline btn-sm" onClick={() => openUserModal(u, false)}>
+                  <button
+                    className="btn outline btn-sm"
+                    onClick={() => openUserModal(u, false)}
+                  >
                     View
                   </button>
-                  <button className="btn outline btn-sm" onClick={() => openUserModal(u, true)}>
+                  <button
+                    className="btn outline btn-sm"
+                    onClick={() => openUserModal(u, true)}
+                  >
                     Edit
                   </button>
                   <button
                     className="btn outline btn-sm"
                     onClick={() => updateUserStatus(u, u.active === false)}
                   >
-                    {u.active !== false ? "Deactivate" : "Reactivate"}
+                    {u.active !== false ? 'Deactivate' : 'Reactivate'}
                   </button>
-                  <button className="btn outline btn-sm" onClick={() => impersonateUser(u)}>
+                  <button
+                    className="btn outline btn-sm"
+                    onClick={() => impersonateUser(u)}
+                  >
                     Impersonate
                   </button>
                   <button
                     className="btn outline btn-sm"
                     onClick={() => lockUser(u, !u.locked)}
                   >
-                    {u.locked ? "Unlock" : "Lock"}
+                    {u.locked ? 'Unlock' : 'Lock'}
                   </button>
                   <button
                     className="btn outline btn-sm btn-danger"
@@ -359,11 +385,14 @@ export default function UserManagement() {
           </tbody>
         </table>
       </div>
-      <div style={{ marginTop: "1.7em", fontSize: "1em", color: "#999" }}>
+      <div style={{ marginTop: '1.7em', fontSize: '1em', color: '#999' }}>
         Total users: {users.length}
       </div>
       {/* --- Modal Render --- */}
-      <Modal open={modal.open && modal.type === "user"} onClose={() => setModal({ open: false })}>
+      <Modal
+        open={modal.open && modal.type === 'user'}
+        onClose={() => setModal({ open: false })}
+      >
         <UserModal
           user={modal.user}
           schools={schools}
@@ -374,14 +403,20 @@ export default function UserManagement() {
           openAuditLogModal={openAuditLogModal}
         />
       </Modal>
-      <Modal open={modal.open && modal.type === "audit"} onClose={() => setModal({ open: false })}>
+      <Modal
+        open={modal.open && modal.type === 'audit'}
+        onClose={() => setModal({ open: false })}
+      >
         <AuditLogModal logs={auditLogs} user={modal.user} />
       </Modal>
-      <Modal open={modal.open && modal.type === "bulk"} onClose={() => setModal({ open: false })}>
+      <Modal
+        open={modal.open && modal.type === 'bulk'}
+        onClose={() => setModal({ open: false })}
+      >
         <BulkUserModal />
       </Modal>
     </div>
-  );
+  )
 }
 
 // --- User Create/Edit/View Modal ---
@@ -395,53 +430,53 @@ function UserModal({
   openAuditLogModal,
 }) {
   const [formUser, setFormUser] = useState({
-    name: user.name || "",
-    email: user.email || "",
-    role: user.role || "student",
+    name: user.name || '',
+    email: user.email || '',
+    role: user.role || 'student',
     schools: user.schools || [],
     active: user.active !== false,
     locked: user.locked || false,
-  });
+  })
 
   function handleChange(e) {
-    const { name, value, type, checked, options } = e.target;
-    if (type === "checkbox") {
-      setFormUser((u) => ({ ...u, [name]: checked }));
-    } else if (type === "select-multiple") {
-      setFormUser((u) => ({
+    const { name, value, type, checked, options } = e.target
+    if (type === 'checkbox') {
+      setFormUser(u => ({ ...u, [name]: checked }))
+    } else if (type === 'select-multiple') {
+      setFormUser(u => ({
         ...u,
-        schools: [...options].filter((o) => o.selected).map((o) => o.value),
-      }));
+        schools: [...options].filter(o => o.selected).map(o => o.value),
+      }))
     } else {
-      setFormUser((u) => ({ ...u, [name]: value }));
+      setFormUser(u => ({ ...u, [name]: value }))
     }
   }
 
   async function handleSubmit(e) {
-    e.preventDefault();
+    e.preventDefault()
     try {
       if (user.id) {
-        await updateDoc(doc(db, "users", user.id), formUser);
-        showToast("User updated!");
+        await updateDoc(doc(db, 'users', user.id), formUser)
+        showToast('User updated!')
       } else {
-        await setDoc(doc(collection(db, "users")), formUser);
-        showToast("User created!");
+        await setDoc(doc(collection(db, 'users')), formUser)
+        showToast('User created!')
       }
-      onClose();
-      reloadUsers();
+      onClose()
+      reloadUsers()
     } catch (err) {
-      showToast("Failed to save user: " + err.message);
+      showToast('Failed to save user: ' + err.message)
     }
   }
 
   return (
     <>
       <h2>
-        {user.id ? (editable ? "Edit" : "User Details") : "Create New User"}
+        {user.id ? (editable ? 'Edit' : 'User Details') : 'Create New User'}
       </h2>
       <form
         id="user-modal-form"
-        style={{ display: "flex", flexDirection: "column", gap: "1.1em" }}
+        style={{ display: 'flex', flexDirection: 'column', gap: '1.1em' }}
         onSubmit={handleSubmit}
       >
         <label>
@@ -490,7 +525,7 @@ function UserModal({
             onChange={handleChange}
             disabled={!editable}
           >
-            {schools.map((s) => (
+            {schools.map(s => (
               <option key={s.id} value={s.id}>
                 {s.name}
               </option>
@@ -502,11 +537,11 @@ function UserModal({
           Status:
           <select
             name="active"
-            value={formUser.active ? "true" : "false"}
-            onChange={(e) =>
-              setFormUser((u) => ({
+            value={formUser.active ? 'true' : 'false'}
+            onChange={e =>
+              setFormUser(u => ({
                 ...u,
-                active: e.target.value === "true",
+                active: e.target.value === 'true',
               }))
             }
             disabled={!editable}
@@ -522,7 +557,7 @@ function UserModal({
             checked={formUser.locked}
             disabled={!editable}
             onChange={handleChange}
-          />{" "}
+          />{' '}
           Account Locked
         </label>
         {user.apiKey && (
@@ -531,7 +566,7 @@ function UserModal({
           </div>
         )}
         {user.id && editable && (
-          <div style={{ display: "flex", gap: "0.7em" }}>
+          <div style={{ display: 'flex', gap: '0.7em' }}>
             <button
               className="btn"
               type="button"
@@ -549,11 +584,11 @@ function UserModal({
           </div>
         )}
         <button className="btn primary" type="submit">
-          {user.id ? "Save" : "Create User"}
+          {user.id ? 'Save' : 'Create User'}
         </button>
       </form>
     </>
-  );
+  )
 }
 
 // --- Audit Log Modal ---
@@ -561,28 +596,26 @@ function AuditLogModal({ logs = [], user }) {
   return (
     <>
       <h2>
-        Audit Log for <span style={{ color: "#1e88e5" }}>{user?.email}</span>
+        Audit Log for <span style={{ color: '#1e88e5' }}>{user?.email}</span>
       </h2>
-      <div style={{ maxHeight: 340, overflow: "auto" }}>
+      <div style={{ maxHeight: 340, overflow: 'auto' }}>
         {logs.length ? (
           logs.map((l, i) => (
             <div key={i}>
-              <strong>{l.action}</strong> --{" "}
-              {l.changedAt?.toDate?.().toLocaleString?.() ||
-                l.changedAt ||
-                ""}
+              <strong>{l.action}</strong> --{' '}
+              {l.changedAt?.toDate?.().toLocaleString?.() || l.changedAt || ''}
               <br />
-              <span style={{ fontSize: "0.96em", color: "#666" }}>
+              <span style={{ fontSize: '0.96em', color: '#666' }}>
                 {JSON.stringify(l.details)}
               </span>
               <span
                 style={{
-                  fontSize: "0.92em",
-                  color: "#aaa",
-                  float: "right",
+                  fontSize: '0.92em',
+                  color: '#aaa',
+                  float: 'right',
                 }}
               >
-                {l.changedBy || ""}
+                {l.changedBy || ''}
               </span>
               <hr />
             </div>
@@ -592,7 +625,7 @@ function AuditLogModal({ logs = [], user }) {
         )}
       </div>
     </>
-  );
+  )
 }
 
 // --- Bulk Actions Modal (stub for future) ---
@@ -602,5 +635,5 @@ function BulkUserModal() {
       <h2>Bulk User Actions (future)</h2>
       <p>Bulk import, multi-user status changes, and more coming soon!</p>
     </>
-  );
+  )
 }

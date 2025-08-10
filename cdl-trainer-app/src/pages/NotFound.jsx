@@ -1,54 +1,66 @@
 // src/pages/NotFound.jsx
-import React, { useEffect, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useEffect, useCallback } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+
 import {
   getDashboardRoute,
   getCurrentRole,
   safeNavigate,
-} from "../navigation/navigation.js";
+} from '@navigation/navigation.js'
 
 export default function NotFound() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const role = getCurrentRole();
-  const dashboard = getDashboardRoute(role);
+  const navigate = useNavigate()
+  const location = useLocation()
+  const role = getCurrentRole()
+  const dashboard = getDashboardRoute(role)
 
-  const goHome = useCallback(() => safeNavigate(navigate, dashboard, { replace: true }), [navigate, dashboard]);
+  const goHome = useCallback(
+    () => safeNavigate(navigate, dashboard, { replace: true }),
+    [navigate, dashboard]
+  )
   const goBack = useCallback(() => {
     try {
-      if (window.history.length > 1) navigate(-1);
-      else goHome();
+      if (window.history.length > 1) navigate(-1)
+      else goHome()
     } catch {
-      goHome();
+      goHome()
     }
-  }, [navigate, goHome]);
+  }, [navigate, goHome])
 
   useEffect(() => {
-    const prev = document.title;
-    document.title = "Page Not Found • CDL Trainer";
-    return () => { document.title = prev; };
-  }, []);
+    const prev = document.title
+    document.title = 'Page Not Found • CDL Trainer'
+    return () => {
+      document.title = prev
+    }
+  }, [])
 
   // Keyboard shortcuts: H = home, B = back
   useEffect(() => {
-    const onKey = (e) => {
-      const k = e.key.toLowerCase();
-      if (k === "h") { e.preventDefault(); goHome(); }
-      if (k === "b") { e.preventDefault(); goBack(); }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [goHome, goBack]);
+    const onKey = e => {
+      const k = e.key.toLowerCase()
+      if (k === 'h') {
+        e.preventDefault()
+        goHome()
+      }
+      if (k === 'b') {
+        e.preventDefault()
+        goBack()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [goHome, goBack])
 
   return (
-    <div className="container" style={{ padding: "56px 0 72px" }}>
+    <div className="container" style={{ padding: '56px 0 72px' }}>
       <div
         className="dashboard-card glass"
         style={{
           maxWidth: 720,
-          margin: "0 auto",
-          textAlign: "center",
-          padding: "28px 22px",
+          margin: '0 auto',
+          textAlign: 'center',
+          padding: '28px 22px',
         }}
         role="region"
         aria-labelledby="nf-title"
@@ -63,7 +75,15 @@ export default function NotFound() {
               </linearGradient>
             </defs>
             <circle cx="58" cy="58" r="52" fill="url(#nfGrad)" opacity="0.1" />
-            <circle cx="58" cy="58" r="44" fill="none" stroke="url(#nfGrad)" strokeWidth="2" opacity="0.5" />
+            <circle
+              cx="58"
+              cy="58"
+              r="44"
+              fill="none"
+              stroke="url(#nfGrad)"
+              strokeWidth="2"
+              opacity="0.5"
+            />
             <g fill="none" stroke="currentColor" strokeWidth="3" opacity="0.85">
               <path d="M38 48h14v36H38zM64 48h14v36H64z" />
               <path d="M32 48h52" />
@@ -83,9 +103,12 @@ export default function NotFound() {
           </svg>
         </div>
 
-        <h1 id="nf-title" style={{ margin: "6px 0 4px" }}>Page Not Found</h1>
-        <p className="u-muted" style={{ margin: "0 0 14px" }}>
-          We couldn’t find <code style={{ opacity: 0.9 }}>{location.pathname}</code>.
+        <h1 id="nf-title" style={{ margin: '6px 0 4px' }}>
+          Page Not Found
+        </h1>
+        <p className="u-muted" style={{ margin: '0 0 14px' }}>
+          We couldn’t find{' '}
+          <code style={{ opacity: 0.9 }}>{location.pathname}</code>.
         </p>
 
         <div
@@ -100,10 +123,10 @@ export default function NotFound() {
           </button>
         </div>
 
-        <p className="u-muted" style={{ marginTop: 14, fontSize: ".92rem" }}>
+        <p className="u-muted" style={{ marginTop: 14, fontSize: '.92rem' }}>
           Tip: press <kbd>B</kbd> to go back or <kbd>H</kbd> for Home.
         </p>
       </div>
     </div>
-  );
+  )
 }
