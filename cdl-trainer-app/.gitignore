@@ -128,3 +128,7 @@ route-diagnostic-checker.js
 
 # direnv
 .envrc
+# Codemod backups
+*.bak
+# Debug print from ESLint
+.eslintrc.print.json
