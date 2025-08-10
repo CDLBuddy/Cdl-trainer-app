@@ -13,8 +13,9 @@ import { auth, db } from '@utils/firebase.js' // Adjust your import paths!
 import {
   getCurrentSchoolBranding,
   setCurrentSchool,
-} from '@utils/schoolBranding.js'
-import { getBlankUserProfile } from '@utils/user-profile.js'
+} from '@utils/school-branding.js'
+import { getBlankUserProfile } from '@utils/userProfile.js'
+
 import '@styles/ui-shell.css' // Or your preferred CSS file
 
 function Signup() {
