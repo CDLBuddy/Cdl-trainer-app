@@ -1,14 +1,25 @@
 {
   "name": "cdl-trainer-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "CDL Trainer — Vite + React app with role-based dashboards and Firebase",
   "type": "module",
+  "engines": {
+    "node": ">=18.18"
+  },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --open",
     "build": "vite build",
-    "lint": "eslint .",
     "preview": "vite preview",
-    "check:imports": "node dev-utils/check-imports.cjs"
+    "// linting & formatting": "==============================",
+    "lint": "eslint src --ext .js,.jsx",
+    "lint:fix": "eslint src --ext .js,.jsx --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "check": "npm run lint && npm run format:check",
+    "clean": "npm run lint:fix && npm run format",
+    "// diagnostics": "==============================",
+    "check:imports": "node dev-utils/import-checker.js"
   },
   "dependencies": {
     "firebase": "^12.1.0",
@@ -19,17 +30,26 @@
     "react-router-dom": "^7.7.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.33.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
     "eslint": "^9.33.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
     "prettier": "^3.6.2",
     "vite": "^7.0.4"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "not IE 11",
+    "maintained node versions"
+  ],
+  "packageManager": "npm@10.9.2"
 }
