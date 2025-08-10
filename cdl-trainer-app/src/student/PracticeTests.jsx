@@ -1,120 +1,112 @@
-import React, { useEffect, useState } from "react";
+// src/student/PracticeTests.jsx
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { db, auth } from "../utils/firebase";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { showToast } from "../utils/ui-helpers";
 
-// These should eventually be pulled from Firestore, but for now:
+// TODO: later move this to Firestore/config
 const TESTS = ["General Knowledge", "Air Brakes", "Combination Vehicles"];
 
 function getCurrentUserEmail() {
   return (
-    (auth.currentUser && auth.currentUser.email) ||
+    auth?.currentUser?.email ||
     window.currentUserEmail ||
     localStorage.getItem("currentUserEmail") ||
     null
   );
 }
 
-const PracticeTests = () => {
+export default function PracticeTests() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState("student");
-  const [testScores, setTestScores] = useState({});
-  const [passedCount, setPassedCount] = useState(0);
+  const [testScores, setTestScores] = useState({}); // { [testName]: { pct, passed, lastResult } }
+
+  const passedCount = useMemo(
+    () => Object.values(testScores).filter((s) => s?.passed).length,
+    [testScores]
+  );
 
   useEffect(() => {
-    async function fetchTestData() {
+    let cancelled = false;
+
+    (async () => {
+      setLoading(true);
       const currentUserEmail = getCurrentUserEmail();
+
       if (!currentUserEmail) {
         showToast("You must be logged in to view this page.", 2300, "error");
-        navigate("/login");
+        navigate("/login", { replace: true });
         return;
       }
 
-      let userRole = localStorage.getItem("userRole") || "student";
-      let userData = {};
       try {
-        const usersRef = collection(db, "users");
-        const q = query(usersRef, where("email", "==", currentUserEmail));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          userData = snap.docs[0].data();
-          userRole = userData.role || userRole;
-        }
-      } catch (e) {}
-      setUserRole(userRole);
-      if (userRole !== "student") {
-        showToast("This page is only available for students.", 2300, "error");
-        navigate("/");
-        return;
-      }
-
-      // Load test results
-      const scores = {};
-      try {
+        // Load all results for the user once
         const snap = await getDocs(
-          query(
-            collection(db, "testResults"),
-            where("studentId", "==", currentUserEmail)
-          )
+          query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
         );
-        TESTS.forEach((test) => {
-          const testDocs = snap.docs
-            .map((doc) => doc.data())
-            .filter((d) => d.testName === test);
-          if (testDocs.length > 0) {
-            const latest = testDocs.sort(
+
+        // Build scores for just the tests we show
+        const docs = snap.docs.map((d) => d.data());
+        const next = {};
+        for (const test of TESTS) {
+          const attempts = docs.filter((r) => r.testName === test);
+          if (attempts.length) {
+            const latest = attempts.sort(
               (a, b) =>
                 (b.timestamp?.toDate?.() || new Date(b.timestamp)) -
                 (a.timestamp?.toDate?.() || new Date(a.timestamp))
             )[0];
             const pct = Math.round((latest.correct / latest.total) * 100);
-            scores[test] = {
-              pct,
-              passed: pct >= 80,
-              lastResult: latest,
-            };
+            next[test] = { pct, passed: pct >= 80, lastResult: latest };
           }
-        });
+        }
+        if (!cancelled) setTestScores(next);
       } catch (e) {
-        console.error("❌ Error loading test results:", e);
+        if (!cancelled) {
+          console.error("Error loading test results:", e);
+          showToast("Could not load your test results.", 2500, "error");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setTestScores(scores);
-      setPassedCount(Object.values(scores).filter((s) => s.passed).length);
-      setLoading(false);
-    }
-    fetchTestData();
-    // eslint-disable-next-line
-  }, []);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
+  const pctComplete = useMemo(
+    () => Math.round((100 * passedCount) / TESTS.length),
+    [passedCount]
+  );
+
+  const startTest = useCallback(
+    (test) => {
+      showToast(`Starting "${test}"…`);
+      navigate(`/student/test-engine/${encodeURIComponent(test)}`);
+    },
+    [navigate]
+  );
+
+  const reviewTest = useCallback(
+    (test) => {
+      showToast(`Loading your last "${test}" result…`);
+      navigate(`/student/test-review/${encodeURIComponent(test)}`);
+    },
+    [navigate]
+  );
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", marginTop: 40 }}>
+      <div className="screen-wrapper" style={{ textAlign: "center", marginTop: 40 }}>
         <div className="spinner" />
         <p>Loading practice tests…</p>
       </div>
     );
   }
-
-  // Replace with your custom test engine/review renderers:
-  function startTest(test) {
-    showToast(`Starting "${test}" test…`);
-    navigate(`/student-test-engine/${encodeURIComponent(test)}`);
-  }
-
-  function reviewTest(test) {
-    showToast(`Loading your last "${test}" result…`);
-    navigate(`/student-test-review/${encodeURIComponent(test)}`);
-  }
-
-  const pctComplete = Math.round((100 * passedCount) / TESTS.length);
 
   return (
     <div className="screen-wrapper fade-in" style={{ maxWidth: 600, margin: "0 auto", padding: 20 }}>
@@ -126,15 +118,17 @@ const PracticeTests = () => {
           </span>
         </span>
       </h2>
+
       <div className="progress-track" style={{ marginBottom: "1.3rem" }}>
         <div className="progress-fill" style={{ width: `${pctComplete}%` }} />
       </div>
-      <p style={{ marginBottom: "1.4rem" }}>
-        Select a practice test to begin or review:
-      </p>
+
+      <p style={{ marginBottom: "1.4rem" }}>Select a practice test to begin or review:</p>
+
       <div className="test-list">
         {TESTS.map((name) => {
           const data = testScores[name];
+
           const mainBtn = data ? (
             <button className="btn wide retake-btn" onClick={() => startTest(name)}>
               🔁 Retake
@@ -144,11 +138,13 @@ const PracticeTests = () => {
               🚦 Start
             </button>
           );
+
           const reviewBtn = data ? (
             <button className="btn wide outline review-btn" onClick={() => reviewTest(name)}>
               🧾 Review
             </button>
           ) : null;
+
           const scoreBadge = data ? (
             data.passed ? (
               <span className="badge badge-success">✅ {data.pct}%</span>
@@ -158,6 +154,7 @@ const PracticeTests = () => {
           ) : (
             <span className="badge badge-neutral">⏳ Not attempted</span>
           );
+
           return (
             <div className="glass-card" key={name} style={{ marginBottom: "1.2rem", padding: 18 }}>
               <h3 style={{ marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: 10 }}>
@@ -171,17 +168,16 @@ const PracticeTests = () => {
           );
         })}
       </div>
+
       <div style={{ textAlign: "center", marginTop: "2rem" }}>
         <button
           className="btn outline wide"
           aria-label="Back to Dashboard"
-          onClick={() => navigate("/student-dashboard")}
+          onClick={() => navigate("/student/dashboard")}
         >
           ⬅ Back to Dashboard
         </button>
       </div>
     </div>
   );
-};
-
-export default PracticeTests;
+}

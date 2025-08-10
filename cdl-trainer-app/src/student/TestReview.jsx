@@ -1,11 +1,7 @@
+// src/student/TestReview.jsx
 import React, { useEffect, useState } from "react";
 import { db } from "../utils/firebase";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import {
   incrementStudentStudyMinutes,
   logStudySession,
@@ -15,7 +11,7 @@ import {
 } from "../utils/ui-helpers";
 import { useNavigate, useParams } from "react-router-dom";
 
-// DRY: get email from everywhere
+// Centralized email getter
 function getCurrentUserEmail() {
   return (
     window.currentUserEmail ||
@@ -25,47 +21,77 @@ function getCurrentUserEmail() {
   );
 }
 
-const TestReview = () => {
-  const { testName } = useParams(); // expects your route to be /student-test-review/:testName
+function toJSDate(ts) {
+  if (!ts) return null;
+  try {
+    if (typeof ts.toDate === "function") return ts.toDate();
+    const d = new Date(ts);
+    return Number.isNaN(d.getTime()) ? null : d;
+  } catch {
+    return null;
+  }
+}
+
+export default function TestReview() {
+  const { testName } = useParams(); // /student/test-review/:testName
   const [loading, setLoading] = useState(true);
   const [review, setReview] = useState(null);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchData() {
       setLoading(true);
       setError("");
+
       const currentUserEmail = getCurrentUserEmail();
       if (!currentUserEmail) {
-        setError("You must be logged in to view this page.");
-        setLoading(false);
+        if (!cancelled) {
+          setError("You must be logged in to view this page.");
+          setLoading(false);
+        }
         return;
       }
-      try {
-        const snap = await getDocs(
-          query(
-            collection(db, "testResults"),
-            where("studentId", "==", currentUserEmail)
-          )
-        );
-        const results = snap.docs
-          .map((doc) => doc.data())
-          .filter((d) => d.testName === testName)
-          .sort(
-            (a, b) =>
-              (b.timestamp?.toDate?.() || new Date(b.timestamp)) -
-              (a.timestamp?.toDate?.() || new Date(a.timestamp))
-          );
-        if (results.length === 0) {
-          setError("No results found for this test.");
+
+      if (!testName) {
+        if (!cancelled) {
+          setError("No test selected.");
           setLoading(false);
+        }
+        return;
+      }
+
+      try {
+        // Pull all results for this user; filter to this test and sort newest first
+        const snap = await getDocs(
+          query(collection(db, "testResults"), where("studentId", "==", currentUserEmail))
+        );
+
+        const results = snap.docs
+          .map((d) => d.data())
+          .filter((d) => d.testName === testName)
+          .sort((a, b) => {
+            const da = toJSDate(a.timestamp) || new Date(0);
+            const db = toJSDate(b.timestamp) || new Date(0);
+            return db - da;
+          });
+
+        if (!results.length) {
+          if (!cancelled) {
+            setError("No results found for this test.");
+            setLoading(false);
+          }
           return;
         }
-        const latest = results[0];
-        const pct = Math.round((latest.correct / latest.total) * 100);
 
-        // Milestone: Mark test as passed if pct >= 80
+        const latest = results[0];
+        const total = Number(latest.total) || 0;
+        const correct = Number(latest.correct) || 0;
+        const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+        // Milestone: mark passed once at >= 80%
         if (pct >= 80) {
           try {
             const progress = await getUserProgress(currentUserEmail);
@@ -74,44 +100,51 @@ const TestReview = () => {
               showToast("🎉 Practice Test milestone complete! Progress updated.");
             }
           } catch (e) {
-            // Not fatal if progress can't be checked/updated
+            // Non-fatal
             console.warn("Could not update practice test milestone:", e);
           }
         }
 
-        // Always log study minutes and session
-        const minutes = latest?.durationMinutes || 5;
+        // Log study minutes + session (non-fatal)
+        const minutes = Number(latest?.durationMinutes) || 5;
         try {
           await incrementStudentStudyMinutes(currentUserEmail, minutes);
-          await logStudySession(
-            currentUserEmail,
-            minutes,
-            `Practice Test: ${testName}`
-          );
+          await logStudySession(currentUserEmail, minutes, `Practice Test: ${testName}`);
         } catch (e) {
-          // Logging isn't fatal
           console.warn("Could not log study session:", e);
         }
 
-        setReview({
-          correct: latest.correct,
-          total: latest.total,
-          pct,
-        });
-        setLoading(false);
+        if (!cancelled) {
+          setReview({ correct, total, pct });
+          setLoading(false);
+        }
       } catch (e) {
-        setError("Failed to load review data.");
-        setLoading(false);
+        console.error(e);
+        if (!cancelled) {
+          setError("Failed to load review data.");
+          showToast("Could not load your review.", 2500, "error");
+          setLoading(false);
+        }
       }
     }
+
     fetchData();
-    // eslint-disable-next-line
+    return () => {
+      cancelled = true;
+    };
   }, [testName]);
+
+  const goBack = () => navigate("/student/practice-tests");
 
   if (loading) {
     return (
-      <div className="screen-wrapper fade-in" style={{ maxWidth: 600, margin: "0 auto", padding: 20 }}>
-        <h2>🧾 {testName} Review</h2>
+      <div
+        className="screen-wrapper fade-in"
+        style={{ maxWidth: 600, margin: "0 auto", padding: 20 }}
+        role="status"
+        aria-live="polite"
+      >
+        <h2>🧾 {testName || "Test"} Review</h2>
         <p>Loading…</p>
       </div>
     );
@@ -120,13 +153,10 @@ const TestReview = () => {
   if (error) {
     return (
       <div className="screen-wrapper fade-in" style={{ maxWidth: 600, margin: "0 auto", padding: 20 }}>
-        <h2>🧾 {testName} Review</h2>
+        <h2>🧾 {testName || "Test"} Review</h2>
         <p>{error}</p>
         <div style={{ marginTop: 20 }}>
-          <button
-            className="btn outline"
-            onClick={() => navigate("/student-practice-tests")}
-          >
+          <button className="btn outline" onClick={goBack}>
             ⬅ Back to Practice Tests
           </button>
         </div>
@@ -140,19 +170,12 @@ const TestReview = () => {
       <p>
         You scored <strong>{review.correct}/{review.total}</strong> ({review.pct}%)
       </p>
-      <p>
-        <em>Question-level review coming soon!</em>
-      </p>
+      <p><em>Question-level review coming soon!</em></p>
       <div style={{ marginTop: 20 }}>
-        <button
-          className="btn outline"
-          onClick={() => navigate("/student-practice-tests")}
-        >
+        <button className="btn outline" onClick={goBack}>
           ⬅ Back to Practice Tests
         </button>
       </div>
     </div>
   );
-};
-
-export default TestReview;
+}

@@ -14,6 +14,7 @@ import {
   setDoc,
   updateDoc,
   enableIndexedDbPersistence,
+  enableMultiTabIndexedDbPersistence,
   connectFirestoreEmulator,
 } from "firebase/firestore";
 import {
@@ -25,18 +26,16 @@ import {
 import { getStorage, connectStorageEmulator } from "firebase/storage";
 
 // ---- ENV CONFIG (set these in .env.local) ----
-// Vite exposes envs under import.meta.env
 const firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY      || "AIzaSyCHGQzw-QXk-tuT2Zf8EcbQRz7E0Zms-7A",
-  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN  || "cdltrainerapp.firebaseapp.com",
-  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID   || "cdltrainerapp",
-  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "cdltrainerapp.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "977549527480",
-  appId:             import.meta.env.VITE_FIREBASE_APP_ID       || "1:977549527480:web:e959926bb02a4cef65674d",
-  measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-MJ22BD2J1J",
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY            || "dev-key-only",
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN        || "dev-auth-domain",
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID         || "dev-project-id",
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET     || "dev-bucket",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID|| "0",
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID             || "dev-app-id",
+  measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID     || undefined,
 };
 
-// Optional emulator flags
 const USE_EMULATORS = String(import.meta.env.VITE_USE_FIREBASE_EMULATORS || "").toLowerCase() === "true";
 const EMU_HOST      = import.meta.env.VITE_EMULATOR_HOST || "localhost";
 const EMU_AUTH_PORT = Number(import.meta.env.VITE_EMULATOR_AUTH_PORT || 9099);
@@ -48,16 +47,22 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 // Auth
 const auth = getAuth(app);
-setPersistence(auth, browserLocalPersistence).catch(() => {
-  /* non-fatal */
-});
+setPersistence(auth, browserLocalPersistence).catch(() => {});
 
 // Firestore
 const db = getFirestore(app);
-// Enable offline persistence (safe fallback for multi-tab)
-enableIndexedDbPersistence(db).catch(() => {
-  // Could not enable persistence (e.g., multiple tabs) — continue without it
-});
+// Offline persistence
+(async () => {
+  try {
+    if (import.meta.env.VITE_FIRESTORE_MULTI_TAB === "true") {
+      await enableMultiTabIndexedDbPersistence(db);
+    } else {
+      await enableIndexedDbPersistence(db);
+    }
+  } catch {
+    // Could not enable persistence; continue online-only
+  }
+})();
 
 // Storage
 const storage = getStorage(app);
@@ -68,18 +73,16 @@ if (USE_EMULATORS) {
     connectAuthEmulator(auth, `http://${EMU_HOST}:${EMU_AUTH_PORT}`, { disableWarnings: true });
     connectFirestoreEmulator(db, EMU_HOST, EMU_FS_PORT);
     connectStorageEmulator(storage, EMU_HOST, EMU_STO_PORT);
-    // console.info("[Firebase] Using local emulators");
   } catch {
-    /* ignore */
+    // ignore
   }
 }
 
-// ---- Helpers (kept for compatibility) ----
+// ---- Helpers (compat/legacy) ----
 export async function getLatestUpdate() {
   try {
-    const updatesRef = collection(db, "updates");
-    const q = query(updatesRef, orderBy("date", "desc"), limit(1));
-    const qs = await getDocs(q);
+    const qRef = query(collection(db, "updates"), orderBy("date", "desc"), limit(1));
+    const qs = await getDocs(qRef);
     if (qs.empty) return null;
     const d = qs.docs[0];
     return { id: d.id, ...d.data() };
@@ -89,13 +92,8 @@ export async function getLatestUpdate() {
   }
 }
 
-// Legacy-style helpers you referenced earlier (kept intact)
 export function getCurrentUserSchool() {
-  return (
-    localStorage.getItem("schoolId") ||
-    (auth.currentUser && auth.currentUser.schoolId) ||
-    null
-  );
+  return localStorage.getItem("schoolId") || null; // auth.currentUser.schoolId is not a real prop
 }
 
 export async function getUserRole(email) {
@@ -109,11 +107,7 @@ export async function getUserRole(email) {
 
 export async function setUserRole(email, role, schoolId = null) {
   try {
-    await setDoc(
-      doc(db, "userRoles", email),
-      { role, schoolId },
-      { merge: true }
-    );
+    await setDoc(doc(db, "userRoles", email), { role, schoolId }, { merge: true });
     return true;
   } catch {
     return false;
@@ -126,7 +120,7 @@ export {
   db,
   auth,
   storage,
-  // Firestore utils you were re-exporting
+  // re-exports (kept for convenience)
   collection,
   query,
   orderBy,

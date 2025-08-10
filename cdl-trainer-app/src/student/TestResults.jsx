@@ -1,219 +1,142 @@
-import React, { useEffect, useState } from "react";
+// src/student/TestResults.jsx
+import React, { useEffect, useMemo, useState } from "react";
 import { db } from "../utils/firebase";
-import {
-  getDocs,
-  query,
-  collection,
-  where,
-} from "firebase/firestore";
+import { getDocs, query, collection, where } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { showToast } from "../utils/ui-helpers";
 
-// Util: fetch students if staff
+// ---------- helpers ----------
+function toJSDate(ts) {
+  if (!ts) return null;
+  try {
+    if (typeof ts.toDate === "function") return ts.toDate();
+    const d = new Date(ts);
+    return Number.isNaN(d.getTime()) ? null : d;
+  } catch {
+    return null;
+  }
+}
+
 async function fetchAllStudents() {
   const userSnap = await getDocs(
     query(collection(db, "users"), where("role", "==", "student"))
   );
   const students = {};
   userSnap.docs.forEach((doc) => {
-    students[doc.data().email] = doc.data();
+    const data = doc.data();
+    if (data?.email) students[data.email] = data;
   });
   return students;
 }
 
-// Util: fetch all test results for given emails
-async function fetchTestResults(emails) {
-  let allResults = [];
-  for (const email of emails) {
-    const snap = await getDocs(
-      query(collection(db, "testResults"), where("studentId", "==", email))
-    );
-    snap.docs.forEach((d) => {
-      const data = d.data();
-      const ts = data.timestamp;
-      const date = ts?.toDate ? ts.toDate() : new Date(ts);
-      allResults.push({ ...data, timestamp: date, studentId: email });
-    });
-  }
-  // Sort descending by date
-  return allResults.sort((a, b) => b.timestamp - a.timestamp);
+async function fetchResultsForEmail(email) {
+  const snap = await getDocs(
+    query(collection(db, "testResults"), where("studentId", "==", email))
+  );
+  return snap.docs.map((d) => {
+    const data = d.data();
+    const date = toJSDate(data.timestamp) || new Date(0);
+    return { ...data, timestamp: date, studentId: email };
+  });
 }
 
-// Modal for staff: view student details
-function StudentDetailsModal({ email, onClose }) {
-  const [profile, setProfile] = useState(null);
-  useEffect(() => {
-    async function fetchProfile() {
-      const snap = await getDocs(
-        query(collection(db, "users"), where("email", "==", email))
-      );
-      if (snap.empty) setProfile(null);
-      else setProfile(snap.docs[0].data());
-    }
-    fetchProfile();
-  }, [email]);
-
+function getCurrentUserEmail() {
   return (
-    <div className="modal-overlay fade-in" tabIndex={-1} style={{ zIndex: 1200 }}>
-      <div className="modal-card glass" style={{ maxWidth: 460, margin: "40px auto" }}>
-        <button
-          className="modal-close"
-          style={{ float: "right", fontSize: "1.7em" }}
-          onClick={onClose}
-          aria-label="Close"
-        >
-          &times;
-        </button>
-        <div className="student-modal-content" style={{ padding: 18 }}>
-          {!profile ? (
-            <h3>Loading…</h3>
-          ) : (
-            <>
-              <h3>
-                {profile.name || "(No Name)"}{" "}
-                <span className="role-badge">{profile.role || ""}</span>
-              </h3>
-              <div style={{ color: "#999", marginBottom: 7, fontSize: "0.98em" }}>{email}</div>
-              <ul className="profile-fields" style={{ listStyle: "none", padding: "0 0 7px 0" }}>
-                <li>
-                  <strong>DOB:</strong> {profile.dob || "--"}
-                </li>
-                <li>
-                  <strong>Permit Status:</strong>{" "}
-                  {profile.cdlPermit === "yes"
-                    ? "✅ Yes"
-                    : profile.cdlPermit === "no"
-                    ? "❌ No"
-                    : "--"}
-                </li>
-                <li>
-                  <strong>Profile Progress:</strong> {profile.profileProgress || 0}%
-                </li>
-                <li>
-                  <strong>Endorsements:</strong>{" "}
-                  {(profile.endorsements || []).join(", ") || "--"}
-                </li>
-                <li>
-                  <strong>Restrictions:</strong>{" "}
-                  {(profile.restrictions || []).join(", ") || "--"}
-                </li>
-                <li>
-                  <strong>Experience:</strong> {profile.experience || "--"}
-                </li>
-                <li>
-                  <strong>Vehicle Qualified:</strong>{" "}
-                  {profile.vehicleQualified === "yes" ? "✅" : "❌"}
-                </li>
-              </ul>
-              <div style={{ marginTop: 8 }}>
-                {profile.profilePicUrl ? (
-                  <img
-                    src={profile.profilePicUrl}
-                    alt="Profile"
-                    style={{
-                      width: 90,
-                      height: 90,
-                      objectFit: "cover",
-                      borderRadius: 10,
-                      border: "1.5px solid #b48aff",
-                      marginBottom: 7,
-                    }}
-                  />
-                ) : null}
-              </div>
-              <div style={{ marginTop: 10, textAlign: "center" }}>
-                <button className="btn" style={{ marginTop: 9 }} onClick={onClose}>
-                  Close
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+    window.currentUserEmail ||
+    localStorage.getItem("currentUserEmail") ||
+    (window.auth?.currentUser && window.auth.currentUser.email) ||
+    null
   );
 }
 
-const getCurrentUserEmail = () =>
-  window.currentUserEmail ||
-  localStorage.getItem("currentUserEmail") ||
-  (window.auth?.currentUser && window.auth.currentUser.email) ||
-  null;
+function getRole() {
+  return localStorage.getItem("userRole") || "student";
+}
 
-const getRole = () =>
-  localStorage.getItem("userRole") || "student";
+// ---------- component ----------
+export default function TestResults() {
+  const navigate = useNavigate();
 
-const TestResults = () => {
   const [loading, setLoading] = useState(true);
   const [results, setResults] = useState([]);
   const [students, setStudents] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [modalEmail, setModalEmail] = useState(null);
 
-  const navigate = useNavigate();
+  const role = useMemo(getRole, []);
+  const isStaff = role === "admin" || role === "instructor" || role === "superadmin";
 
   useEffect(() => {
-    async function fetchData() {
+    let cancelled = false;
+
+    async function run() {
       setLoading(true);
+
       const email = getCurrentUserEmail();
-      const role = getRole();
-      let isStaff =
-        role === "admin" ||
-        role === "instructor" ||
-        role === "superadmin";
-      let studentEmails = [email];
-      let studentMap = {};
       if (!email) {
-        setLoading(false);
-        setResults([]);
-        setStudents({});
+        if (!cancelled) {
+          setResults([]);
+          setStudents({});
+          setLoading(false);
+        }
         return;
       }
 
-      if (isStaff) {
-        // For now, fetch all students (filter for assigned later)
-        studentMap = await fetchAllStudents();
-        studentEmails = Object.keys(studentMap);
-      }
-      const allResults = await fetchTestResults(studentEmails);
-      setStudents(studentMap);
-      setResults(allResults);
-      setLoading(false);
-    }
-    fetchData();
-  }, []);
+      try {
+        // decide the emails to query
+        let studentMap = {};
+        let emails = [email];
 
-  const role = getRole();
-  const isStaff =
-    role === "admin" ||
-    role === "instructor" ||
-    role === "superadmin";
+        if (isStaff) {
+          studentMap = await fetchAllStudents();
+          emails = Object.keys(studentMap);
+        }
+
+        // fetch all in parallel
+        const all = (await Promise.all(emails.map(fetchResultsForEmail))).flat();
+
+        // sort newest first
+        all.sort((a, b) => b.timestamp - a.timestamp);
+
+        if (!cancelled) {
+          setStudents(studentMap);
+          setResults(all);
+        }
+      } catch (e) {
+        console.error("Failed to load test results:", e);
+        if (!cancelled) showToast("Could not load test results.", 2400, "error");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [isStaff]);
 
   function handleExportCSV() {
     const rows = [
       ["Name", "Email", "Test", "Score", "Date"],
       ...results.map((r) => {
         const name = students[r.studentId]?.name || r.studentId || "Unknown";
-        const pct = Math.round((r.correct / r.total) * 100);
-        const date = r.timestamp.toLocaleDateString();
-        return [
-          name,
-          r.studentId,
-          r.testName,
-          `${pct}% (${r.correct}/${r.total})`,
-          date,
-        ];
+        const total = Number(r.total) || 0;
+        const correct = Number(r.correct) || 0;
+        const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+        const date = r.timestamp?.toLocaleDateString?.() || "";
+        return [name, r.studentId, r.testName, `${pct}% (${correct}/${total})`, date];
       }),
     ];
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      rows
-        .map((e) =>
-          e.map((s) => `"${String(s).replace(/"/g, '""')}"`).join(",")
-        )
-        .join("\n");
+
+    const csv = rows
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      )
+      .join("\n");
+
     const a = document.createElement("a");
-    a.href = csvContent;
+    a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
     a.download = "cdl-test-results.csv";
     document.body.appendChild(a);
     a.click();
@@ -230,8 +153,13 @@ const TestResults = () => {
   }
 
   return (
-    <div className="screen-wrapper fade-in" style={{ padding: 20, maxWidth: 700, margin: "0 auto" }}>
+    <div
+      className="screen-wrapper fade-in"
+      style={{ padding: 20, maxWidth: 700, margin: "0 auto" }}
+      aria-busy={loading ? "true" : "false"}
+    >
       <h2>📊 {isStaff ? "All Student " : ""}Test Results</h2>
+
       {loading ? (
         <p>Loading…</p>
       ) : (
@@ -239,10 +167,10 @@ const TestResults = () => {
           <table className="test-results-table" style={{ width: "100%", marginBottom: 12 }}>
             <thead>
               <tr>
-                {isStaff && <th>Name</th>}
-                <th>Test</th>
-                <th>Score</th>
-                <th>Date</th>
+                {isStaff && <th scope="col">Name</th>}
+                <th scope="col">Test</th>
+                <th scope="col">Score</th>
+                <th scope="col">Date</th>
               </tr>
             </thead>
             <tbody>
@@ -252,34 +180,42 @@ const TestResults = () => {
                 </tr>
               ) : (
                 results.map((r, i) => {
-                  const pct = Math.round((r.correct / r.total) * 100);
-                  const date = r.timestamp.toLocaleDateString();
+                  const total = Number(r.total) || 0;
+                  const correct = Number(r.correct) || 0;
+                  const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+                  const date = r.timestamp?.toLocaleDateString?.() || "";
+                  const name = students[r.studentId]?.name || r.studentId || "Unknown";
+
                   return (
-                    <tr key={i}>
+                    <tr key={`${r.studentId}-${r.testName}-${i}`}>
                       {isStaff && (
                         <td>
-                          <a
-                            href="#!"
-                            className="student-name-link"
+                          <button
+                            type="button"
+                            className="link-like student-name-link"
                             style={{
                               color: "#b48aff",
                               fontWeight: 600,
                               textDecoration: "underline dotted",
                               cursor: "pointer",
+                              background: "none",
+                              border: 0,
+                              padding: 0,
                             }}
                             onClick={() => {
                               setModalEmail(r.studentId);
                               setShowModal(true);
                             }}
                           >
-                            {students[r.studentId]?.name || r.studentId || "Unknown"}
-                          </a>
+                            {name}
+                          </button>
                         </td>
                       )}
                       <td>{r.testName}</td>
                       <td>
-                        <b>{pct}%</b> <span style={{ color: "#888" }}>
-                          ({r.correct}/{r.total})
+                        <b>{pct}%</b>{" "}
+                        <span style={{ color: "#888" }}>
+                          ({correct}/{total})
                         </span>
                       </td>
                       <td>{date}</td>
@@ -289,44 +225,22 @@ const TestResults = () => {
               )}
             </tbody>
           </table>
-          <div style={{ textAlign: "center", marginTop: 18 }}>
+
+          <div style={{ textAlign: "center", marginTop: 18 }} className="u-flex u-gap-8 u-wrap u-center">
             <button
               className="btn outline"
-              style={{ marginRight: 8 }}
-              onClick={() =>
-                navigate(
-                  isStaff
-                    ? role === "admin"
-                      ? "/admin-dashboard"
-                      : role === "instructor"
-                      ? "/instructor-dashboard"
-                      : role === "superadmin"
-                      ? "/superadmin-dashboard"
-                      : "/student-dashboard"
-                    : "/student-dashboard"
-                )
-              }
+              onClick={() => navigate("/student/dashboard")}
             >
               ⬅ Back to Dashboard
             </button>
+
             <button
               className="btn"
-              onClick={() =>
-                navigate(
-                  isStaff
-                    ? role === "admin"
-                      ? "/admin-dashboard"
-                      : role === "instructor"
-                      ? "/instructor-dashboard"
-                      : role === "superadmin"
-                      ? "/superadmin-dashboard"
-                      : "/student-practice-tests"
-                    : "/student-practice-tests"
-                )
-              }
+              onClick={() => navigate("/student/practice-tests")}
             >
               🔄 Retake a Test
             </button>
+
             {isStaff && (
               <button className="btn" onClick={handleExportCSV}>
                 ⬇️ Export CSV
@@ -335,11 +249,107 @@ const TestResults = () => {
           </div>
         </>
       )}
+
       {showModal && modalEmail && (
         <StudentDetailsModal email={modalEmail} onClose={() => setShowModal(false)} />
       )}
     </div>
   );
-};
+}
 
-export default TestResults;
+// ---------- modal ----------
+function StudentDetailsModal({ email, onClose }) {
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const snap = await getDocs(
+          query(collection(db, "users"), where("email", "==", email))
+        );
+        const data = snap.empty ? null : snap.docs[0].data();
+        if (!cancelled) setProfile(data);
+      } catch (e) {
+        if (!cancelled) setProfile(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [email]);
+
+  return (
+    <div className="modal-overlay fade-in" tabIndex={-1} style={{ zIndex: 1200 }}>
+      <div className="modal-card glass" style={{ maxWidth: 460, margin: "40px auto" }}>
+        <button
+          className="modal-close"
+          style={{ float: "right", fontSize: "1.7em" }}
+          onClick={onClose}
+          aria-label="Close"
+        >
+          &times;
+        </button>
+
+        <div className="student-modal-content" style={{ padding: 18 }}>
+          {!profile ? (
+            <h3>Loading…</h3>
+          ) : (
+            <>
+              <h3>
+                {profile.name || "(No Name)"}{" "}
+                <span className="role-badge">{profile.role || ""}</span>
+              </h3>
+
+              <div style={{ color: "#999", marginBottom: 7, fontSize: "0.98em" }}>
+                {email}
+              </div>
+
+              <ul className="profile-fields" style={{ listStyle: "none", padding: "0 0 7px 0" }}>
+                <li><strong>DOB:</strong> {profile.dob || "--"}</li>
+                <li>
+                  <strong>Permit Status:</strong>{" "}
+                  {profile.cdlPermit === "yes" ? "✅ Yes" :
+                   profile.cdlPermit === "no"  ? "❌ No"  : "--"}
+                </li>
+                <li><strong>Profile Progress:</strong> {profile.profileProgress || 0}%</li>
+                <li><strong>Endorsements:</strong> {(profile.endorsements || []).join(", ") || "--"}</li>
+                <li><strong>Restrictions:</strong> {(profile.restrictions || []).join(", ") || "--"}</li>
+                <li><strong>Experience:</strong> {profile.experience || "--"}</li>
+                <li>
+                  <strong>Vehicle Qualified:</strong>{" "}
+                  {profile.vehicleQualified === "yes" ? "✅" : "❌"}
+                </li>
+              </ul>
+
+              {profile.profilePicUrl ? (
+                <div style={{ marginTop: 8 }}>
+                  <img
+                    src={profile.profilePicUrl}
+                    alt="Profile"
+                    style={{
+                      width: 90,
+                      height: 90,
+                      objectFit: "cover",
+                      borderRadius: 10,
+                      border: "1.5px solid #b48aff",
+                      marginBottom: 7,
+                    }}
+                  />
+                </div>
+              ) : null}
+
+              <div style={{ marginTop: 10, textAlign: "center" }}>
+                <button className="btn" style={{ marginTop: 9 }} onClick={onClose}>
+                  Close
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

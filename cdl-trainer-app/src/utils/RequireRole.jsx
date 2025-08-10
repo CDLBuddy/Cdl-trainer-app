@@ -1,7 +1,7 @@
 // src/utils/RequireRole.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { auth, db } from "./firebase"; // <- adjust if your firebase file lives elsewhere
+import { auth, db } from "./firebase";
 import {
   onAuthStateChanged,
   getIdTokenResult,

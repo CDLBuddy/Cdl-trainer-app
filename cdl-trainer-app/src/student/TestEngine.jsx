@@ -54,7 +54,7 @@ const QUESTION_BANKS = {
   ],
 };
 
-// Shuffle without mutating original
+// Fisher–Yates-ish, non-mutating
 function shuffleArray(arr) {
   return arr
     .map((q) => ({ ...q, _r: Math.random() }))
@@ -62,7 +62,7 @@ function shuffleArray(arr) {
     .map(({ _r, ...q }) => q);
 }
 
-function getCurrentUserEmail(passed) {
+function resolveUserEmail(passed) {
   return (
     passed ||
     window.currentUserEmail ||
@@ -84,12 +84,12 @@ export default function TestEngine({ testName, passedUserEmail }) {
   const [stage, setStage] = useState("quiz"); // "quiz" | "results" | "error"
   const [saving, setSaving] = useState(false);
 
-  // Prevent duplicate save (StrictMode double-invoke friendly)
+  // Prevent duplicate save across re-renders + StrictMode
   const hasSavedRef = useRef(false);
 
-  // Normalize/validate incoming test
+  // Initialize questions when testName changes
   useEffect(() => {
-    hasSavedRef.current = false; // reset per run
+    hasSavedRef.current = false;
     if (!testName || !QUESTION_BANKS[testName]) {
       setStage("error");
       setQuestions([]);
@@ -103,29 +103,27 @@ export default function TestEngine({ testName, passedUserEmail }) {
     setStage("quiz");
   }, [testName]);
 
-  // Stable answer handler
+  // Handle answer click
   const handleChoice = useCallback(
     (idx) => {
       if (stage !== "quiz") return;
+      if (!questions[currentIdx]) return;
+
       setUserAnswers((prev) => {
-        // Guard: avoid answering after finalization
-        if (!questions[currentIdx]) return prev;
         const next = [...prev];
         next[currentIdx] = idx;
         return next;
       });
 
-      // Check correctness against current question
-      if (questions[currentIdx] && idx === questions[currentIdx].answer) {
+      if (idx === questions[currentIdx].answer) {
         setCorrectCount((prev) => prev + 1);
       }
 
-      // Move next or finish
       setCurrentIdx((prev) => {
         const nextIndex = prev + 1;
         if (nextIndex >= questions.length) {
           setStage("results");
-          return prev; // keep index stable at last question
+          return prev; // keep index at last question for review block
         }
         return nextIndex;
       });
@@ -137,6 +135,8 @@ export default function TestEngine({ testName, passedUserEmail }) {
   useEffect(() => {
     if (stage !== "quiz") return;
     const onKey = (e) => {
+      // Ignore if modifier keys (avoid accidental shortcuts)
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
       const i = CHOICE_KEYS.indexOf(e.key);
       const max = questions[currentIdx]?.choices?.length ?? 0;
       if (i !== -1 && i < max) {
@@ -144,7 +144,7 @@ export default function TestEngine({ testName, passedUserEmail }) {
         handleChoice(i);
       }
     };
-    window.addEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey, { passive: false });
     return () => window.removeEventListener("keydown", onKey);
   }, [stage, currentIdx, questions, handleChoice]);
 
@@ -159,14 +159,16 @@ export default function TestEngine({ testName, passedUserEmail }) {
     return () => window.removeEventListener("beforeunload", beforeUnload);
   }, [stage]);
 
-  // Save to Firestore on results (once)
+  // Persist results once when stage becomes "results"
   useEffect(() => {
     if (stage !== "results") return;
     if (hasSavedRef.current) return;
 
     const total = questions.length;
+    const studentId = resolveUserEmail(passedUserEmail) || "anonymous";
+
     const payload = {
-      studentId: getCurrentUserEmail(passedUserEmail),
+      studentId,
       testName,
       correct: correctCount,
       total,
@@ -216,15 +218,23 @@ export default function TestEngine({ testName, passedUserEmail }) {
             const userPick = userAnswers[i];
             const correct = userPick === q.answer;
             return (
-              <div className="review-q" style={{ marginBottom: "1em" }} key={i}>
+              <div className="review-q" style={{ marginBottom: "1em" }} key={`${i}-${q.q}`}>
                 <div style={{ fontWeight: 600 }}>Q{i + 1}: {q.q}</div>
                 <ul style={{ listStyle: "none", padding: 0, margin: "0.3em 0" }}>
                   {q.choices.map((c, idx) => {
-                    let style = {};
-                    if (idx === q.answer) style = { background: "#caffcb", fontWeight: 700 };
-                    if (idx === userPick && !correct) style = { background: "#ffdbdb" };
+                    const isRight = idx === q.answer;
+                    const isChosenWrong = idx === userPick && !correct;
                     return (
-                      <li key={idx} style={{ margin: "3px 0", padding: "2px 4px", borderRadius: 6 }}>
+                      <li
+                        key={`${i}-${idx}`}
+                        style={{
+                          margin: "3px 0",
+                          padding: "2px 4px",
+                          borderRadius: 6,
+                          ...(isRight ? { background: "#caffcb", fontWeight: 700 } : null),
+                          ...(isChosenWrong ? { background: "#ffdbdb" } : null),
+                        }}
+                      >
                         {c}
                         {idx === userPick ? (correct ? " ✅" : " ❌") : ""}
                       </li>
@@ -245,7 +255,11 @@ export default function TestEngine({ testName, passedUserEmail }) {
           </button>
         </div>
 
-        {saving && <div style={{ marginTop: 16 }}>Saving your results…</div>}
+        {saving && (
+          <div style={{ marginTop: 16 }} role="status" aria-live="polite">
+            Saving your results…
+          </div>
+        )}
       </div>
     );
   }
@@ -266,7 +280,7 @@ export default function TestEngine({ testName, passedUserEmail }) {
 
       <ul style={{ listStyle: "none", padding: 0 }}>
         {choices.map((c, i) => (
-          <li key={i} style={{ margin: "8px 0" }}>
+          <li key={`${currentIdx}-${i}`} style={{ margin: "8px 0" }}>
             <button
               className="choice-btn btn outline wide"
               style={{ width: "100%", padding: 10 }}

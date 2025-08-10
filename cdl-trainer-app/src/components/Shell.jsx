@@ -1,13 +1,21 @@
 // src/components/Shell.jsx
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useSession } from "../App"; // { loading, isLoggedIn, role, user, logout }
+import { useSession } from "../App.jsx";
 import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,
-} from "../utils/school-branding"; // ✅ kebab-case path
-import { getTopNavForRole, getDashboardRoute } from "../navigation/navConfig";
-import AICoachModal from "./AICoachModal";
+} from "../utils/school-branding.js";
+import { getTopNavForRole, getDashboardRoute } from "../navigation/navConfig.js";
+import { registerToastHandler } from "../utils/ui-helpers.js";
+import AICoachModal from "./AICoachModal.jsx";
+
+// Prefer a hook from your Toast context if available
+// It might export either `useToast()` (returns fn) OR an object with `.show()`.
+// This import won’t break if it’s not used; code guards for both forms.
+import { useContext } from "react";
+import { ToastContext } from "./ToastContext.jsx";
+
 import styles from "./Shell.module.css";
 
 /**
@@ -44,10 +52,7 @@ export default function Shell({
         subHeadline: detail?.subHeadline ?? prev.subHeadline ?? "",
       }));
       if (detail?.primaryColor) {
-        document.documentElement.style.setProperty(
-          "--brand-primary",
-          detail.primaryColor
-        );
+        document.documentElement.style.setProperty("--brand-primary", detail.primaryColor);
       }
     });
     return unsub;
@@ -55,7 +60,7 @@ export default function Shell({
 
   const logo = brand?.logoUrl || "/default-logo.svg";
   const name = brand?.schoolName || "CDL Trainer";
-  const sub = brand?.subHeadline || "";
+  const sub  = brand?.subHeadline || "";
 
   /* -------------------------- Role-aware rail ------------------------- */
   const rail = useMemo(() => {
@@ -72,11 +77,10 @@ export default function Shell({
   const handleLogout = useCallback(() => {
     if (typeof logout === "function") {
       logout();
-      return;
+    } else {
+      localStorage.clear();
+      navigate("/login", { replace: true });
     }
-    // last-resort fallback
-    localStorage.clear();
-    navigate("/login", { replace: true });
   }, [logout, navigate]);
 
   // SR: announce route changes
@@ -85,19 +89,39 @@ export default function Shell({
     if (el) el.textContent = `Navigated to ${pathname}`;
   }, [pathname]);
 
+  /* ------------------------ Toast Bridge (React) ---------------------- */
+  // Supports either { show(msg, duration?, type?) } or a direct function.
+  const toastApi = useContext(ToastContext); // may be undefined if provider not mounted
+  useEffect(() => {
+    // Build a normalized handler if ToastContext is present
+    const handler =
+      toastApi
+        ? (msg, opts = {}) => {
+            const { duration, type } = opts || {};
+            if (typeof toastApi === "function") {
+              toastApi(msg, { duration, type });
+            } else if (typeof toastApi?.show === "function") {
+              toastApi.show(msg, duration, type); // keep your existing signature support
+            }
+          }
+        : null;
+
+    // Register with ui-helpers; falls back to DOM toasts if null
+    registerToastHandler(handler);
+
+    return () => registerToastHandler(null);
+  }, [toastApi]);
+
   /* -------------------------- AI Coach Modal ------------------------- */
   const [aiOpen, setAiOpen] = useState(false);
   const [aiContext, setAiContext] = useState("dashboard");
 
-  // Simple path→context mapper
   const inferContextFromPath = useCallback((path) => {
     if (!path) return "dashboard";
     if (/\/profile($|\/)/i.test(path)) return "profile";
     if (/checklist/i.test(path)) return "checklists";
     if (/walkthrough/i.test(path)) return "walkthrough";
-    if (/practice-tests|test-engine|test-review|test-results/i.test(path)) {
-      return "practiceTests";
-    }
+    if (/practice-tests|test-engine|test-review|test-results/i.test(path)) return "practiceTests";
     return "dashboard";
   }, []);
 
@@ -111,7 +135,6 @@ export default function Shell({
 
   const closeCoach = useCallback(() => setAiOpen(false), []);
 
-  // Global open event + keyboard shortcut (Cmd/Ctrl+K + ESC to close)
   useEffect(() => {
     const onOpen = (e) => openCoach(e?.detail?.context);
     const onKey = (e) => {
@@ -182,15 +205,7 @@ export default function Shell({
             {/* Logout */}
             <button className={styles.logoutBtn} type="button" onClick={handleLogout}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <rect
-                  x="4"
-                  y="4"
-                  width="12"
-                  height="16"
-                  rx="2"
-                  stroke="#ffb3b3"
-                  strokeWidth="2"
-                />
+                <rect x="4" y="4" width="12" height="16" rx="2" stroke="#ffb3b3" strokeWidth="2" />
                 <path
                   d="M17 15l4-3-4-3m4 3H10"
                   stroke="#ffb3b3"
