@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@utils/*": ["src/utils/*"],
+      "@components/*": ["src/components/*"],
+      "@styles/*": ["src/styles/*"],
+      "@pages/*": ["src/pages/*"],
+      "@student/*": ["src/student/*"],
+      "@instructor/*": ["src/instructor/*"],
+      "@admin/*": ["src/admin/*"],
+      "@superadmin/*": ["src/superadmin/*"],
+      "@navigation/*": ["src/navigation/*"],
+      "@walkthrough/*": ["src/walkthrough-data/*"]
+    }
+  },
+  "include": ["src", "vite.config.js"]
+}

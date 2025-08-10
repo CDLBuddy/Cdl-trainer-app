@@ -1,4 +1,4 @@
-// eslint.config.js (flat, with compat for legacy shareable configs)
+// eslint.config.js — flat config with compat + Vite alias resolver
 import js from '@eslint/js'
 import globals from 'globals'
 import react from 'eslint-plugin-react'
@@ -9,49 +9,82 @@ import importPlugin from 'eslint-plugin-import'
 import { FlatCompat } from '@eslint/eslintrc'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
-// Convert legacy "extends" configs to flat
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-})
+// Convert legacy shareable configs to flat & scope them to app sources
+const compat = new FlatCompat({ baseDirectory: import.meta.dirname })
+const legacy = compat
+  .extends(
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
+    'plugin:jsx-a11y/recommended'
+  )
+  .map(cfg => ({
+    ...cfg,
+    files: ['**/*.{js,jsx}'],
+    ignores: ['vite.config.*', 'eslint.config.*', 'dev-utils/**'],
+  }))
 
 export default defineConfig([
+  // Global ignores
   globalIgnores(['dist', 'build', 'coverage', 'node_modules', '.vite', '.vercel']),
 
-  // React/Vite app files
+  // Report stray /* eslint-disable */ that no longer suppress anything
+  { linterOptions: { reportUnusedDisableDirectives: 'error' } },
+
+  // Apply converted legacy layers first
+  ...legacy,
+
+  // App sources (overrides & additions)
   {
     files: ['**/*.{js,jsx}'],
     ignores: ['vite.config.*', 'eslint.config.*', 'dev-utils/**'],
+
     languageOptions: {
-      ecmaVersion: 2021,
+      ecmaVersion: 2022, // allows top-level await in ESM
       globals: { ...globals.browser, ...globals.node },
       parserOptions: { ecmaFeatures: { jsx: true }, sourceType: 'module' },
     },
+
+    // bring react-refresh rules via extends (don’t add the plugin again)
     plugins: {
       react,
       'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
       'jsx-a11y': a11y,
       import: importPlugin,
     },
-
-    // Use compat() for legacy shareable configs
-    ...compat.extends(
-      'plugin:react/recommended',
-      'plugin:react-hooks/recommended',
-      'plugin:jsx-a11y/recommended'
-      // (We skip eslint-config-prettier here; flat config doesn’t need it if you’re using Prettier separately)
-    ),
+    extends: [js.configs.recommended, reactRefresh.configs.vite],
 
     rules: {
-      // Bridge mode safeguard
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
-      'no-restricted-syntax': [
+      // Bridge mode helper
+      'no-unused-vars': [
         'warn',
         {
-          selector: "CallExpression[callee.name='showToast']",
-          message:
-            "Use ToastContext: `const { showToast } = useToast()` instead of the legacy global. (Bridge mode still works for old pages.)",
+          // allow BRIDGE_CONST & setState setters; ignore underscored args/catches
+          varsIgnorePattern: '^(?:[A-Z_]|set[A-Z])',
+          argsIgnorePattern: '^_',
+          caughtErrors: 'all',
+          caughtErrorsIgnorePattern: '^_',
         },
+      ],
+
+      // 🔒 Disallow only the legacy toast forms (OK with useToast())
+      'no-restricted-imports': ['warn', {
+        paths: [
+          { name: '@utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+          { name: '@utils/ui-helpers.js', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+          // common relatives, just in case
+          { name: '../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+          { name: '../../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+          { name: '../../../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+        ],
+        patterns: [
+          { group: ['**/utils/ui-helpers{,.*}'], importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+        ],
+      }],
+      'no-restricted-globals': ['warn', 'showToast'],
+      'no-restricted-properties': [
+        'warn',
+        { object: 'window',      property: 'showToast', message: 'Use ToastContext: const { showToast } = useToast().' },
+        { object: 'globalThis',  property: 'showToast', message: 'Use ToastContext: const { showToast } = useToast().' },
       ],
 
       // React tweaks
@@ -60,18 +93,43 @@ export default defineConfig([
       'react-hooks/exhaustive-deps': 'warn',
 
       // Import hygiene
+      'import/no-unresolved': ['error', { commonjs: true, caseSensitive: true }],
+      'import/no-duplicates': 'warn',
+      'import/newline-after-import': 'warn',
       'import/order': [
         'warn',
         {
-          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'type'],
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+            'object',
+            'type',
+          ],
+          // keep aliases grouped neatly at the top of "internal"
+          pathGroups: [
+            { pattern: '@{,**/*}', group: 'internal', position: 'before' },
+            { pattern: '@utils/**', group: 'internal', position: 'before' },
+            { pattern: '@components/**', group: 'internal', position: 'before' },
+            { pattern: '@styles/**', group: 'internal', position: 'before' },
+            { pattern: '@pages/**', group: 'internal', position: 'before' },
+            { pattern: '@student/**', group: 'internal', position: 'before' },
+            { pattern: '@instructor/**', group: 'internal', position: 'before' },
+            { pattern: '@admin/**', group: 'internal', position: 'before' },
+            { pattern: '@superadmin/**', group: 'internal', position: 'before' },
+            { pattern: '@navigation/**', group: 'internal', position: 'before' },
+            { pattern: '@walkthrough/**', group: 'internal', position: 'before' },
+          ],
+          pathGroupsExcludedImportTypes: ['builtin', 'external'],
           'newlines-between': 'always',
           alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
-      'import/newline-after-import': 'warn',
-      'import/no-duplicates': 'warn',
 
-      // A11y (keep gentle)
+      // A11y nudge
       'jsx-a11y/no-autofocus': 'warn',
 
       // DX niceties
@@ -80,14 +138,43 @@ export default defineConfig([
       eqeqeq: ['warn', 'smart'],
       'prefer-const': 'warn',
     },
-    settings: { react: { version: 'detect' } },
+
+    // ESLint/IntelliSense resolver for Vite aliases
+    settings: {
+      react: { version: 'detect' },
+      'import/resolver': {
+        node: { extensions: ['.js', '.jsx', '.json'] },
+        alias: {
+          map: [
+            ['@', './src'],
+            ['@utils', './src/utils'],
+            ['@components', './src/components'],
+            ['@styles', './src/styles'],
+            ['@pages', './src/pages'],
+            ['@student', './src/student'],
+            ['@instructor', './src/instructor'],
+            ['@admin', './src/admin'],
+            ['@superadmin', './src/superadmin'],
+            ['@navigation', './src/navigation'],
+            ['@walkthrough', './src/walkthrough-data'],
+          ],
+          extensions: ['.js', '.jsx', '.json', '.css'],
+        },
+      },
+    },
   },
 
-  // Node/config scripts
+  // One-off override: mixes helpers + components; relax fast-refresh guard
+  {
+    files: ['src/utils/RequireRole.jsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
+
+  // Node/config/utility scripts (non-React)
   {
     files: ['vite.config.*', 'eslint.config.*', 'dev-utils/**'],
     languageOptions: {
-      ecmaVersion: 2021,
+      ecmaVersion: 2022,
       globals: globals.node,
       parserOptions: { sourceType: 'module' },
     },

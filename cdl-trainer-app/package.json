@@ -25,9 +25,9 @@
     "firebase": "^12.1.0",
     "jspdf": "^3.0.1",
     "prop-types": "^15.8.1",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router-dom": "^7.7.1"
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
@@ -37,6 +37,9 @@
     "@vitejs/plugin-react": "^4.6.0",
     "eslint": "^9.33.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-formatter-unix": "^8.40.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-import-resolver-node": "^0.3.9",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
