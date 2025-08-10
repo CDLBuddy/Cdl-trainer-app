@@ -20,16 +20,6 @@ import AICoachModal from './AICoachModal.jsx'
 import styles from './Shell.module.css'
 import { ToastContext } from './ToastContext.jsx'
 
-/**
- * Shell - App-wide dashboard wrapper.
- *
- * Props:
- * - title?: string
- * - children: ReactNode
- * - showFooter?: boolean (default: true)
- * - showFab?: boolean (default: true)
- * - railOverride?: Array<{to:string,label:string,icon?:string}>
- */
 export default function Shell({
   title,
   children,
@@ -159,7 +149,7 @@ export default function Shell({
 
   /* ------------------------------ Render Layout ------------------------------ */
   return (
-    <div className={styles.root}>
+    <div className={styles.root} data-user-role={String(userRole).toLowerCase()}>
       {/* SR-only live region */}
       <span
         id="route-change-live"
@@ -167,8 +157,8 @@ export default function Shell({
         className={styles.srOnly}
       />
 
-      {/* Header */}
-      <header className={styles.header} role="banner">
+      {/* Header (semantic, no ARIA role needed) */}
+      <header className={styles.header}>
         <button
           className={styles.brandBtn}
           onClick={goHome}
@@ -247,11 +237,11 @@ export default function Shell({
           </nav>
         </aside>
 
-        {/* Main Content */}
-        <section className={styles.content} role="main">
+        {/* Main Content (semantic <main>) */}
+        <main className={styles.content}>
           {title && <h1 className={styles.title}>{title}</h1>}
           <div className={styles.card}>{children}</div>
-        </section>
+        </main>
       </div>
 
       {/* AI Coach FAB */}
@@ -267,9 +257,9 @@ export default function Shell({
         </button>
       )}
 
-      {/* Footer */}
+      {/* Footer (semantic, no ARIA role needed) */}
       {showFooter && (
-        <footer className={styles.footer} role="contentinfo">
+        <footer className={styles.footer}>
           <div>
             © {new Date().getFullYear()} CDL Trainer • Powered by CDL Buddy
           </div>
