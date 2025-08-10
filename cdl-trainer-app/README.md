@@ -37,56 +37,60 @@ cdl-trainer-app/
 ├─ vite.config.js
 ├─ package.json
 ├─ .gitignore
-├─ .env.local                 ← local secrets (gitignored)
-├─ public/                    ← static assets
+├─ .env.local ← local secrets (gitignored)
+├─ public/ ← static assets
 └─ src/
-   ├─ main.jsx                ← app bootstrap
-   ├─ App.jsx                 ← routes + session provider
-   ├─ navigation/             ← role nav & route helpers
-   ├─ components/             ← shared UI (Shell, NavBar, Toast, AICoachModal, etc.)
-   ├─ pages/                  ← Login, Signup, Welcome, NotFound
-   ├─ styles/                 ← global CSS (index.css, theme.css, Utilities.css)
-   ├─ utils/                  ← firebase.js, RequireRole.jsx, auth helpers, ui-helpers.js
-   ├─ student/                ← StudentRouter, Dashboard, Flashcards, TestResults, etc.
-   ├─ instructor/             ← InstructorRouter, Dashboard, Profile, ChecklistReview*, etc.
-   ├─ admin/                  ← AdminRouter, Dashboard, Reports, Export controls
-   ├─ superadmin/             ← SuperadminRouter, Permissions, Dashboard
-   └─ walkthrough-data/       ← default walkthrough definitions (index.js, class A/B, passenger bus)
+├─ main.jsx ← app bootstrap
+├─ App.jsx ← routes + session provider
+├─ navigation/ ← role nav & route helpers
+├─ components/ ← shared UI (Shell, NavBar, Toast, AICoachModal, etc.)
+├─ pages/ ← Login, Signup, Welcome, NotFound
+├─ styles/ ← global CSS (index.css, theme.css, Utilities.css)
+├─ utils/ ← firebase.js, RequireRole.jsx, auth helpers, ui-helpers.js
+├─ student/ ← StudentRouter, Dashboard, Flashcards, TestResults, etc.
+├─ instructor/ ← InstructorRouter, Dashboard, Profile, ChecklistReview\*, etc.
+├─ admin/ ← AdminRouter, Dashboard, Reports, Export controls
+├─ superadmin/ ← SuperadminRouter, Permissions, Dashboard
+└─ walkthrough-data/ ← default walkthrough definitions (index.js, class A/B, passenger bus)
 
 ---
 
 ## 🛠️ Getting Started
 
-1) Clone & install
+1. Clone & install
 
-    git clone https://github.com/<your-org>/<your-repo>.git
-    cd cdl-trainer-app
-    npm install
+   git clone https://github.com/<your-org>/<your-repo>.git
+   cd cdl-trainer-app
+   npm install
 
-2) Create `.env.local` in the project root
+2. Create `.env.local` in the project root
 
-    VITE_FIREBASE_API_KEY=your-key
-    VITE_FIREBASE_AUTH_DOMAIN=your-app.firebaseapp.com
-    VITE_FIREBASE_PROJECT_ID=your-project-id
-    VITE_FIREBASE_STORAGE_BUCKET=your-app.appspot.com
-    VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
-    VITE_FIREBASE_APP_ID=your-app-id
-    VITE_FIREBASE_MEASUREMENT_ID=G-XXXXXXX
-    VITE_USE_FIREBASE_EMULATORS=false
-    # Optional:
-    VITE_FIRESTORE_MULTI_TAB=false
+   VITE_FIREBASE_API_KEY=your-key
+   VITE_FIREBASE_AUTH_DOMAIN=your-app.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=your-project-id
+   VITE_FIREBASE_STORAGE_BUCKET=your-app.appspot.com
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+   VITE_FIREBASE_APP_ID=your-app-id
+   VITE_FIREBASE_MEASUREMENT_ID=G-XXXXXXX
+   VITE_USE_FIREBASE_EMULATORS=false
 
-    Note: `.env.local` is ignored by Git. A safe template lives in `.env.example`.
+   # Optional:
 
-3) Run the dev server
+   VITE_FIRESTORE_MULTI_TAB=false
 
-    npm run dev
-    # open http://localhost:5173
+   Note: `.env.local` is ignored by Git. A safe template lives in `.env.example`.
 
-4) Build for production
+3. Run the dev server
 
-    npm run build
-    # outputs to dist/
+   npm run dev
+
+   # open http://localhost:5173
+
+4. Build for production
+
+   npm run build
+
+   # outputs to dist/
 
 ---
 
@@ -103,9 +107,9 @@ cdl-trainer-app/
 
 - Use `RequireRole` to guard screens:
 
-    <RequireRole role={["instructor","admin"]}>
-      <ChecklistReview />
-    </RequireRole>
+  <RequireRole role={["instructor","admin"]}>
+  <ChecklistReview />
+  </RequireRole>
 
 - Role resolution order: **custom claims → users/<uid> → users by email**, with a short `sessionStorage` cache to reduce reads.
 
@@ -168,6 +172,7 @@ cdl-trainer-app/
 - Export reports: generate records for audits and compliance.
 
 How to use:
+
 1. Log in with the email provided by your school admin.
 2. You’ll land on your role’s dashboard (Student/Instructor/Admin).
 3. Follow the on-screen steps (walkthroughs, tests, or reviews).
