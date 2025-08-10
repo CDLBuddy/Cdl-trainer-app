@@ -1,53 +1,104 @@
 // src/components/ToastContext.jsx
-
-import React, { createContext, useCallback, useMemo, useState } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+} from 'react'
 
 import { __bindToastCompat } from './toast-compat.js'
-import Toast from './Toast.jsx'
+import { Toast } from './Toast.jsx' // named export from your file
 
-const ToastContext = createContext(null)
+/**
+ * React toast provider with legacy bridge.
+ * useToast().showToast(message, type = 'info', duration = 3000, opts?)
+ * opts: { position?, action?, dismissible? }
+ */
 
-export function ToastProvider({ children }) {
-  const [toasts, setToasts] = useState([])
+const ToastContext = createContext({
+  showToast: (_msg, _type = 'info', _duration = 3000, _opts = {}) => {},
+})
 
-  const addToast = useCallback((message, type = 'info', duration = 3000) => {
-    const id = Date.now() + Math.random()
-    setToasts(prev => [...prev, { id, message, type }])
-    if (duration > 0) {
-      window.setTimeout(() => {
-        setToasts(prev => prev.filter(t => t.id !== id))
-      }, duration)
+export function useToast() {
+  return useContext(ToastContext)
+}
+
+export function ToastProvider({ children, defaultPosition = 'bottom-right' }) {
+  const [queue, setQueue] = useState([]) // pending toasts
+  const activeRef = useRef(null)
+  const timerRef = useRef(null)
+
+  const showToast = useCallback(
+    (message, type = 'info', duration = 3000, opts = {}) => {
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+      setQueue((q) => [
+        ...q,
+        {
+          id,
+          message: String(message ?? ''),
+          type,
+          duration,
+          position: opts.position || defaultPosition,
+          action: opts.action,
+          dismissible: opts.dismissible ?? true,
+        },
+      ])
+    },
+    [defaultPosition]
+  )
+
+  // Bind/unbind legacy bridge so non-React code can call showToast()
+  useEffect(() => {
+    __bindToastCompat({ showToast })
+    return () => __bindToastCompat(null)
+  }, [showToast])
+
+  // Pull one toast at a time from the queue
+  useEffect(() => {
+    if (activeRef.current || queue.length === 0) return
+
+    const [next, ...rest] = queue
+    activeRef.current = next
+    setQueue(rest)
+
+    clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => {
+      activeRef.current = null
+      setQueue((q) => q.slice()) // trigger to grab next
+    }, next.duration || 3000)
+
+    return () => clearTimeout(timerRef.current)
+  }, [queue])
+
+  const dismiss = useCallback((id) => {
+    if (activeRef.current && (!id || id === activeRef.current.id)) {
+      clearTimeout(timerRef.current)
+      activeRef.current = null
+      setQueue((q) => q.slice())
     }
   }, [])
 
-  const removeToast = useCallback(id => {
-    setToasts(prev => prev.filter(t => t.id !== id))
-  }, [])
-
-  const showToast = useCallback((message, type = 'info', duration = 3000) => {
-    addToast(message, type, duration)
-  }, [addToast])
-
-  useMemo(() => {
-    __bindToastCompat({ showToast })
-    return undefined
-  }, [showToast])
-
-  const value = useMemo(() => ({ addToast, removeToast, showToast }), [addToast, removeToast, showToast])
+  const ctx = useMemo(() => ({ showToast }), [showToast])
+  const active = activeRef.current
 
   return (
-    <ToastContext.Provider value={value}>
+    <ToastContext.Provider value={ctx}>
       {children}
-      <div className="toast-container" role="region" aria-live="polite" aria-atomic="true">
-        {toasts.map(t => (
-          <Toast
-            key={t.id}
-            message={t.message}
-            type={t.type}
-            onClose={() => removeToast(t.id)}
-          />
-        ))}
-      </div>
+      {active ? (
+        <Toast
+          id={active.id}
+          message={active.message}
+          type={active.type}
+          duration={active.duration}
+          position={active.position}
+          action={active.action}
+          dismissible={active.dismissible}
+          onClose={() => dismiss(active.id)} // Toast expects onClose(id)
+        />
+      ) : null}
     </ToastContext.Provider>
   )
 }

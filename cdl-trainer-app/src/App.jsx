@@ -18,7 +18,7 @@ import {
 import NavBar from './components/NavBar.jsx'
 import SplashScreen from './components/SplashScreen.jsx'
 import { getDashboardRoute } from './navigation/navigation.js' // ✅ fixed path
-import { SessionContext } from './session-context.js'
+import { SessionContext } from './session-context.jsx'
 import { useAuthStatus, getUserRole } from './utils/auth.js'
 import { RequireRole } from './utils/RequireRole.jsx'
 import {
