@@ -10,8 +10,9 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import Toast from './Toast.jsx';
+
 import { __bindToastCompat } from './toast-compat'; // bridge for legacy window.showToast
+import Toast from './Toast.jsx';
 
 /**
  * @typedef {'info'|'success'|'warning'|'error'} ToastType

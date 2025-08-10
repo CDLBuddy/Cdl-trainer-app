@@ -129,8 +129,11 @@ export default defineConfig([
         },
       ],
 
-      // A11y nudge
+      // A11y (keep these as errors so we actually fix them)
       'jsx-a11y/no-autofocus': 'warn',
+      'jsx-a11y/no-noninteractive-tabindex': 'error',
+      'jsx-a11y/aria-role': 'error',
+      'jsx-a11y/label-has-associated-control': 'error',
 
       // DX niceties
       'no-console': ['warn', { allow: ['warn', 'error'] }],
@@ -161,6 +164,15 @@ export default defineConfig([
           extensions: ['.js', '.jsx', '.json', '.css'],
         },
       },
+    },
+  },
+
+  // Allow the compat shim to touch the global without warnings
+  {
+    files: ['src/components/toast-compat.js'],
+    rules: {
+      'no-restricted-globals': 'off',
+      'no-restricted-properties': 'off',
     },
   },
 
