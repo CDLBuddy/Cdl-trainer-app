@@ -2,10 +2,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 
-import { useSession } from '@/App.jsx'
 import Shell from '@components/Shell.jsx'
 // Firestore helper for the “What’s New” card
-import { getLatestUpdate } from '@utils/firebase.js'
+import { getLatestUpdate } from '@utils/firebase'
+
+import { useSession } from '../session/useSession.js'
 
 // Page-scoped styles
 import styles from './StudentDashboard.module.css'

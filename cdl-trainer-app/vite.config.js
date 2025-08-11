@@ -1,27 +1,39 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'node:path'
+// vite.config.js
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'node:path';
+
+const r = (p) => path.resolve(__dirname, p);
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
-      '@components': path.resolve(__dirname, 'src/components'),
-      '@utils': path.resolve(__dirname, 'src/utils'),
-      '@navigation': path.resolve(__dirname, 'src/navigation'),
-      '@pages': path.resolve(__dirname, 'src/pages'),
-      '@student': path.resolve(__dirname, 'src/student'),
-      '@instructor': path.resolve(__dirname, 'src/instructor'),
-      '@admin': path.resolve(__dirname, 'src/admin'),
-      '@superadmin': path.resolve(__dirname, 'src/superadmin'),
-      '@walkthrough': path.resolve(__dirname, 'src/walkthrough-data'),
-      '@styles': path.resolve(__dirname, 'src/styles'),
+      '@': r('src'),
+
+      // Shared/global
+      '@components': r('src/components'),
+      '@utils': r('src/utils'),
+      '@navigation': r('src/navigation'),
+      '@pages': r('src/pages'),
+      '@session': r('src/session'),
+      '@shared': r('src/shared'),
+      '@styles': r('src/styles'),
+      '@assets': r('src/assets'),
+      '@walkthrough-data': r('src/walkthrough-data'),
+
+      // Role-specific
+      '@student': r('src/student'),
+      '@student-components': r('src/student/components'),
+      '@instructor': r('src/instructor'),
+      '@admin': r('src/admin'),
+      '@superadmin': r('src/superadmin'),
     },
   },
   server: {
     port: 5173,
     open: true,
+    // strictPort: true, // uncomment to fail instead of picking a new port
   },
-})
+});

@@ -8,7 +8,7 @@ import React, {
 } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
-import { useSession } from '@/App.jsx'
+import { ToastContext } from '@components/ToastContext.js'
 import { getTopNavForRole, getDashboardRoute } from '@navigation/navConfig.js'
 import {
   getCachedBrandingSummary,
@@ -16,9 +16,10 @@ import {
 } from '@utils/school-branding.js'
 import { registerToastHandler } from '@utils/ui-helpers.js'
 
+import { useSession } from '../session/useSession.js'
+
 import AICoachModal from './AICoachModal.jsx'
 import styles from './Shell.module.css'
-import { ToastContext } from './ToastContext.jsx'
 
 export default function Shell({
   title,

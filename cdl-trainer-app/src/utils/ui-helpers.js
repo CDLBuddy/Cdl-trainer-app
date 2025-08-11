@@ -2,7 +2,7 @@
 // ===================================================
 // React + Vite friendly UI helpers
 // Centralized tips, checklists, progress, etc.
-// Toaster is provided by compat shim + ToastContext.
+// Toaster is provided by compat shim + ToastProvider.
 // ===================================================
 
 // --- FIREBASE IMPORTS -------------------------------------------------
@@ -21,11 +21,87 @@ import {
   getDocs,
 } from 'firebase/firestore'
 
-// Prefer alias here to avoid resolver edge cases
+// Prefer aliases to avoid resolver edge cases (configure in vite.config.js)
 import { showToast } from '@components/toast-compat.js'
 import { db, auth } from '@utils/firebase.js'
 
-// Toast: use compat (routes to React provider when bound, DOM otherwise)
+// Back-compat: several files import the toast hook and helpers from here.
+// Keep these exports so you don’t have to edit every caller at once.
+export { useToast } from '@components/useToast.js'
+export function registerToastHandler() {
+  // Legacy no-op (kept for compatibility).
+  // Historically used to bind a global toast function before React was mounted.
+}
+export function getNextChecklistAlert(progress = {}) {
+  // Lightweight heuristic to suggest the next checklist step
+  const order = [
+    'profileComplete',
+    'permitUploaded',
+    'vehicleUploaded',
+    'walkthroughComplete',
+    'practiceTestPassed',
+  ]
+  const labels = {
+    profileComplete: 'Complete your profile',
+    permitUploaded: 'Upload your CLP/permit',
+    vehicleUploaded: 'Upload your vehicle info',
+    walkthroughComplete: 'Finish your walkthrough practice',
+    practiceTestPassed: 'Pass a practice test',
+  }
+  const next = order.find((k) => progress?.[k] !== true)
+  if (!next) return null
+  return {
+    key: next,
+    title: 'Next step',
+    message: labels[next],
+    type: 'info',
+  }
+}
+
+// ===================================================
+// SMALL UTILITIES (shared)
+// ===================================================
+
+/** Basic HTML-escape to safely render untrusted strings into the DOM */
+function escapeHTML(str = '') {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+/** Debounce helper (trailing) */
+export function debounce(fn, wait) {
+  let t
+  return (...args) => {
+    clearTimeout(t)
+    t = window.setTimeout(() => fn(...args), wait)
+  }
+}
+
+export function getUserInitials(name = '') {
+  if (!name) return 'U'
+  return name
+    .trim()
+    .split(/\s+/)
+    .map(w => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
+export function formatDate(dateInput) {
+  if (!dateInput) return '-'
+  const d = dateInput?.toDate ? dateInput.toDate() : new Date(dateInput)
+  if (Number.isNaN(d.getTime())) return '-'
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
 
 // ===================================================
 // PAGE TRANSITION LOADER (optional DOM overlay)
@@ -59,6 +135,7 @@ const STATIC_TIPS = [
 ]
 
 export function getRandomAITip() {
+  // Simple deterministic rotation by weekday
   return STATIC_TIPS[new Date().getDay() % STATIC_TIPS.length]
 }
 
@@ -98,37 +175,12 @@ export function startTypewriter(custom = null) {
 }
 
 // ===================================================
-// SMALL UTILITIES
-// ===================================================
-export function debounce(fn, wait) {
-  let t
-  return (...args) => {
-    clearTimeout(t)
-    t = window.setTimeout(() => fn(...args), wait)
-  }
-}
-
-export function getUserInitials(name = '') {
-  if (!name) return 'U'
-  return name
-    .trim()
-    .split(/\s+/)
-    .map(w => w[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
-
-export function formatDate(dateInput) {
-  if (!dateInput) return '-'
-  const d = dateInput?.toDate ? dateInput.toDate() : new Date(dateInput)
-  if (Number.isNaN(d.getTime())) return '-'
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
-
-// ===================================================
 // "WHAT'S NEW" / LATEST UPDATE
 // ===================================================
+/**
+ * Fetch the latest update from Firestore.
+ * @returns {Promise<object|null>}
+ */
 export async function fetchLatestUpdate() {
   try {
     const q = query(collection(db, 'updates'), orderBy('date', 'desc'), limit(1))
@@ -140,32 +192,69 @@ export async function fetchLatestUpdate() {
     const fallback = await getDoc(doc(db, 'updates', 'latest'))
     return fallback.exists() ? fallback.data() : null
   } catch (_e) {
+    // Non-fatal: UI can show "No recent updates."
     return null
   }
 }
 
-// Legacy imperative version (safe no-op if the element is missing)
+/**
+ * Legacy imperative renderer (safe: avoids unsafe HTML injection).
+ * Renders into #latest-update-card if present.
+ */
 export async function showLatestUpdate() {
-  const updateEl = document.getElementById('latest-update-card')
-  if (!updateEl) return
-  updateEl.innerHTML = `<div style="padding:18px;text-align:center;">Loading updates...</div>`
+  const root = document.getElementById('latest-update-card')
+  if (!root) return
+
+  // Loading state
+  root.innerHTML = '' // clear
+  const loading = document.createElement('div')
+  loading.style.padding = '18px'
+  loading.style.textAlign = 'center'
+  loading.textContent = 'Loading updates...'
+  root.appendChild(loading)
+
   const update = await fetchLatestUpdate()
+  root.innerHTML = '' // clear
+
   if (!update) {
-    updateEl.innerHTML = `<div class="update-empty">No recent updates.</div>`
+    const empty = document.createElement('div')
+    empty.className = 'update-empty'
+    empty.textContent = 'No recent updates.'
+    root.appendChild(empty)
     return
   }
-  updateEl.innerHTML = `
-    <div class="update-banner">
-      <div class="update-title">📢 What's New</div>
-      <div class="update-content">${update.content || '(No details)'} </div>
-      <div class="update-date">${formatDate(update.date)}</div>
-    </div>
-  `
+
+  const banner = document.createElement('div')
+  banner.className = 'update-banner'
+
+  const title = document.createElement('div')
+  title.className = 'update-title'
+  title.textContent = '📢 What’s New'
+
+  const content = document.createElement('div')
+  content.className = 'update-content'
+  // Escape user-provided content to avoid XSS
+  content.innerHTML = escapeHTML(update.content || '(No details)')
+
+  const date = document.createElement('div')
+  date.className = 'update-date'
+  date.textContent = formatDate(update.date)
+
+  banner.appendChild(title)
+  banner.appendChild(content)
+  banner.appendChild(date)
+  root.appendChild(banner)
 }
 
 // ===================================================
 // ROLE HELPERS
 // ===================================================
+
+/**
+ * Render a small role badge (HTML string).
+ * Note: result is a string; when inserting into the DOM, prefer element.textContent
+ * for the role label if you’re not expecting HTML.
+ */
 export function getRoleBadge(input) {
   const role =
     input?.includes && input.includes('@')
@@ -177,8 +266,14 @@ export function getRoleBadge(input) {
             ? 'superadmin'
             : 'student'
       : input || 'student'
-  if (!role) return ''
-  return `<span class="role-badge ${role}">${role.charAt(0).toUpperCase() + role.slice(1)}</span>`
+
+  const safeRole =
+    typeof role === 'string'
+      ? role.replace(/[^\w-]/g, '').toLowerCase()
+      : 'student'
+
+  const label = safeRole.charAt(0).toUpperCase() + safeRole.slice(1)
+  return `<span class="role-badge ${safeRole}">${escapeHTML(label)}</span>`
 }
 
 export function getCurrentUserRole(userObj = null) {
@@ -207,12 +302,14 @@ export function getCurrentSchoolId(userObj = null) {
 
 export function showRoleToast(message, role = null, duration = 3200) {
   const type = role === 'admin' ? 'error' : role === 'instructor' ? 'success' : 'info'
-  showToast(message, type, duration) // compat supports both arg orders
+  // Compat supports both (msg,type,duration) and (msg,duration,type)
+  showToast(message, type, duration)
 }
 
 // ===================================================
-// ASYNC LOADER UTILITY
+// ASYNC LOADER WRAPPER
 // ===================================================
+/** Wrap a promise-returning function with a page overlay loader. */
 export async function withLoader(taskFn) {
   showPageTransitionLoader()
   try {
@@ -225,6 +322,13 @@ export async function withLoader(taskFn) {
 // ===================================================
 // FIRESTORE: ELDT PROGRESS HELPERS
 // ===================================================
+
+/**
+ * Upsert progress fields for a user; optionally append to history.
+ * @param {string} userId
+ * @param {object} fields
+ * @param {{role?: 'student'|'instructor'|'admin'|'superadmin', logHistory?: boolean}} options
+ */
 export async function updateELDTProgress(userId, fields, options = {}) {
   try {
     const { role = 'student', logHistory = false } = options
@@ -237,6 +341,7 @@ export async function updateELDTProgress(userId, fields, options = {}) {
       role,
     }
 
+    // Automatically add timestamp fields for *_Complete booleans
     Object.keys(fields).forEach(k => {
       if (k.endsWith('Complete') && fields[k] === true) {
         updateObj[`${k}At`] = serverTimestamp()
@@ -363,4 +468,4 @@ export async function logStudySession(studentEmail, minutes, context = '') {
 }
 
 // Re-export for legacy callers importing from @utils/ui-helpers
-export { showToast }
+export { showToast } from '@components/ToastContext'

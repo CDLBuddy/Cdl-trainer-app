@@ -1,4 +1,6 @@
 // src/components/NavBar.jsx
+ 
+// { loading, isLoggedIn, role, user, logout, notifications? }
 import React, {
   useState,
   useRef,
@@ -9,7 +11,6 @@ import React, {
 } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 
-import { useSession } from '@/App.jsx' // { loading, isLoggedIn, role, user, logout, notifications? }
 import {
   getDashboardRoute,
   getNavLinksForRole, // ⬅ pull top nav from navConfig via navigation helper
@@ -18,6 +19,8 @@ import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,
 } from '@utils/school-branding.js'
+
+import { useSession } from '../session/useSession'
 
 import styles from './NavBar.module.css'
 

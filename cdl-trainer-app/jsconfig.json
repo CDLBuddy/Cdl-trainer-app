@@ -3,17 +3,20 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@utils/*": ["src/utils/*"],
       "@components/*": ["src/components/*"],
-      "@styles/*": ["src/styles/*"],
+      "@utils/*": ["src/utils/*"],
+      "@navigation/*": ["src/navigation/*"],
       "@pages/*": ["src/pages/*"],
+      "@session/*": ["src/session/*"],
+      "@shared/*": ["src/shared/*"],
+      "@styles/*": ["src/styles/*"],
+      "@assets/*": ["src/assets/*"],
+      "@walkthrough-data/*": ["src/walkthrough-data/*"],
       "@student/*": ["src/student/*"],
+      "@student-components/*": ["src/student/components/*"],
       "@instructor/*": ["src/instructor/*"],
       "@admin/*": ["src/admin/*"],
-      "@superadmin/*": ["src/superadmin/*"],
-      "@navigation/*": ["src/navigation/*"],
-      "@walkthrough/*": ["src/walkthrough-data/*"]
+      "@superadmin/*": ["src/superadmin/*"]
     }
-  },
-  "include": ["src", "vite.config.js"]
+  }
 }

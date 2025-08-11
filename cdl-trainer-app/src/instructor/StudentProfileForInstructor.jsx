@@ -1,8 +1,3 @@
-import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-
-import ChecklistReviewModal from '@components/ChecklistReviewModal.jsx' // Assume you move modal logic here
-import { useToast } from '@components/ToastContext'
 import {
   db,
   doc,
@@ -10,7 +5,12 @@ import {
   collection,
   addDoc,
   serverTimestamp
-} from '@utils/firebase.js'
+} from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+
+import ChecklistReviewModal from '@components/ChecklistReviewModal.jsx' // Assume you move modal logic here
+import { useToast } from '@components/ToastContext'
 import {
   verifyStudentProfile,
   verifyStudentPermit,
