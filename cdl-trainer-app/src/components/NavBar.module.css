@@ -2,8 +2,47 @@
    Relies on theme tokens set globally:
    --brand-dark, --brand-mid, --brand-light, --accent, --text-light, --card-bg-dark
    --error, --safe-area-inset-top
-============================================================================= */
+   ========================================================================= */
 
+/* Sensible defaults (works even if you forgot to set tokens) */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+}
+
+/* Screen reader helper (optional; use in JSX if you add skip links) */
+.srOnly {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Optional: place a "Skip to content" link just before the navbar in JSX */
+.skipLink {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.5rem;
+  transform: translateY(-150%);
+  background: #0a2540;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  z-index: 1100;
+  transition: transform 0.15s ease;
+}
+.skipLink:focus {
+  transform: translateY(0);
+  outline: 2px solid var(--accent);
+}
+
+/* ====================================================================== */
+/* BAR */
+/* ====================================================================== */
 .navbar {
   display: flex;
   align-items: center;
@@ -42,9 +81,9 @@
   }
 }
 
-/* Left cluster (logo + name).
-   In JSX we render it as a <button> for keyboard a11y.
-*/
+/* ====================================================================== */
+/* LEFT: brand cluster */
+/* ====================================================================== */
 .left {
   display: flex;
   align-items: center;
@@ -52,11 +91,11 @@
   background: transparent;
   border: 0;
   cursor: pointer;
+  border-radius: 12px;
 }
 .left:focus-visible {
   outline: 2px solid color-mix(in oklab, var(--brand-light), white 12%);
   outline-offset: 3px;
-  border-radius: 12px;
 }
 
 .logo {
@@ -82,7 +121,9 @@
   max-width: clamp(120px, 22vw, 320px);
 }
 
-/* Center/right links */
+/* ====================================================================== */
+/* LINKS */
+/* ====================================================================== */
 .links {
   display: flex;
   gap: 1.25em;
@@ -115,15 +156,23 @@
 .active,
 .link:hover,
 .link:focus-visible {
-  background: linear-gradient(
-    120deg,
-    var(--brand-light) 60%,
-    var(--brand-mid) 100%
-  );
+  background: linear-gradient(120deg, var(--brand-light) 60%, var(--brand-mid) 100%);
   color: var(--accent, #c4dbe8);
   box-shadow: 0 2px 10px #4e91ad32;
   opacity: 1;
   text-shadow: 0 2px 8px #4e91ad25;
+}
+
+/* Small keyboard-focus underline for users preferring no strong bg */
+.link:focus-visible::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 4px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
 }
 
 /* Theme toggle */
@@ -148,7 +197,9 @@
   outline: none;
 }
 
-/* User cluster (avatar + dropdown) */
+/* ====================================================================== */
+/* USER CLUSTER */
+/* ====================================================================== */
 .user {
   position: relative;
   margin-left: 1.1em;
@@ -201,17 +252,15 @@
   box-shadow: 0 2px 8px #c44c4c44;
 }
 
-/* Dropdown */
+/* ====================================================================== */
+/* DROPDOWN */
+/* ====================================================================== */
 .dropdown {
   position: absolute;
   right: 0;
   top: 48px;
   min-width: 200px;
-  background: linear-gradient(
-    120deg,
-    var(--brand-mid) 60%,
-    var(--brand-light) 100%
-  );
+  background: linear-gradient(120deg, var(--brand-mid) 60%, var(--brand-light) 100%);
   box-shadow:
     0 4px 18px #0005,
     0 2px 12px var(--brand-light, #4e91ad33);
@@ -226,14 +275,8 @@
 }
 
 @keyframes fadeInDropdown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .dropdownUser {
@@ -244,14 +287,8 @@
   border-bottom: 1.5px solid var(--accent, #c4dbe8);
   padding-bottom: 0.34em;
 }
-.dropdownEmail {
-  display: block;
-}
-.dropdownRole {
-  font-size: 0.91em;
-  opacity: 0.7;
-  color: var(--accent, #c4dbe8);
-}
+.dropdownEmail { display: block; }
+.dropdownRole  { font-size: 0.91em; opacity: 0.7; color: var(--accent, #c4dbe8); }
 
 .dropdownItem {
   background: none;
@@ -276,7 +313,9 @@
   transform: translateY(-1px);
 }
 
-/* Hamburger */
+/* ====================================================================== */
+/* BURGER */
+/* ====================================================================== */
 .burger {
   display: none;
   flex-direction: column;
@@ -310,28 +349,20 @@
     background 0.13s,
     opacity 0.12s;
 }
-.burgerOpen span:nth-child(2) {
-  opacity: 0;
-}
-.burgerOpen span:nth-child(1) {
-  transform: translateY(8px) rotate(45deg);
-}
-.burgerOpen span:nth-child(3) {
-  transform: translateY(-8px) rotate(-45deg);
-}
+.burgerOpen span:nth-child(2) { opacity: 0; }
+.burgerOpen span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.burgerOpen span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 
-/* Mobile menu panel */
+/* ====================================================================== */
+/* MOBILE MENU PANEL */
+/* ====================================================================== */
 @media (max-width: 850px) {
   .links {
     position: absolute;
     top: calc(58px + var(--safe-area-inset-top));
     left: 0;
     right: 0;
-    background: linear-gradient(
-      120deg,
-      var(--brand-dark),
-      var(--brand-mid) 96%
-    );
+    background: linear-gradient(120deg, var(--brand-dark), var(--brand-mid) 96%);
     flex-direction: column;
     align-items: flex-start;
     gap: 1em;
@@ -347,25 +378,14 @@
     display: flex;
     animation: fadeInDropdown 0.19s ease-out both;
   }
-  .burger {
-    display: flex;
-  }
+  .burger { display: flex; }
 }
 
 /* Extra small tweaks */
 @media (max-width: 500px) {
-  .navbar {
-    padding-left: 0.5em;
-    padding-right: 0.22em;
-  }
-  .links,
-  .linksOpen {
-    padding-left: 0.9em;
-    padding-right: 0.4em;
-  }
-  .brand {
-    max-width: 48vw;
-  }
+  .navbar { padding-left: 0.5em; padding-right: 0.22em; }
+  .links, .linksOpen { padding-left: 0.9em; padding-right: 0.4em; }
+  .brand { max-width: 48vw; }
 }
 
 /* Reduced motion: disable flourishes for sensitive users */
@@ -381,6 +401,33 @@
   .avatarBtn:hover,
   .dropdownItem:hover {
     transform: none !important;
+  }
+}
+
+/* Forced colors / high contrast (Windows) */
+@media (forced-colors: active) {
+  .navbar,
+  .links,
+  .dropdown {
+    forced-color-adjust: none;
+    background: Canvas;
+    color: CanvasText;
+    border-color: ButtonText;
+  }
+  .link,
+  .dropdownItem,
+  .themeBtn,
+  .avatarBtn,
+  .burger {
+    outline: 1px solid ButtonText;
+  }
+  .active,
+  .link:hover,
+  .link:focus-visible,
+  .dropdownItem:hover,
+  .dropdownItem:focus-visible {
+    background: Highlight;
+    color: HighlightText;
   }
 }
 

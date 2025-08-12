@@ -1,14 +1,13 @@
 // src/student/StudentDashboard.jsx
-import React, { useEffect, useMemo, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
-// Firestore helper for the “What’s New” card
+import SplashScreen from '@components/SplashScreen.jsx'
 import { getLatestUpdate } from '@utils/firebase'
+import { useSession } from '@session/useSession.js'
+import { StudentRoutes } from '@navigation/navigation.js'
 
-import { useSession } from '../session/useSession.js'
-
-// Page-scoped styles
 import styles from './StudentDashboard.module.css'
 
 /* ------------------------------------------------------------------ *
@@ -87,24 +86,29 @@ function formatDate(dateInput) {
  * ------------------------------------------------------------------ */
 export default function StudentDashboard() {
   const navigate = useNavigate()
-  const { user } = useSession?.() || {}
+  const { user } = useSession() || {}
 
-  // Profile snapshot (from session.user or defaults)
   const profile = useMemo(() => user?.profile || user || {}, [user])
   const profilePct = useMemo(() => computeProfileCompletion(profile), [profile])
   const nextHint = useMemo(() => getNextChecklistHint(profile), [profile])
   const isComplete = /All required steps complete!/i.test(nextHint)
 
-  // Latest update (Firestore → utils/firebase.getLatestUpdate)
+  // Latest update card
   const [latestUpdate, setLatestUpdate] = useState(null)
   const [updatesLoading, setUpdatesLoading] = useState(true)
+  const [updatesError, setUpdatesError] = useState(null)
 
   useEffect(() => {
     let alive = true
     ;(async () => {
       try {
         const data = await getLatestUpdate()
-        if (alive) setLatestUpdate(data || null)
+        if (alive) {
+          setLatestUpdate(data || null)
+          setUpdatesError(null)
+        }
+      } catch (err) {
+        if (alive) setUpdatesError(err || new Error('Failed to load updates'))
       } finally {
         if (alive) setUpdatesLoading(false)
       }
@@ -114,7 +118,7 @@ export default function StudentDashboard() {
     }
   }, [])
 
-  // Set document title
+  // Title
   useEffect(() => {
     const prev = document.title
     document.title = 'Student Dashboard • CDL Trainer'
@@ -123,13 +127,12 @@ export default function StudentDashboard() {
     }
   }, [])
 
-  // Quick links
   const quickLinks = useMemo(
     () => [
-      { to: '/student/checklists', label: 'Open Checklists', icon: '📋' },
-      { to: '/student/practice-tests', label: 'Practice Tests', icon: '📝' },
-      { to: '/student/walkthrough', label: 'Walkthrough', icon: '🚚' },
-      { to: '/student/flashcards', label: 'Flashcards', icon: '🗂️' },
+      { to: StudentRoutes.checklists(), label: 'Open Checklists', icon: '📋' },
+      { to: StudentRoutes.practiceTests(), label: 'Practice Tests', icon: '📝' },
+      { to: StudentRoutes.walkthrough(), label: 'Walkthrough', icon: '🚚' },
+      { to: StudentRoutes.flashcards(), label: 'Flashcards', icon: '🗂️' },
     ],
     []
   )
@@ -139,64 +142,71 @@ export default function StudentDashboard() {
     : null
   const streakDays = profile?.studyStreakDays ?? 0
 
+  const goProfile = useCallback(
+    () => navigate(StudentRoutes.profile()),
+    [navigate]
+  )
+
   return (
     <Shell title="Student Dashboard" showFab showFooter>
       <div className={styles.wrapper}>
-        {/* Row: KPIs */}
-        <div className={styles.kpiRow}>
-          <div className={styles.kpiCard}>
-            <div className={styles.kpiTitle}>Profile Completion</div>
+        {/* KPIs */}
+        <section className={styles.kpiRow} aria-label="Key metrics">
+          <article className={styles.kpiCard}>
+            <h3 className={styles.kpiTitle}>Profile Completion</h3>
             <div className={styles.kpiValue}>
               {profilePct}
               <span className={styles.kpiUnit}>%</span>
             </div>
             <div
               className={styles.progressTrack}
+              role="progressbar"
               aria-label="Profile completion"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.min(100, Math.max(0, profilePct))}
             >
               <div
                 className={styles.progressFill}
                 style={{ width: `${Math.min(100, Math.max(0, profilePct))}%` }}
               />
             </div>
-            <div className={styles.kpiHint}>
+            <p className={styles.kpiHint}>
               {profilePct < 100 ? 'Finish your profile to 100%.' : 'Nice work!'}
-            </div>
-          </div>
+            </p>
+          </article>
 
-          <div className={styles.kpiCard}>
-            <div className={styles.kpiTitle}>Last Practice Score</div>
+          <article className={styles.kpiCard}>
+            <h3 className={styles.kpiTitle}>Last Practice Score</h3>
             <div className={styles.kpiValue}>
               {lastScore != null ? lastScore : '--'}
               <span className={styles.kpiUnit}>
                 {lastScore != null ? '%' : ''}
               </span>
             </div>
-            <div className={styles.kpiHint}>
+            <p className={styles.kpiHint}>
               {lastScore != null
                 ? lastScore >= 80
                   ? 'Ready to keep going!'
                   : 'Shoot for 80%+ to pass.'
                 : 'Take a practice test to see a score.'}
-            </div>
-          </div>
+            </p>
+          </article>
 
-          <div className={styles.kpiCard}>
-            <div className={styles.kpiTitle}>Study Streak</div>
+          <article className={styles.kpiCard}>
+            <h3 className={styles.kpiTitle}>Study Streak</h3>
             <div className={styles.kpiValue}>
               {streakDays}
               <span className={styles.kpiUnit}>d</span>
             </div>
-            <div className={styles.kpiHint}>
-              {streakDays > 0
-                ? 'Keep that streak alive!'
-                : 'Start a session today.'}
-            </div>
-          </div>
-        </div>
+            <p className={styles.kpiHint}>
+              {streakDays > 0 ? 'Keep that streak alive!' : 'Start a session today.'}
+            </p>
+          </article>
+        </section>
 
         {/* Next step banner */}
-        <div
+        <section
           className={`${styles.banner} ${isComplete ? styles.bannerSuccess : styles.bannerInfo}`}
           role="status"
           aria-live="polite"
@@ -206,18 +216,14 @@ export default function StudentDashboard() {
           </div>
           <div className={styles.bannerText}>{nextHint}</div>
           {!isComplete && (
-            <button
-              type="button"
-              className={styles.bannerCta}
-              onClick={() => navigate('/student/profile')}
-            >
+            <button type="button" className={styles.bannerCta} onClick={goProfile}>
               Fix it
             </button>
           )}
-        </div>
+        </section>
 
         {/* Quick actions */}
-        <div className={styles.quickRow}>
+        <nav className={styles.quickRow} aria-label="Quick actions">
           {quickLinks.map(q => (
             <Link key={q.to} to={q.to} className={styles.quickBtn}>
               <span className={styles.quickIcon} aria-hidden>
@@ -226,51 +232,52 @@ export default function StudentDashboard() {
               <span>{q.label}</span>
             </Link>
           ))}
-        </div>
+        </nav>
 
         {/* Latest Update card */}
-        <div className={styles.updateCard}>
+        <section className={styles.updateCard} aria-labelledby="whats-new-title">
           <div className={styles.updateHeader}>
-            <span>📢 What’s New</span>
+            <span id="whats-new-title">📢 What’s New</span>
           </div>
+
           {updatesLoading ? (
             <div className={styles.updateBody} aria-busy="true">
               <div className={styles.updateSkeleton} />
               <div className={styles.updateSkeleton} style={{ width: '70%' }} />
+            </div>
+          ) : updatesError ? (
+            <div className={styles.updateBody}>
+              <div className={styles.updateEmpty}>Couldn’t load updates. Try again later.</div>
             </div>
           ) : latestUpdate ? (
             <div className={styles.updateBody}>
               <div className={styles.updateContent}>
                 {latestUpdate.content || '(No details)'}
               </div>
-              <div className={styles.updateMeta}>
-                {formatDate(latestUpdate.date)}
-              </div>
+              <div className={styles.updateMeta}>{formatDate(latestUpdate.date)}</div>
             </div>
           ) : (
             <div className={styles.updateBody}>
               <div className={styles.updateEmpty}>No recent updates.</div>
             </div>
           )}
-        </div>
+        </section>
 
         {/* Helpful tips */}
-        <div className={styles.tipsRow}>
-          <div className={styles.tipCard}>
-            <div className={styles.tipTitle}>Study Tip</div>
+        <section className={styles.tipsRow} aria-label="Helpful tips">
+          <article className={styles.tipCard}>
+            <h3 className={styles.tipTitle}>Study Tip</h3>
             <div className={styles.tipBody}>
-              Say each step of the <b>three-point brake check</b> out loud
-              during practice. It sticks.
+              Say each step of the <b>three-point brake check</b> out loud during practice. It sticks.
             </div>
-          </div>
-          <div className={styles.tipCard}>
-            <div className={styles.tipTitle}>Pro Tip</div>
+          </article>
+          <article className={styles.tipCard}>
+            <h3 className={styles.tipTitle}>Pro Tip</h3>
             <div className={styles.tipBody}>
-              Use <b>Flashcards</b> when you have 5 minutes—on the bus, in line,
-              wherever.
+              Use <b>Flashcards</b> when you have 5 minutes—on the bus, in line, wherever.
             </div>
-          </div>
-        </div>
+          </article>
+        </section>
       </div>
     </Shell>
   )

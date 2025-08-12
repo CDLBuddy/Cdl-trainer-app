@@ -1,6 +1,13 @@
 // src/components/NavBar.jsx
- 
-// { loading, isLoggedIn, role, user, logout, notifications? }
+// ======================================================================
+// NavBar
+// - Brand (logo + schoolName) from prop or branding bus
+// - Role-aware links from central navigation config
+// - Role router preloading on hover (idle-aware)
+// - Accessible menus, keyboard toggles, outside-click & ESC handling
+// - Active link styling works for nested routes
+// ======================================================================
+
 import React, {
   useState,
   useRef,
@@ -13,47 +20,48 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 
 import {
   getDashboardRoute,
-  getNavLinksForRole, // ⬅ pull top nav from navConfig via navigation helper
+  getNavLinksForRole,
 } from '@navigation/navigation.js'
 import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,
 } from '@utils/school-branding.js'
-
-import { useSession } from '../session/useSession'
+import { preloadRoutesForRole } from '@utils/route-preload'
+import { useSession } from '@session'
 
 import styles from './NavBar.module.css'
 
-/**
- * Props:
- * - brand?: { logoUrl?: string; schoolName?: string; primaryColor?: string }
- *   (Optional override; otherwise the bar listens for branding:updated)
- */
-function NavBar({ brand: brandProp }) {
-  const session = useSession?.() || {}
-  const { role, user, logout } = session
-  const email = user?.email || session.email || ''
-  const avatarUrl = user?.photoURL || session.avatarUrl || '/default-avatar.svg'
-  const notifications = Number(session.notifications ?? 0)
+// Infer role from a link target like "/student", "/instructor", etc.
+function roleFromPath(path = '') {
+  const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/.exec(path)
+  return m?.[1] || null
+}
 
+function NavBar({ brand: brandProp }) {
+  const { role, user, logout, notifications: notifCount } = useSession() || {}
   const navigate = useNavigate()
   const { pathname } = useLocation()
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false) // elevated navbar on scroll
+  const [scrolled, setScrolled] = useState(false)
   const profileRef = useRef(null)
 
-  // Close the mobile menu when route changes
+  // Close the mobile menu on route change
   useEffect(() => {
     if (menuOpen) setMenuOpen(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
 
-  // --- Scroll elevation ---
+  // Scroll elevation (reduced work via rAF + reduced-motion respect)
   useEffect(() => {
     let ticking = false
+    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     const onScroll = () => {
+      if (prefersReduced) {
+        setScrolled(window.scrollY > 6)
+        return
+      }
       if (ticking) return
       ticking = true
       requestAnimationFrame(() => {
@@ -61,19 +69,17 @@ function NavBar({ brand: brandProp }) {
         ticking = false
       })
     }
-    onScroll() // initialize once
+    onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // --- Branding (prefer prop from App; else cached + live updates) ---
+  // Branding (prop wins; else cached + live updates)
   const [brand, setBrand] = useState(() => {
-    if (brandProp && (brandProp.logoUrl || brandProp.schoolName))
-      return brandProp
+    if (brandProp && (brandProp.logoUrl || brandProp.schoolName)) return brandProp
     return getCachedBrandingSummary()
   })
 
-  // Update when parent passes a new brand
   useEffect(() => {
     if (brandProp && (brandProp.logoUrl || brandProp.schoolName)) {
       setBrand(prev => ({
@@ -84,9 +90,8 @@ function NavBar({ brand: brandProp }) {
     }
   }, [brandProp])
 
-  // Subscribe for runtime school switches (only if no prop provided)
   useEffect(() => {
-    if (brandProp) return // parent controls branding; no subscription needed
+    if (brandProp) return
     const unsub = subscribeBrandingUpdated(detail => {
       setBrand(prev => ({
         logoUrl: detail?.logoUrl ?? prev.logoUrl ?? '/default-logo.svg',
@@ -97,14 +102,10 @@ function NavBar({ brand: brandProp }) {
     return unsub
   }, [brandProp])
 
-  // --- Close dropdowns on outside click / ESC
+  // Close dropdowns on outside click + ESC
   useEffect(() => {
     function handleClickOutside(e) {
-      if (
-        profileOpen &&
-        profileRef.current &&
-        !profileRef.current.contains(e.target)
-      ) {
+      if (profileOpen && profileRef.current && !profileRef.current.contains(e.target)) {
         setProfileOpen(false)
       }
     }
@@ -122,11 +123,14 @@ function NavBar({ brand: brandProp }) {
     }
   }, [profileOpen])
 
-  // --- Build visible nav (from central config) ---
+  // Build visible nav from central config
   const links = useMemo(() => {
-    // Always show Home first; rest comes from central config per role
-    const base = [{ to: '/', label: 'Home', always: true }]
-    const roleLinks = getNavLinksForRole(role || 'student')
+    const base = [{ to: '/', label: 'Home', exact: true, prefetchRole: null }]
+    const roleLinks = getNavLinksForRole(role || 'student').map(l => ({
+      exact: false, // nested routes should remain active
+      prefetchRole: roleFromPath(l.to),
+      ...l,
+    }))
     return [...base, ...roleLinks]
   }, [role])
 
@@ -138,8 +142,7 @@ function NavBar({ brand: brandProp }) {
       { label: 'Dashboard', action: () => navigate(getDashboardRoute(role)) },
       {
         label: 'Logout',
-        action: () =>
-          typeof logout === 'function' ? logout() : navigate('/login'),
+        action: () => (typeof logout === 'function' ? logout() : navigate('/login')),
       },
     ]
   }, [navigate, role, logout])
@@ -158,6 +161,16 @@ function NavBar({ brand: brandProp }) {
   const goHome = useCallback(() => {
     navigate(role ? getDashboardRoute(role) : '/')
   }, [navigate, role])
+
+  // Preload role router on nav intent (hover/focus)
+  const handleLinkPrefetch = useCallback((to) => {
+    const r = roleFromPath(to)
+    if (r) preloadRoutesForRole(r) // idle/network-aware in util
+  }, [])
+
+  const email = user?.email || ''
+  const avatarUrl = user?.photoURL || '/default-avatar.svg'
+  const notifications = Number(notifCount ?? 0)
 
   return (
     <nav
@@ -179,9 +192,7 @@ function NavBar({ brand: brandProp }) {
           loading="lazy"
           decoding="async"
         />
-        <span className={styles.brand}>
-          {brand?.schoolName || 'CDL Trainer'}
-        </span>
+        <span className={styles.brand}>{brand?.schoolName || 'CDL Trainer'}</span>
       </button>
 
       {/* Desktop links / mobile panel */}
@@ -198,7 +209,9 @@ function NavBar({ brand: brandProp }) {
               `${styles.link} ${isActive ? styles.active : ''}`
             }
             onClick={() => setMenuOpen(false)}
-            end
+            onMouseEnter={() => handleLinkPrefetch(link.to)}
+            onFocus={() => handleLinkPrefetch(link.to)}
+            end={!!link.exact}            {/* exact only for Home */}
             role="menuitem"
           >
             {link.label}
@@ -212,9 +225,7 @@ function NavBar({ brand: brandProp }) {
           onClick={handleThemeSwitch}
           type="button"
         >
-          <span role="img" aria-label="Theme">
-            🌓
-          </span>
+          <span role="img" aria-label="Theme">🌓</span>
         </button>
       </div>
 

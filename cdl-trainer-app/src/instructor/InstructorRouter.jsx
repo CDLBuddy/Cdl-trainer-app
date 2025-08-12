@@ -1,51 +1,96 @@
 // src/instructor/InstructorRouter.jsx
+// ======================================================================
+// Instructor Router (nested under /instructor/*)
+// - Lazy-loads only the screens you actually have
+// - Local Suspense fallback to keep app chrome responsive
+// - Lightweight error boundary for render safety
+// - Optional export: preloadInstructorRoutes() for hover-based warming
+// ======================================================================
+
 import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 
-// Lazy-load instructor pages
-const InstructorDashboard = lazy(() => import('./InstructorDashboard.jsx'))
-const InstructorProfile = lazy(() => import('./InstructorProfile.jsx'))
-const StudentProfileForInstructor = lazy(
-  () => import('./StudentProfileForInstructor.jsx')
-)
-const ChecklistReviewForInstructor = lazy(
-  () => import('./ChecklistReviewForInstructor.jsx')
-)
-// const InstructorChecklists      = lazy(() => import("./InstructorChecklists.jsx")); // add when file exists
+// ---- Lazy pages you actually use ---------------------------------------
+const InstructorDashboard          = lazy(() => import('@instructor/InstructorDashboard.jsx'))
+const InstructorProfile            = lazy(() => import('@instructor/InstructorProfile.jsx'))
+const StudentProfileForInstructor  = lazy(() => import('@instructor/StudentProfileForInstructor.jsx'))
+const ChecklistReviewForInstructor = lazy(() => import('@instructor/ChecklistReviewForInstructor.jsx'))
 
-function Loading() {
+// ---- Local loading UI (accessible) -------------------------------------
+function Loading({ text = 'Loading instructor page…' }) {
   return (
-    <div style={{ textAlign: 'center', marginTop: '4em' }}>
+    <div className="loading-container" role="status" aria-live="polite" style={{ textAlign: 'center', marginTop: '4rem' }}>
       <div className="spinner" />
-      <p>Loading instructor page…</p>
+      <p>{text}</p>
     </div>
   )
 }
 
+// ---- Small, contained error boundary -----------------------------------
+class InstructorSectionErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { err: null }
+  }
+  static getDerivedStateFromError(err) {
+    return { err }
+  }
+  componentDidCatch(error, info) {
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.error('[InstructorRouter] render error:', error, info)
+    }
+  }
+  render() {
+    if (this.state.err) {
+      return (
+        <div className="error-overlay" role="alert" aria-live="assertive" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+          <h2>Instructor area failed to load</h2>
+          <p style={{ color: '#b22' }}>{String(this.state.err)}</p>
+          <button className="btn" onClick={() => window.location.reload()} style={{ marginTop: 16 }}>
+            Reload
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
+// ---- Fallback route: normalize unknown paths ---------------------------
+function InstructorNotFound() {
+  return <Navigate to="/instructor/dashboard" replace />
+}
+
+// ---- (Optional) sub-route preloader for hover-based warming ------------
+export async function preloadInstructorRoutes() {
+  await Promise.allSettled([
+    import('@instructor/InstructorDashboard.jsx'),
+    import('@instructor/InstructorProfile.jsx'),
+    import('@instructor/StudentProfileForInstructor.jsx'),
+    import('@instructor/ChecklistReviewForInstructor.jsx'),
+  ])
+}
+
+// ---- Router component ---------------------------------------------------
 export default function InstructorRouter() {
   return (
-    <Suspense fallback={<Loading />}>
-      <Routes>
-        {/* /instructor */}
-        <Route index element={<InstructorDashboard />} />
-        <Route path="dashboard" element={<InstructorDashboard />} />
-        <Route path="profile" element={<InstructorProfile />} />
-        <Route
-          path="student-profile/:studentId"
-          element={<StudentProfileForInstructor />}
-        />
-        <Route
-          path="checklist-review"
-          element={<ChecklistReviewForInstructor />}
-        />
-        {/* <Route path="checklists" element={<InstructorChecklists />} /> */}
+    <InstructorSectionErrorBoundary>
+      <Suspense fallback={<Loading text="Loading instructor area…" />}>
+        <Routes>
+          {/* Root (/instructor) → dashboard */}
+          <Route index element={<InstructorDashboard />} />
+          <Route path="dashboard" element={<InstructorDashboard />} />
 
-        {/* Fallback inside instructor namespace */}
-        <Route
-          path="*"
-          element={<Navigate to="/instructor/dashboard" replace />}
-        />
-      </Routes>
-    </Suspense>
+          {/* Core */}
+          <Route path="profile" element={<InstructorProfile />} />
+          <Route path="student-profile/:studentId" element={<StudentProfileForInstructor />} />
+          <Route path="checklist-review" element={<ChecklistReviewForInstructor />} />
+
+          {/* Fallback */}
+          <Route path="*" element={<InstructorNotFound />} />
+        </Routes>
+      </Suspense>
+    </InstructorSectionErrorBoundary>
   )
 }

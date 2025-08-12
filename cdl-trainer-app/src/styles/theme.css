@@ -1,47 +1,83 @@
 /* ==========================================
    Theme tokens (global CSS variables)
-   Matches your latest palette from earlier
    ========================================== */
 :root {
-  /* Brand palette */
-  --brand-dark: #0e1b1b;
-  --brand-mid: #004d66;
+  /* -------- Brand palette -------- */
+  --brand-dark:  #0e1b1b;
+  --brand-mid:   #004d66;
   --brand-light: #4e91ad;
-  --accent: #c4dbe8;
+  --accent:      #c4dbe8;
 
-  /* Text & surfaces */
+  /* Common alias used around the app */
+  --brand-primary: var(--brand-light);
+
+  /* -------- Text & surfaces -------- */
   --text-light: #ffffff;
-  --text-dark: #e0e0e0;
-  --card-bg: rgba(255, 255, 255, 0.06);
-  --card-bg-dark: rgba(10, 15, 20, 0.6);
+  --text-dark:  #e0e0e0;
+  --card-bg:       rgba(255, 255, 255, 0.06);
+  --card-bg-dark:  rgba(10, 15, 20, 0.60);
+  --app-bg: var(--brand-dark);
 
-  /* Feedback */
-  --error: #e53e3e;
+  /* -------- Feedback -------- */
+  --error:   #e53e3e;
   --success: #48bb78;
   --warning: #f6ad55;
 
-  /* Toasts */
-  --toast-bg: rgba(0, 0, 0, 0.85);
+  /* -------- Toasts -------- */
+  --toast-bg:   rgba(0, 0, 0, 0.85);
   --toast-text: #ffffff;
 
-  /* Layout / misc */
-  --safe-area-inset-top: env(safe-area-inset-top, 20px);
-  --app-bg: var(--brand-dark);
+  /* -------- Layout / env -------- */
+  --safe-area-inset-top:    env(safe-area-inset-top, 20px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
 
-  /* Typography */
+  /* -------- Typography -------- */
   --font-body:
-    Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
-    'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
+    Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
 
-  /* Z layers */
-  --z-navbar: 1000;
+  /* -------- Radii / elevation -------- */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --shadow-1: 0 6px 20px  rgba(0, 0, 0, 0.20);
+  --shadow-2: 0 10px 30px rgba(0, 0, 0, 0.25);
+  --shadow-3: 0 14px 40px rgba(0, 0, 0, 0.31);
+
+  /* -------- Focus rings -------- */
+  --ring:        0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 10%);
+  --ring-strong: 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 20%);
+  --ring-error:  0 0 0 3px color-mix(in oklab, var(--error),       #fff 12%);
+
+  /* -------- Z layers -------- */
+  --z-sticky:   10;
+  --z-navbar:   1000;
   --z-dropdown: 1200;
-  --z-modal: 1400;
-  --z-toast: 1600;
+  --z-modal:    1400;
+  --z-toast:    1600;
 }
 
-/* Optional: light mode hook if you ever enable body:not(.dark-mode) */
-@media (prefers-color-scheme: light) {
-  /* You can soften the background if you support light mode */
-  /* :root { --app-bg: #f5f7fb; } */
+/* Optional: role-aware accent nuance (use if desired) */
+/*
+:root[data-user-role="student"]    { --accent: #c4dbe8; }
+:root[data-user-role="instructor"] { --accent: #c6ffb3; }
+:root[data-user-role="admin"]      { --accent: #ffd59e; }
+:root[data-user-role="superadmin"] { --accent: #ffb3b3; }
+*/
+
+/* Optional: light mode hook (if you toggle .light on <html>) */
+/*
+:root.light {
+  --app-bg: #f6f8fb;
+  --text-light: #101620;
+  --card-bg: #ffffff;
 }
+*/
+
+/* Respect system light preference (kept commented; enable if you want) */
+/*
+@media (prefers-color-scheme: light) {
+  :root { --app-bg: #f6f8fb; }
+}
+*/

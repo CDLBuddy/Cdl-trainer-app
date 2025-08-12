@@ -1,37 +1,60 @@
 // src/superadmin/SuperadminRouter.jsx
+// ======================================================================
+// Superadmin Router (nested under /superadmin/*)
+// - Lazy-loads superadmin pages
+// - Local Suspense fallback (keeps app chrome responsive)
+// - Lightweight error boundary for render-time safety
+// - Optional export: preloadSuperadminRoutes() for hover-based warming
+// ======================================================================
+
 import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 
-// Lazy-load pages (match filenames exactly)
-const SuperAdminDashboard = lazy(() => import('./SuperAdminDashboard.jsx'))
-const SchoolManagement = lazy(() => import('./SchoolManagement.jsx'))
-const UserManagement = lazy(() => import('./UserManagement.jsx'))
-const ComplianceCenter = lazy(() => import('./ComplianceCenter.jsx'))
-const Billings = lazy(() => import('./Billings.jsx')) // <-- fixed name
-const Settings = lazy(() => import('./Settings.jsx'))
-const Logs = lazy(() => import('./Logs.jsx'))
-const Permissions = lazy(() => import('./Permissions.jsx'))
+// If you prefer the global splash, import and swap the fallback:
+// import SplashScreen from '@components/SplashScreen.jsx'
 
-class SuperadminErrorBoundary extends React.Component {
+// ---- Lazy pages ---------------------------------------------------------
+const SuperAdminDashboard = lazy(() => import('@superadmin/SuperAdminDashboard.jsx'))
+const SchoolManagement    = lazy(() => import('@superadmin/SchoolManagement.jsx'))
+const UserManagement      = lazy(() => import('@superadmin/UserManagement.jsx'))
+const ComplianceCenter    = lazy(() => import('@superadmin/ComplianceCenter.jsx'))
+const Billings            = lazy(() => import('@superadmin/Billings.jsx')) // file is Billings.jsx
+const Settings            = lazy(() => import('@superadmin/Settings.jsx'))
+const Logs                = lazy(() => import('@superadmin/Logs.jsx'))
+const Permissions         = lazy(() => import('@superadmin/Permissions.jsx'))
+
+// ---- Local loading UI (accessible) -------------------------------------
+function Loading({ text = 'Loading superadmin page…' }) {
+  return (
+    <div className="loading-container" role="status" aria-live="polite" style={{ textAlign: 'center', marginTop: '4rem' }}>
+      <div className="spinner" />
+      <p>{text}</p>
+    </div>
+  )
+}
+
+// ---- Small, contained error boundary -----------------------------------
+class SuperadminSectionErrorBoundary extends React.Component {
   constructor(props) {
     super(props)
-    this.state = { error: null }
+    this.state = { err: null }
   }
-  static getDerivedStateFromError(error) {
-    return { error }
+  static getDerivedStateFromError(err) {
+    return { err }
+  }
+  componentDidCatch(error, info) {
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.error('[SuperadminRouter] render error:', error, info)
+    }
   }
   render() {
-    if (this.state.error) {
+    if (this.state.err) {
       return (
-        <div
-          className="dashboard-card"
-          style={{ maxWidth: 560, margin: '2em auto' }}
-        >
-          <h2>Something went wrong</h2>
-          <p style={{ opacity: 0.9 }}>
-            {this.state.error?.message || 'An unexpected error occurred.'}
-          </p>
-          <button className="btn" onClick={() => window.location.reload()}>
+        <div className="error-overlay" role="alert" aria-live="assertive" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+          <h2>Superadmin area failed to load</h2>
+          <p style={{ color: '#b22' }}>{String(this.state.err)}</p>
+          <button className="btn" onClick={() => window.location.reload()} style={{ marginTop: 16 }}>
             Reload
           </button>
         </div>
@@ -41,36 +64,54 @@ class SuperadminErrorBoundary extends React.Component {
   }
 }
 
-function Loading() {
-  return (
-    <div style={{ textAlign: 'center', marginTop: '4em' }}>
-      <div className="spinner" />
-      <p>Loading super admin panel…</p>
-    </div>
-  )
+// ---- Fallback route: normalize unknown paths ---------------------------
+function SuperadminNotFound() {
+  return <Navigate to="/superadmin/dashboard" replace />
 }
 
+// ---- (Optional) sub-route preloader for hover-based warming ------------
+export async function preloadSuperadminRoutes() {
+  await Promise.allSettled([
+    import('@superadmin/SuperAdminDashboard.jsx'),
+    import('@superadmin/SchoolManagement.jsx'),
+    import('@superadmin/UserManagement.jsx'),
+    import('@superadmin/ComplianceCenter.jsx'),
+    import('@superadmin/Billings.jsx'),
+    import('@superadmin/Settings.jsx'),
+    import('@superadmin/Logs.jsx'),
+    import('@superadmin/Permissions.jsx'),
+  ])
+}
+
+// ---- Router component ---------------------------------------------------
 export default function SuperadminRouter() {
   return (
-    <SuperadminErrorBoundary>
-      <Suspense fallback={<Loading />}>
+    <SuperadminSectionErrorBoundary>
+      <Suspense
+        fallback={
+          <Loading text="Loading superadmin area…" />
+          // Or global splash:
+          // <SplashScreen message="Loading superadmin area…" showTip={false} />
+        }
+      >
         <Routes>
+          {/* Root (/superadmin) → dashboard */}
           <Route index element={<SuperAdminDashboard />} />
           <Route path="dashboard" element={<SuperAdminDashboard />} />
+
+          {/* Core */}
           <Route path="schools" element={<SchoolManagement />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="compliance" element={<ComplianceCenter />} />
-          <Route path="billing" element={<Billings />} />{' '}
-          {/* <-- fixed usage */}
+          <Route path="billing" element={<Billings />} /> {/* file = Billings.jsx, route = /billing */}
           <Route path="settings" element={<Settings />} />
           <Route path="logs" element={<Logs />} />
           <Route path="permissions" element={<Permissions />} />
-          <Route
-            path="*"
-            element={<Navigate to="/superadmin/dashboard" replace />}
-          />
+
+          {/* Fallback */}
+          <Route path="*" element={<SuperadminNotFound />} />
         </Routes>
       </Suspense>
-    </SuperadminErrorBoundary>
+    </SuperadminSectionErrorBoundary>
   )
 }
