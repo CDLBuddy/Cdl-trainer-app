@@ -3,20 +3,45 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
+
       "@components/*": ["src/components/*"],
       "@utils/*": ["src/utils/*"],
       "@navigation/*": ["src/navigation/*"],
       "@pages/*": ["src/pages/*"],
-      "@session/*": ["src/session/*"],
-      "@shared/*": ["src/shared/*"],
       "@styles/*": ["src/styles/*"],
       "@assets/*": ["src/assets/*"],
+      "@shared/*": ["src/shared/*"],
+
+      // session (used as both bare and subpaths)
+      "@session": ["src/session/index.js"],
+      "@session/*": ["src/session/*"],
+
+      // walkthrough data (public entry + subfolders)
+      "@walkthrough-data": ["src/walkthrough-data/index.js"],
       "@walkthrough-data/*": ["src/walkthrough-data/*"],
+
+      // optional direct access to subpackages
+      "@walkthrough-defaults": ["src/walkthrough-data/defaults/index.js"],
+      "@walkthrough-defaults/*": ["src/walkthrough-data/defaults/*"],
+      "@walkthrough-loaders": ["src/walkthrough-data/loaders/index.js"],
+      "@walkthrough-loaders/*": ["src/walkthrough-data/loaders/*"],
+      "@walkthrough-utils/*": ["src/walkthrough-data/utils/*"],
+
+      // student/instructor/admin areas
       "@student/*": ["src/student/*"],
       "@student-components/*": ["src/student/components/*"],
+      "@student-profile/*": ["src/student/profile/*"],
+      "@student-profile-sections/*": ["src/student/profile/sections/*"],
+      "@student-profile-ui/*": ["src/student/profile/ui/*"],
+      "@student-walkthrough/*": ["src/student/walkthrough/*"],
+
       "@instructor/*": ["src/instructor/*"],
       "@admin/*": ["src/admin/*"],
       "@superadmin/*": ["src/superadmin/*"]
-    }
-  }
+    },
+    "checkJs": false,
+    "types": ["vite/client"],
+    "jsx": "react-jsx"
+  },
+  "include": ["src", "vite.config.js"]
 }

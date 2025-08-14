@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import { useToast } from '@components/ToastContext'
+import { useToast } from '@/components/ToastContext.js'
 
 let _jsPDF = null
 async function ensureJsPDF() {

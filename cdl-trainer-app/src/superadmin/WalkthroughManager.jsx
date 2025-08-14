@@ -1,18 +1,22 @@
-import React, { useEffect, useMemo, useState } from 'react'
+// src/superadmin/WalkthroughManager.jsx
 import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore'
-import { db, auth } from '@utils/firebase.js'
+import React, { useEffect, useMemo, useState } from 'react'
+
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@components/ToastContext'
+import { useToast } from '@components/ToastContext.js' // case/extension exact
+import { db, auth } from '@utils/firebase.js'
 
-// Walkthrough data/helpers
 import {
-  DEFAULT_WALKTHROUGHS,
-  WALKTHROUGH_LABELS,
+  // defaults helpers (from src/walkthrough-data/defaults/index.js)
+  getDefaultWalkthroughByClass,
+  // global helpers (from src/walkthrough-data/index.js)
   getWalkthroughLabel,
-} from '@walkthrough'
-import { resolveWalkthrough } from '@walkthrough/loaders'
+  resolveWalkthrough, // re-exported from walkthrough-data/index.js
+} from '../walkthrough-data'
 
-const CLASS_TOKENS = Object.keys(WALKTHROUGH_LABELS)
+// Use CDL class *codes* as the selector values.
+// These work with both getDefaultWalkthroughByClass and resolveWalkthrough.
+const CLASS_TOKENS = ['A', 'A-WO-AIR-ELEC', 'A-WO-HYD-ELEC', 'B', 'PASSENGER-BUS']
 
 /** Lightweight validator so we can guard before saving */
 function validateScript(script) {
@@ -30,7 +34,6 @@ function validateScript(script) {
             problems.push(`Section[${si}].steps[${ti}] must be an object.`)
           if (typeof st.script !== 'string' || !st.script.trim())
             problems.push(`Section[${si}].steps[${ti}] is missing "script" (string).`)
-          // optional booleans sanity
           ;['mustSay', 'required', 'passFail', 'skip'].forEach(k => {
             if (k in st && typeof st[k] !== 'boolean')
               problems.push(`Section[${si}].steps[${ti}].${k} must be boolean if present.`)
@@ -42,7 +45,7 @@ function validateScript(script) {
   return { ok: problems.length === 0, problems }
 }
 
-/** Small diffs helper – just shows counts, to keep UI lightweight */
+/** Small, read-only counts for quick sanity checks */
 function countItems(script) {
   if (!Array.isArray(script)) return { sections: 0, steps: 0 }
   const sections = script.length
@@ -67,17 +70,16 @@ export default function WalkthroughManager() {
 
   // Defaults (readonly)
   const defaultScript = useMemo(
-    () => DEFAULT_WALKTHROUGHS[classToken] || null,
+    () => getDefaultWalkthroughByClass(classToken),
     [classToken]
   )
   const defaultCounts = useMemo(() => countItems(defaultScript), [defaultScript])
 
-  // Derived preview of editor json
+  // Derived preview of editor JSON
   const parsedEditorScript = useMemo(() => {
     try {
       if (!jsonText.trim()) return null
-      const obj = JSON.parse(jsonText)
-      return obj
+      return JSON.parse(jsonText)
     } catch {
       return null
     }
@@ -85,7 +87,7 @@ export default function WalkthroughManager() {
 
   const editorCounts = useMemo(() => countItems(parsedEditorScript), [parsedEditorScript])
 
-  // 1) Load schools for picker (name + id)
+  // 1) Load schools for picker (name + id) — run once
   useEffect(() => {
     let alive = true
     ;(async () => {
@@ -102,7 +104,7 @@ export default function WalkthroughManager() {
       }
     })()
     return () => { alive = false }
-  }, []) // only once
+  }, [schoolId, showToast]) // only once
 
   // 2) Load current custom for school+class
   useEffect(() => {
@@ -137,6 +139,7 @@ export default function WalkthroughManager() {
         setLoading(false)
       }
     })()
+    return () => { alive = false }
   }, [schoolId, classToken, defaultScript, showToast])
 
   // 3) Parse + validate on change
@@ -165,15 +168,16 @@ export default function WalkthroughManager() {
       setSaving(true)
       const ref = doc(db, 'schools', schoolId, 'walkthroughs', classToken)
       const editorScript = JSON.parse(jsonText)
+      const nowIso = new Date().toISOString()
       await setDoc(ref, {
         script: editorScript,
-        updatedAt: new Date().toISOString(),
+        updatedAt: nowIso,
         updatedBy: auth?.currentUser?.email || 'superadmin',
         source: 'superadmin-ui',
         version: 1,
       }, { merge: true })
       setCustomDocMeta({
-        updatedAt: new Date().toISOString(),
+        updatedAt: nowIso,
         updatedBy: auth?.currentUser?.email || 'superadmin',
         isCustom: true,
       })
@@ -194,7 +198,7 @@ export default function WalkthroughManager() {
   async function previewResolved() {
     try {
       const res = await resolveWalkthrough({
-        classType: classToken,
+        classType: classToken,     // CDL code
         schoolId,
         preferCustom: true,
         softFail: true,
@@ -217,8 +221,9 @@ export default function WalkthroughManager() {
         {/* Controls */}
         <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
           <div>
-            <label className="label">School</label>
+            <label className="label" htmlFor="school-select">School</label>
             <select
+              id="school-select"
               className="input"
               value={schoolId}
               onChange={e => setSchoolId(e.target.value)}
@@ -231,15 +236,16 @@ export default function WalkthroughManager() {
             </select>
           </div>
           <div>
-            <label className="label">Class</label>
+            <label className="label" htmlFor="class-select">Class</label>
             <select
+              id="class-select"
               className="input"
               value={classToken}
               onChange={e => setClassToken(e.target.value)}
             >
               {CLASS_TOKENS.map(tok => (
                 <option key={tok} value={tok}>
-                  {WALKTHROUGH_LABELS[tok]} ({tok})
+                  {getWalkthroughLabel(tok)} ({tok})
                 </option>
               ))}
             </select>

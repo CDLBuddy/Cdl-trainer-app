@@ -12,7 +12,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 
-import { showToast } from '@components/ToastContext' // <- your toast helper
+import { showToast } from '@/components/ToastContext.js' // <- your toast helper
 import { getUserRole } from '@utils/auth.js' // <- role check helper
 import { db } from '@utils/firebase.js' // <- adjust if needed
 

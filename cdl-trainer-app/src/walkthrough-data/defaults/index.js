@@ -6,9 +6,9 @@
 // - Returns frozen (immutable) copies to prevent accidental mutation
 // =============================================================================
 
-import walkthroughClassA from './walkthrough-class-a.js'
 import walkthroughClassAWoAirElec from './walkthrough-class-a-wo-air-elec.js'
 import walkthroughClassAWoHydElec from './walkthrough-class-a-wo-hyd-elec.js'
+import walkthroughClassA from './walkthrough-class-a.js'
 import walkthroughClassB from './walkthrough-class-b.js'
 import walkthroughPassengerBus from './walkthrough-passenger-bus.js'
 

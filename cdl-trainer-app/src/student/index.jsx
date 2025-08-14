@@ -9,7 +9,7 @@ export { default as Profile } from './profile/Profile.jsx'
 
 export { default as Checklists } from './Checklists.jsx'
 export { default as PracticeTests } from './PracticeTests.jsx'
-export { default as Walkthrough } from './Walkthrough.jsx'
+export { default as Walkthrough } from './walkthrough/Walkthrough.jsx'
 export { default as Flashcards } from './Flashcards.jsx'
 
 // Wrappers (in ./components)

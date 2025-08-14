@@ -13,9 +13,9 @@ import {
 } from 'firebase/firestore'
 import React, { useEffect, useRef, useState } from 'react'
 
-import { useToast } from '@components/ToastContext'
-import { db } from '@utils/firebase'
-import { formatDate } from '@utils/ui-helpers'
+import { useToast } from '@/components/ToastContext.js'
+import { db } from '@/utils/firebase.js'
+import { formatDate } from '@/utils/ui-helpers.js'
 
 // === FIELD CONFIG (expandable for admin/superadmin) ===
 const checklistFields = [

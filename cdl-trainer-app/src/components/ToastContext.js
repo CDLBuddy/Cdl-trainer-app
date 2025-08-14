@@ -64,11 +64,11 @@ const defaultToast = Object.assign(
 const ToastContext = createContext(defaultToast)
 
 // Default export for ergonomics:
-//   import ToastContext from '@components/ToastContext'
+//   import ToastContext from '@/components/ToastContext.js'
 export default ToastContext
 
 // Also allow named import if some files do:
-//   import { ToastContext } from '@components/ToastContext'
+//   import { ToastContext } from '@/components/ToastContext.js'
 export { ToastContext }
 
 /* ------------------------------------------------------------------ */

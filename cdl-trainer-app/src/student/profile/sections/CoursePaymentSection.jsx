@@ -1,8 +1,10 @@
 // src/student/profile/sections/CoursePaymentSection.jsx
 import React, { useCallback } from 'react'
+
 import Field from '../ui/Field.jsx'
 import Select from '../ui/Select.jsx'
 import UploadField from '../ui/UploadField.jsx'
+
 import styles from './sections.module.css'
 
 const PAYMENT_STATUS_OPTIONS = [

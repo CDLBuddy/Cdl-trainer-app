@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 
 import ChecklistReviewModal from '@components/ChecklistReviewModal.jsx' // Assume you move modal logic here
-import { useToast } from '@components/ToastContext'
+import { useToast } from '@/components/ToastContext.js'
 import {
   verifyStudentProfile,
   verifyStudentPermit,

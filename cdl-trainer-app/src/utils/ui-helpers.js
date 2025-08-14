@@ -468,4 +468,4 @@ export async function logStudySession(studentEmail, minutes, context = '') {
 }
 
 // Re-export for legacy callers importing from @utils/ui-helpers
-export { showToast } from '@components/ToastContext'
+export { showToast } from '@/components/ToastContext.js'

@@ -8,7 +8,7 @@ import React, {
   memo,
 } from 'react'
 
-import { getUserInitials } from '@components/ToastContext'
+import { getUserInitials } from '@/components/ToastContext.js'
 import { askCDLAI } from '@utils/aiApi.js' // e.g. "../utils/ai-api" -> rename file to aiApi.js for consistency
 import { auth } from '@utils/firebase.js'
 

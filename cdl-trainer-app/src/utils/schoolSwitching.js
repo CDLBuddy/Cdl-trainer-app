@@ -10,8 +10,8 @@ import {
   serverTimestamp,
 } from 'firebase/firestore'
 
-import { auth, db } from './firebase'
-import { showToast } from './ui-helpers'
+import { auth, db } from './firebase.js'
+import { showToast } from './ui-helpers.js'
 
 export function getDashboardRoute(role) {
   switch (role) {

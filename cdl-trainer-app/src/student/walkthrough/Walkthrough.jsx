@@ -1,17 +1,11 @@
 //src/student/walkthrough/Walkthrough.jsx
 
-// NEW: schema-driven loader (school override -> global default)
-import {
-  resolveWalkthrough,          // (cdlClass, schoolId) => Promise<WalkthroughSection[]|null>
-  getWalkthroughLabel,         // pretty label for class code
-} from '@walkthrough' // <-- Update this path as needed to the correct location
-
 import { doc, getDoc } from 'firebase/firestore'
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@components/ToastContext'
+import { useToast } from '@/components/ToastContext.js'
 import { db } from '@utils/firebase.js'
 import {
   updateELDTProgress,
@@ -19,12 +13,17 @@ import {
   getUserProgress,
 } from '@utils/ui-helpers.js'
 
+// NEW: schema-driven loader (school override -> global default)
+import {
+  resolveWalkthrough,          // (cdlClass, schoolId) => Promise<WalkthroughSection[]|null>
+  getWalkthroughLabel,         // pretty label for class code
+} from '../../walkthrough-data' // <-- Update this path as needed to the correct location
+
 // Drills (schema-driven, each accepts generic props)
 import FillClozeDrill from './drills/FillClozeDrill.jsx'
 import OrderStepsDrill from './drills/OrderStepsDrill.jsx'
 import TypePhraseDrill from './drills/TypePhraseDrill.jsx'
 import VisualRecallDrill from './drills/VisualRecallDrill.jsx'
-
 import styles from './walkthrough.module.css'
 
 // Robust email fallback (uses session + localStorage)

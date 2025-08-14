@@ -1,10 +1,11 @@
 // src/student/profile/Profile.jsx
+
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@components/ToastContext'
+import { useToast } from '@/components/ToastContext.js'
 import { auth, storage } from '@utils/firebase.js'
 // Misc
 import {
@@ -19,7 +20,7 @@ import {
   calculateProfileCompletion,
 } from '@utils/userProfile.js'
 
-import { getWalkthroughLabel } from 'Walkthrough'
+import { getWalkthroughLabel } from '../../walkthrough-data'
 
 // Styles (page-scoped)
 import styles from './Profile.module.css'

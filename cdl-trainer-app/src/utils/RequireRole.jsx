@@ -19,9 +19,9 @@ import {
   where,
 } from 'firebase/firestore'
 
-import { auth, db } from './firebase'
+import { auth, db } from './firebase.js'
 import SplashScreen from '@components/SplashScreen.jsx'
-import { preloadRoutesForRole } from '@utils/route-preload'
+import { preloadRoutesForRole } from '@/utils/route-preload.js'
 
 // --------------------------- Config -----------------------------------
 

@@ -13,7 +13,7 @@ import { useLocation } from 'react-router-dom'
 import {
   subscribeBrandingUpdated,
   getCachedBrandingSummary,
-} from '@utils/school-branding'
+} from '@/utils/school-branding.js'
 
 // ----------------------------------------------------------------------
 // Constants

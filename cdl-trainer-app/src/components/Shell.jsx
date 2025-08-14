@@ -24,7 +24,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import AICoachModal from '@components/AICoachModal.jsx'
 import { ToastContext } from '@components/ToastContext.js'
 import { getTopNavForRole, getDashboardRoute } from '@navigation/navConfig.js'
-import { preloadRoutesForRole } from '@utils/route-preload'
+import { preloadRoutesForRole } from '@/utils/route-preload.js'
 import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,

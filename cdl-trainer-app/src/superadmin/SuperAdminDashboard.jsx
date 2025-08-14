@@ -4,7 +4,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore'
 import { useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@components/ToastContext'
+import { useToast } from '@/components/ToastContext.js'
 import { db } from '@utils/firebase.js'
 
 import styles from './SuperAdminDashboard.module.css'

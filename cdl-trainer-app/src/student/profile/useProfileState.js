@@ -1,7 +1,7 @@
 // src/student/profile/useProfileState.js
 import * as React from 'react'
 
-import { getUserProfile, subscribeUserProfile } from '@utils/userProfile'
+import { getUserProfile, subscribeUserProfile } from '@/utils/userProfile.js'
 
 /**
  * useProfileState(email, options?)

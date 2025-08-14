@@ -1,6 +1,8 @@
 // src/student/profile/sections/EmergencySection.jsx
 import React, { useCallback, useId } from 'react'
+
 import Field from '../ui/Field.jsx'
+
 import styles from './sections.module.css'
 
 const PHONE_PATTERN = '[0-9\\-\\(\\)\\+ ]{10,15}'

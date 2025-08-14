@@ -2,7 +2,7 @@
 // Simple auth utilities + status hook (Firebase Auth)
 
 import { useEffect, useMemo, useState } from 'react'
-import { auth } from './firebase' // assumes you've initialized Firebase Auth here
+import { auth } from './firebase.js' // assumes you've initialized Firebase Auth here
 
 /* =========================================================================
    Role helpers

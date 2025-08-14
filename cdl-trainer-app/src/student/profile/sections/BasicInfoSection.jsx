@@ -1,9 +1,11 @@
 // src/student/profile/sections/BasicInfoSection.jsx
 import React, { useMemo, useRef, useCallback } from 'react'
+
 import Field from '../ui/Field.jsx'
-import UploadField from '../ui/UploadField.jsx'
-import s from './sections.module.css'
 import f from '../ui/fields.module.css'
+import UploadField from '../ui/UploadField.jsx'
+
+import s from './sections.module.css'
 
 /**
  * BasicInfoSection

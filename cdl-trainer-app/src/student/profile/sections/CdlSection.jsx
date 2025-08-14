@@ -1,8 +1,9 @@
 // src/student/profile/sections/CdlSection.jsx
 import React, { useMemo, useCallback } from 'react'
-import Field from '../ui/Field.jsx'
-import Select from '../ui/Select.jsx'
+
 import CheckboxGroup from '../ui/CheckboxGroup.jsx'
+import Select from '../ui/Select.jsx'
+
 import styles from './sections.module.css'
 
 const ENDORSEMENT_OPTIONS = [

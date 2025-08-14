@@ -15,7 +15,7 @@ import NavBar from '@components/NavBar.jsx'
 import SplashScreen from '@components/SplashScreen.jsx'
 
 // Layout hooks (centralized in utils/layout-hooks.js)
-import { useBrandingSync, useHideNavBar } from '@utils/layout-hooks'
+import { useBrandingSync, useHideNavBar } from '@/utils/layout-hooks.js'
 
 export default function AppLayout() {
   const brand = useBrandingSync()

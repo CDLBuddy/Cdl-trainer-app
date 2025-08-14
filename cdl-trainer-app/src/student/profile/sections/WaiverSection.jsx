@@ -1,6 +1,8 @@
 // src/student/profile/sections/WaiverSection.jsx
 import React, { useId } from 'react'
+
 import Field from '../ui/Field.jsx'
+
 import styles from './sections.module.css'
 
 export default function WaiverSection({ value, onChange }) {

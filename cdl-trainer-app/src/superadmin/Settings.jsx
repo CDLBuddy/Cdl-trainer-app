@@ -13,7 +13,7 @@ import {
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { showToast } from '@components/ToastContext' // <- global toast, styled to your theme
+import { showToast } from '@/components/ToastContext.js' // <- global toast, styled to your theme
 import { getUserRole } from '@utils/auth.js' // <- same helper used elsewhere
 import { db } from '@utils/firebase.js' // <- adjust if needed
 

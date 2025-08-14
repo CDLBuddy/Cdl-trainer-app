@@ -8,8 +8,8 @@ import {
 } from '@utils/admin-data.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
-import ExportCompaniesControls from './ExportCompaniesControls'
-import ExportUsersControls from './ExportUsersControls'
+import ExportCompaniesControls from './ExportCompaniesControls.jsx'
+import ExportUsersControls from './ExportUsersControls.jsx'
 
 // Lazy-load jsPDF only for checklist download (keeps bundle light)
 let _jsPDF = null

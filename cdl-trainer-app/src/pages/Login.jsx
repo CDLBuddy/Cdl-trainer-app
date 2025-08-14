@@ -8,7 +8,7 @@ import {
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { auth } from '@utils/firebase' // Adjust import as needed!
+import { auth } from '@/utils/firebase.js' // Adjust import as needed!
 import {
   getCurrentSchoolBranding,
   setCurrentSchool,

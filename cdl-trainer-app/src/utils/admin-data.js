@@ -13,7 +13,7 @@ import {
   startAfter,
 } from "firebase/firestore";
 
-import { db } from "@utils/firebase"; // make sure this exports an initialized Firestore instance
+import { db } from '@/utils/firebase.js'; // make sure this exports an initialized Firestore instance
 
 /**
  * Fetch users for a given school.

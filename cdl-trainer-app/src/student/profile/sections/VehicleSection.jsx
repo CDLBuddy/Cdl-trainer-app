@@ -1,7 +1,9 @@
 // src/student/profile/sections/VehicleSection.jsx
 import React, { useId } from 'react'
+
 import Select from '../ui/Select.jsx'
 import UploadField from '../ui/UploadField.jsx'
+
 import styles from './sections.module.css'
 
 export default function VehicleSection({ value, onChange, onUpload }) {

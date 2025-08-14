@@ -1,7 +1,6 @@
 // src/walkthrough-data/schema.d.ts
 // ======================================================================
-// Type definitions for CDL walkthrough data + helpers.
-// Works in a JS project to give IntelliSense and catch mistakes.
+// Type definitions for CDL walkthrough data + helpers (JS-friendly).
 // ======================================================================
 
 /** Canonical "token" keys used in the defaults map (lowercase, kebab-case). */
@@ -25,33 +24,25 @@ export type SchoolId = string;
 
 /** One scripted step within a section. */
 export interface WalkthroughStep {
-  /** Optional short label (e.g., "Oil Level"). */
   label?: string;
-  /** Spoken/scripted line the student should learn. */
   script: string;
-  /** Mark items the student must explicitly say. */
   mustSay?: boolean;
-  /** Required for pass/fail or completion checks. */
   required?: boolean;
-  /** Mark steps that are treated as pass/fail (e.g., air-brake check). */
   passFail?: boolean;
-  /** For sets where a step is intentionally skipped by equipment type. */
   skip?: boolean;
 
-  /** --- room to grow (editor hints only; non-breaking) --- */
+  // editor-only extras
   id?: string;
   notes?: string;
-  mediaUrl?: string;      // image/video for visual drills
-  tags?: string[];        // search/filter keywords
+  mediaUrl?: string;
+  tags?: string[];
 }
 
 /** A logical section (e.g., "Engine Compartment") containing steps. */
 export interface WalkthroughSection {
   section: string;
   steps: WalkthroughStep[];
-  /** If true, UI should emphasize the whole section as critical/pass-fail. */
   critical?: boolean | 'passFail';
-  /** Optional freeform description to render under the title. */
   description?: string;
 }
 
@@ -67,84 +58,81 @@ export type WalkthroughLabels = Record<WalkthroughClassToken, string>;
 /** A resolved result from the loader (may include provenance). */
 export interface ResolvedWalkthrough {
   script: WalkthroughScript | null;
-  /** true if script came from a school override rather than defaults. */
   isCustom?: boolean;
-  /** where it came from: firestore path, file path, etc. */
   sourceHint?: string;
 }
 
 /** Arguments for the resolver helper. */
 export interface ResolveWalkthroughArgs {
-  /** Class token ("class-a", …) OR CDL code ("A", …). */
   classType: WalkthroughClassToken | CdlClassCode | string;
-  /** If provided, attempt to load a school-specific override. */
   schoolId?: SchoolId | null;
-  /** If true, prefer custom even if validation fails (then fall back). */
   preferCustom?: boolean;
-  /** When true, return {script:null} instead of throwing on load errors. */
   softFail?: boolean;
 }
 
 // ======================================================================
-// Module declarations matching our import aliases:
-//
-//   import { getWalkthroughByClass, getWalkthroughLabel } from '@walkthrough'
-//   import { resolveWalkthrough } from '@walkthrough/loaders'
+// Ambient module declarations matching your real aliases:
+//   import { resolveWalkthrough, getWalkthroughLabel } from '@walkthrough-data'
+//   import { resolveWalkthrough } from '@walkthrough-loaders'
 // ======================================================================
 
-declare module '@walkthrough' {
-  import type {
-    WalkthroughClassToken,
-    CdlClassCode,
-    WalkthroughScript,
-    WalkthroughMap,
-    WalkthroughLabels,
-  } from './schema';
-
-  /** Default scripts keyed by class token. */
+declare module '@walkthrough-data' {
+  // Defaults API
   export const DEFAULT_WALKTHROUGHS: WalkthroughMap;
-
-  /** Human-readable labels for tokens. */
-  export const WALKTHROUGH_LABELS: WalkthroughLabels;
-
-  /**
-   * Resolve a script by CDL class code ("A", "B", …) OR by token
-   * ("class-a", "class-b", …). Returns `null` when unknown.
-   */
-  export function getWalkthroughByClass(
+  export const DEFAULT_WALKTHROUGH_VERSION: number;
+  export function getDefaultWalkthroughByClass(
     classType: WalkthroughClassToken | CdlClassCode | string
   ): WalkthroughScript | null;
+  export function getDefaultWalkthroughById(id: string): WalkthroughScript | null;
+  export function listDefaultWalkthroughs(): WalkthroughScript[];
+  export function validateWalkthroughShape(w: unknown): { ok: boolean; errors: string[] };
+  export const WALKTHROUGHS_BY_CLASS: ReadonlyMap<string, unknown>;
+  export const WALKTHROUGHS_BY_ID: ReadonlyMap<string, unknown>;
 
-  /** Safe label lookup for UI (falls back to the raw string). */
+  // Label helper
   export function getWalkthroughLabel(
     classType: WalkthroughClassToken | CdlClassCode | string
   ): string;
 
+  // Loader (root re-export)
+  export function resolveWalkthrough(
+    classType: WalkthroughClassToken | CdlClassCode | string,
+    schoolId?: SchoolId | null
+  ): Promise<WalkthroughScript | null>;
+
+  // Types (re-exported for convenience)
   export type {
     WalkthroughClassToken,
     CdlClassCode,
+    WalkthroughStep,
+    WalkthroughSection,
     WalkthroughScript,
     WalkthroughMap,
     WalkthroughLabels,
+    ResolveWalkthroughArgs,
+    ResolvedWalkthrough,
+    SchoolId,
   };
 }
 
-declare module '@walkthrough/loaders' {
-  import type {
-    ResolveWalkthroughArgs,
-    ResolvedWalkthrough,
-    WalkthroughScript,
-  } from './schema';
+declare module '@walkthrough-loaders' {
+  // Direct loader access via loaders alias
+  export function resolveWalkthrough(
+    classType: WalkthroughClassToken | CdlClassCode | string,
+    schoolId?: SchoolId | null
+  ): Promise<WalkthroughScript | null>;
 
-  /**
-   * Attempts to load a custom school walkthrough, falling back to defaults.
-   * SuperAdmin and dev utils use this to preview overrides.
-   */
+  // Optional object-form overload if you add it
   export function resolveWalkthrough(
     args: ResolveWalkthroughArgs
   ): Promise<ResolvedWalkthrough>;
 
-  export type { ResolveWalkthroughArgs, ResolvedWalkthrough, WalkthroughScript };
+  export type {
+    ResolveWalkthroughArgs,
+    ResolvedWalkthrough,
+    WalkthroughScript,
+    WalkthroughSection,
+  };
 }
 
 // Make this file a module (avoids global augmentations leaking).

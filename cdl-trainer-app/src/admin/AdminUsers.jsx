@@ -11,9 +11,9 @@ import {
 } from 'firebase/firestore'
 import React, { useEffect, useState, useMemo } from 'react'
 
-import { useToast } from '../components/ToastContext'
+import { useToast } from '../components/ToastContext.js'
 
-import ExportUsersControls from './ExportUsersControls' // ← use the new component
+import ExportUsersControls from './ExportUsersControls.jsx' // ← use the new component
 
 const roles = ['student', 'instructor', 'admin']
 

@@ -1,5 +1,6 @@
 // src/student/profile/ui/CheckboxGroup.jsx
 import React from 'react'
+
 import cls from './fields.module.css'
 
 /**
@@ -33,9 +34,9 @@ export default function CheckboxGroup({
   const safeValues = Array.isArray(values) ? values : []
   const base = (label || name || 'group').toLowerCase().replace(/\s+/g, '_')
   const groupId = `cg_${base}`
-  const labelId = `${groupId}_label`
   const hintId = hint ? `${groupId}_hint` : undefined
   const errId = error ? `${groupId}_err` : undefined
+  const describedBy = [hintId, errId].filter(Boolean).join(' ') || undefined
 
   function toggle(value) {
     const set = new Set(safeValues)
@@ -46,21 +47,26 @@ export default function CheckboxGroup({
   }
 
   return (
-    <div className={cls.field} aria-invalid={!!error || undefined}>
-      {/* Visible label with an id so the group can reference it */}
+    <fieldset
+      className={cls.field}
+      aria-invalid={error ? true : undefined}   // global state prop is valid here
+      aria-describedby={describedBy}
+      disabled={disabled || undefined}          // disables all controls inside
+    >
+      {/* Legend serves as the accessible group label */}
       {label && (
-        <div id={labelId} className={cls.label}>
-          {label} {required && <span className={cls.required} aria-hidden>*</span>}
-        </div>
+        <legend className={cls.label}>
+          {label}{' '}
+          {required && (
+            <>
+              <span className={cls.required} aria-hidden>*</span>
+              <span className="sr-only"> (required)</span>
+            </>
+          )}
+        </legend>
       )}
 
-      <div
-        className={`${cls.group} ${layout === 'row' ? cls.groupRow : cls.groupCol}`}
-        role="group"
-        aria-labelledby={label ? labelId : undefined}
-        aria-describedby={[hintId, errId].filter(Boolean).join(' ') || undefined}
-        aria-required={required || undefined}
-      >
+      <div className={`${cls.group} ${layout === 'row' ? cls.groupRow : cls.groupCol}`}>
         {options.map((opt, i) => {
           const id = `${groupId}_${i}`
           const checked = safeValues.includes(opt.value)
@@ -74,6 +80,8 @@ export default function CheckboxGroup({
                 checked={checked}
                 disabled={optDisabled}
                 onChange={() => toggle(opt.value)}
+                // NOTE: HTML doesn't support "required" on a group of checkboxes;
+                // enforce “at least one” in your form validation and surface via `error`.
               />
               <span>{opt.label}</span>
             </label>
@@ -95,6 +103,6 @@ export default function CheckboxGroup({
           )}
         </div>
       )}
-    </div>
+    </fieldset>
   )
 }

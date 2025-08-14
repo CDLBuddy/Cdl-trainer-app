@@ -1,8 +1,10 @@
 // src/student/profile/sections/PermitSection.jsx
 import React, { useId, useMemo } from 'react'
+
+import Field from '../ui/Field.jsx'
 import Select from '../ui/Select.jsx'
 import UploadField from '../ui/UploadField.jsx'
-import Field from '../ui/Field.jsx'
+
 import styles from './sections.module.css'
 
 export default function PermitSection({ value, onChange, onUpload, afterUpload }) {

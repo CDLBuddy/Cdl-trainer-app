@@ -13,7 +13,6 @@
     "dev": "vite --open",
     "build": "vite build",
     "preview": "vite preview",
-
     "// linting & formatting": "==============================",
     "lint": "eslint src --ext .js,.jsx",
     "lint:fix": "eslint src --ext .js,.jsx --fix",
@@ -21,14 +20,11 @@
     "format:check": "prettier . --check",
     "check": "npm run lint && npm run format:check",
     "clean": "npm run lint:fix && npm run format",
-
     "// diagnostics": "==============================",
     "check:imports": "node dev-utils/import-checker.js",
-
     "// walkthrough data QA": "==============================",
     "walkthrough:check": "node cdl-trainer-app/dev-utils/check-walkthroughs.mjs",
     "walkthrough:check:custom": "node cdl-trainer-app/dev-utils/check-walkthroughs.mjs --school=$SCHOOL --class=$CLASS",
-
     "// lifecycle helpers": "==============================",
     "postinstall": "node scripts/ensure-env.mjs || true",
     "predev": "node scripts/ensure-env.mjs || true",
@@ -53,6 +49,7 @@
     "eslint-formatter-unix": "^8.40.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-import-resolver-node": "^0.3.9",
+    "eslint-import-resolver-vite": "^2.1.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",

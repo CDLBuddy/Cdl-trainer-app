@@ -12,7 +12,7 @@ import {
   switchSchool,
   getCurrentSchoolId,
   applyBrandingForSchool, // NEW
-} from '@utils/schoolSwitching'
+} from '@/utils/schoolSwitching.js'
 import { useToast } from '@utils/ui-helpers.js'
 
 export default function SchoolSwitch() {

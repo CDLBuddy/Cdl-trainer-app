@@ -3,7 +3,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import { useToast } from '@components/ToastContext'
+import { useToast } from '@/components/ToastContext.js'
 import { db } from '@utils/firebase.js'
 import {
   incrementStudentStudyMinutes,

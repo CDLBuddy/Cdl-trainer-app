@@ -5,10 +5,11 @@
 // for a given CDL class, supporting both built-in and custom school-provided sets.
 // ============================================================================
 
-import defaultWalkthroughs from '@/walkthrough-data/index.js';
-import { db } from '@/utils/firebase.js';
 import { doc, getDoc } from 'firebase/firestore';
+
+import { db } from '@/utils/firebase.js';
 import { showToast } from '@/utils/ui-helpers.js';
+import defaultWalkthroughs from '@/walkthrough-data/index.js';
 
 /**
  * Resolve the walkthrough configuration for a given class type.
@@ -36,13 +37,13 @@ export async function resolveWalkthrough({ classType, schoolId, preferCustom = t
       if (snapshot.exists()) {
         const data = snapshot.data();
         if (data?.steps?.length) {
-          console.info(`[resolveWalkthrough] Loaded custom walkthrough for ${normalizedType} from school ${schoolId}.`);
+          console.warn(`[resolveWalkthrough] Loaded custom walkthrough for ${normalizedType} from school ${schoolId}.`);
           return data;
         } else {
           console.warn(`[resolveWalkthrough] Custom walkthrough for ${normalizedType} is empty or malformed.`);
         }
       } else {
-        console.info(`[resolveWalkthrough] No custom walkthrough found for ${normalizedType} at school ${schoolId}.`);
+        console.warn(`[resolveWalkthrough] No custom walkthrough found for ${normalizedType} at school ${schoolId}.`);
       }
     } catch (error) {
       console.error(`[resolveWalkthrough] Error fetching custom walkthrough:`, error);
@@ -52,7 +53,7 @@ export async function resolveWalkthrough({ classType, schoolId, preferCustom = t
 
   // 2. Fall back to default built-in walkthrough
   if (defaultWalkthroughs[normalizedType]) {
-    console.info(`[resolveWalkthrough] Using default walkthrough for ${normalizedType}.`);
+    console.warn(`[resolveWalkthrough] Using default walkthrough for ${normalizedType}.`);
     return defaultWalkthroughs[normalizedType];
   }
 

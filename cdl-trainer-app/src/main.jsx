@@ -17,21 +17,21 @@ import { RouterProvider } from 'react-router-dom'
 import './styles/index.css'
 
 // Providers
-import { ToastProvider } from '@components/ToastContext'
+import { ToastProvider } from '@/components/ToastContext.js'
 import { SessionProvider, syncSessionDebug } from '@session'
 import { useAuthStatus } from '@utils/auth.js'
 
 // Router
-import { router } from './router'
+import { router } from './router.js'
 
 // Fallback UI for router-level suspend/errors during boot
 import SplashScreen from '@components/SplashScreen.jsx'
 
 // Branding preload (sets CSS vars + theme-color)
-import { getCurrentSchoolBranding } from '@utils/school-branding'
+import { getCurrentSchoolBranding } from '@/utils/school-branding.js'
 
 // Route preloading (idle + network aware)
-import { warmRoutesOnSession } from '@utils/route-preload'
+import { warmRoutesOnSession } from '@/utils/route-preload.js'
 
 // ---- Bootstrap (Vite supports top-level await) -------------------------
 await (async () => {

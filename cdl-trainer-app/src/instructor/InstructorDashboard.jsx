@@ -10,7 +10,7 @@ import React, {
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@components/ToastContext'
+import { useToast } from '@/components/ToastContext.js'
 import { db, auth } from '@utils/firebase.js'
 import { getNextChecklistAlert } from '@utils/ui-helpers.js'
 
