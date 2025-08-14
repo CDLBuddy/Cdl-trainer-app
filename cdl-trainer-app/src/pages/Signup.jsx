@@ -16,7 +16,7 @@ import {
 } from '@utils/school-branding.js'
 import { getBlankUserProfile } from '@utils/userProfile.js'
 
-import '@styles/ui-shell.css' // Or your preferred CSS file
+import '@components/Shell.module.css' // Or your preferred CSS file
 
 function Signup() {
   const navigate = useNavigate()

@@ -2,6 +2,7 @@
 // Component-only file to satisfy react-refresh rule
 
 import React, { useMemo, useRef } from 'react'
+
 import SessionContext, { DEFAULT_SESSION } from './SessionContext.js'
 
 /**

@@ -1,8 +1,9 @@
 // src/components/ToastProvider.jsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import ToastContext from './ToastContext.js'
+
 import { __bindToastCompat } from './toast-compat.js'
 import { ToastContainer } from './Toast.jsx'
+import ToastContext from './ToastContext.js'
 
 /**
  * ToastProvider
@@ -28,7 +29,7 @@ export default function ToastProvider({
     return `t_${Date.now()}_${idSeed.current}`
   }
 
-  const normalizeInput = (messageOrObj, type, duration, opts) => {
+  const normalizeInput = useCallback((messageOrObj, type, duration, opts) => {
     // Supports:
     // - showToast("Saved!", "success", 2000, { position })
     // - showToast("Saved!", { type: "success", duration: 2000, position })
@@ -58,7 +59,7 @@ export default function ToastProvider({
       dismissible: merged.dismissible ?? true,
       showProgress: merged.showProgress ?? true,
     }
-  }
+  }, [defaultDuration, defaultPosition])
 
   const enforceCaps = useCallback((list) => {
     // Cap per position stack length
@@ -70,7 +71,7 @@ export default function ToastProvider({
       groups.set(pos, arr)
     }
     const trimmed = []
-    for (const [pos, arr] of groups.entries()) {
+    for (const [_, arr] of groups.entries()) {
       // Keep most recent "maxPerPosition" toasts in that position
       const keep = arr.slice(-maxPerPosition)
       trimmed.push(...keep)
@@ -86,7 +87,7 @@ export default function ToastProvider({
     // Avoid duplicate IDs if caller supplied one
     setToasts(curr => enforceCaps([...curr.filter(t => t.id !== toast.id), toast]))
     return toast.id
-  }, [enforceCaps])
+  }, [enforceCaps, normalizeInput])
 
   const dismiss = useCallback((id) => {
     if (!id) return

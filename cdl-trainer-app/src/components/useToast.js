@@ -1,5 +1,6 @@
 // src/components/useToast.js
 import { useContext } from 'react'
+
 import ToastContext from './ToastContext.js'
 
 /**

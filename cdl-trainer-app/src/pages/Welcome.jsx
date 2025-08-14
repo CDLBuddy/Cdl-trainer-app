@@ -8,7 +8,7 @@ import {
   getAllSchools,
 } from '@utils/school-branding.js'
 
-import '@styles/ui-shell.css'
+import '@components/Shell.module.css'
 
 // Demo features array
 const FEATURES = [

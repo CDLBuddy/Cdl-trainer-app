@@ -92,9 +92,9 @@ export function safeNavigate(navigate, to, options = {}) {
  * Guards against bad/looping values (e.g., "/login" or absolute URLs).
  */
 export function redirectAfterLogin(navigate, role, location) {
-  let fromState = location?.state?.from?.pathname
+  const fromState = location?.state?.from?.pathname
   let fromQuery = null
-  try { fromQuery = new URL(window.location.href).searchParams.get('from') } catch {}
+  try { fromQuery = new URL(window.location.href).searchParams.get('from') } catch { /* ignore error */ }
   const candidate = fromState || fromQuery || ''
   const safe =
     typeof candidate === 'string' &&

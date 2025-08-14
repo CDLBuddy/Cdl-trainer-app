@@ -106,7 +106,6 @@ export default function InstructorDashboard() {
           role = prof.role || 'instructor'
         }
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error('Profile fetch failed:', err)
       }
 
@@ -186,7 +185,6 @@ export default function InstructorDashboard() {
         console.error('Latest test results error:', err)
         showToast('Error fetching test results.', 'error')
       }
-      if (!alive.current) return
       setLatestByStudent(results)
       setLoading(false)
     }

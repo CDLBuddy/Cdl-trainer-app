@@ -1,13 +1,17 @@
 // src/student/profile/Profile.jsx
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/ToastContext'
 import { auth, storage } from '@utils/firebase.js'
-import { getWalkthroughLabel } from '@walkthrough'
-
+// Misc
+import {
+  markStudentProfileComplete,
+  markStudentPermitUploaded,
+  markStudentVehicleUploaded,
+} from '@utils/ui-helpers.js'
 // Centralized profile utils (phase 2)
 import {
   subscribeUserProfile,
@@ -15,26 +19,20 @@ import {
   calculateProfileCompletion,
 } from '@utils/userProfile.js'
 
-// Sections
-import BasicInfoSection from './sections/BasicInfoSection.jsx'
-import CdlSection from './sections/CdlSection.jsx'
-import PermitSection from './sections/PermitSection.jsx'
-import LicenseSection from './sections/LicenseSection.jsx'
-import MedicalSection from './sections/MedicalSection.jsx'
-import VehicleSection from './sections/VehicleSection.jsx'
-import EmergencySection from './sections/EmergencySection.jsx'
-import WaiverSection from './sections/WaiverSection.jsx'
-import CoursePaymentSection from './sections/CoursePaymentSection.jsx'
+import { getWalkthroughLabel } from 'Walkthrough'
 
 // Styles (page-scoped)
 import styles from './Profile.module.css'
-
-// Misc
-import {
-  markStudentProfileComplete,
-  markStudentPermitUploaded,
-  markStudentVehicleUploaded,
-} from '@utils/ui-helpers.js'
+// Sections
+import BasicInfoSection from './sections/BasicInfoSection.jsx'
+import CdlSection from './sections/CdlSection.jsx'
+import CoursePaymentSection from './sections/CoursePaymentSection.jsx'
+import EmergencySection from './sections/EmergencySection.jsx'
+import LicenseSection from './sections/LicenseSection.jsx'
+import MedicalSection from './sections/MedicalSection.jsx'
+import PermitSection from './sections/PermitSection.jsx'
+import VehicleSection from './sections/VehicleSection.jsx'
+import WaiverSection from './sections/WaiverSection.jsx'
 
 const AUTOSAVE_DEBOUNCE_MS = 700
 const PHONE_PATTERN = '[0-9\\-\\(\\)\\+ ]{10,15}'

@@ -21,19 +21,18 @@ import React, {
 } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
+import AICoachModal from '@components/AICoachModal.jsx'
 import { ToastContext } from '@components/ToastContext.js'
 import { getTopNavForRole, getDashboardRoute } from '@navigation/navConfig.js'
+import { preloadRoutesForRole } from '@utils/route-preload'
 import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,
 } from '@utils/school-branding.js'
 import { registerToastHandler } from '@utils/ui-helpers.js'
-import { useSession } from '@session'
 
-// role-aware preloading (idle + network-aware inside each module)
-import { preloadRoutesForRole } from '@utils/route-preload'
+import { useSession } from '../session/useSession.js'
 
-import AICoachModal from '@components/AICoachModal.jsx'
 import styles from './Shell.module.css'
 
 /** Infer a role slug from a path like "/student/..." */

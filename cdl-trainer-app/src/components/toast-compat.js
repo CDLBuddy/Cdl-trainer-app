@@ -287,7 +287,7 @@ function _createToastNode(t, position) {
     actionBtn.textContent = t.action.label
     actionBtn.addEventListener('click', (e) => {
       e.stopPropagation() // don’t treat as click-to-dismiss
-      try { t.action.onClick() } catch {}
+      try { t.action.onClick() } catch { /* intentionally ignored */ }
       _domDismissToast(t.id)
     })
     n.appendChild(actionBtn)

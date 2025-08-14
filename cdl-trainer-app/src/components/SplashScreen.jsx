@@ -94,7 +94,7 @@ export default function SplashScreen({
       {/* Background vignette gradient follows brand */}
       <div className={styles['splash-bg']} aria-hidden="true" />
 
-      <div className={`${styles['splash-card']} ${styles.glass']}`}>
+      <div className={`${styles['splash-card']} ${styles.glass}`}>
         <div className={styles['splash-brand']}>
           <img
             className={styles['splash-logo']}

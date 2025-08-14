@@ -1,8 +1,14 @@
 //src/student/walkthrough/Walkthrough.jsx
 
+// NEW: schema-driven loader (school override -> global default)
+import {
+  resolveWalkthrough,          // (cdlClass, schoolId) => Promise<WalkthroughSection[]|null>
+  getWalkthroughLabel,         // pretty label for class code
+} from '@walkthrough' // <-- Update this path as needed to the correct location
+
+import { doc, getDoc } from 'firebase/firestore'
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { doc, getDoc } from 'firebase/firestore'
 
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/ToastContext'
@@ -12,12 +18,6 @@ import {
   markStudentWalkthroughComplete,
   getUserProgress,
 } from '@utils/ui-helpers.js'
-
-// NEW: schema-driven loader (school override -> global default)
-import {
-  resolveWalkthrough,          // (cdlClass, schoolId) => Promise<WalkthroughSection[]|null>
-  getWalkthroughLabel,         // pretty label for class code
-} from '@walkthrough'
 
 // Drills (schema-driven, each accepts generic props)
 import FillClozeDrill from './drills/FillClozeDrill.jsx'

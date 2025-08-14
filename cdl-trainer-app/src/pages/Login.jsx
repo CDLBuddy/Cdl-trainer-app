@@ -14,7 +14,7 @@ import {
   setCurrentSchool,
 } from '@utils/school-branding.js'
 
-import '@styles/ui-shell.css' // Optional: import your CSS
+import '@components/Shell.module.css' // Optional: import your CSS
 
 const supportEmailDefault = 'support@cdltrainerapp.com'
 const demoEmail = 'demo@cdltrainerapp.com'

@@ -41,11 +41,9 @@ import { createContext } from 'react'
  * }} ToastAPI
  */
 
-/** No-op used before the provider mounts (safe defaults). */
-const noop = () => {}
 /** @type {ToastAPI} */
 const defaultToast = Object.assign(
-  /** @type {ToastCallable} */ ((message, options) => { /* no-op */ }),
+  /** @type {ToastCallable} */ ((_message, _options) => { /* no-op */ }),
   {
     show: (_m, _t, _d, _o) => { /* no-op */ },
     showToast: (_m, _t, _d, _o) => { /* no-op */ },

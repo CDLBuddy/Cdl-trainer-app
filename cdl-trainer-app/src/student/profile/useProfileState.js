@@ -1,5 +1,6 @@
 // src/student/profile/useProfileState.js
 import * as React from 'react'
+
 import { getUserProfile, subscribeUserProfile } from '@utils/userProfile'
 
 /**
@@ -82,7 +83,9 @@ export function useProfileState(email, { initial = null, realtime = true } = {})
 
     return () => {
       mounted = false
-      try { unsub && unsub() } catch {}
+      try { unsub && unsub() } catch {
+        // intentionally ignore unsubscribe errors
+      }
     }
     // Intentionally depend only on email/realtime; refresh is stable but we avoid double-calls.
   }, [email, realtime]) // eslint-disable-line react-hooks/exhaustive-deps
