@@ -35,35 +35,39 @@ export default defineConfig(async ({ mode }) => {
 
     resolve: {
       alias: {
+        // ===== Base =====
         '@': r('src'),
 
-        // Shared/global
+        // ===== Shared/global =====
         '@components': r('src/components'),
         '@utils': r('src/utils'),
         '@navigation': r('src/navigation'),
         '@pages': r('src/pages'),
-        '@session': r('src/session'),
-        '@shared': r('src/shared'),
         '@styles': r('src/styles'),
         '@assets': r('src/assets'),
+        '@shared': r('src/shared'),
+        '@session': r('src/session'),
 
-        // Walkthrough system (used by Student + Superadmin)
-        '@walkthrough': r('src/walkthrough-data/index.js'),
+        // ===== Walkthrough system (global) =====
         '@walkthrough-data': r('src/walkthrough-data'),
+        '@walkthrough-defaults': r('src/walkthrough-data/defaults'),
         '@walkthrough-loaders': r('src/walkthrough-data/loaders'),
         '@walkthrough-utils': r('src/walkthrough-data/utils'),
 
-        // Role-specific
+        // ===== Role-specific =====
         '@student': r('src/student'),
         '@student-components': r('src/student/components'),
+        '@student-profile': r('src/student/profile'),
+        '@student-profile-sections': r('src/student/profile/sections'),
+        '@student-profile-ui': r('src/student/profile/ui'),
+        '@student-walkthrough': r('src/student/walkthrough'),
+
         '@instructor': r('src/instructor'),
         '@admin': r('src/admin'),
         '@superadmin': r('src/superadmin'),
       },
-      // Avoid duplicate React copies if a linked dependency brings its own
-      dedupe: ['react', 'react-dom'],
-      // If you want to omit extensions in imports, uncomment:
-      // extensions: ['.js', '.jsx', '.json'],
+      dedupe: ['react', 'react-dom'], // Prevent duplicate React copies
+      // extensions: ['.js', '.jsx', '.json'], // Uncomment if omitting extensions
     },
 
     server: {
@@ -84,8 +88,7 @@ export default defineConfig(async ({ mode }) => {
         'react-dom',
         'react-router-dom',
       ],
-      // Exclude heavy libs you *only* load dynamically to avoid double-bundling
-      // exclude: ['firebase'], // uncomment if you switch to dynamic Firebase imports
+      // exclude: ['firebase'], // uncomment if switching to dynamic Firebase imports
     },
 
     build: {
@@ -95,7 +98,6 @@ export default defineConfig(async ({ mode }) => {
       chunkSizeWarningLimit: 900,  // quiet warnings for larger role chunks
       rollupOptions: {
         output: {
-          // Sensible vendor splitting (tweak after reviewing stats.html)
           manualChunks: {
             'vendor-react': ['react', 'react-dom'],
             'vendor-router': ['react-router', 'react-router-dom'],
@@ -111,7 +113,6 @@ export default defineConfig(async ({ mode }) => {
       // assetsInlineLimit: 0, // uncomment to force all assets to files
     },
 
-    // Handy global flag; use `if (__DEV__)` in your code
     define: {
       __DEV__: !isProd,
     },
