@@ -1,6 +1,12 @@
 // src/instructor/InstructorDashboard.jsx
 import { collection, query, where, getDocs } from 'firebase/firestore'
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
@@ -15,16 +21,23 @@ function getCurrentUserEmail() {
   return (
     window.currentUserEmail ||
     localStorage.getItem('currentUserEmail') ||
-    auth.currentUser?.email ||
+    auth?.currentUser?.email ||
     null
   )
 }
+
 const pct = (n, d) =>
   d ? Math.max(0, Math.min(100, Math.round((n / d) * 100))) : 0
 
 const PINNED_KEY = 'instructorPinnedStudents'
 const DENSITY_KEY = 'instructorDensity' // "comfortable" | "compact"
 const PIN_FILTER_KEY = 'instructorShowPinnedOnly' // persist pin filter
+
+const dt = new Intl.DateTimeFormat(undefined, {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+})
 
 export default function InstructorDashboard() {
   const navigate = useNavigate()
@@ -33,7 +46,6 @@ export default function InstructorDashboard() {
 
   // loading + data
   const [loading, setLoading] = useState(true)
-  // const [profile, setProfile] = useState(null)
   const [assignedStudents, setAssignedStudents] = useState([])
   const [latestByStudent, setLatestByStudent] = useState({})
 
@@ -54,7 +66,7 @@ export default function InstructorDashboard() {
     return localStorage.getItem(PIN_FILTER_KEY) === '1'
   })
 
-  // allow aborting async work on unmount
+  // allow aborting async work on unmount (best-effort guard)
   const alive = useRef(true)
   useEffect(() => {
     alive.current = true
@@ -63,19 +75,26 @@ export default function InstructorDashboard() {
     }
   }, [])
 
+  // map of email -> element for scroll/focus
+  const rowRefs = useRef(new Map())
+  const setRowRef = useCallback((email, el) => {
+    if (!el) rowRefs.current.delete(email)
+    else rowRefs.current.set(email, el)
+  }, [])
+
   // kickoff: fetch instructor profile, students, and latest test results
   useEffect(() => {
     const run = async () => {
       const email = getCurrentUserEmail()
       if (!email) {
-        showToast('No user found. Please log in again.', 3500, 'error')
+        showToast('No user found. Please log in again.', 'error')
         navigate('/login', { replace: true })
         return
       }
 
       setLoading(true)
 
-      // 1) profile
+      // 1) profile / role gate
       let prof = {}
       let role = 'instructor'
       try {
@@ -87,16 +106,16 @@ export default function InstructorDashboard() {
           role = prof.role || 'instructor'
         }
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('Profile fetch failed:', err)
       }
 
       if (role !== 'instructor') {
-        showToast('Access denied: Instructor dashboard only.', 4000, 'error')
+        showToast('Access denied: Instructor dashboard only.', 'error')
         navigate('/login', { replace: true })
         return
       }
       if (!alive.current) return
-      // setProfile(prof)
 
       // 2) assigned students
       let students = []
@@ -118,18 +137,19 @@ export default function InstructorDashboard() {
             cdlPermit: x.cdlPermit || 'no',
             permitPhotoUrl: x.permitPhotoUrl || '',
             medicalCardUrl: x.medicalCardUrl || '',
-            profileProgress: x.profileProgress || 0,
+            profileProgress: Math.max(0, Math.min(100, x.profileProgress || 0)),
             checklistAlerts: getNextChecklistAlert(x),
           }
         })
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('Assigned students fetch error:', err)
-        showToast('Error fetching assigned students.', 3200, 'error')
+        showToast('Error fetching assigned students.', 'error')
       }
       if (!alive.current) return
       setAssignedStudents(students)
 
-      // 3) latest results per student
+      // 3) latest test results per student
       const results = {}
       try {
         await Promise.all(
@@ -143,28 +163,28 @@ export default function InstructorDashboard() {
             let latest = null
             tSnap.forEach(doc => {
               const t = doc.data()
-              const tDate =
-                t.timestamp?.toDate?.() || new Date(t.timestamp || 0)
+              const tDate = t.timestamp?.toDate?.() || new Date(t.timestamp || 0)
               const lDate =
                 latest?.timestamp?.toDate?.() ||
                 new Date(latest?.timestamp || 0)
               if (!latest || tDate > lDate) latest = t
             })
             if (latest) {
-              const date = latest.timestamp?.toDate?.()
-                ? latest.timestamp.toDate().toLocaleDateString()
-                : new Date(latest.timestamp).toLocaleDateString()
+              const rawDate = latest.timestamp?.toDate?.()
+                ? latest.timestamp.toDate()
+                : new Date(latest.timestamp)
               results[s.email] = {
                 testName: latest.testName,
                 pct: pct(latest.correct, latest.total),
-                date,
+                date: Number.isNaN(rawDate?.getTime()) ? '--' : dt.format(rawDate),
               }
             }
           })
         )
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('Latest test results error:', err)
-        showToast('Error fetching test results.', 3000, 'error')
+        showToast('Error fetching test results.', 'error')
       }
       if (!alive.current) return
       setLatestByStudent(results)
@@ -180,7 +200,7 @@ export default function InstructorDashboard() {
     try {
       localStorage.setItem(PINNED_KEY, JSON.stringify(Array.from(pinned)))
     } catch {
-      // Ignore errors when saving pinned students to localStorage
+      /* ignore */
     }
   }, [pinned])
   useEffect(() => {
@@ -204,8 +224,19 @@ export default function InstructorDashboard() {
     [navigate]
   )
 
-  // query param focus
+  // query param focus (e.g., ?student=foo@bar.com)
   const focusStudentEmail = search.get('student') || null
+  // auto scroll to card when present
+  useEffect(() => {
+    if (!focusStudentEmail) return
+    const el = rowRefs.current.get(focusStudentEmail)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      el.classList.add(styles.studentCardFocus)
+      const t = setTimeout(() => el.classList.remove(styles.studentCardFocus), 1800)
+      return () => clearTimeout(t)
+    }
+  }, [focusStudentEmail])
 
   // filter + sort (pinned float to top, then name)
   const filtered = useMemo(() => {
@@ -272,6 +303,9 @@ export default function InstructorDashboard() {
                 onChange={e => setQueryText(e.target.value)}
                 placeholder="Search students by name or email…"
                 aria-label="Search students"
+                onKeyDown={e => {
+                  if (e.key === 'Escape' && queryText) setQueryText('')
+                }}
               />
               {queryText && (
                 <button
@@ -279,6 +313,7 @@ export default function InstructorDashboard() {
                   type="button"
                   onClick={() => setQueryText('')}
                   aria-label="Clear search"
+                  title="Clear"
                 >
                   ✕
                 </button>
@@ -359,11 +394,10 @@ export default function InstructorDashboard() {
                 return (
                   <div
                     key={s.email}
+                    ref={el => setRowRef(s.email, el)}
                     className={`${styles.studentCard} ${
-                      focusStudentEmail === s.email
-                        ? styles.studentCardFocus
-                        : ''
-                    } ${isPinned ? styles.pinned : ''}`}
+                      isPinned ? styles.pinned : ''
+                    }`}
                   >
                     <div className={styles.studentTop}>
                       <div className={styles.topRow}>
@@ -532,13 +566,14 @@ export default function InstructorDashboard() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'assigned-students.csv'
+    const stamp = new Date().toISOString().slice(0, 10)
+    a.download = `assigned-students-${stamp}.csv`
     document.body.appendChild(a)
     a.click()
     setTimeout(() => {
       URL.revokeObjectURL(url)
       a.remove()
     }, 250)
-    showToast('CSV export downloaded.', 2200, 'success')
+    showToast('CSV export downloaded.', 'success')
   }
 }

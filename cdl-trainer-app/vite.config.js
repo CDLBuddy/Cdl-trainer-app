@@ -4,12 +4,12 @@ import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-// ESM-safe dirname
+// ESM-safe __dirname
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const r = p => path.resolve(__dirname, p)
 
 // Optional bundle analyzer: run with VISUALIZE=1 vite build
-const maybeVisualizer = async (enabled) => {
+async function maybeVisualizer(enabled) {
   if (!enabled) return null
   const { visualizer } = await import('rollup-plugin-visualizer')
   return visualizer({
@@ -25,11 +25,12 @@ export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const isProd = mode === 'production'
   const analyze = !!env.VISUALIZE
+  const visualizerPlugin = await maybeVisualizer(analyze)
 
   return {
     plugins: [
       react(),
-      ...(await maybeVisualizer(analyze) ? [await maybeVisualizer(analyze)] : []),
+      ...(visualizerPlugin ? [visualizerPlugin] : []),
     ],
 
     resolve: {
@@ -45,7 +46,12 @@ export default defineConfig(async ({ mode }) => {
         '@shared': r('src/shared'),
         '@styles': r('src/styles'),
         '@assets': r('src/assets'),
+
+        // Walkthrough system (used by Student + Superadmin)
+        '@walkthrough': r('src/walkthrough-data/index.js'),
         '@walkthrough-data': r('src/walkthrough-data'),
+        '@walkthrough-loaders': r('src/walkthrough-data/loaders'),
+        '@walkthrough-utils': r('src/walkthrough-data/utils'),
 
         // Role-specific
         '@student': r('src/student'),
@@ -54,7 +60,9 @@ export default defineConfig(async ({ mode }) => {
         '@admin': r('src/admin'),
         '@superadmin': r('src/superadmin'),
       },
-      // (Optional) add extensions if you want to omit them in imports
+      // Avoid duplicate React copies if a linked dependency brings its own
+      dedupe: ['react', 'react-dom'],
+      // If you want to omit extensions in imports, uncomment:
       // extensions: ['.js', '.jsx', '.json'],
     },
 
@@ -62,6 +70,7 @@ export default defineConfig(async ({ mode }) => {
       port: 5173,
       open: true,
       // strictPort: true, // uncomment to fail instead of picking a new port
+      // headers: { 'Cache-Control': 'no-store' }, // handy during deep dev
     },
 
     preview: {
@@ -75,24 +84,21 @@ export default defineConfig(async ({ mode }) => {
         'react-dom',
         'react-router-dom',
       ],
-      // Exclude heavy libs you lazy-load to avoid bundling twice
-      exclude: [
-        // 'firebase', // if you dynamically import individual Firebase packages
-      ],
+      // Exclude heavy libs you *only* load dynamically to avoid double-bundling
+      // exclude: ['firebase'], // uncomment if you switch to dynamic Firebase imports
     },
 
     build: {
       target: 'es2020',
-      sourcemap: !isProd,              // dev/staging debugging; off in prod
+      sourcemap: !isProd,          // on for dev/staging, off in prod
       cssCodeSplit: true,
-      chunkSizeWarningLimit: 900,      // quiets warnings for big role chunks
+      chunkSizeWarningLimit: 900,  // quiet warnings for larger role chunks
       rollupOptions: {
         output: {
-          // Sensible vendor splitting (tweak as needed after checking stats.html)
+          // Sensible vendor splitting (tweak after reviewing stats.html)
           manualChunks: {
             'vendor-react': ['react', 'react-dom'],
             'vendor-router': ['react-router', 'react-router-dom'],
-            // If you use Firebase modular SDK heavily, this keeps it in one chunk
             'vendor-firebase': [
               'firebase/app',
               'firebase/auth',
@@ -102,8 +108,10 @@ export default defineConfig(async ({ mode }) => {
           },
         },
       },
+      // assetsInlineLimit: 0, // uncomment to force all assets to files
     },
 
+    // Handy global flag; use `if (__DEV__)` in your code
     define: {
       __DEV__: !isProd,
     },

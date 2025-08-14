@@ -2,7 +2,7 @@
   "name": "cdl-trainer-app",
   "private": true,
   "version": "0.1.0",
-  "description": "CDL Trainer — Vite + React app with role-based dashboards and Firebase",
+  "description": "CDL Trainer -- Vite + React app with role-based dashboards and Firebase",
   "type": "module",
   "engines": {
     "node": ">=18.18",
@@ -24,6 +24,10 @@
 
     "// diagnostics": "==============================",
     "check:imports": "node dev-utils/import-checker.js",
+
+    "// walkthrough data QA": "==============================",
+    "walkthrough:check": "node cdl-trainer-app/dev-utils/check-walkthroughs.mjs",
+    "walkthrough:check:custom": "node cdl-trainer-app/dev-utils/check-walkthroughs.mjs --school=$SCHOOL --class=$CLASS",
 
     "// lifecycle helpers": "==============================",
     "postinstall": "node scripts/ensure-env.mjs || true",

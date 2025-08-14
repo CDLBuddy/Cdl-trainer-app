@@ -31,9 +31,9 @@ import { useSession } from '@session'
 
 import styles from './NavBar.module.css'
 
-// Infer role from a link target like "/student", "/instructor", etc.
+/** Infer role from a path target like "/student", "/instructor", etc. */
 function roleFromPath(path = '') {
-  const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/.exec(path)
+  const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(String(path))
   return m?.[1] || null
 }
 
@@ -53,10 +53,13 @@ function NavBar({ brand: brandProp }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
 
-  // Scroll elevation (reduced work via rAF + reduced-motion respect)
+  // Scroll elevation (rAF + prefers-reduced-motion)
   useEffect(() => {
     let ticking = false
-    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    const prefersReduced =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
     const onScroll = () => {
       if (prefersReduced) {
         setScrolled(window.scrollY > 6)
@@ -69,6 +72,7 @@ function NavBar({ brand: brandProp }) {
         ticking = false
       })
     }
+
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
@@ -81,22 +85,21 @@ function NavBar({ brand: brandProp }) {
   })
 
   useEffect(() => {
-    if (brandProp && (brandProp.logoUrl || brandProp.schoolName)) {
-      setBrand(prev => ({
-        logoUrl: brandProp.logoUrl ?? prev.logoUrl ?? '/default-logo.svg',
-        schoolName: brandProp.schoolName ?? prev.schoolName ?? 'CDL Trainer',
-        primaryColor: brandProp.primaryColor ?? prev.primaryColor ?? '',
-      }))
-    }
+    if (!brandProp) return
+    setBrand(prev => ({
+      logoUrl: brandProp.logoUrl ?? prev?.logoUrl ?? '/default-logo.svg',
+      schoolName: brandProp.schoolName ?? prev?.schoolName ?? 'CDL Trainer',
+      primaryColor: brandProp.primaryColor ?? prev?.primaryColor ?? '',
+    }))
   }, [brandProp])
 
   useEffect(() => {
     if (brandProp) return
     const unsub = subscribeBrandingUpdated(detail => {
       setBrand(prev => ({
-        logoUrl: detail?.logoUrl ?? prev.logoUrl ?? '/default-logo.svg',
-        schoolName: detail?.schoolName ?? prev.schoolName ?? 'CDL Trainer',
-        primaryColor: detail?.primaryColor ?? prev.primaryColor ?? '',
+        logoUrl: detail?.logoUrl ?? prev?.logoUrl ?? '/default-logo.svg',
+        schoolName: detail?.schoolName ?? prev?.schoolName ?? 'CDL Trainer',
+        primaryColor: detail?.primaryColor ?? prev?.primaryColor ?? '',
       }))
     })
     return unsub
@@ -125,9 +128,9 @@ function NavBar({ brand: brandProp }) {
 
   // Build visible nav from central config
   const links = useMemo(() => {
-    const base = [{ to: '/', label: 'Home', exact: true, prefetchRole: null }]
-    const roleLinks = getNavLinksForRole(role || 'student').map(l => ({
-      exact: false, // nested routes should remain active
+    const base = [{ to: '/', label: 'Home', icon: '🏠', exact: true, prefetchRole: null }]
+    const roleLinks = (getNavLinksForRole(role || 'student') || []).map(l => ({
+      exact: false,              // nested routes remain active
       prefetchRole: roleFromPath(l.to),
       ...l,
     }))
@@ -138,7 +141,7 @@ function NavBar({ brand: brandProp }) {
   const userMenu = useMemo(() => {
     if (!role) return []
     return [
-      { label: 'Profile', action: () => navigate(`/${role}/profile`) },
+      { label: 'Profile',   action: () => navigate(`/${role}/profile`) },
       { label: 'Dashboard', action: () => navigate(getDashboardRoute(role)) },
       {
         label: 'Logout',
@@ -164,8 +167,12 @@ function NavBar({ brand: brandProp }) {
 
   // Preload role router on nav intent (hover/focus)
   const handleLinkPrefetch = useCallback((to) => {
-    const r = roleFromPath(to)
-    if (r) preloadRoutesForRole(r) // idle/network-aware in util
+    try {
+      const r = roleFromPath(to)
+      if (r) preloadRoutesForRole(r) // util is idle/network-aware
+    } catch {
+      /* best-effort only */
+    }
   }, [])
 
   const email = user?.email || ''
@@ -211,10 +218,14 @@ function NavBar({ brand: brandProp }) {
             onClick={() => setMenuOpen(false)}
             onMouseEnter={() => handleLinkPrefetch(link.to)}
             onFocus={() => handleLinkPrefetch(link.to)}
-            end={!!link.exact}            {/* exact only for Home */}
+            end={!!link.exact}
             role="menuitem"
           >
-            {link.label}
+            {/* optional icon from nav config */}
+            {link.icon ? (
+              <span className={styles.linkIcon} aria-hidden>{link.icon}</span>
+            ) : null}
+            <span className={styles.linkLabel}>{link.label}</span>
           </NavLink>
         ))}
 

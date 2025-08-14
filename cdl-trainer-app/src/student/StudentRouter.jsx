@@ -4,16 +4,21 @@
 // - Lazy-loads student-area pages and wrappers
 // - Local Suspense fallback (keeps app-level fallback clean)
 // - Lightweight error boundary for unexpected render errors
-// - Optional export: preloadStudentRoutes() for hover-based warming
+// - Preload helper updated to warm the new profile bundle
 // ======================================================================
 
 import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import SplashScreen from '@components/SplashScreen.jsx'
+
+// If you prefer the global splash here, import and swap in the fallback below:
+// import SplashScreen from '@components/SplashScreen.jsx'
 
 // ---- Lazy pages (in /student) -----------------------------------------
 const StudentDashboard = lazy(() => import('@student/StudentDashboard.jsx'))
-const Profile          = lazy(() => import('@student/Profile.jsx'))
+
+// ✅ NEW path: profile entry moved under /student/profile/Profile.jsx
+const Profile          = lazy(() => import('@student/profile/Profile.jsx'))
+
 const Checklists       = lazy(() => import('@student/Checklists.jsx'))
 const PracticeTests    = lazy(() => import('@student/PracticeTests.jsx'))
 const Walkthrough      = lazy(() => import('@student/Walkthrough.jsx'))
@@ -28,7 +33,6 @@ const TestResultsWrapper = lazy(() => import('@student-components/TestResultsWra
 function LoadingScreen({ text = 'Loading student page…' }) {
   return (
     <div className="loading-container" role="status" aria-live="polite">
-      {/* If you have a global spinner class, this will pick it up */}
       <div className="spinner" />
       <p>{text}</p>
     </div>
@@ -75,7 +79,8 @@ function StudentNotFound() {
 export async function preloadStudentRoutes() {
   await Promise.allSettled([
     import('@student/StudentDashboard.jsx'),
-    import('@student/Profile.jsx'),
+    // ✅ Warm the new profile bundle entry:
+    import('@student/profile/Profile.jsx'),
     import('@student/Checklists.jsx'),
     import('@student/PracticeTests.jsx'),
     import('@student/Walkthrough.jsx'),
@@ -92,9 +97,9 @@ export default function StudentRouter() {
     <StudentSectionErrorBoundary>
       <Suspense
         fallback={
-          // Localized fallback so the rest of the app chrome stays interactive
+          // Keep this local so app chrome stays responsive
           <LoadingScreen text="Loading student area…" />
-          // If you prefer your global Splash look here, swap in:
+          // Or use the global splash:
           // <SplashScreen message="Loading student area…" showTip={false} />
         }
       >

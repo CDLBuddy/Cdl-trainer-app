@@ -1,0 +1,274 @@
+/* Shared form atoms styling (dark-friendly, uses global tokens) */
+
+/* ---------- Base field wrapper ---------- */
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+/* Row for label + actions (e.g., Clear / Choose file) */
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Right-aligned action cluster (used by UploadField) */
+.actionsRow {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------- Labels / meta ---------- */
+.label {
+  font-weight: 700;
+  color: var(--text-light);
+  letter-spacing: .01em;
+}
+
+.required {
+  color: var(--error);
+  font-weight: 800;
+}
+
+.hint {
+  font-size: .9rem;
+  color: color-mix(in oklab, var(--text-light), transparent 30%);
+}
+
+.error {
+  font-size: .9rem;
+  color: var(--error);
+  font-weight: 700;
+}
+
+/* ---------- Controls ---------- */
+.control {
+  background: var(--card-bg);
+  color: var(--text-light);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-height: 38px;
+  outline: none;
+  width: 100%;
+  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+}
+
+.control:hover {
+  border-color: color-mix(in oklab, var(--accent), #fff 10%);
+}
+
+.control:focus-visible {
+  border-color: color-mix(in oklab, var(--brand-light), #fff 12%);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 8%);
+}
+
+.control[aria-invalid="true"] {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--error), #fff 10%);
+}
+
+.control:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+  filter: grayscale(.1);
+}
+
+.textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.endAdornment {
+  margin-left: auto;
+  opacity: .9;
+}
+
+/* ---------- Select caret (native) ---------- */
+.select {
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--accent) 50%),
+    linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 4px),
+    calc(100% - 12px) calc(50% - 4px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 28px;
+}
+
+/* ---------- Checkbox group ---------- */
+.group {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.group:focus-within {
+  border-color: color-mix(in oklab, var(--brand-light), #fff 12%);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 8%);
+}
+
+.groupRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  background: color-mix(in oklab, var(--brand-dark), #fff 4%);
+  cursor: pointer;
+  user-select: none;
+}
+
+.check:hover {
+  border-color: color-mix(in oklab, var(--accent), #fff 12%);
+}
+
+.check input {
+  accent-color: var(--brand-light);
+}
+
+/* ---------- Upload: buttons ---------- */
+.uploadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: 1px dashed color-mix(in oklab, var(--accent), #000 40%);
+  background: color-mix(in oklab, var(--brand-mid), #000 70%);
+  color: var(--text-light);
+  cursor: pointer;
+  transition: border-color .12s ease, transform .12s ease, box-shadow .12s ease;
+}
+
+.uploadBtn:hover,
+.uploadBtn:focus-visible {
+  border-style: solid;
+  border-color: color-mix(in oklab, var(--brand-light), #fff 14%);
+  outline: none;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px #0004;
+}
+
+.uploadBtn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.smallBtn {
+  padding: 6px 10px;
+  font-size: .92rem;
+}
+
+/* ---------- Upload: drag & drop zone ---------- */
+.dropZone {
+  margin-top: 6px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px dashed color-mix(in oklab, var(--accent), #000 45%);
+  background: color-mix(in oklab, var(--brand-dark), #fff 3%);
+  outline: none;
+  user-select: none;
+  transition: border-color .12s ease, background .12s ease, box-shadow .12s ease, transform .12s ease;
+}
+
+.dropZone:focus-visible {
+  border-color: color-mix(in oklab, var(--brand-light), #fff 18%);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 10%);
+}
+
+.dropOver {
+  border-color: color-mix(in oklab, var(--brand-light), #fff 22%);
+  background: color-mix(in oklab, var(--brand-mid), #000 78%);
+  transform: translateY(-1px);
+}
+
+.dropDisabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.dropIcon {
+  font-size: 1.1rem;
+  filter: drop-shadow(0 2px 6px #0006);
+}
+
+.dropText {
+  color: color-mix(in oklab, var(--text-light), transparent 10%);
+  font-weight: 600;
+}
+
+/* ---------- Upload: preview + meta ---------- */
+.preview {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.thumb {
+  width: 90px;
+  height: 70px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #0e1b1b;
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  box-shadow: 0 2px 8px #0005;
+}
+
+.fileMeta {
+  display: grid;
+  gap: 2px;
+}
+
+.fileName {
+  font-weight: 700;
+  color: var(--text-light);
+  word-break: break-word;
+}
+
+.fileSize {
+  font-size: .9rem;
+  opacity: .8;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 560px) {
+  .preview {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .control,
+  .uploadBtn,
+  .dropZone {
+    transition: none !important;
+  }
+}

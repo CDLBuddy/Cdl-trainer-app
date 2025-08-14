@@ -1,0 +1,66 @@
+/* src/student/profile/Profile.module.css */
+.loading {
+  text-align: center;
+  padding: 2rem 0;
+}
+.inactive {
+  max-width: 520px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.progressBar {
+  --fill: var(--brand-primary, var(--brand-light));
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--brand-dark), #fff 4%);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 35%);
+  margin: 0 0 1rem 0;
+  overflow: hidden;
+}
+.progressFill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--fill), color-mix(in oklab, var(--fill), #000 20%));
+  box-shadow: 0 4px 12px color-mix(in oklab, var(--fill), #000 40%);
+  transition: width .24s ease;
+}
+.progressLabel {
+  position: absolute;
+  right: 10px;
+  top: -24px;
+  font-size: .9rem;
+  color: color-mix(in oklab, var(--text-light), transparent 25%);
+}
+
+.form {
+  display: grid;
+  gap: 1rem;
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+.saveState {
+  margin-left: auto;
+  font-size: .95rem;
+  opacity: .85;
+}
+
+.afterNote {
+  margin-top: 1.1rem;
+  color: var(--brand-primary, var(--brand-light));
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  .progressLabel { right: 0; left: 0; text-align: center; top: -22px; }
+  .footerRow { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .progressFill { transition: none !important; }
+}

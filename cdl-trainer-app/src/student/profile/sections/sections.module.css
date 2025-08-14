@@ -1,0 +1,128 @@
+/* src/student/profile/sections/sections.module.css */
+/* Shared section styles (keeps pages consistent) */
+
+:root {
+  /* Tunables if you want to theme sections independently later */
+  --section-pad: clamp(14px, 2.2vw, 18px);
+  --section-radius: 14px;
+  --section-shadow:
+    0 14px 40px #0005,
+    inset 0 1px 0 #ffffff10;
+  --section-border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
+  --section-bg: var(--card-bg);
+}
+
+/* Make each section a container for smarter layout with container queries */
+.section {
+  container: section / inline-size;
+  background: var(--section-bg);
+  border: var(--section-border);
+  border-radius: var(--section-radius);
+  padding: var(--section-pad);
+  box-shadow: var(--section-shadow);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+}
+
+@supports not (backdrop-filter: blur(10px)) {
+  .section {
+    /* Slightly stronger bg when no blur is available for contrast */
+    background: color-mix(in oklab, var(--section-bg), #000 6%);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+  flex-wrap: wrap; /* avoid crowding on narrow widths */
+}
+
+.title {
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+.sub {
+  margin-left: auto;
+  font-size: 0.92rem;
+  color: color-mix(in oklab, var(--text-light), transparent 30%);
+}
+
+/* Content grids */
+.grid {
+  display: grid;
+  gap: 12px;
+}
+
+.grid2 {
+  composes: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid3 {
+  composes: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Actions row */
+.actions {
+  margin-top: 0.6rem;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* Handy inline checkbox line used in WaiverSection */
+.checkline {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.4;
+}
+
+/* Small note text block (used for legal note in Waiver) */
+.note {
+  font-size: 0.9rem;
+  color: color-mix(in oklab, var(--text-light), transparent 28%);
+  margin-top: 4px;
+}
+
+/* Visually-hidden helper for a11y when needed within sections */
+.srOnly {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0);
+  white-space: nowrap; border: 0;
+}
+
+/* Responsive:
+   Prefer container queries so sections adapt inside any layout,
+   with a viewport fallback for older browsers. */
+@container section (width < 640px) {
+  .grid2,
+  .grid3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Viewport fallback (in case container queries aren’t supported) */
+@media (max-width: 760px) {
+  .grid2,
+  .grid3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Reduced motion: dial down heavy effects if requested */
+@media (prefers-reduced-motion: reduce) {
+  .section {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}

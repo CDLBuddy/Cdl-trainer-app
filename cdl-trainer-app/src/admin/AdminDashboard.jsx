@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
 import { db } from '@utils/firebase.js'
-import { useToast } from '@utils/ui-helpers.js'
+import { useToast } from '@components/ToastContext' // ✅ correct source
 
 import styles from './AdminDashboard.module.css'
 
@@ -22,13 +22,15 @@ import styles from './AdminDashboard.module.css'
 function daysBetween(dateStr) {
   if (!dateStr) return 9e6
   const dt = new Date(dateStr)
-  if (isNaN(dt)) return 9e6
+  if (Number.isNaN(dt)) return 9e6
   const now = new Date()
+  // positive => future, negative => past
   return Math.floor((dt - now) / (1000 * 60 * 60 * 24))
 }
 function expirySoon(dateStr) {
   return daysBetween(dateStr) <= 30
 }
+const clampPct = v => Math.max(0, Math.min(100, Number(v) || 0))
 
 // ------------------------ component ---------------------------
 export default function AdminDashboard() {
@@ -37,7 +39,6 @@ export default function AdminDashboard() {
 
   // state
   const [loading, setLoading] = useState(true)
-  // const [userRole, setUserRole] = useState('admin')
   const [schoolId, setSchoolId] = useState('')
   const [users, setUsers] = useState([])
 
@@ -69,8 +70,8 @@ export default function AdminDashboard() {
         localStorage.getItem('currentUserEmail') ||
         null
       if (!currentUserEmail) {
-        showToast('No user found. Please log in again.', 3000, 'error')
-        if (window.handleLogout) window.handleLogout()
+        showToast('No user found. Please log in again.', 'error')
+        window.handleLogout?.()
         navigate('/login', { replace: true })
         return
       }
@@ -85,7 +86,7 @@ export default function AdminDashboard() {
         const q = query(usersRef, where('email', '==', currentUserEmail))
         const snap = await getDocs(q)
         if (!snap.empty) {
-          const profile = snap.docs[0].data()
+          const profile = snap.docs[0].data() || {}
           role = profile.role || role
           sid = profile.schoolId || sid
           localStorage.setItem('userRole', role)
@@ -94,16 +95,11 @@ export default function AdminDashboard() {
       } catch {
         /* non-fatal */
       }
-      // setUserRole(role)
       setSchoolId(sid)
 
       if (role !== 'admin' || !sid) {
-        showToast(
-          'Access denied: Admin role and school required.',
-          3500,
-          'error'
-        )
-        if (window.handleLogout) window.handleLogout()
+        showToast('Access denied: Admin role and school required.', 'error')
+        window.handleLogout?.()
         navigate('/login', { replace: true })
         return
       }
@@ -119,7 +115,7 @@ export default function AdminDashboard() {
           )
         )
         allUsers = usersSnap.docs.map(docSnap => {
-          const d = docSnap.data()
+          const d = docSnap.data() || {}
           return {
             id: docSnap.id,
             name: d.name || 'User',
@@ -128,7 +124,7 @@ export default function AdminDashboard() {
             role: d.role || 'student',
             assignedInstructor: d.assignedInstructor || '',
             assignedCompany: d.assignedCompany || '',
-            profileProgress: d.profileProgress || 0,
+            profileProgress: clampPct(d.profileProgress),
             permitExpiry: d.permitExpiry || '',
             medCardExpiry: d.medCardExpiry || '',
             paymentStatus: d.paymentStatus || '',
@@ -136,7 +132,7 @@ export default function AdminDashboard() {
           }
         })
       } catch {
-        showToast('Error fetching users.', 2500, 'error')
+        showToast('Error fetching users.', 'error')
       }
 
       setUsers(allUsers)
@@ -145,7 +141,7 @@ export default function AdminDashboard() {
 
     run()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showToast])
+  }, [])
 
   // derived lists
   const instructorList = useMemo(
@@ -154,9 +150,9 @@ export default function AdminDashboard() {
   )
   const companyList = useMemo(
     () =>
-      Array.from(
-        new Set(users.map(u => u.assignedCompany).filter(Boolean))
-      ).sort((a, b) => a.localeCompare(b)),
+      Array.from(new Set(users.map(u => u.assignedCompany).filter(Boolean))).sort(
+        (a, b) => a.localeCompare(b)
+      ),
     [users]
   )
 
@@ -199,7 +195,7 @@ export default function AdminDashboard() {
     [users]
   )
   const incomplete = useMemo(
-    () => users.filter(u => u.profileProgress < 80).length,
+    () => users.filter(u => (u.profileProgress || 0) < 80).length,
     [users]
   )
 
@@ -214,88 +210,132 @@ export default function AdminDashboard() {
     if (page > pageCount) setPage(pageCount)
   }, [page, pageCount])
 
-  // inline edit handlers
+  // inline edit handlers (optimistic)
   const updateUser = useCallback(
     async (email, changes) => {
       try {
+        setUsers(prev => prev.map(u => (u.email === email ? { ...u, ...changes } : u)))
         await setDoc(
           firestoreDoc(db, 'users', email),
           { ...changes, schoolId },
           { merge: true }
         )
-        if (changes.role) {
+        if (Object.prototype.hasOwnProperty.call(changes, 'role')) {
           await setDoc(
             firestoreDoc(db, 'userRoles', email),
             { role: changes.role, schoolId },
             { merge: true }
           )
         }
-        showToast(`Updated user: ${email}`, 2200, 'success')
-        setUsers(prev =>
-          prev.map(u => (u.email === email ? { ...u, ...changes } : u))
-        )
+        showToast(`Updated user: ${email}`, 'success')
       } catch {
-        showToast('Failed to update user.', 2500, 'error')
+        // revert if failed: refetch would be ideal; quick revert for simple fields
+        setUsers(prev => prev.map(u => (u.email === email ? { ...u } : u)))
+        showToast('Failed to update user.', 'error')
       }
     },
     [schoolId, showToast]
   )
 
-  const removeUser = useCallback(async email => {
-    if (!window.confirm(`Remove user: ${email}? This cannot be undone.`)) return
-    try {
-      await deleteDoc(firestoreDoc(db, 'users', email))
-      await deleteDoc(firestoreDoc(db, 'userRoles', email))
-      showToast(`User ${email} removed`, 2200, 'success')
-      setUsers(prev => prev.filter(u => u.email !== email))
-    } catch {
-      showToast('Failed to remove user.', 2500, 'error')
-    }
-  }, [showToast])
+  const removeUser = useCallback(
+    async email => {
+      if (!window.confirm(`Remove user: ${email}? This cannot be undone.`)) return
+      try {
+        await deleteDoc(firestoreDoc(db, 'users', email))
+        await deleteDoc(firestoreDoc(db, 'userRoles', email))
+        setUsers(prev => prev.filter(u => u.email !== email))
+        showToast(`User ${email} removed`, 'success')
+      } catch {
+        showToast('Failed to remove user.', 'error')
+      }
+    },
+    [showToast]
+  )
 
   // exports
-  const exportUsersToCSV = useCallback((list, filename = 'users') => {
-    if (!list.length) return showToast('No users to export.')
-    const headers = Object.keys(list[0])
-    const csv = [
-      headers.join(','),
-      ...list.map(u =>
-        headers
-          .map(h => `"${(u[h] ?? '').toString().replace(/"/g, '""')}"`)
-          .join(',')
-      ),
-    ].join('\r\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${filename}-export-${new Date().toISOString().slice(0, 10)}.csv`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(url)
-  }, [showToast])
+  const exportUsersToCSV = useCallback(
+    (list, filename = 'users') => {
+      if (!list.length) return showToast('No users to export.', 'error')
+      const headers = [
+        'name',
+        'email',
+        'role',
+        'assignedCompany',
+        'assignedInstructor',
+        'profileProgress',
+        'permitExpiry',
+        'medCardExpiry',
+        'paymentStatus',
+      ]
+      const csv = [
+        headers.join(','),
+        ...list.map(u =>
+          headers
+            .map(h => `"${String(u[h] ?? '').replace(/"/g, '""')}"`)
+            .join(',')
+        ),
+      ].join('\r\n')
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${filename}-export-${new Date().toISOString().slice(0, 10)}.csv`
+      document.body.appendChild(a)
+      a.click()
+      setTimeout(() => {
+        URL.revokeObjectURL(url)
+        a.remove()
+      }, 200)
+      showToast('CSV export downloaded.', 'success')
+    },
+    [showToast]
+  )
 
-  const exportUsersToPDF = useCallback(list => {
-    if (!list.length) return showToast('No users to export.')
-    const docPdf = new jsPDF()
-    docPdf.setFontSize(14)
-    docPdf.text('Users List', 10, 16)
-    const headers = Object.keys(list[0])
-    let y = 25
-    docPdf.setFontSize(10)
-    docPdf.text(headers.join(' | '), 10, y)
-    y += 7
-    list.forEach(u => {
-      docPdf.text(headers.map(h => u[h] ?? '').join(' | '), 10, y)
-      y += 6
-      if (y > 280) {
-        docPdf.addPage()
-        y = 15
-      }
-    })
-    docPdf.save(`users-export-${new Date().toISOString().slice(0, 10)}.pdf`)
-  }, [showToast])
+  const exportUsersToPDF = useCallback(
+    list => {
+      if (!list.length) return showToast('No users to export.', 'error')
+      const docPdf = new jsPDF()
+      docPdf.setFontSize(14)
+      docPdf.text('Users List', 10, 16)
+      const headers = [
+        'Name',
+        'Email',
+        'Role',
+        'Company',
+        'Instructor',
+        'Profile %',
+        'Permit Exp.',
+        'MedCard Exp.',
+        'Payment',
+      ]
+      let y = 25
+      docPdf.setFontSize(10)
+      docPdf.text(headers.join(' | '), 10, y)
+      y += 7
+      list.forEach(u => {
+        const row = [
+          u.name,
+          u.email,
+          u.role,
+          u.assignedCompany,
+          u.assignedInstructor,
+          `${clampPct(u.profileProgress)}%`,
+          u.permitExpiry || '',
+          u.medCardExpiry || '',
+          u.paymentStatus || '',
+        ].join(' | ')
+        docPdf.text(row, 10, y)
+        y += 6
+        if (y > 280) {
+          docPdf.addPage()
+          y = 15
+        }
+      })
+      docPdf.save(`users-export-${new Date().toISOString().slice(0, 10)}.pdf`)
+      showToast('PDF export generated.', 'success')
+    },
+    [showToast]
+  )
 
   // loading
   if (loading) {
@@ -312,10 +352,12 @@ export default function AdminDashboard() {
   return (
     <Shell title="Admin Dashboard">
       <div
-        className={`${styles.wrapper} ${density === 'compact' ? styles.compact : ''}`}
+        className={`${styles.wrapper} ${
+          density === 'compact' ? styles.compact : ''
+        }`}
       >
         {/* Metrics */}
-        <div className={styles.kpiRow}>
+        <div className={styles.kpiRow} role="group" aria-label="Key metrics">
           <div className={styles.kpiCard}>
             <b>👨‍🎓 Students:</b> <span>{studentCount}</span>
           </div>
@@ -333,7 +375,7 @@ export default function AdminDashboard() {
           </div>
           <div className={styles.kpiCard}>
             <b>
-              📝 <span title="Profile < 80%">Incomplete Profiles</span>:
+              📝 <span title="Profile &lt; 80%">Incomplete Profiles</span>:
             </b>{' '}
             <span>{incomplete}</span>
           </div>
@@ -342,7 +384,9 @@ export default function AdminDashboard() {
         {/* Toolbar */}
         <div className="u-toolbar" style={{ gap: 12 }}>
           <div className="u-field is-inline">
-            <label className="u-label" htmlFor="roleFilterSelect">Role</label>
+            <label className="u-label" htmlFor="roleFilterSelect">
+              Role
+            </label>
             <select
               id="roleFilterSelect"
               className="u-select"
@@ -358,8 +402,11 @@ export default function AdminDashboard() {
               <option value="admin">Admins</option>
             </select>
           </div>
+
           <div className="u-field is-inline">
-            <label className="u-label" htmlFor="companyFilterSelect">Company</label>
+            <label className="u-label" htmlFor="companyFilterSelect">
+              Company
+            </label>
             <select
               id="companyFilterSelect"
               className="u-select"
@@ -379,7 +426,9 @@ export default function AdminDashboard() {
           </div>
 
           <div className="u-field is-inline" style={{ flex: 1, minWidth: 220 }}>
-            <label className="u-label" htmlFor="searchInput">Search</label>
+            <label className="u-label" htmlFor="searchInput">
+              Search
+            </label>
             <input
               id="searchInput"
               className="u-input"
@@ -387,11 +436,16 @@ export default function AdminDashboard() {
               placeholder="Name or email…"
               value={search}
               onChange={e => setSearch(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Escape' && search) setSearch('')
+              }}
             />
           </div>
 
           <div className="u-field is-inline">
-            <label className="u-label" htmlFor="pageSizeSelect">Page size</label>
+            <label className="u-label" htmlFor="pageSizeSelect">
+              Page size
+            </label>
             <select
               id="pageSizeSelect"
               className="u-select"
@@ -420,6 +474,7 @@ export default function AdminDashboard() {
                 className={`btn outline ${density === 'cozy' ? 'is-active' : ''}`}
                 onClick={() => setDensity('cozy')}
                 title="Cozy spacing"
+                aria-pressed={density === 'cozy'}
               >
                 Cozy
               </button>
@@ -428,6 +483,7 @@ export default function AdminDashboard() {
                 className={`btn outline ${density === 'compact' ? 'is-active' : ''}`}
                 onClick={() => setDensity('compact')}
                 title="Compact spacing"
+                aria-pressed={density === 'compact'}
               >
                 Compact
               </button>
@@ -455,6 +511,7 @@ export default function AdminDashboard() {
                   'permit-expiring'
                 )
               }
+              title="Export users with permits expiring within 30 days"
             >
               Expiring Permits
             </button>
@@ -467,16 +524,16 @@ export default function AdminDashboard() {
             <table className={styles.table} role="table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Company</th>
-                  <th>Assigned Instructor</th>
-                  <th>Profile %</th>
-                  <th>Permit Exp.</th>
-                  <th>MedCard Exp.</th>
-                  <th>Payment</th>
-                  <th>Actions</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">Company</th>
+                  <th scope="col">Assigned Instructor</th>
+                  <th scope="col">Profile %</th>
+                  <th scope="col">Permit Exp.</th>
+                  <th scope="col">MedCard Exp.</th>
+                  <th scope="col">Payment</th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -496,6 +553,7 @@ export default function AdminDashboard() {
                         onChange={e =>
                           updateUser(u.email, { role: e.target.value })
                         }
+                        aria-label={`Role for ${u.email}`}
                       >
                         <option value="student">Student</option>
                         <option value="instructor">Instructor</option>
@@ -513,6 +571,7 @@ export default function AdminDashboard() {
                           })
                         }
                         placeholder="(Company)"
+                        aria-label={`Company for ${u.email}`}
                       />
                     </td>
                     <td>
@@ -524,6 +583,7 @@ export default function AdminDashboard() {
                             assignedInstructor: e.target.value,
                           })
                         }
+                        aria-label={`Instructor for ${u.email}`}
                       >
                         <option value="">(None)</option>
                         {instructorList.map(inst => (
@@ -533,7 +593,7 @@ export default function AdminDashboard() {
                         ))}
                       </select>
                     </td>
-                    <td>{u.profileProgress || 0}%</td>
+                    <td>{clampPct(u.profileProgress)}%</td>
                     <td
                       className={
                         expirySoon(u.permitExpiry) ? styles.expiry : undefined
@@ -561,10 +621,7 @@ export default function AdminDashboard() {
                 ))}
                 {pageSlice.length === 0 && (
                   <tr>
-                    <td
-                      colSpan={10}
-                      style={{ textAlign: 'center', opacity: 0.8 }}
-                    >
+                    <td colSpan={10} style={{ textAlign: 'center', opacity: 0.8 }}>
                       No users found.
                     </td>
                   </tr>
@@ -609,10 +666,7 @@ export default function AdminDashboard() {
         <div className="u-grid u-grid-2 u-gap-16">
           <div className="dashboard-card">
             <h3>🏢 Manage Companies</h3>
-            <p>
-              Create, edit, and view all companies who send students to your
-              school.
-            </p>
+            <p>Create, edit, and view all companies that send students to your school.</p>
             <button
               className="btn wide"
               style={{ marginTop: 10 }}
@@ -625,10 +679,9 @@ export default function AdminDashboard() {
           <div className="dashboard-card">
             <h3>📝 Reports & Batch Messaging</h3>
             <p>
-              Download user data, filter for missing docs, and message all
-              students or instructors with one click.
+              Download user data, filter for missing docs, and message all students or instructors with one click.
               <br />
-              <em>(Coming soon: exports, batch reminders, activity logs…)</em>
+              <em>(Coming soon: advanced exports, batch reminders, activity logs…)</em>
             </p>
             <button
               className="btn wide"

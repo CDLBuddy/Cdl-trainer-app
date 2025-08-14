@@ -1,18 +1,21 @@
 // ===== STUDENT BARREL (pure) =====
 // Re-export student pages & role-scoped utilities.
-// No JSX, no lazy, no route objects—keep this a clean barrel.
+// Keep this side-effect free (no JSX, no CSS, no lazy imports).
 
 export { default as StudentDashboard } from './StudentDashboard.jsx'
-export { default as Profile } from './Profile.jsx'
+
+// Profile (in ./profile/)
+export { default as Profile } from './profile/Profile.jsx'
+
 export { default as Checklists } from './Checklists.jsx'
 export { default as PracticeTests } from './PracticeTests.jsx'
-export { default as TestEngineWrapper } from './components/TestEngineWrapper.jsx'
-export { default as TestReviewWrapper } from './components/TestReviewWrapper.jsx'
-export { default as TestResults } from './TestResults.jsx'
 export { default as Walkthrough } from './Walkthrough.jsx'
 export { default as Flashcards } from './Flashcards.jsx'
 
-// Optional: student-scoped components/hooks/helpers (uncomment if present)
-// export * from "./components";          // e.g., ./components/StudyTip.jsx
-// export * from "../hooks/useStudentData.js";
-// export * from "../utils/student-helpers.js";
+// Wrappers (in ./components)
+export { default as TestEngineWrapper } from './components/TestEngineWrapper.jsx'
+export { default as TestReviewWrapper } from './components/TestReviewWrapper.jsx'
+export { default as TestResultsWrapper } from './components/TestResultsWrapper.jsx'
+
+// Optional alias for legacy imports
+export { default as TestResults } from './components/TestResultsWrapper.jsx'

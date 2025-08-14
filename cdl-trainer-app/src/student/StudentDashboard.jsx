@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
-import SplashScreen from '@components/SplashScreen.jsx'
 import { getLatestUpdate } from '@utils/firebase'
 import { useSession } from '@session/useSession.js'
 import { StudentRoutes } from '@navigation/navigation.js'
@@ -13,6 +12,11 @@ import styles from './StudentDashboard.module.css'
 /* ------------------------------------------------------------------ *
  * Local helpers
  * ------------------------------------------------------------------ */
+function clamp01to100(n) {
+  const x = Number.isFinite(n) ? n : 0
+  return Math.max(0, Math.min(100, Math.round(x)))
+}
+
 function computeProfileCompletion(profile = {}) {
   const keysToCheck = [
     'name',
@@ -32,7 +36,7 @@ function computeProfileCompletion(profile = {}) {
     'paymentStatus',
   ]
   const filled = keysToCheck.filter(k => Boolean(profile?.[k])).length
-  return Math.round((filled / keysToCheck.length) * 100)
+  return clamp01to100((filled / keysToCheck.length) * 100)
 }
 
 function getNextChecklistHint(user = {}) {
@@ -46,16 +50,11 @@ function getNextChecklistHint(user = {}) {
   if (user.cdlPermit === 'yes' && !user.permitPhotoUrl) {
     return 'Upload a photo of your CDL permit.'
   }
-  if (
-    user.vehicleQualified === 'yes' &&
-    (!user.truckPlateUrl || !user.trailerPlateUrl)
-  ) {
+  if (user.vehicleQualified === 'yes' && (!user.truckPlateUrl || !user.trailerPlateUrl)) {
     const which = [
       !user.truckPlateUrl ? 'truck' : null,
       !user.trailerPlateUrl ? 'trailer' : null,
-    ]
-      .filter(Boolean)
-      .join(' & ')
+    ].filter(Boolean).join(' & ')
     return `Upload your ${which} data plate photo${which.includes('&') ? 's' : ''}.`
   }
   if (typeof user.lastTestScore === 'number' && user.lastTestScore < 80) {
@@ -70,14 +69,10 @@ function getNextChecklistHint(user = {}) {
 function formatDate(dateInput) {
   try {
     const d = dateInput?.toDate ? dateInput.toDate() : new Date(dateInput)
-    if (Number.isNaN(d.getTime())) return '-'
-    return d.toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
+    if (Number.isNaN(d.getTime())) return '—'
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
   } catch {
-    return '-'
+    return '—'
   }
 }
 
@@ -91,7 +86,7 @@ export default function StudentDashboard() {
   const profile = useMemo(() => user?.profile || user || {}, [user])
   const profilePct = useMemo(() => computeProfileCompletion(profile), [profile])
   const nextHint = useMemo(() => getNextChecklistHint(profile), [profile])
-  const isComplete = /All required steps complete!/i.test(nextHint)
+  const isComplete = nextHint.startsWith('All required steps complete')
 
   // Latest update card
   const [latestUpdate, setLatestUpdate] = useState(null)
@@ -103,49 +98,42 @@ export default function StudentDashboard() {
     ;(async () => {
       try {
         const data = await getLatestUpdate()
-        if (alive) {
-          setLatestUpdate(data || null)
-          setUpdatesError(null)
-        }
+        if (!alive) return
+        setLatestUpdate(data || null)
+        setUpdatesError(null)
       } catch (err) {
-        if (alive) setUpdatesError(err || new Error('Failed to load updates'))
+        if (!alive) return
+        setUpdatesError(err || new Error('Failed to load updates'))
       } finally {
         if (alive) setUpdatesLoading(false)
       }
     })()
-    return () => {
-      alive = false
-    }
+    return () => { alive = false }
   }, [])
 
-  // Title
+  // Title (Shell renders header; we still set document title for the tab)
   useEffect(() => {
     const prev = document.title
     document.title = 'Student Dashboard • CDL Trainer'
-    return () => {
-      document.title = prev
-    }
+    return () => { document.title = prev }
   }, [])
 
   const quickLinks = useMemo(
     () => [
-      { to: StudentRoutes.checklists(), label: 'Open Checklists', icon: '📋' },
-      { to: StudentRoutes.practiceTests(), label: 'Practice Tests', icon: '📝' },
-      { to: StudentRoutes.walkthrough(), label: 'Walkthrough', icon: '🚚' },
-      { to: StudentRoutes.flashcards(), label: 'Flashcards', icon: '🗂️' },
+      { to: StudentRoutes.checklists(),   label: 'Open Checklists', icon: '📋' },
+      { to: StudentRoutes.practiceTests(), label: 'Practice Tests',  icon: '📝' },
+      { to: StudentRoutes.walkthrough(),   label: 'Walkthrough',     icon: '🚚' },
+      { to: StudentRoutes.flashcards(),    label: 'Flashcards',      icon: '🗂️' },
     ],
     []
   )
 
-  const lastScore = Number.isFinite(profile?.lastTestScore)
-    ? profile.lastTestScore
-    : null
-  const streakDays = profile?.studyStreakDays ?? 0
+  const lastScore = Number.isFinite(profile?.lastTestScore) ? profile.lastTestScore : null
+  const streakDays = Number.isFinite(profile?.studyStreakDays) ? profile.studyStreakDays : 0
 
-  const goProfile = useCallback(
-    () => navigate(StudentRoutes.profile()),
-    [navigate]
-  )
+  const goProfile = useCallback(() => navigate(StudentRoutes.profile()), [navigate])
+
+  const progressNow = Math.min(100, Math.max(0, profilePct))
 
   return (
     <Shell title="Student Dashboard" showFab showFooter>
@@ -155,8 +143,7 @@ export default function StudentDashboard() {
           <article className={styles.kpiCard}>
             <h3 className={styles.kpiTitle}>Profile Completion</h3>
             <div className={styles.kpiValue}>
-              {profilePct}
-              <span className={styles.kpiUnit}>%</span>
+              {profilePct}<span className={styles.kpiUnit}>%</span>
             </div>
             <div
               className={styles.progressTrack}
@@ -164,12 +151,9 @@ export default function StudentDashboard() {
               aria-label="Profile completion"
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-valuenow={Math.min(100, Math.max(0, profilePct))}
+              aria-valuenow={progressNow}
             >
-              <div
-                className={styles.progressFill}
-                style={{ width: `${Math.min(100, Math.max(0, profilePct))}%` }}
-              />
+              <div className={styles.progressFill} style={{ width: `${progressNow}%` }} />
             </div>
             <p className={styles.kpiHint}>
               {profilePct < 100 ? 'Finish your profile to 100%.' : 'Nice work!'}
@@ -180,9 +164,7 @@ export default function StudentDashboard() {
             <h3 className={styles.kpiTitle}>Last Practice Score</h3>
             <div className={styles.kpiValue}>
               {lastScore != null ? lastScore : '--'}
-              <span className={styles.kpiUnit}>
-                {lastScore != null ? '%' : ''}
-              </span>
+              <span className={styles.kpiUnit}>{lastScore != null ? '%' : ''}</span>
             </div>
             <p className={styles.kpiHint}>
               {lastScore != null
@@ -196,8 +178,7 @@ export default function StudentDashboard() {
           <article className={styles.kpiCard}>
             <h3 className={styles.kpiTitle}>Study Streak</h3>
             <div className={styles.kpiValue}>
-              {streakDays}
-              <span className={styles.kpiUnit}>d</span>
+              {streakDays}<span className={styles.kpiUnit}>d</span>
             </div>
             <p className={styles.kpiHint}>
               {streakDays > 0 ? 'Keep that streak alive!' : 'Start a session today.'}
@@ -226,9 +207,7 @@ export default function StudentDashboard() {
         <nav className={styles.quickRow} aria-label="Quick actions">
           {quickLinks.map(q => (
             <Link key={q.to} to={q.to} className={styles.quickBtn}>
-              <span className={styles.quickIcon} aria-hidden>
-                {q.icon}
-              </span>
+              <span className={styles.quickIcon} aria-hidden>{q.icon}</span>
               <span>{q.label}</span>
             </Link>
           ))}

@@ -1,7 +1,8 @@
 /* === StudentDashboard.module.css =========================================
-   Relies on global theme tokens:
-   --brand-dark, --brand-mid, --brand-light, --accent, --text-light
-   --card-bg, --card-bg-dark, --error, --success
+   Relies on global tokens:
+   --brand-dark --brand-mid --brand-light --accent --text-light
+   --card-bg --card-bg-dark --error --success
+   Optional shared tokens: --radius-md --radius-lg --shadow-2 --shadow-3
 =========================================================================== */
 
 .wrapper {
@@ -20,14 +21,19 @@
 
 .kpiCard {
   background: var(--card-bg);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
-  border-radius: 16px;
+  border-radius: var(--radius-lg, 16px);
   padding: 1rem 1rem 0.9rem;
   box-shadow:
-    0 14px 36px #0007,
+    var(--shadow-3, 0 14px 36px #0007),
     inset 0 1px 0 #ffffff14;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+@supports not ((backdrop-filter: blur(1px))) {
+  .kpiCard {
+    background: color-mix(in oklab, var(--card-bg-dark), #000 10%);
+  }
 }
 
 .kpiTitle {
@@ -38,13 +44,13 @@
 }
 
 .kpiValue {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
   font-weight: 800;
   font-size: 1.8rem;
   color: var(--text-light);
   text-shadow: 0 2px 10px #0005;
-  display: flex;
-  align-items: baseline;
-  gap: 0.25rem;
 }
 
 .kpiUnit {
@@ -62,12 +68,15 @@
   overflow: hidden;
 }
 
+/* Use transform instead of width for smoother, cheaper animation */
 .progressFill {
   height: 100%;
-  width: 0%;
+  width: 100%;
+  transform-origin: left center;
+  transform: scaleX(var(--pct, 0));
   background: linear-gradient(90deg, var(--brand-light), var(--brand-mid) 90%);
   box-shadow: 0 6px 16px color-mix(in oklab, var(--brand-light), #000 40%);
-  transition: width 240ms ease;
+  transition: transform 240ms ease;
 }
 
 .kpiHint {
@@ -85,10 +94,10 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.85rem 1rem;
-  border-radius: 14px;
+  border-radius: var(--radius-md, 14px);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
   box-shadow:
-    0 14px 34px #0006,
+    var(--shadow-2, 0 14px 34px #0006),
     inset 0 1px 0 #ffffff10;
   background: linear-gradient(
     120deg,
@@ -125,21 +134,20 @@
   color: #fff;
   border: none;
   border-radius: 10px;
-  padding: 0.5rem 0.9rem;
+  padding: 0.55rem 0.95rem; /* slightly larger for touch */
   font-weight: 700;
   cursor: pointer;
+  min-height: 40px; /* touch target */
   box-shadow: 0 8px 18px color-mix(in oklab, var(--brand-light), #000 40%);
   transition:
     transform 120ms ease,
     filter 120ms ease,
     background 140ms ease;
 }
-.bannerCta:hover,
-.bannerCta:focus-visible {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  outline: none;
+@media (hover: hover) and (pointer: fine) {
+  .bannerCta:hover { transform: translateY(-1px); filter: brightness(1.05); }
 }
+.bannerCta:focus-visible { outline: none; }
 
 /* =========================
    Quick Links
@@ -158,26 +166,28 @@
   gap: 0.6rem;
   text-decoration: none;
   color: var(--text-light);
-  padding: 0.8rem 0.9rem;
-  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-lg, 14px);
   background: var(--card-bg);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
   box-shadow:
-    0 12px 28px #0006,
+    var(--shadow-2, 0 12px 28px #0006),
     inset 0 1px 0 #ffffff10;
   transition:
     transform 120ms ease,
     background 140ms ease,
     box-shadow 140ms ease,
     border-color 140ms ease;
+  min-height: 44px; /* touch */
 }
-.quickBtn:hover,
-.quickBtn:focus-visible {
-  transform: translateY(-1px);
-  background: color-mix(in oklab, var(--brand-mid), #000 30%);
-  border-color: color-mix(in oklab, var(--brand-light), transparent 40%);
-  outline: none;
+@media (hover: hover) and (pointer: fine) {
+  .quickBtn:hover {
+    transform: translateY(-1px);
+    background: color-mix(in oklab, var(--brand-mid), #000 30%);
+    border-color: color-mix(in oklab, var(--brand-light), transparent 40%);
+  }
 }
+.quickBtn:focus-visible { outline: none; }
 
 .quickIcon {
   font-size: 1.15rem;
@@ -190,9 +200,9 @@
 .updateCard {
   background: var(--card-bg);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
-  border-radius: 16px;
+  border-radius: var(--radius-lg, 16px);
   box-shadow:
-    0 18px 40px #0007,
+    var(--shadow-3, 0 18px 40px #0007),
     inset 0 1px 0 #ffffff12;
   overflow: hidden;
 }
@@ -209,14 +219,9 @@
   border-bottom: 1px solid color-mix(in oklab, var(--accent), transparent 60%);
 }
 
-.updateBody {
-  padding: 0.9rem 1rem;
-}
+.updateBody { padding: 0.9rem 1rem; }
 
-.updateContent {
-  color: var(--text-light);
-  line-height: 1.5;
-}
+.updateContent { color: var(--text-light); line-height: 1.5; }
 
 .updateMeta {
   margin-top: 0.4rem;
@@ -224,32 +229,21 @@
   color: color-mix(in oklab, var(--text-light), transparent 35%);
 }
 
-.updateEmpty {
-  color: color-mix(in oklab, var(--text-light), transparent 28%);
-}
+.updateEmpty { color: color-mix(in oklab, var(--text-light), transparent 28%); }
 
-/* Skeleton shimmer */
+/* Skeleton shimmer (kept local so it doesn’t clash with global .skeleton) */
 .updateSkeleton {
   height: 12px;
   width: 92%;
   border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    #ffffff0a 25%,
-    #ffffff22 37%,
-    #ffffff0a 63%
-  );
+  background: linear-gradient(90deg, #ffffff0a 25%, #ffffff22 37%, #ffffff0a 63%);
   background-size: 400% 100%;
-  animation: shimmer 1100ms ease-in-out infinite;
+  animation: sdShimmer 1100ms ease-in-out infinite;
   margin: 8px 0;
 }
-@keyframes shimmer {
-  0% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: 0% 0;
-  }
+@keyframes sdShimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0% 0; }
 }
 
 /* =========================
@@ -264,10 +258,10 @@
 .tipCard {
   background: var(--card-bg);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
-  border-radius: 14px;
+  border-radius: var(--radius-md, 14px);
   padding: 0.8rem 1rem;
   box-shadow:
-    0 14px 34px #0006,
+    var(--shadow-2, 0 14px 34px #0006),
     inset 0 1px 0 #ffffff10;
 }
 
@@ -289,31 +283,21 @@
 .quickBtn:focus-visible {
   box-shadow:
     0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 12%),
-    0 12px 28px #0007;
+    var(--shadow-2, 0 12px 28px #0007);
 }
 
 /* =========================
    Responsive
    ========================= */
 @media (max-width: 1100px) {
-  .kpiRow {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .quickRow {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+  .kpiRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quickRow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 760px) {
-  .kpiRow {
-    grid-template-columns: 1fr;
-  }
-  .quickRow {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .tipsRow {
-    grid-template-columns: 1fr;
-  }
+  .kpiRow { grid-template-columns: 1fr; }
+  .quickRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tipsRow { grid-template-columns: 1fr; }
 }
 
 /* =========================
