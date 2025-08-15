@@ -1,79 +1,92 @@
-//src/student/walkthrough/Walkthrough.jsx
+// src/student/walkthrough/Walkthrough.jsx
+// ======================================================================
+// Walkthrough Practice (student)
+// - Schema-driven script loader (school override → global default)
+// - Four drills (fill/order/type/visual) with saved progress
+// - Uses drills barrel for clean imports
+// - Accessible loading/empty/error states
+// ======================================================================
 
-import { doc, getDoc } from 'firebase/firestore'
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useNavigate } from 'react-router-dom'
+import { doc, getDoc } from 'firebase/firestore'
 
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@/components/ToastContext.js'
+import { useToast } from '@components/ToastContext.js'
+
 import { db } from '@utils/firebase.js'
 import {
-  updateELDTProgress,
-  markStudentWalkthroughComplete,
   getUserProgress,
+  markStudentWalkthroughComplete,
+  updateELDTProgress,
 } from '@utils/ui-helpers.js'
 
-// NEW: schema-driven loader (school override -> global default)
 import {
-  resolveWalkthrough,          // (cdlClass, schoolId) => Promise<WalkthroughSection[]|null>
-  getWalkthroughLabel,         // pretty label for class code
-} from '../../walkthrough-data' // <-- Update this path as needed to the correct location
+  resolveWalkthrough,   // ({ classType, schoolId }) or (classType, schoolId)
+  getWalkthroughLabel,
+} from '@walkthrough-data'
 
-// Drills (schema-driven, each accepts generic props)
-import FillClozeDrill from './drills/FillClozeDrill.jsx'
-import OrderStepsDrill from './drills/OrderStepsDrill.jsx'
-import TypePhraseDrill from './drills/TypePhraseDrill.jsx'
-import VisualRecallDrill from './drills/VisualRecallDrill.jsx'
+// Drills via barrel
+import {
+  FillClozeDrill,
+  OrderStepsDrill,
+  TypePhraseDrill,
+  VisualRecallDrill,
+} from './drills'
+
 import styles from './walkthrough.module.css'
 
 // Robust email fallback (uses session + localStorage)
 function getCurrentUserEmail() {
   try {
-    return (
-      window.currentUserEmail ||
-      localStorage.getItem('currentUserEmail') ||
-      null
-    )
+    return window.currentUserEmail || localStorage.getItem('currentUserEmail') || null
   } catch {
     return null
   }
 }
 
-// If a step lacks tokens, we can auto-suggest some (numbers/units/etc.)
+// If a step lacks tokens, suggest some common numbers/phrases
 function autoTokensFrom(script = '') {
   if (!script) return []
   const nums = [...script.matchAll(/\b\d+(\.\d+)?\s?(psi|sec|seconds|minutes|°|ft|in)\b/gi)].map(m => m[0])
-  const words = []
-  if (/engine off/i.test(script)) words.push('engine off')
-  if (/key on/i.test(script)) words.push('key on')
-  if (/parking brake/i.test(script)) words.push('parking brake')
-  if (/service brake/i.test(script)) words.push('service brake')
-  return Array.from(new Set([...nums, ...words]))
+  const phrases = []
+  if (/engine off/i.test(script)) phrases.push('engine off')
+  if (/key on/i.test(script)) phrases.push('key on')
+  if (/parking brake/i.test(script)) phrases.push('parking brake')
+  if (/service brake/i.test(script)) phrases.push('service brake')
+  return Array.from(new Set([...nums, ...phrases]))
 }
 
 export default function Walkthrough() {
-  const { showToast } = useToast()
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState(null)
-  const [script, setScript] = useState(null)              // sections[]
-  const [currentDrill, setCurrentDrill] = useState('fill')
+  const [user, setUser] = useState(null)                     // { email, cdlClass, schoolId, name }
+  const [script, setScript] = useState(null)                 // WalkthroughSection[]
+  const [currentDrill, setCurrentDrill] = useState('fill')   // 'fill' | 'order' | 'type' | 'visual'
   const [completedDrills, setCompleted] = useState({ fill: false, order: false, type: false, visual: false })
 
   const confettiRef = useRef(null)
 
-  // Load user + walkthrough + progress
+  // Boot: load user, resolve walkthrough, pull drill progress
   useEffect(() => {
     let alive = true
     ;(async () => {
       setLoading(true)
       const email = getCurrentUserEmail()
       if (!email) {
-        if (!alive) return
-        setUser(null)
-        setScript(null)
-        setLoading(false)
+        if (alive) {
+          setUser(null)
+          setScript(null)
+          setLoading(false)
+        }
         return
       }
 
@@ -83,29 +96,29 @@ export default function Walkthrough() {
         if (!snap.exists()) throw new Error('User not found')
 
         const data = snap.data() || {}
-        const role = (data.role || localStorage.getItem('userRole') || 'student').toLowerCase()
+        const role = String(data.role || localStorage.getItem('userRole') || 'student').toLowerCase()
         if (role !== 'student') throw new Error('Student-only page')
 
-        // school + class
         const schoolId = data.schoolId || data.schoolName || 'default'
         const cdlClass = String(data.cdlClass || '').trim().toUpperCase()
 
-        // hydrate user
         if (!alive) return
         setUser({ email, cdlClass, schoolId, name: data.name || '' })
 
-        // resolve walkthrough (school override -> global default)
-        const sections = await resolveWalkthrough(cdlClass, schoolId)
-        if (!alive) return
-        setScript(sections || null)
-
-        // progress (drills)
-        let prog = {}
+        // Resolve walkthrough (school override → global default).
+        // Support both call signatures to match your loader.
+        let sections = null
         try {
-          prog = (await getUserProgress(email)) || {}
+          sections = await resolveWalkthrough({ classType: cdlClass, schoolId })
         } catch {
-          prog = {}
+          sections = await resolveWalkthrough(cdlClass, schoolId)
         }
+        if (!alive) return
+        setScript(Array.isArray(sections) ? sections : null)
+
+        // Drill progress
+        let prog = {}
+        try { prog = (await getUserProgress(email)) || {} } catch { prog = {} }
         if (!alive) return
         setCompleted({
           fill: !!prog.drills?.fill,
@@ -114,10 +127,14 @@ export default function Walkthrough() {
           visual: !!prog.drills?.visual,
         })
       } catch (e) {
-        console.error('[Walkthrough] load error:', e)
-        if (!alive) return
-        setUser(null)
-        setScript(null)
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.error('[Walkthrough] load error:', e)
+        }
+        if (alive) {
+          setUser(null)
+          setScript(null)
+        }
       } finally {
         if (alive) setLoading(false)
       }
@@ -127,7 +144,7 @@ export default function Walkthrough() {
 
   const cdlLabel = useMemo(() => getWalkthroughLabel(user?.cdlClass || ''), [user?.cdlClass])
 
-  // Confetti (simple)
+  // Confetti pop
   const showConfetti = useCallback(() => {
     const canvas = confettiRef.current
     if (!canvas) return
@@ -137,18 +154,14 @@ export default function Walkthrough() {
     canvas.height = window.innerHeight
     for (let i = 0; i < 80; i++) {
       ctx.beginPath()
-      ctx.arc(
-        Math.random() * canvas.width,
-        Math.random() * canvas.height,
-        Math.random() * 7 + 3, 0, 2 * Math.PI
-      )
+      ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 7 + 3, 0, 2 * Math.PI)
       ctx.fillStyle = `hsl(${Math.random() * 360},95%,70%)`
       ctx.fill()
     }
     setTimeout(() => (canvas.style.display = 'none'), 1500)
   }, [])
 
-  // Mark a drill complete (saves to progress)
+  // Save drill completion
   const markDrillComplete = useCallback(async (type) => {
     if (!user?.email || completedDrills[type]) return
     const next = { ...completedDrills, [type]: true }
@@ -169,23 +182,21 @@ export default function Walkthrough() {
     }
   }, [user?.email, completedDrills, showConfetti, showToast])
 
-  // Data prep for drills (use the first critical section as a focused set)
+  // Pick a focused section (prefer critical/passFail)
   const focusSection = useMemo(() => {
-    if (!script || !Array.isArray(script)) return null
-    return (
-      script.find(s => s.critical || s.passFail) ||
-      script[0] ||
-      null
-    )
+    if (!Array.isArray(script)) return null
+    return script.find(s => s.critical || s.passFail) || script[0] || null
   }, [script])
 
   const focusSteps = useMemo(() => {
     if (!focusSection?.steps) return []
-    return focusSection.steps.map(step => ({
-      ...step,
-      tokens: (step.tokens && step.tokens.length ? step.tokens : autoTokensFrom(step.script)),
-      text: step.script || step.text || '',
-    })).filter(s => s.text)
+    return (focusSection.steps || [])
+      .map(step => ({
+        ...step,
+        tokens: (step.tokens && step.tokens.length ? step.tokens : autoTokensFrom(step.script)),
+        text: step.script || step.text || '',
+      }))
+      .filter(s => s.text)
   }, [focusSection])
 
   const numCompleted = useMemo(() => Object.values(completedDrills).filter(Boolean).length, [completedDrills])
@@ -219,7 +230,7 @@ export default function Walkthrough() {
       <Shell title="Walkthrough Practice">
         <div className={styles.card}>
           <h2>🧭 CDL Walkthrough Practice</h2>
-          <div className={styles.alert}>
+        <div className={styles.alert}>
             ⚠ You haven’t selected your CDL class yet.
             <br />Please open your <strong>Profile</strong> and choose a class so we can load the correct script.
           </div>
@@ -248,9 +259,7 @@ export default function Walkthrough() {
     <Shell title="Walkthrough Practice">
       <div className={styles.metaRow}>
         <div><strong>CDL Class:</strong> {cdlLabel}</div>
-        {user.schoolId && (
-          <div className={styles.schoolBadge}>{String(user.schoolId)}</div>
-        )}
+        {user.schoolId && <div className={styles.schoolBadge}>{String(user.schoolId)}</div>}
       </div>
 
       {/* Script viewer */}
@@ -262,9 +271,7 @@ export default function Walkthrough() {
           >
             <h3 className={styles.sectionTitle}>
               {(section.critical || section.passFail) ? '🚨' : '✅'} {section.section}
-              {(section.critical || section.passFail) && (
-                <span className={styles.flag}>(Pass/Fail)</span>
-              )}
+              {(section.critical || section.passFail) && <span className={styles.flag}>(Pass/Fail)</span>}
             </h3>
             <div className={styles.steps}>
               {(section.steps || []).map((step, j) => (
@@ -281,7 +288,13 @@ export default function Walkthrough() {
 
       {/* Drill progress */}
       <div className={styles.progressWrap}>
-        <progress value={numCompleted} max={4} className={styles.progress} aria-valuemax={4} aria-valuenow={numCompleted} />
+        <progress
+          value={numCompleted}
+          max={4}
+          className={styles.progress}
+          aria-valuenow={numCompleted}
+          aria-valuemax={4}
+        />
         <span className={styles.progressLabel}>{numCompleted}/4 drills completed</span>
       </div>
 
@@ -303,32 +316,32 @@ export default function Walkthrough() {
         ))}
       </nav>
 
-      {/* Drill body (schema-driven) */}
+      {/* Drill body */}
       <div className={styles.drillBody}>
         {currentDrill === 'fill' && (
           <FillClozeDrill
-            steps={focusSteps}                     // [{ text, tokens, synonyms? }]
+            steps={focusSteps} // [{ text, tokens }]
             onComplete={() => markDrillComplete('fill')}
             disabled={completedDrills.fill}
           />
         )}
         {currentDrill === 'order' && (
           <OrderStepsDrill
-            steps={focusSteps.map(s => s.text)}    // order check on text
+            steps={focusSteps.map(s => s.text)}
             onComplete={() => markDrillComplete('order')}
             disabled={completedDrills.order}
           />
         )}
         {currentDrill === 'type' && (
           <TypePhraseDrill
-            phrase={focusSteps[0]?.text || ''}     // simplest: first critical line
+            phrase={focusSteps[0]?.text || ''}
             onComplete={() => markDrillComplete('type')}
             disabled={completedDrills.type}
           />
         )}
         {currentDrill === 'visual' && (
           <VisualRecallDrill
-            step={focusSteps.find(s => s.media?.img)}  // use first with image if present
+            step={focusSteps.find(s => s.media?.img)}
             fallbackQuestion="At what PSI should the low air warning activate?"
             fallbackAnswer="60"
             onComplete={() => markDrillComplete('visual')}
@@ -342,11 +355,7 @@ export default function Walkthrough() {
       </div>
 
       {/* Confetti canvas */}
-      <canvas
-        ref={confettiRef}
-        className={styles.confetti}
-        style={{ display: 'none' }}
-      />
+      <canvas ref={confettiRef} className={styles.confetti} style={{ display: 'none' }} />
     </Shell>
   )
 }

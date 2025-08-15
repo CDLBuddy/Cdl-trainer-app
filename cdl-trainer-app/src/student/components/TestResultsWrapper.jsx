@@ -1,22 +1,33 @@
 // src/student/components/TestResultsWrapper.jsx
+// ======================================================================
+// Student → TestResults wrapper
+// - Local error boundary so a bad render/import doesn’t crash the app
+// - Suspense fallback while the results chunk is fetched
+// ======================================================================
+
 import React, { Suspense } from 'react'
 import { Link } from 'react-router-dom'
 
+// Lazy-load the actual results screen (lives one folder up)
 const TestResults = React.lazy(() => import('../TestResults.jsx'))
 
+/** Small boundary to keep failures contained to this section */
 class Boundary extends React.Component {
   constructor(p) {
     super(p)
-    this.state = { hasError: false, error: null }
+    this.state = { err: null }
   }
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error }
+  static getDerivedStateFromError(err) {
+    return { err }
   }
   componentDidCatch(error, info) {
-    console.error('[TestResultsWrapper] render error:', error, info)
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.error('[TestResultsWrapper] render error:', error, info)
+    }
   }
   render() {
-    if (this.state.hasError) {
+    if (this.state.err) {
       return (
         <div
           className="screen-wrapper"
@@ -26,13 +37,9 @@ class Boundary extends React.Component {
         >
           <h2>Results couldn’t load</h2>
           <p style={{ color: '#b12' }}>
-            {String(this.state.error?.message || 'Unknown error')}
+            {String(this.state.err?.message || this.state.err || 'Unknown error')}
           </p>
-          <Link
-            className="btn outline"
-            to="/student/practice-tests"
-            style={{ marginTop: 10 }}
-          >
+          <Link className="btn outline" to="/student/practice-tests" style={{ marginTop: 10 }}>
             Back to Practice Tests
           </Link>
         </div>
@@ -42,6 +49,7 @@ class Boundary extends React.Component {
   }
 }
 
+/** Fallback UI while the chunk loads */
 function Fallback() {
   return (
     <div
@@ -50,8 +58,8 @@ function Fallback() {
       role="status"
       aria-live="polite"
     >
-      <h2>Loading Results…</h2>
-      <p>Please wait…</p>
+      <div className="spinner" />
+      <p>Loading results…</p>
     </div>
   )
 }

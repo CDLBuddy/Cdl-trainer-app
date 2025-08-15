@@ -1,27 +1,20 @@
 // src/utils/RequireRole.jsx
 // ======================================================================
 // Role gate for routes/components with Firebase-backed resolution.
-// - Supports role sources: custom claims, users/<uid>, users by email
-// - Caches per-tab in sessionStorage with TTL
+// - Sources: custom claims, users/<uid>, users by email (configurable)
+// - Per-tab sessionStorage cache with TTL
 // - Accepts role string | string[] | predicate(role) => boolean
-// - Optional router preload hook
+// - Optional router preload hook (warms role router bundle)
 // ======================================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { onAuthStateChanged, getIdTokenResult } from 'firebase/auth'
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-} from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
 
-import { auth, db } from './firebase.js'
+import { auth, db } from '@utils/firebase.js'
 import SplashScreen from '@components/SplashScreen.jsx'
-import { preloadRoutesForRole } from '@/utils/route-preload.js'
+import { preloadRoutesForRole } from '@utils/route-preload.js'
 
 // --------------------------- Config -----------------------------------
 
@@ -38,12 +31,7 @@ const CACHE_KEY = 'roleCache_v1'
 /** Normalize app roles */
 function normalizeRole(role) {
   const r = String(role ?? '').trim().toLowerCase()
-  return r === 'student' ||
-    r === 'instructor' ||
-    r === 'admin' ||
-    r === 'superadmin'
-    ? r
-    : null
+  return r === 'student' || r === 'instructor' || r === 'admin' || r === 'superadmin' ? r : null
 }
 
 // --------------------------- Hook -------------------------------------
@@ -99,6 +87,7 @@ export function useUserRole(options = {}) {
 
         // 2) Resolve live
         const role = normalizeRole(await resolveRoleFromSources(user, email, sources))
+
         // Cache (allow caching null briefly to prevent hammering)
         safeSetCache(user.uid, email, role, role ? cacheTtlSec : 30)
 
@@ -107,7 +96,7 @@ export function useUserRole(options = {}) {
           try {
             window.currentUserRole = role
             localStorage.setItem('userRole', role)
-          } catch {}
+          } catch { /* ignore */ }
         }
 
         maybeNotifyRoleChange(prevRoleRef, role, onRoleChange)
@@ -118,7 +107,7 @@ export function useUserRole(options = {}) {
       }
     })
 
-    return () => { mounted = false; try { unsub() } catch {} }
+    return () => { mounted = false; try { unsub() } catch { /* ignore */ } }
   }, [cacheTtlSec, onResolved, onRoleChange, sources])
 
   return state
@@ -150,9 +139,10 @@ export function RequireRole({
     onResolved: (u, r) => {
       if (!u || !r) return
       // Optional preload of role-specific routes
-      if (preload === true) preloadRoutesForRole(r).catch(() => {})
-      else if (typeof preload === 'function') {
-        try { preload(r) } catch {}
+      if (preload === true) {
+        preloadRoutesForRole(r).catch(() => {})
+      } else if (typeof preload === 'function') {
+        try { preload(r) } catch { /* ignore */ }
       }
     },
   })
@@ -231,15 +221,16 @@ async function resolveRoleFromSources(user, email, sources) {
           }
           break
         }
-        default:
-          // allow custom resolvers via function
+        default: {
+          // Allow custom resolvers via function
           if (typeof source === 'function') {
             const role = await source({ user, email })
             if (role) return role
           }
+        }
       }
     } catch {
-      // ignore and try next source
+      // Ignore and try next source
     }
   }
   return null
@@ -267,10 +258,7 @@ function safeSetCache(uid, email, role, ttlSeconds = 300) {
     if (!key) return
     const raw = sessionStorage.getItem(CACHE_KEY)
     const data = raw ? JSON.parse(raw) : {}
-    data[key] = {
-      role,
-      exp: Date.now() + ttlSeconds * 1000,
-    }
+    data[key] = { role, exp: Date.now() + ttlSeconds * 1000 }
     sessionStorage.setItem(CACHE_KEY, JSON.stringify(data))
   } catch {
     // ignore
@@ -282,7 +270,7 @@ function maybeNotifyRoleChange(ref, next, cb) {
   if (prev !== next) {
     ref.current = next
     if (typeof cb === 'function') {
-      try { cb(prev, next) } catch {}
+      try { cb(prev, next) } catch { /* ignore */ }
     }
   }
 }

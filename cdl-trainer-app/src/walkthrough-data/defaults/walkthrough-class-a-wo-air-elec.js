@@ -2,18 +2,34 @@
 // =============================================================================
 // CDL Class A — Pre-Trip Walkthrough (WITHOUT Air/Electric Lines)
 // Browning Mountain Training (default profile)
-// Schema: export default { id, classCode, label, version, source, sections[] }
-// - Each section: { section, critical?, passFail?, steps[] }
-// - Each step: { label?, script (string), mustSay?, required?, passFail?, skip? }
+//
+// Schema:
+//   export default {
+//     id, classCode, label, version, source,
+//     sections: Array<{
+//       section: string,
+//       critical?: boolean,
+//       passFail?: boolean,
+//       steps: Array<{
+//         label?: string,
+//         script: string,
+//         mustSay?: boolean,
+//         required?: boolean,
+//         passFail?: boolean,
+//         skip?: boolean
+//       }>
+//     }>
+//   }
+//
 // Notes:
-// • `critical` on a section highlights it in UI.
-// • `required`/`passFail` on a step will be surfaced by drills and badges.
+// - Pure dataset object; the registry clones & deep-freezes at read time.
+// - Uses straight quotes and consistent phrasing for easier parsing.
 // =============================================================================
 
 const walkthroughClassAWoAirElec = {
   id: 'walkthrough-class-a-wo-air-elec',
   classCode: 'A-WO-AIR-ELEC',
-  label: 'Class A (w/o Air/Electric Lines)',
+  label: 'Class A (No Air/Electric Lines)',
   version: 1,
   source: 'Browning Mountain Training — default',
 
@@ -61,7 +77,7 @@ const walkthroughClassAWoAirElec = {
       ],
     },
 
-    /* ------------------------------ Steering Sys ----------------------------- */
+    /* ------------------------------ Steering System -------------------------- */
     {
       section: 'Steering System',
       steps: [
@@ -73,7 +89,7 @@ const walkthroughClassAWoAirElec = {
         {
           label: 'Steering Linkage',
           script:
-            'I would check that the steering linkage is not worn or cracked, and all connecting links, arms, and rods are not worn or loose. Joints and sockets should not be worn or loose.',
+            'I would check that the steering linkage is not worn or cracked. All connecting links, arms, and rods should not be worn or loose. Joints and sockets should not be worn or loose.',
         },
       ],
     },
@@ -95,7 +111,7 @@ const walkthroughClassAWoAirElec = {
       ],
     },
 
-    /* -------------------------------- Brakes F -------------------------------- */
+    /* -------------------------------- Front Brakes --------------------------- */
     {
       section: 'Front Brakes',
       critical: true,
@@ -132,7 +148,7 @@ const walkthroughClassAWoAirElec = {
         {
           label: 'Tire Condition',
           script:
-            'I would check that the tire tread is evenly worn, has at least 4/32” tread depth on steer tires, and no cuts or bulges.',
+            'I would check that the tire tread is evenly worn, has at least 4/32" tread depth on steer tires, and no cuts or bulges.',
           mustSay: true,
           required: true,
           passFail: true,
@@ -156,7 +172,7 @@ const walkthroughClassAWoAirElec = {
       ],
     },
 
-    /* ----------------------------- Driver/Fuel Area ---------------------------- */
+    /* ----------------------------- Driver/Fuel Area --------------------------- */
     {
       section: 'Driver/Fuel Area',
       steps: [
@@ -210,7 +226,7 @@ const walkthroughClassAWoAirElec = {
       ],
     },
 
-    /* -------------------------------- Brakes R -------------------------------- */
+    /* -------------------------------- Rear Brakes ----------------------------- */
     {
       section: 'Rear Brakes',
       critical: true,
@@ -240,14 +256,14 @@ const walkthroughClassAWoAirElec = {
       ],
     },
 
-    /* ----------------------------- Rear Wheels/Tires --------------------------- */
+    /* ----------------------------- Rear Wheels/Tires -------------------------- */
     {
       section: 'Rear Wheels/Tires',
       steps: [
         {
           label: 'Tire Condition',
           script:
-            'Tires should have at least 2/32” tread depth, evenly worn, no cuts, bulges, or other damage.',
+            'Tires should have at least 2/32" tread depth, be evenly worn, with no cuts, bulges, or other damage.',
           mustSay: true,
           required: true,
           passFail: true,
@@ -271,17 +287,17 @@ const walkthroughClassAWoAirElec = {
       ],
     },
 
-    /* ---------------------------- Lights / Reflectors -------------------------- */
+    /* ---------------------------- Lights / Reflectors ------------------------- */
     {
       section: 'Lights/Reflectors',
       steps: [
         {
           label: 'Reflectors',
           script:
-            'I would check all reflectors and clearance lights for proper color and that they are clean and not broken.',
+            'I would check all reflectors and clearance lights for proper color, cleanliness, and that they are not broken.',
         },
         {
-          label: 'Tail, Turn, Brake Lights',
+          label: 'Tail/Turn/Brake Lights',
           script:
             'I would check that all tail, turn signal, brake, and marker lights are the correct color and working.',
         },
@@ -292,9 +308,9 @@ const walkthroughClassAWoAirElec = {
       ],
     },
 
-    /* --------------------- Trailer / Coupling (no air/electric) ---------------- */
+    /* --------------------- Trailer / Coupling (no air/electric) --------------- */
     {
-      section: 'Trailer/Coupling (No air/electric)',
+      section: 'Trailer/Coupling (No Air/Electric)',
       steps: [
         {
           label: 'Kingpin/Locking Jaws',
@@ -304,39 +320,29 @@ const walkthroughClassAWoAirElec = {
           required: true,
           passFail: true,
         },
-        { label: 'Apron', script: 'The apron should not be bent, cracked, or broken.' },
-        {
-          label: 'Mounting Bolts',
-          script: 'I would check that the mounting bolts are secure and not missing.',
-        },
+        { label: 'Apron',           script: 'The apron should not be bent, cracked, or broken.' },
+        { label: 'Mounting Bolts',  script: 'I would check that the mounting bolts are secure and not missing.' },
         {
           label: 'Fifth Wheel',
           script:
             'The fifth wheel should be properly greased, securely mounted, and not cracked or broken.',
         },
-        {
-          label: 'Platform',
-          script:
-            'The platform should not be cracked or broken and is properly secured.',
-        },
-        { label: 'Release Arm', script: 'I would check that the release arm is secure and in the locked position.' },
-        { label: 'Skid Plate', script: 'The skid plate should not be cracked, broken, or excessively worn.' },
+        { label: 'Platform',        script: 'The platform should not be cracked or broken and is properly secured.' },
+        { label: 'Release Arm',     script: 'I would check that the release arm is secure and in the locked position.' },
+        { label: 'Skid Plate',      script: 'The skid plate should not be cracked, broken, or excessively worn.' },
         {
           label: 'Trailer Front/Rear',
           script:
-            'Check trailer front and rear for damage, all lights, reflectors, and DOT tape.',
+            'Check trailer front and rear for damage. Inspect all lights, reflectors, and DOT tape.',
         },
         {
           label: 'Landing Gear',
           script:
             'Landing gear is fully raised, has no missing parts, is not bent or damaged, and the crank handle is secure.',
         },
-        {
-          label: 'Frame/Crossmembers',
-          script: 'The frame and crossmembers should not be cracked, broken, or missing.',
-        },
-        { label: 'Floor', script: 'The floor should be solid, not broken or sagging.' },
-        { label: 'Doors/Ties/Lift', script: 'Doors and ties/lift should open, close, and latch properly.' },
+        { label: 'Frame/Crossmembers', script: 'The frame and crossmembers should not be cracked, broken, or missing.' },
+        { label: 'Floor',               script: 'The floor should be solid, not broken or sagging.' },
+        { label: 'Doors/Ties/Lift',     script: 'Doors and ties/lift should open, close, and latch properly.' },
       ],
     },
 
@@ -372,7 +378,7 @@ const walkthroughClassAWoAirElec = {
             'Check operation of all lights, horn, windshield wipers, and washers.',
         },
         { label: 'Heater/Defroster', script: 'Heater and defroster should work properly.' },
-        { label: 'Mirrors', script: 'Mirrors are clean, properly adjusted, and securely mounted.' },
+        { label: 'Mirrors',          script: 'Mirrors are clean, properly adjusted, and securely mounted.' },
         {
           label: 'Emergency Equipment',
           script:

@@ -4,16 +4,17 @@
 // - Aggregates all default datasets in this folder
 // - Fast lookups by classCode and id
 // - Returns frozen (immutable) copies to prevent accidental mutation
+// - Dev-only guard: exported Maps are read-only (mutations throw)
 // =============================================================================
 
 import walkthroughClassAWoAirElec from './walkthrough-class-a-wo-air-elec.js'
 import walkthroughClassAWoHydElec from './walkthrough-class-a-wo-hyd-elec.js'
-import walkthroughClassA from './walkthrough-class-a.js'
-import walkthroughClassB from './walkthrough-class-b.js'
-import walkthroughPassengerBus from './walkthrough-passenger-bus.js'
+import walkthroughClassA          from './walkthrough-class-a.js'
+import walkthroughClassB          from './walkthrough-class-b.js'
+import walkthroughPassengerBus    from './walkthrough-passenger-bus.js'
 
 /** Master list in one place (order doesn’t matter) */
-export const DEFAULT_WALKTHROUGHS = [
+const DEFAULT_WALKTHROUGHS_RAW = [
   walkthroughClassA,
   walkthroughClassAWoAirElec,
   walkthroughClassAWoHydElec,
@@ -21,25 +22,22 @@ export const DEFAULT_WALKTHROUGHS = [
   walkthroughPassengerBus,
 ]
 
-/** Small helpers */
+// ---- Normalizers ------------------------------------------------------------
+
 const norm = v => (v == null ? '' : String(v).trim())
-const up = v => norm(v).toUpperCase()
+const up   = v => norm(v).toUpperCase()
 
-/** Build fast lookup maps */
-const _byClassCode = new Map()
-const _byId = new Map()
+// ---- Immutability helpers ---------------------------------------------------
 
-for (const wt of DEFAULT_WALKTHROUGHS) {
-  if (!wt || typeof wt !== 'object') continue
-  const id = norm(wt.id)
-  const cc = up(wt.classCode)
-  if (id) _byId.set(id, wt)
-  if (cc) _byClassCode.set(cc, wt)
+function deepFreeze(o) {
+  if (!o || typeof o !== 'object' || Object.isFrozen(o)) return o
+  Object.freeze(o)
+  for (const k of Object.keys(o)) {
+    const v = o[k]
+    if (v && typeof v === 'object' && !Object.isFrozen(v)) deepFreeze(v)
+  }
+  return o
 }
-
-/** Optional: current schema/default version */
-export const DEFAULT_WALKTHROUGH_VERSION =
-  Math.max(...DEFAULT_WALKTHROUGHS.map(w => Number(w.version || 1))) || 1
 
 /**
  * Return a deep-frozen clone to keep the source datasets pristine.
@@ -47,27 +45,51 @@ export const DEFAULT_WALKTHROUGH_VERSION =
  */
 function cloneAndFreeze(obj) {
   let out
-  if (typeof structuredClone === 'function') {
-    out = structuredClone(obj)
-  } else {
-    out = JSON.parse(JSON.stringify(obj))
-  }
+  if (typeof structuredClone === 'function') out = structuredClone(obj)
+  else out = JSON.parse(JSON.stringify(obj))
   return deepFreeze(out)
 }
 
-function deepFreeze(o) {
-  if (!o || typeof o !== 'object') return o
-  Object.freeze(o)
-  for (const k of Object.keys(o)) {
-    const v = o[k]
-    if (v && typeof v === 'object' && !Object.isFrozen(v)) {
-      deepFreeze(v)
-    }
+/** Make a dev-only read-only facade for a Map (no set/clear/delete). */
+function readonlyMap(map) {
+  if (import.meta?.env?.DEV) {
+    const thrower = () => { throw new Error('This Map is read-only: use the exported helpers instead.') }
+    map.set = thrower
+    map.delete = thrower
+    map.clear = thrower
+    Object.freeze(map)
   }
-  return o
+  return map
 }
 
-/** Public API =============================================================== */
+// ---- Indexes ---------------------------------------------------------------
+
+const _byClassCode = new Map()
+const _byId        = new Map()
+
+for (const wt of DEFAULT_WALKTHROUGHS_RAW) {
+  if (!wt || typeof wt !== 'object') continue
+  const id = norm(wt.id)
+  const cc = up(wt.classCode)
+  if (id && !_byId.has(id)) _byId.set(id, wt)
+  if (cc && !_byClassCode.has(cc)) _byClassCode.set(cc, wt)
+}
+
+/** Optional: current schema/default version (max of each dataset’s version) */
+export const DEFAULT_WALKTHROUGH_VERSION =
+  Math.max(...DEFAULT_WALKTHROUGHS_RAW.map(w => Number(w.version || 1))) || 1
+
+// ---- Public data (frozen clones) -------------------------------------------
+
+/**
+ * Frozen list of default datasets.
+ * These are deep-frozen clones, so callers cannot mutate them.
+ */
+export const DEFAULT_WALKTHROUGHS = Object.freeze(
+  DEFAULT_WALKTHROUGHS_RAW.map(cloneAndFreeze)
+)
+
+// ---- Public API =============================================================
 
 /** Get by class code, e.g. 'A', 'A-WO-AIR-ELEC', 'B', 'PASSENGER-BUS' */
 export function getDefaultWalkthroughByClass(classCode) {
@@ -83,7 +105,8 @@ export function getDefaultWalkthroughById(id) {
 
 /** List all defaults (immutable clones) */
 export function listDefaultWalkthroughs() {
-  return DEFAULT_WALKTHROUGHS.map(cloneAndFreeze)
+  // Return the already-frozen clones to avoid cloning every call.
+  return DEFAULT_WALKTHROUGHS
 }
 
 /**
@@ -121,6 +144,10 @@ export function validateWalkthroughShape(w) {
   return { ok: errors.length === 0, errors }
 }
 
-/** Export maps for power-users (read-only; don’t mutate values). */
-export const WALKTHROUGHS_BY_CLASS = _byClassCode
-export const WALKTHROUGHS_BY_ID = _byId
+/** Convenience: ids/classCodes for dropdowns/search UI */
+export function listDefaultIds()        { return Array.from(_byId.keys()) }
+export function listDefaultClassCodes() { return Array.from(_byClassCode.keys()) }
+
+/** Export maps for power users (read-only; do not mutate values). */
+export const WALKTHROUGHS_BY_CLASS = readonlyMap(_byClassCode)
+export const WALKTHROUGHS_BY_ID    = readonlyMap(_byId)

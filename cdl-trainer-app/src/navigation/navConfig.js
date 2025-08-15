@@ -57,12 +57,12 @@ function assertPathPrefix(item, role) {
 
 /** @type {NavItem[]} */
 export const STUDENT_TOP_NAV = [
-  { to: '/student/dashboard',     label: 'Dashboard',      icon: '🏠', exact: true, prefetchRole: 'student' },
-  { to: '/student/profile',       label: 'Profile',        icon: '👤',              prefetchRole: 'student' },
-  { to: '/student/checklists',    label: 'Checklists',     icon: '📋',              prefetchRole: 'student' },
-  { to: '/student/practice-tests',label: 'Practice Tests', icon: '📝',              prefetchRole: 'student' },
-  { to: '/student/walkthrough',   label: 'Walkthrough',    icon: '🧭',              prefetchRole: 'student' }, // foldered page
-  { to: '/student/flashcards',    label: 'Flashcards',     icon: '🗂️',              prefetchRole: 'student' },
+  { to: '/student/dashboard',      label: 'Dashboard',      icon: '🏠', exact: true, prefetchRole: 'student' },
+  { to: '/student/profile',        label: 'Profile',        icon: '👤',              prefetchRole: 'student' },
+  { to: '/student/checklists',     label: 'Checklists',     icon: '📋',              prefetchRole: 'student' },
+  { to: '/student/practice-tests', label: 'Practice Tests', icon: '📝',              prefetchRole: 'student' },
+  { to: '/student/walkthrough',    label: 'Walkthrough',    icon: '🧭',              prefetchRole: 'student' },
+  { to: '/student/flashcards',     label: 'Flashcards',     icon: '🗂️',              prefetchRole: 'student' },
 ]
 
 export const STUDENT_DEEP_LINKS = [
@@ -77,9 +77,9 @@ export const STUDENT_DEEP_LINKS = [
 
 /** @type {NavItem[]} */
 export const INSTRUCTOR_TOP_NAV = [
-  { to: '/instructor/dashboard',      label: 'Dashboard',        icon: '🏠', exact: true, prefetchRole: 'instructor' },
-  { to: '/instructor/profile',        label: 'Profile',          icon: '👤',              prefetchRole: 'instructor' },
-  { to: '/instructor/checklist-review',label: 'Checklist Review',icon: '✅',              prefetchRole: 'instructor' },
+  { to: '/instructor/dashboard',       label: 'Dashboard',        icon: '🏠', exact: true, prefetchRole: 'instructor' },
+  { to: '/instructor/profile',         label: 'Profile',          icon: '👤',              prefetchRole: 'instructor' },
+  { to: '/instructor/checklist-review',label: 'Checklist Review', icon: '✅',              prefetchRole: 'instructor' },
 ]
 
 export const INSTRUCTOR_DEEP_LINKS = [
@@ -87,7 +87,7 @@ export const INSTRUCTOR_DEEP_LINKS = [
 ]
 
 // ----------------------------------------------------------------------
-/* Admin */
+// Admin
 // ----------------------------------------------------------------------
 
 /** @type {NavItem[]} */
@@ -112,7 +112,7 @@ export const SUPERADMIN_TOP_NAV = [
   { to: '/superadmin/schools',      label: 'Schools',      icon: '🏫',              prefetchRole: 'superadmin' },
   { to: '/superadmin/users',        label: 'Users',        icon: '👥',              prefetchRole: 'superadmin' },
   { to: '/superadmin/compliance',   label: 'Compliance',   icon: '🛡️',              prefetchRole: 'superadmin' },
-  { to: '/superadmin/walkthroughs', label: 'Walkthroughs', icon: '🧭',              prefetchRole: 'superadmin' }, // NEW: WalkthroughManager
+  { to: '/superadmin/walkthroughs', label: 'Walkthroughs', icon: '🧭',              prefetchRole: 'superadmin' }, // Walkthrough Manager
   { to: '/superadmin/billing',      label: 'Billing',      icon: '💳',              prefetchRole: 'superadmin' },
   { to: '/superadmin/settings',     label: 'Settings',     icon: '⚙️',              prefetchRole: 'superadmin' },
   { to: '/superadmin/logs',         label: 'Logs',         icon: '📜',              prefetchRole: 'superadmin' },

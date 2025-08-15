@@ -1,4 +1,3 @@
-// vite.config.js
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
@@ -54,6 +53,13 @@ export default defineConfig(async ({ mode }) => {
         '@walkthrough-loaders': r('src/walkthrough-data/loaders'),
         '@walkthrough-utils': r('src/walkthrough-data/utils'),
 
+        // Optional: overlays (folder alias)
+        '@walkthrough-overlays': r('src/walkthrough-data/overlays'),
+        // Restriction overlay single-file aliases (nice DX for imports)
+        '@walkthrough-restriction-automatic': r('src/walkthrough-data/overlays/restrictions/automatic.js'),
+        '@walkthrough-restriction-no-air': r('src/walkthrough-data/overlays/restrictions/no-air.js'),
+        '@walkthrough-restriction-no-fifth-wheel': r('src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'),
+
         // ===== Role-specific =====
         '@student': r('src/student'),
         '@student-components': r('src/student/components'),
@@ -66,15 +72,14 @@ export default defineConfig(async ({ mode }) => {
         '@admin': r('src/admin'),
         '@superadmin': r('src/superadmin'),
       },
-      dedupe: ['react', 'react-dom'], // Prevent duplicate React copies
-      // extensions: ['.js', '.jsx', '.json'], // Uncomment if omitting extensions
+      dedupe: ['react', 'react-dom'],
     },
 
     server: {
       port: 5173,
       open: true,
-      // strictPort: true, // uncomment to fail instead of picking a new port
-      // headers: { 'Cache-Control': 'no-store' }, // handy during deep dev
+      // strictPort: true,
+      // headers: { 'Cache-Control': 'no-store' },
     },
 
     preview: {
@@ -87,15 +92,20 @@ export default defineConfig(async ({ mode }) => {
         'react',
         'react-dom',
         'react-router-dom',
+        // Firebase modular SDK tends to benefit from explicit prebundle
+        'firebase/app',
+        'firebase/auth',
+        'firebase/firestore',
+        'firebase/storage',
       ],
-      // exclude: ['firebase'], // uncomment if switching to dynamic Firebase imports
+      // exclude: ['firebase'],
     },
 
     build: {
       target: 'es2020',
-      sourcemap: !isProd,          // on for dev/staging, off in prod
+      sourcemap: !isProd,
       cssCodeSplit: true,
-      chunkSizeWarningLimit: 900,  // quiet warnings for larger role chunks
+      chunkSizeWarningLimit: 900,
       rollupOptions: {
         output: {
           manualChunks: {
@@ -110,11 +120,14 @@ export default defineConfig(async ({ mode }) => {
           },
         },
       },
-      // assetsInlineLimit: 0, // uncomment to force all assets to files
+      // assetsInlineLimit: 0,
     },
 
     define: {
-      __DEV__: !isProd,
+      __DEV__: !isProd, // used in your loaders/guards
     },
+
+    // Optional: quiet down noisy optimize warnings in dev
+    // logLevel: 'info',
   }
 })

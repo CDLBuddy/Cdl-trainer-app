@@ -1,30 +1,35 @@
 // src/student/components/TestReviewWrapper.jsx
-import React, { Suspense } from 'react'
-import {
-  useLocation,
-  useParams,
-  useSearchParams,
-  Navigate,
-  Link,
-} from 'react-router-dom'
+// ======================================================================
+// Student → TestReview wrapper
+// - Resolves testName from (props | :param | location.state | ?test)
+// - Normalizes legacy query-string links to route-param form
+// - Local error boundary + Suspense fallback
+// ======================================================================
 
-// Make sure this path matches your file location
+import React, { Suspense } from 'react'
+import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom'
+
+// Lazy-load the actual review screen (lives one folder up)
 const TestReview = React.lazy(() => import('../TestReview.jsx'))
 
-/** Small error boundary so a failed import/render doesn’t nuke the app */
+/** Small boundary so a failed import/render doesn’t nuke the app */
 class Boundary extends React.Component {
   constructor(p) {
     super(p)
-    this.state = { hasError: false, error: null }
+    this.state = { err: null }
   }
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error }
+  static getDerivedStateFromError(err) {
+    return { err }
   }
   componentDidCatch(error, info) {
-    console.error('[TestReviewWrapper] error:', error, info)
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.error('[TestReviewWrapper] render error:', error, info)
+    }
   }
   render() {
-    if (this.state.hasError) {
+    const { err } = this.state
+    if (err) {
       return (
         <div
           className="screen-wrapper"
@@ -33,14 +38,8 @@ class Boundary extends React.Component {
           aria-live="assertive"
         >
           <h2>Review couldn’t load</h2>
-          <p style={{ color: '#b12' }}>
-            {String(this.state.error?.message || 'Unknown error')}
-          </p>
-          <Link
-            className="btn outline"
-            to="/student/practice-tests"
-            style={{ marginTop: 10 }}
-          >
+          <p style={{ color: '#b12' }}>{String(err?.message || err || 'Unknown error')}</p>
+          <Link className="btn outline" to="/student/practice-tests" style={{ marginTop: 10 }}>
             Back to Practice Tests
           </Link>
         </div>
@@ -59,38 +58,51 @@ function Fallback() {
       role="status"
       aria-live="polite"
     >
-      <h2>Loading Review…</h2>
-      <p>Please wait…</p>
+      <div className="spinner" />
+      <p>Loading review…</p>
     </div>
   )
 }
 
 /**
- * Wrapper notes:
- * - Your router defines: /student/test-review/:testName
- * - If a legacy link hits /student/test-review?test=xyz, normalize to the param form.
+ * Priority for test name:
+ *   1) props.testName
+ *   2) route param :testName
+ *   3) location.state.testName || location.state.test
+ *   4) ?test=<name> (legacy; normalized to param)
  */
-export default function TestReviewWrapper(props) {
-  const { testName: paramTestName } = useParams()
-  const [searchParams] = useSearchParams()
+export default function TestReviewWrapper({ testName: propName, ...rest }) {
+  const { testName: paramName } = useParams()
+  const [qs] = useSearchParams()
   const location = useLocation()
-  const queryTest = searchParams.get('test')
+
+  const state = (location && location.state) || {}
+  const queryName = qs.get('test') || null
 
   // Normalize legacy query-string links to the param route your app expects
-  if (!paramTestName && queryTest) {
+  if (!paramName && queryName) {
     return (
       <Navigate
-        to={`/student/test-review/${encodeURIComponent(queryTest)}`}
+        to={`/student/test-review/${encodeURIComponent(queryName)}`}
         replace
-        state={location.state}
+        state={state}
       />
     )
   }
 
+  const testName =
+    propName ||
+    paramName ||
+    state.testName ||
+    state.test ||
+    queryName ||
+    'General Knowledge'
+
   return (
     <Boundary>
       <Suspense fallback={<Fallback />}>
-        <TestReview {...props} />
+        {/* Pass through the resolved testName explicitly (and any extra props) */}
+        <TestReview testName={testName} {...rest} />
       </Suspense>
     </Boundary>
   )

@@ -1,7 +1,10 @@
 // src/walkthrough-data/schema.d.ts
 // ======================================================================
-// Type definitions for CDL walkthrough data + helpers (JS-friendly).
+// Type definitions for CDL walkthrough data (JS-friendly).
+// Ambient module declarations that match your Vite aliases.
 // ======================================================================
+
+// ---------- Core domain types -----------------------------------------
 
 /** Canonical "token" keys used in the defaults map (lowercase, kebab-case). */
 export type WalkthroughClassToken =
@@ -26,15 +29,18 @@ export type SchoolId = string;
 export interface WalkthroughStep {
   label?: string;
   script: string;
+
+  // Booleans that influence UI or grading
   mustSay?: boolean;
   required?: boolean;
   passFail?: boolean;
   skip?: boolean;
 
-  // editor-only extras
+  // editor-only / optional
   id?: string;
   notes?: string;
   mediaUrl?: string;
+  /** Optional tags to support overlay targeting (e.g., ['air-brake']). */
   tags?: string[];
 }
 
@@ -42,6 +48,7 @@ export interface WalkthroughStep {
 export interface WalkthroughSection {
   section: string;
   steps: WalkthroughStep[];
+  /** Highlight or pass/fail emphasis. */
   critical?: boolean | 'passFail';
   description?: string;
 }
@@ -49,91 +56,194 @@ export interface WalkthroughSection {
 /** A full walkthrough is an ordered list of sections. */
 export type WalkthroughScript = WalkthroughSection[];
 
-/** Map from class tokens to their default walkthrough scripts. */
-export type WalkthroughMap = Record<WalkthroughClassToken, WalkthroughScript>;
+/** Dataset wrapper used in defaults. */
+export interface WalkthroughDataset {
+  id: string;
+  classCode: CdlClassCode | string;
+  label: string;
+  version?: number;
+  sections: WalkthroughScript;
+}
 
-/** Labels map used by the UI (token → human label). */
+/** token → default script */
+export type WalkthroughMap = Record<WalkthroughClassToken, WalkthroughScript>;
+/** token → human label */
 export type WalkthroughLabels = Record<WalkthroughClassToken, string>;
 
-/** A resolved result from the loader (may include provenance). */
+// ---------- Overlay system (optional but supported by loader v2) ------------
+
+export interface OverlayMatch {
+  section: string;       // required section title
+  stepLabel?: string;    // optional step label
+  tag?: string;          // optional tag filter
+}
+
+export type OverlayRule =
+  | { op: 'renameSection'; match: OverlayMatch; to: string }
+  | { op: 'replaceSectionSteps'; match: OverlayMatch; steps: WalkthroughStep[] }
+  | { op: 'appendSteps'; match: OverlayMatch; steps: WalkthroughStep[] }
+  | { op: 'removeStep'; match: OverlayMatch } // by stepLabel OR tag
+  | { op: 'replaceStepText'; match: OverlayMatch; to: string };
+
+export interface WalkthroughOverlay {
+  id?: string;
+  rules: OverlayRule[];
+}
+
+/** Local shorthand for common restriction overlays. */
+export type RestrictionCode = 'E' | 'LZ' | 'O';
+
+// ---------- Resolver results/args ------------------------------------------
+
 export interface ResolvedWalkthrough {
   script: WalkthroughScript | null;
   isCustom?: boolean;
-  sourceHint?: string;
+  sourceHint?: string;   // e.g., 'defaults', 'school:XYZ', 'defaults+school-overlay'
+  applied?: string[];    // overlay IDs applied
 }
 
-/** Arguments for the resolver helper. */
 export interface ResolveWalkthroughArgs {
   classType: WalkthroughClassToken | CdlClassCode | string;
   schoolId?: SchoolId | null;
   preferCustom?: boolean;
   softFail?: boolean;
+  /** Optional restriction overlays to apply, in order. */
+  restrictions?: RestrictionCode[];
 }
 
 // ======================================================================
-// Ambient module declarations matching your real aliases:
-//   import { resolveWalkthrough, getWalkthroughLabel } from '@walkthrough-data'
-//   import { resolveWalkthrough } from '@walkthrough-loaders'
+// Ambient module declarations matching your real aliases.
 // ======================================================================
 
+/**
+ * Root public API (what app code should usually import):
+ *   import { resolveWalkthrough, getWalkthroughLabel } from '@walkthrough-data'
+ */
 declare module '@walkthrough-data' {
-  // Defaults API
-  export const DEFAULT_WALKTHROUGHS: WalkthroughMap;
+  export const DEFAULT_WALKTHROUGHS: import('./schema').WalkthroughMap;
   export const DEFAULT_WALKTHROUGH_VERSION: number;
-  export function getDefaultWalkthroughByClass(
-    classType: WalkthroughClassToken | CdlClassCode | string
-  ): WalkthroughScript | null;
-  export function getDefaultWalkthroughById(id: string): WalkthroughScript | null;
-  export function listDefaultWalkthroughs(): WalkthroughScript[];
-  export function validateWalkthroughShape(w: unknown): { ok: boolean; errors: string[] };
-  export const WALKTHROUGHS_BY_CLASS: ReadonlyMap<string, unknown>;
-  export const WALKTHROUGHS_BY_ID: ReadonlyMap<string, unknown>;
 
-  // Label helper
+  export function getWalkthroughByClass(
+    classType: import('./schema').WalkthroughClassToken |
+               import('./schema').CdlClassCode |
+               string
+  ): import('./schema').WalkthroughScript | null;
+
   export function getWalkthroughLabel(
-    classType: WalkthroughClassToken | CdlClassCode | string
+    classType: import('./schema').WalkthroughClassToken |
+               import('./schema').CdlClassCode |
+               string
   ): string;
 
-  // Loader (root re-export)
-  export function resolveWalkthrough(
-    classType: WalkthroughClassToken | CdlClassCode | string,
-    schoolId?: SchoolId | null
-  ): Promise<WalkthroughScript | null>;
+  export function listDefaultWalkthroughs(): import('./schema').WalkthroughDataset[];
+  export function getDefaultWalkthroughByClass(
+    classCode: import('./schema').CdlClassCode | string
+  ): import('./schema').WalkthroughDataset | null;
+  export function getDefaultWalkthroughById(
+    id: string
+  ): import('./schema').WalkthroughDataset | null;
+  export function validateWalkthroughShape(
+    w: unknown
+  ): { ok: boolean; errors: string[] };
 
-  // Types (re-exported for convenience)
+  export const WALKTHROUGHS_BY_CLASS: ReadonlyMap<string, import('./schema').WalkthroughDataset>;
+  export const WALKTHROUGHS_BY_ID: ReadonlyMap<string, import('./schema').WalkthroughDataset>;
+
+  // Loader (simple + object-form overload)
+  export function resolveWalkthrough(
+    classType: import('./schema').WalkthroughClassToken |
+               import('./schema').CdlClassCode |
+               string,
+    schoolId?: import('./schema').SchoolId | null
+  ): Promise<import('./schema').WalkthroughScript | null>;
+  export function resolveWalkthrough(
+    args: import('./schema').ResolveWalkthroughArgs
+  ): Promise<import('./schema').ResolvedWalkthrough>;
+}
+
+/**
+ * Direct loader access via the loaders alias:
+ *   import { resolveWalkthrough } from '@walkthrough-loaders'
+ */
+declare module '@walkthrough-loaders' {
+  export function resolveWalkthrough(
+    classType: import('./schema').WalkthroughClassToken |
+               import('./schema').CdlClassCode |
+               string,
+    schoolId?: import('./schema').SchoolId | null
+  ): Promise<import('./schema').WalkthroughScript | null>;
+
+  export function resolveWalkthrough(
+    args: import('./schema').ResolveWalkthroughArgs
+  ): Promise<import('./schema').ResolvedWalkthrough>;
+
+  // Handy type re-exports for callers using this alias
+  export type {
+    ResolveWalkthroughArgs,
+    ResolvedWalkthrough,
+    WalkthroughScript,
+    WalkthroughSection,
+    RestrictionCode,
+    WalkthroughOverlay,
+    OverlayRule,
+  } from './schema';
+}
+
+/**
+ * Defaults folder (dataset-level API). Helpful for admin/editors:
+ *   import { listDefaultWalkthroughs } from '@walkthrough-defaults'
+ */
+declare module '@walkthrough-defaults' {
+  export const DEFAULT_WALKTHROUGHS: ReadonlyArray<import('./schema').WalkthroughDataset>;
+  export const DEFAULT_WALKTHROUGH_VERSION: number;
+
+  export function listDefaultWalkthroughs(): import('./schema').WalkthroughDataset[];
+  export function getDefaultWalkthroughByClass(
+    classCode: import('./schema').CdlClassCode | string
+  ): import('./schema').WalkthroughDataset | null;
+  export function getDefaultWalkthroughById(
+    id: string
+  ): import('./schema').WalkthroughDataset | null;
+
+  export function validateWalkthroughShape(
+    w: unknown
+  ): { ok: boolean; errors: string[] };
+
+  export const WALKTHROUGHS_BY_CLASS: ReadonlyMap<string, import('./schema').WalkthroughDataset>;
+  export const WALKTHROUGHS_BY_ID: ReadonlyMap<string, import('./schema').WalkthroughDataset>;
+}
+
+/**
+ * Utils alias (nice for data tooling):
+ *   import { parseCsv, parseMarkdown, validateWalkthroughs } from '@walkthrough-utils'
+ *   import type { WalkthroughScript } from '@walkthrough-utils'
+ */
+declare module '@walkthrough-utils' {
+  // Runtime helpers
+  export function parseCsv(raw: string): unknown[];
+  export function parseMarkdown(raw: string): string;
+  export function validateWalkthroughs(
+    datasets: unknown[]
+  ): { ok: boolean; errors: string[] };
+
+  // Type re-exports (so callers can import types from this alias)
   export type {
     WalkthroughClassToken,
     CdlClassCode,
     WalkthroughStep,
     WalkthroughSection,
     WalkthroughScript,
+    WalkthroughDataset,
     WalkthroughMap,
     WalkthroughLabels,
     ResolveWalkthroughArgs,
     ResolvedWalkthrough,
     SchoolId,
-  };
+    RestrictionCode,
+    WalkthroughOverlay,
+    OverlayRule,
+  } from './schema';
 }
 
-declare module '@walkthrough-loaders' {
-  // Direct loader access via loaders alias
-  export function resolveWalkthrough(
-    classType: WalkthroughClassToken | CdlClassCode | string,
-    schoolId?: SchoolId | null
-  ): Promise<WalkthroughScript | null>;
-
-  // Optional object-form overload if you add it
-  export function resolveWalkthrough(
-    args: ResolveWalkthroughArgs
-  ): Promise<ResolvedWalkthrough>;
-
-  export type {
-    ResolveWalkthroughArgs,
-    ResolvedWalkthrough,
-    WalkthroughScript,
-    WalkthroughSection,
-  };
-}
-
-// Make this file a module (avoids global augmentations leaking).
+// Make this file a module (prevents global augmentations from leaking).
 export {};

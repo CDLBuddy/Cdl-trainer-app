@@ -1,5 +1,13 @@
 // src/router.js
-import React, { Suspense } from 'react'
+// ======================================================================
+// Central route table (React Router Data Router)
+// - AppLayout wraps all routes
+// - Public pages (welcome/login/signup)
+// - Role routers (student/instructor/admin/superadmin)
+// - Role-aware redirects + consistent fallbacks
+// ======================================================================
+
+import React from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 import AppLayout from './App.jsx'
@@ -7,24 +15,17 @@ import SplashScreen from '@components/SplashScreen.jsx'
 import { RequireRole } from '@utils/RequireRole.jsx'
 import { getDashboardRoute } from '@navigation/navigation.js'
 
-// Lazy pages (code-split)
+// ---- Lazy pages (code-split) -------------------------------------------
 const Welcome  = React.lazy(() => import('@pages/Welcome.jsx'))
 const Login    = React.lazy(() => import('@pages/Login.jsx'))
 const Signup   = React.lazy(() => import('@pages/Signup.jsx'))
 const NotFound = React.lazy(() => import('@pages/NotFound.jsx'))
 
-// Role routers (code-split)
+// ---- Role routers (code-split) -----------------------------------------
 const StudentRouter    = React.lazy(() => import('@student/StudentRouter.jsx'))
 const InstructorRouter = React.lazy(() => import('@instructor/InstructorRouter.jsx'))
 const AdminRouter      = React.lazy(() => import('@admin/AdminRouter.jsx'))
 const SuperadminRouter = React.lazy(() => import('@superadmin/SuperadminRouter.jsx'))
-
-// Small helper so our fallbacks are consistent
-const withSuspense = (node, message) => (
-  <Suspense fallback={<SplashScreen message={message} showTip={false} />}>
-    {node}
-  </Suspense>
-)
 
 /* =========================
    Public-guard helper
@@ -36,8 +37,22 @@ function RequireNotLoggedIn({ children }) {
     null
 
   // If we *know* the user has a role, bounce them to their dashboard.
-  if (role) return <Navigate to={getDashboardRoute(role)} replace />
-  return children
+  return role ? <Navigate to={getDashboardRoute(role)} replace /> : children
+}
+
+/* =========================
+   Role-aware root redirect
+   ========================= */
+function RootRedirect() {
+  try {
+    const role =
+      (typeof localStorage !== 'undefined' && localStorage.getItem('userRole')) ||
+      (typeof window !== 'undefined' && window.currentUserRole) ||
+      null
+    return role ? <Navigate to={getDashboardRoute(role)} replace /> : <Navigate to="/login" replace />
+  } catch {
+    return <Navigate to="/login" replace />
+  }
 }
 
 /* =========================
@@ -57,10 +72,10 @@ export const router = createBrowserRouter([
     children: [
       // ---------- Public ----------
       {
-        path: '/',
+        index: true,
         element: (
           <RequireNotLoggedIn>
-            {withSuspense(<Welcome />, 'Loading…')}
+            <Welcome />
           </RequireNotLoggedIn>
         ),
       },
@@ -68,7 +83,7 @@ export const router = createBrowserRouter([
         path: '/login',
         element: (
           <RequireNotLoggedIn>
-            {withSuspense(<Login />, 'Loading…')}
+            <Login />
           </RequireNotLoggedIn>
         ),
       },
@@ -76,7 +91,7 @@ export const router = createBrowserRouter([
         path: '/signup',
         element: (
           <RequireNotLoggedIn>
-            {withSuspense(<Signup />, 'Loading…')}
+            <Signup />
           </RequireNotLoggedIn>
         ),
       },
@@ -89,7 +104,7 @@ export const router = createBrowserRouter([
         path: '/student/*',
         element: (
           <RequireRole role="student" fallback={<SplashScreen message="Loading student…" showTip={false} />}>
-            {withSuspense(<StudentRouter />, 'Loading student…')}
+            <StudentRouter />
           </RequireRole>
         ),
       },
@@ -99,7 +114,7 @@ export const router = createBrowserRouter([
         path: '/instructor/*',
         element: (
           <RequireRole role="instructor" fallback={<SplashScreen message="Loading instructor…" showTip={false} />}>
-            {withSuspense(<InstructorRouter />, 'Loading instructor…')}
+            <InstructorRouter />
           </RequireRole>
         ),
       },
@@ -109,7 +124,7 @@ export const router = createBrowserRouter([
         path: '/admin/*',
         element: (
           <RequireRole role="admin" fallback={<SplashScreen message="Loading admin…" showTip={false} />}>
-            {withSuspense(<AdminRouter />, 'Loading admin…')}
+            <AdminRouter />
           </RequireRole>
         ),
       },
@@ -119,31 +134,19 @@ export const router = createBrowserRouter([
         path: '/superadmin/*',
         element: (
           <RequireRole role="superadmin" fallback={<SplashScreen message="Loading super admin…" showTip={false} />}>
-            {withSuspense(<SuperadminRouter />, 'Loading super admin…')}
+            <SuperadminRouter />
           </RequireRole>
         ),
       },
 
       // ---------- 404 ----------
-      { path: '*', element: withSuspense(<NotFound />, 'Loading…') },
-      // If you prefer a "role-aware" catch-all, swap the above with:
+      { path: '/404', element: <NotFound /> },
+      { path: '*', element: <NotFound /> },
+      // If you prefer a role-aware catch-all instead, replace the line above with:
       // { path: '*', element: <RootRedirect /> },
     ],
   },
 ])
 
-/* =========================
-   Role-aware root redirect
-   ========================= */
-function RootRedirect() {
-  try {
-    const role =
-      (typeof localStorage !== 'undefined' && localStorage.getItem('userRole')) ||
-      (typeof window !== 'undefined' && window.currentUserRole) ||
-      null
-    if (!role) return <Navigate to="/login" replace />
-    return <Navigate to={getDashboardRoute(role)} replace />
-  } catch {
-    return <Navigate to="/login" replace />
-  }
-}
+// (Optional) export the route records for tests/tools
+export default router

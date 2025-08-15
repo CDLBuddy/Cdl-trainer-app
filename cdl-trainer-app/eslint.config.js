@@ -1,4 +1,4 @@
-// eslint.config.js — flat config with compat + Vite alias resolver
+// eslint.config.js — Flat config w/ compat + Vite alias resolver
 import js from '@eslint/js'
 import globals from 'globals'
 import react from 'eslint-plugin-react'
@@ -8,9 +8,12 @@ import a11y from 'eslint-plugin-jsx-a11y'
 import importPlugin from 'eslint-plugin-import'
 import { FlatCompat } from '@eslint/eslintrc'
 import { defineConfig, globalIgnores } from 'eslint/config'
+import { fileURLToPath } from 'node:url'
 
-// Convert legacy shareable configs to flat & scope them to app sources
-const compat = new FlatCompat({ baseDirectory: import.meta.dirname })
+// NOTE: compute a safe baseDirectory for FlatCompat (no import.meta.dirname)
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
+const compat = new FlatCompat({ baseDirectory: __dirname })
+
 const legacy = compat
   .extends(
     'plugin:react/recommended',
@@ -25,26 +28,34 @@ const legacy = compat
 
 export default defineConfig([
   // Global ignores
-  globalIgnores(['dist', 'build', 'coverage', 'node_modules', '.vite', '.vercel']),
+  globalIgnores([
+    'dist',
+    'build',
+    'coverage',
+    'node_modules',
+    '.vite',
+    '.vercel',
+    'stats.html',
+    '**/*.d.ts', // NEW: don’t lint ambient TS type files
+  ]),
 
   // Report stray /* eslint-disable */ that no longer suppress anything
   { linterOptions: { reportUnusedDisableDirectives: 'error' } },
 
-  // Apply converted legacy layers first
+  // Converted legacy layers
   ...legacy,
 
-  // App sources (overrides & additions)
+  // ---- App sources --------------------------------------------------------
   {
     files: ['**/*.{js,jsx}'],
     ignores: ['vite.config.*', 'eslint.config.*', 'dev-utils/**'],
 
     languageOptions: {
-      ecmaVersion: 2022, // allows top-level await in ESM
+      ecmaVersion: 2022, // TLA in ESM
       globals: { ...globals.browser, ...globals.node },
       parserOptions: { ecmaFeatures: { jsx: true }, sourceType: 'module' },
     },
 
-    // bring react-refresh rules via extends (don’t add the plugin again)
     plugins: {
       react,
       'react-hooks': reactHooks,
@@ -58,7 +69,6 @@ export default defineConfig([
       'no-unused-vars': [
         'warn',
         {
-          // allow BRIDGE_CONST & setState setters; ignore underscored args/catches
           varsIgnorePattern: '^(?:[A-Z_]|set[A-Z])',
           argsIgnorePattern: '^_',
           caughtErrors: 'all',
@@ -66,25 +76,39 @@ export default defineConfig([
         },
       ],
 
-      // 🔒 Disallow only the legacy toast forms (OK with useToast())
-      'no-restricted-imports': ['warn', {
-        paths: [
-          { name: '@utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
-          { name: '@utils/ui-helpers.js', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
-          // common relatives, just in case
-          { name: '../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
-          { name: '../../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
-          { name: '../../../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
-        ],
-        patterns: [
-          { group: ['**/utils/ui-helpers{,.*}'], importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
-        ],
-      }],
+      // Prefer ToastContext over the old helper
+      'no-restricted-imports': [
+        'warn',
+        {
+          paths: [
+            {
+              name: '@utils/ui-helpers',
+              importNames: ['showToast'],
+              message: 'Use ToastContext: const { showToast } = useToast().',
+            },
+            {
+              name: '@utils/ui-helpers.js',
+              importNames: ['showToast'],
+              message: 'Use ToastContext: const { showToast } = useToast().',
+            },
+            { name: '../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+            { name: '../../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+            { name: '../../../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+          ],
+          patterns: [
+            {
+              group: ['**/utils/ui-helpers{,.*}'],
+              importNames: ['showToast'],
+              message: 'Use ToastContext: const { showToast } = useToast().',
+            },
+          ],
+        },
+      ],
       'no-restricted-globals': ['warn', 'showToast'],
       'no-restricted-properties': [
         'warn',
-        { object: 'window',      property: 'showToast', message: 'Use ToastContext: const { showToast } = useToast().' },
-        { object: 'globalThis',  property: 'showToast', message: 'Use ToastContext: const { showToast } = useToast().' },
+        { object: 'window', property: 'showToast', message: 'Use ToastContext: const { showToast } = useToast().' },
+        { object: 'globalThis', property: 'showToast', message: 'Use ToastContext: const { showToast } = useToast().' },
       ],
 
       // React tweaks
@@ -96,32 +120,42 @@ export default defineConfig([
       'import/no-unresolved': ['error', { commonjs: true, caseSensitive: true }],
       'import/no-duplicates': 'warn',
       'import/newline-after-import': 'warn',
+      // CHANGED: turn off extension policing — your code uses explicit .jsx
+      'import/extensions': 'off',
       'import/order': [
         'warn',
         {
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            'parent',
-            'sibling',
-            'index',
-            'object',
-            'type',
-          ],
-          // keep aliases grouped neatly at the top of "internal"
+          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'type'],
           pathGroups: [
             { pattern: '@{,**/*}', group: 'internal', position: 'before' },
+
             { pattern: '@utils/**', group: 'internal', position: 'before' },
             { pattern: '@components/**', group: 'internal', position: 'before' },
             { pattern: '@styles/**', group: 'internal', position: 'before' },
             { pattern: '@pages/**', group: 'internal', position: 'before' },
-            { pattern: '@student/**', group: 'internal', position: 'before' },
-            { pattern: '@instructor/**', group: 'internal', position: 'before' },
-            { pattern: '@admin/**', group: 'internal', position: 'before' },
-            { pattern: '@superadmin/**', group: 'internal', position: 'before' },
+            { pattern: '@assets/**', group: 'internal', position: 'before' },
+            { pattern: '@shared/**', group: 'internal', position: 'before' },
             { pattern: '@navigation/**', group: 'internal', position: 'before' },
-            { pattern: '@walkthrough/**', group: 'internal', position: 'before' },
+            { pattern: '@session/**', group: 'internal', position: 'before' },
+
+            // Walkthrough system
+            { pattern: '@walkthrough-data{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@walkthrough-defaults{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@walkthrough-loaders{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@walkthrough-utils{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@walkthrough-overlays{,/**}', group: 'internal', position: 'before' },
+
+            // Roles
+            { pattern: '@student{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@student-components{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@student-profile{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@student-profile-sections{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@student-profile-ui{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@student-walkthrough{,/**}', group: 'internal', position: 'before' },
+
+            { pattern: '@instructor{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@admin{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@superadmin{,/**}', group: 'internal', position: 'before' },
           ],
           pathGroupsExcludedImportTypes: ['builtin', 'external'],
           'newlines-between': 'always',
@@ -129,7 +163,7 @@ export default defineConfig([
         },
       ],
 
-      // A11y (keep these as errors so we actually fix them)
+      // A11y
       'jsx-a11y/no-autofocus': 'warn',
       'jsx-a11y/no-noninteractive-tabindex': 'error',
       'jsx-a11y/aria-role': 'error',
@@ -142,26 +176,46 @@ export default defineConfig([
       'prefer-const': 'warn',
     },
 
-    // ESLint/IntelliSense resolver for Vite aliases
+    // Resolve Vite aliases for eslint-plugin-import
     settings: {
       react: { version: 'detect' },
       'import/resolver': {
-        node: { extensions: ['.js', '.jsx', '.json'] },
+        node: { extensions: ['.js', '.jsx', '.json', '.css', '.d.ts'] }, // +.d.ts for completeness
         alias: {
           map: [
             ['@', './src'],
-            ['@utils', './src/utils'],
+
             ['@components', './src/components'],
-            ['@styles', './src/styles'],
+            ['@utils', './src/utils'],
+            ['@navigation', './src/navigation'],
             ['@pages', './src/pages'],
+            ['@styles', './src/styles'],
+            ['@assets', './src/assets'],
+            ['@shared', './src/shared'],
+            ['@session', './src/session'],
+
+            ['@walkthrough-data', './src/walkthrough-data'],
+            ['@walkthrough-defaults', './src/walkthrough-data/defaults'],
+            ['@walkthrough-loaders', './src/walkthrough-data/loaders'],
+            ['@walkthrough-utils', './src/walkthrough-data/utils'],
+            ['@walkthrough-overlays', './src/walkthrough-data/overlays'],
+            // single-file overlay conveniences (keep in sync with Vite)
+            ['@walkthrough-restriction-automatic', './src/walkthrough-data/overlays/restrictions/automatic.js'],
+            ['@walkthrough-restriction-no-air', './src/walkthrough-data/overlays/restrictions/no-air.js'],
+            ['@walkthrough-restriction-no-fifth-wheel', './src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'],
+
             ['@student', './src/student'],
+            ['@student-components', './src/student/components'],
+            ['@student-profile', './src/student/profile'],
+            ['@student-profile-sections', './src/student/profile/sections'],
+            ['@student-profile-ui', './src/student/profile/ui'],
+            ['@student-walkthrough', './src/student/walkthrough'],
+
             ['@instructor', './src/instructor'],
             ['@admin', './src/admin'],
             ['@superadmin', './src/superadmin'],
-            ['@navigation', './src/navigation'],
-            ['@walkthrough', './src/walkthrough-data'],
           ],
-          extensions: ['.js', '.jsx', '.json', '.css'],
+          extensions: ['.js', '.jsx', '.json', '.css'], // keep this in sync with Vite
         },
       },
     },
@@ -173,6 +227,14 @@ export default defineConfig([
     rules: {
       'no-restricted-globals': 'off',
       'no-restricted-properties': 'off',
+    },
+  },
+
+  // Router override (only needed if any router re-exports non-components)
+  {
+    files: ['src/**/*Router.jsx'],
+    rules: {
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
 

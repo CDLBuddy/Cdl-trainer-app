@@ -1,10 +1,10 @@
 // src/App.jsx
 // ======================================================================
-// Layout Route Element (Data Router)
+// Layout Route Element (React Router Data Router)
 // - Renders global chrome (NavBar) + routed content via <Outlet/>
-// - Suspense fallback for lazy pages
+// - Local Suspense fallback for lazy sub-routes
 // - Scroll restoration between navigations
-// - Branding + NavBar-visibility handled via layout hooks
+// - Branding + NavBar visibility handled via layout hooks
 // ======================================================================
 
 import React, { Suspense } from 'react'
@@ -14,8 +14,8 @@ import { Outlet, ScrollRestoration } from 'react-router-dom'
 import NavBar from '@components/NavBar.jsx'
 import SplashScreen from '@components/SplashScreen.jsx'
 
-// Layout hooks (centralized in utils/layout-hooks.js)
-import { useBrandingSync, useHideNavBar } from '@/utils/layout-hooks.js'
+// Layout hooks (centralized)
+import { useBrandingSync, useHideNavBar } from '@utils/layout-hooks.js'
 
 export default function AppLayout() {
   const brand = useBrandingSync()
@@ -23,14 +23,18 @@ export default function AppLayout() {
 
   return (
     <>
+      {/* Global navigation (can be hidden per-route via hook) */}
       {!hideNav && <NavBar brand={brand} />}
 
       {/* Route-level code-splitting fallback */}
       <Suspense fallback={<SplashScreen message="Loading CDL Trainer…" showTip={false} />}>
-        <Outlet />
+        {/* Landmark for a11y + skip links */}
+        <main id="main" role="main">
+          <Outlet />
+        </main>
       </Suspense>
 
-      {/* Restores scroll on navigation (data router feature) */}
+      {/* Restores scroll on navigation (Data Router feature) */}
       <ScrollRestoration />
     </>
   )

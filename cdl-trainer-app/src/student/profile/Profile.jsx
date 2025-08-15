@@ -1,40 +1,50 @@
 // src/student/profile/Profile.jsx
+// ============================================================================
+// Student Profile
+// - Uses barrel imports for sections & UI atoms
+// - Debounced autosave, upload helpers, and checklist side-effects
+// - Guarded access + progress bar
+// ============================================================================
 
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@/components/ToastContext.js'
+import { useToast } from '@components/ToastContext.js'
+
 import { auth, storage } from '@utils/firebase.js'
-// Misc
 import {
   markStudentProfileComplete,
   markStudentPermitUploaded,
   markStudentVehicleUploaded,
 } from '@utils/ui-helpers.js'
-// Centralized profile utils (phase 2)
 import {
   subscribeUserProfile,
   updateUserProfileFields,
   calculateProfileCompletion,
 } from '@utils/userProfile.js'
+import { getWalkthroughLabel } from '@walkthrough-data'
 
-import { getWalkthroughLabel } from '../../walkthrough-data'
-
-// Styles (page-scoped)
 import styles from './Profile.module.css'
-// Sections
-import BasicInfoSection from './sections/BasicInfoSection.jsx'
-import CdlSection from './sections/CdlSection.jsx'
-import CoursePaymentSection from './sections/CoursePaymentSection.jsx'
-import EmergencySection from './sections/EmergencySection.jsx'
-import LicenseSection from './sections/LicenseSection.jsx'
-import MedicalSection from './sections/MedicalSection.jsx'
-import PermitSection from './sections/PermitSection.jsx'
-import VehicleSection from './sections/VehicleSection.jsx'
-import WaiverSection from './sections/WaiverSection.jsx'
 
+// Sections via barrel
+import {
+  BasicInfoSection,
+  CdlSection,
+  CoursePaymentSection,
+  EmergencySection,
+  LicenseSection,
+  MedicalSection,
+  PermitSection,
+  VehicleSection,
+  WaiverSection,
+} from './sections'
+
+// (Optional) UI atoms via barrel if needed:
+// import { Field, Select, UploadField, CheckboxGroup } from './ui'
+
+/* --------------------------------- Consts -------------------------------- */
 const AUTOSAVE_DEBOUNCE_MS = 700
 const PHONE_PATTERN = '[0-9\\-\\(\\)\\+ ]{10,15}'
 
@@ -44,12 +54,13 @@ const getCurrentUserEmail = () =>
   localStorage.getItem('currentUserEmail') ||
   null
 
+/* --------------------------------- Component ----------------------------- */
 export default function Profile() {
   const navigate = useNavigate()
   const { showToast } = useToast()
   const email = getCurrentUserEmail()
 
-  // Local form state (single object)
+  // Single object for form state (easy save/merge)
   const [p, setP] = useState({
     // basic
     name: '', dob: '', profilePicUrl: '',
@@ -80,16 +91,16 @@ export default function Profile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  // Keep a snapshot of what came from the server to avoid save loops
+  // Refs to manage live-sync/autosave behavior
   const serverRef = useRef(null)
-  // Track if the latest change is user-initiated (vs. server push)
   const dirtyRef = useRef(false)
   const autosaveTimer = useRef(null)
   const unsubRef = useRef(null)
 
+  // Derived
   const progress = useMemo(() => calculateProfileCompletion(p), [p])
 
-  /* ----------------------------- Guards & Boot ----------------------------- */
+  /* ----------------------------- Guard + Subscribe ------------------------ */
   useEffect(() => {
     if (!email) {
       showToast('You must be logged in to view your profile.', 'error')
@@ -97,11 +108,11 @@ export default function Profile() {
       return
     }
 
-    // Live subscribe to profile
+    // Live subscribe to user profile
     unsubRef.current = subscribeUserProfile(email, data => {
-      // First load or server-side change
       const incoming = data || {}
-      // Guard: ensure only students see this page
+
+      // Guard role
       const role = incoming.role || localStorage.getItem('userRole') || 'student'
       if (role !== 'student') {
         showToast('Access denied: Student profile only.', 'error')
@@ -111,17 +122,14 @@ export default function Profile() {
 
       serverRef.current = incoming
       setP(prev => ({ ...prev, ...incoming }))
-      setLoading(false)
-      // Any active dirty flag should be reset after accepting server state
       dirtyRef.current = false
+      setLoading(false)
     })
 
-    return () => {
-      if (unsubRef.current) unsubRef.current()
-    }
+    return () => unsubRef.current?.()
   }, [email, navigate, showToast])
 
-  /* ---------------------------- Field Mutators ---------------------------- */
+  /* ------------------------------- Mutators ------------------------------- */
   const setField = useCallback((key, val) => {
     dirtyRef.current = true
     setP(prev => ({ ...prev, [key]: val }))
@@ -136,7 +144,7 @@ export default function Profile() {
     })
   }, [])
 
-  /* ------------------------------- Uploads -------------------------------- */
+  /* -------------------------------- Uploads ------------------------------- */
   const handleUpload = useCallback(
     async (file, path, field, checklistFn) => {
       if (!file || !email) return
@@ -144,12 +152,13 @@ export default function Profile() {
         const storageRef = ref(storage, `${path}/${email}-${Date.now()}-${file.name}`)
         await uploadBytes(storageRef, file)
         const url = await getDownloadURL(storageRef)
-        setField(field, url) // triggers autosave
+        setField(field, url)
         showToast(`${field.replace(/Url$/, '')} uploaded!`, 'success')
         if (typeof checklistFn === 'function') {
           checklistFn(email).catch(() => {})
         }
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(e)
         showToast(`Failed to upload ${field}.`, 'error')
       }
@@ -172,20 +181,19 @@ export default function Profile() {
 
   /* ---------------------------- Debounced Save ---------------------------- */
   const requestAutosave = useCallback(() => {
-    if (!email) return
-    if (!dirtyRef.current) return // only save user-initiated edits
+    if (!email || !dirtyRef.current) return
 
     if (autosaveTimer.current) clearTimeout(autosaveTimer.current)
     autosaveTimer.current = setTimeout(async () => {
       setSaving(true)
       try {
-        // Let the helper recompute progress, merge, and skip no-op writes
         const res = await updateUserProfileFields(email, { ...p }, email)
         if (res?.success) {
           markStudentProfileComplete(email).catch(() => {})
           dirtyRef.current = false
         }
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(e)
         showToast('Auto-save failed. Check your connection.', 'error')
       } finally {
@@ -198,7 +206,6 @@ export default function Profile() {
     requestAutosave()
   }, [p, requestAutosave])
 
-  // Cleanup timer on unmount
   useEffect(() => {
     return () => {
       if (autosaveTimer.current) clearTimeout(autosaveTimer.current)
@@ -231,7 +238,7 @@ export default function Profile() {
     )
   }
 
-  /* --------------------------------- UI ---------------------------------- */
+  /* -------------------------------- Render -------------------------------- */
   return (
     <Shell title="Student Profile">
       {/* Progress bar under Shell’s h1 */}

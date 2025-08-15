@@ -4,13 +4,11 @@
 // - Lazy-loads superadmin pages
 // - Local Suspense fallback (keeps app chrome responsive)
 // - Lightweight error boundary for render-time safety
-// - Export: preloadSuperadminRoutes() for hover/idle warming
+// - Optional: call SuperadminRouter.preload() for hover/idle warming
 // ======================================================================
 
 import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-
-// import SplashScreen from '@components/SplashScreen.jsx' // optional global
 
 // ---- Lazy pages ---------------------------------------------------------
 const SuperAdminDashboard = lazy(() => import('@superadmin/SuperAdminDashboard.jsx'))
@@ -80,32 +78,11 @@ function SuperadminNotFound() {
   return <Navigate to="/superadmin/dashboard" replace />
 }
 
-// ---- (Optional) preloader for hover/idle warming -----------------------
-export async function preloadSuperadminRoutes() {
-  await Promise.allSettled([
-    import('@superadmin/SuperAdminDashboard.jsx'),
-    import('@superadmin/SchoolManagement.jsx'),
-    import('@superadmin/UserManagement.jsx'),
-    import('@superadmin/ComplianceCenter.jsx'),
-    import('@superadmin/Billings.jsx'),
-    import('@superadmin/Settings.jsx'),
-    import('@superadmin/Logs.jsx'),
-    import('@superadmin/Permissions.jsx'),
-    import('@superadmin/WalkthroughManager.jsx'),
-  ])
-}
-
 // ---- Router component ---------------------------------------------------
 export default function SuperadminRouter() {
   return (
     <SuperadminSectionErrorBoundary>
-      <Suspense
-        fallback={
-          <Loading text="Loading superadmin area…" />
-          // Or global splash:
-          // <SplashScreen message="Loading superadmin area…" showTip={false} />
-        }
-      >
+      <Suspense fallback={<Loading text="Loading superadmin area…" />}>
         <Routes>
           {/* Root (/superadmin) → dashboard */}
           <Route index element={<SuperAdminDashboard />} />
@@ -130,3 +107,24 @@ export default function SuperadminRouter() {
     </SuperadminSectionErrorBoundary>
   )
 }
+
+/* -----------------------------------------------------------------------
+   Optional chunk preloader (attached to component to avoid react-refresh
+   complaints about multiple exports in a component file).
+   Usage: SuperadminRouter.preload?.()
+------------------------------------------------------------------------ */
+async function _preloadSuperadminRoutes() {
+  await Promise.allSettled([
+    import('@superadmin/SuperAdminDashboard.jsx'),
+    import('@superadmin/SchoolManagement.jsx'),
+    import('@superadmin/UserManagement.jsx'),
+    import('@superadmin/ComplianceCenter.jsx'),
+    import('@superadmin/Billings.jsx'),
+    import('@superadmin/Settings.jsx'),
+    import('@superadmin/Logs.jsx'),
+    import('@superadmin/Permissions.jsx'),
+    import('@superadmin/WalkthroughManager.jsx'),
+  ])
+}
+
+SuperadminRouter.preload = _preloadSuperadminRoutes

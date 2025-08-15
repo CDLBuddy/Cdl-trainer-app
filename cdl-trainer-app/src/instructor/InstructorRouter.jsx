@@ -1,14 +1,17 @@
-// src/instructor/InstructorRouter.jsx
 // ======================================================================
 // Instructor Router (nested under /instructor/*)
 // - Lazy-loads only the screens you actually have
 // - Local Suspense fallback to keep app chrome responsive
 // - Lightweight error boundary for render safety
-// - Optional export: preloadInstructorRoutes() for hover-based warming
+// - Note: Preload helpers live in ./preload.js (not exported here)
+//   to satisfy react-refresh/only-export-components
 // ======================================================================
 
 import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+
+// (Optional) If you want to warm chunks from outside (e.g., on idle/hover):
+// import { warmInstructorOnIdle, preloadInstructorCore } from './preload.js'
 
 // ---- Lazy pages you actually use ---------------------------------------
 const InstructorDashboard          = lazy(() => import('@instructor/InstructorDashboard.jsx'))
@@ -19,7 +22,12 @@ const ChecklistReviewForInstructor = lazy(() => import('@instructor/ChecklistRev
 // ---- Local loading UI (accessible) -------------------------------------
 function Loading({ text = 'Loading instructor page…' }) {
   return (
-    <div className="loading-container" role="status" aria-live="polite" style={{ textAlign: 'center', marginTop: '4rem' }}>
+    <div
+      className="loading-container"
+      role="status"
+      aria-live="polite"
+      style={{ textAlign: 'center', marginTop: '4rem' }}
+    >
       <div className="spinner" />
       <p>{text}</p>
     </div>
@@ -44,7 +52,12 @@ class InstructorSectionErrorBoundary extends React.Component {
   render() {
     if (this.state.err) {
       return (
-        <div className="error-overlay" role="alert" aria-live="assertive" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+        <div
+          className="error-overlay"
+          role="alert"
+          aria-live="assertive"
+          style={{ padding: '3rem 1rem', textAlign: 'center' }}
+        >
           <h2>Instructor area failed to load</h2>
           <p style={{ color: '#b22' }}>{String(this.state.err)}</p>
           <button className="btn" onClick={() => window.location.reload()} style={{ marginTop: 16 }}>
@@ -60,16 +73,6 @@ class InstructorSectionErrorBoundary extends React.Component {
 // ---- Fallback route: normalize unknown paths ---------------------------
 function InstructorNotFound() {
   return <Navigate to="/instructor/dashboard" replace />
-}
-
-// ---- (Optional) sub-route preloader for hover-based warming ------------
-export async function preloadInstructorRoutes() {
-  await Promise.allSettled([
-    import('@instructor/InstructorDashboard.jsx'),
-    import('@instructor/InstructorProfile.jsx'),
-    import('@instructor/StudentProfileForInstructor.jsx'),
-    import('@instructor/ChecklistReviewForInstructor.jsx'),
-  ])
 }
 
 // ---- Router component ---------------------------------------------------

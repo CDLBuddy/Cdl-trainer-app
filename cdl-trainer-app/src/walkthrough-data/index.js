@@ -1,55 +1,68 @@
-// src/walkthrough-data/index.js
 // ============================================================================
 // Global Walkthrough Data API (single public entry point)
 // - Re-exports loader + utils
-// - Builds a token → script map from your defaults
-// - Provides labels + helpers that accept either CDL codes or tokens
+// - Builds a token → script map from your defaults (duplicate-safe)
+// - Provides labels + helpers that accept CDL codes or tokens
+// - Pure, treeshake-friendly module (top-level map is frozen)
 // ============================================================================
 
 // ---- Loader (async resolver) -----------------------------------------------
 export { resolveWalkthrough } from './loaders/resolveWalkthrough.js'
 
 // ---- Utils (helpers for parsing/validation) --------------------------------
-export { parseCsv } from './utils/parseCsv.js'
-export { parseMarkdown } from './utils/parseMarkdown.js'
 export {
+  parseCsv,
+  parseMarkdown,
   validateWalkthroughs,
-} from './utils/validateWalkthroughs.js'
+  validateWalkthroughShape,
+} from './utils/index.js'
+
+// ---- Overlays (new: re-export aggregator & helpers) ------------------------
+export {
+  // Category namespaces (tree-shakable)
+  restrictions as overlayRestrictions,
+  phases as overlayPhases,
+  school as overlaySchool,
+  common as overlayCommon,
+  // Aggregates / lookups
+  ALL_OVERLAYS,
+  OVERLAYS_BY_ID,
+  listOverlayIds,
+  getOverlayById,
+  overlaysForRestrictions,
+} from './overlays/index.js'
 
 // ---- Defaults (datasets + helpers) -----------------------------------------
-// NOTE: We *do not* re-export "*" from defaults to avoid name collisions.
-// We expose the raw list as DEFAULT_DATASETS and keep our own
-// token → script map under DEFAULT_WALKTHROUGHS.
 import {
-  DEFAULT_WALKTHROUGHS as DEFAULT_DATASETS, // array of dataset objects
+  DEFAULT_WALKTHROUGHS as DEFAULT_DATASETS,
   listDefaultWalkthroughs,
   getDefaultWalkthroughByClass,
   getDefaultWalkthroughById,
-  validateWalkthroughShape,
+  validateWalkthroughShape as _validateWalkthroughShape, // local use if needed
   WALKTHROUGHS_BY_CLASS,
   WALKTHROUGHS_BY_ID,
 } from './defaults/index.js'
 
 export {
-  // raw dataset list and handy helpers (unchanged from defaults/)
   DEFAULT_DATASETS,
   listDefaultWalkthroughs,
   getDefaultWalkthroughByClass,
   getDefaultWalkthroughById,
-  validateWalkthroughShape,
   WALKTHROUGHS_BY_CLASS,
   WALKTHROUGHS_BY_ID,
 }
 
 // ---- Labels & token mapping -------------------------------------------------
+/** @type {Record<string, string>} */
 const CODE_TO_TOKEN = {
-  'A': 'class-a',
+  A: 'class-a',
   'A-WO-AIR-ELEC': 'class-a-wo-air-elec',
   'A-WO-HYD-ELEC': 'class-a-wo-hyd-elec',
-  'B': 'class-b',
+  B: 'class-b',
   'PASSENGER-BUS': 'passenger-bus',
 }
 
+/** @type {Record<string, string>} */
 export const WALKTHROUGH_LABELS = {
   'class-a': 'Class A',
   'class-a-wo-air-elec': 'Class A (No Air/Electric)',
@@ -58,23 +71,30 @@ export const WALKTHROUGH_LABELS = {
   'passenger-bus': 'Passenger Bus',
 }
 
-/** Normalize any input (CDL code or token) into our canonical token. */
-function toToken(input) {
+/** Normalize any input (CDL code or token-like or human label) to our token. */
+export function toToken(input) {
   if (input == null) return ''
   const s = String(input).trim()
-  const asCode = s.toUpperCase()
+
+  // canonical codes first
+  const asCode = s.toUpperCase().replace(/\s+/g, '-').replace(/_/g, '-')
   if (CODE_TO_TOKEN[asCode]) return CODE_TO_TOKEN[asCode]
 
-  // treat input as token-ish: kebab-case it
-  const asToken = s
+  // human-ish forms
+  const humanish = s
     .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/_/g, '-')
+    .replace(/\bclass\s+([ab])\b/g, 'class-$1')
+    .replace(/\s+no\s+air(?:\/|and)?electric/gi, '-wo-air-elec')
+    .replace(/\s+no\s+hyd(?:\/|and)?electric/gi, '-wo-hyd-elec')
 
-  return asToken
+  return humanish
+    .toLowerCase()
+    .replace(/_/g, '-')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\-]/g, '')
 }
 
-/** Safe label lookup for UI (falls back to the raw string). */
+/** Safe label lookup for UI (falls back to raw string). */
 export function getWalkthroughLabel(classType) {
   const tok = toToken(classType)
   return WALKTHROUGH_LABELS[tok] ?? String(classType ?? '')
@@ -82,31 +102,39 @@ export function getWalkthroughLabel(classType) {
 
 // ---- Build token → script map from your default datasets -------------------
 /**
- * DEFAULT_WALKTHROUGHS (map):
+ * DEFAULT_WALKTHROUGHS (frozen Map-like plain object):
  *   token -> WalkthroughScript (array of sections)
- * Examples:
- *   DEFAULT_WALKTHROUGHS['class-a']
- *   DEFAULT_WALKTHROUGHS['passenger-bus']
  */
 export const DEFAULT_WALKTHROUGHS = (() => {
+  /** @type {Record<string, any[]>} */
   const out = Object.create(null)
   const all = Array.isArray(DEFAULT_DATASETS) ? DEFAULT_DATASETS : listDefaultWalkthroughs()
   for (const ds of all) {
     const token = toToken(ds?.classCode)
     if (!token) continue
     const script = Array.isArray(ds?.sections) ? ds.sections : []
-    out[token] = script
+    if (!out[token] || out[token].length === 0) out[token] = script
   }
-  return out
+  return Object.freeze(out)
 })()
 
-/** Convenience getter that accepts either CDL codes or tokens. */
+// ---- Convenience getters (accept CDL codes or tokens) ----------------------
 export function getWalkthroughByClass(classType) {
   const tok = toToken(classType)
   return DEFAULT_WALKTHROUGHS[tok] ?? null
 }
+export function hasWalkthrough(classType) {
+  const tok = toToken(classType)
+  return Object.prototype.hasOwnProperty.call(DEFAULT_WALKTHROUGHS, tok)
+}
+export function listWalkthroughTokens() {
+  return Object.keys(DEFAULT_WALKTHROUGHS)
+}
+export function listLabeledWalkthroughs() {
+  return listWalkthroughTokens().map(t => ({ token: t, label: getWalkthroughLabel(t) }))
+}
 
 // ============================================================================
 // NOTE: schema.d.ts sits beside this file to provide IntelliSense/types.
-// It’s not imported by JS, but TS tooling picks it up automatically.
+// It’s not imported by JS; TS tooling picks it up automatically.
 // ============================================================================

@@ -10,7 +10,6 @@
 import {
   // optional canonical helpers & registries (safe to be absent)
   normalizeRole as cfgNormalizeRole,
-  roleFromPath,
   getDashboardRoute as cfgGetDashboardRoute,
   getTopNavForRole as cfgGetTopNavForRole,
   getHiddenRoutesForRole as cfgGetHiddenRoutesForRole,
@@ -39,6 +38,12 @@ export function getCurrentRole() {
   } catch {
     return 'student'
   }
+}
+
+/** Infer a role segment from a pathname like "/student/...". */
+export function roleFromPath(path = '') {
+  const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(String(path))
+  return m ? m[1].toLowerCase() : null
 }
 
 // ---------- small url helpers -------------------------------------------
@@ -94,7 +99,7 @@ export function safeNavigate(navigate, to, options = {}) {
 export function redirectAfterLogin(navigate, role, location) {
   const fromState = location?.state?.from?.pathname
   let fromQuery = null
-  try { fromQuery = new URL(window.location.href).searchParams.get('from') } catch { /* ignore error */ }
+  try { fromQuery = new URL(window.location.href).searchParams.get('from') } catch { /* ignore */ }
   const candidate = fromState || fromQuery || ''
   const safe =
     typeof candidate === 'string' &&
@@ -109,16 +114,16 @@ export function redirectAfterLogin(navigate, role, location) {
 // Route builders (keep string paths DRY)
 // ======================================================================
 
-// ---- Student (updated for new folders: /student/profile & /student/walkthrough)
+// ---- Student (matches /student/profile and /student/walkthrough folders)
 export const StudentRoutes = {
   dashboard:     () => '/student/dashboard',
-  profile:       () => '/student/profile',            // NEW foldered page
+  profile:       () => '/student/profile',
   checklists:    () => '/student/checklists',
   practiceTests: () => '/student/practice-tests',
   testEngine:    (testName = '') => `/student/test-engine/${encodeURIComponent(testName)}`,
   testReview:    (testName = '') => `/student/test-review/${encodeURIComponent(testName)}`,
   testResults:   () => '/student/test-results',
-  walkthrough:   () => '/student/walkthrough',        // NEW foldered page
+  walkthrough:   () => '/student/walkthrough',
   flashcards:    () => '/student/flashcards',
 }
 
@@ -139,7 +144,7 @@ export const AdminRoutes = {
   reports:   () => '/admin/reports',
 }
 
-// ---- Superadmin (now includes Walkthrough Manager)
+// ---- Superadmin (includes Walkthrough Manager)
 export const SuperadminRoutes = {
   dashboard:    () => '/superadmin/dashboard',
   schools:      () => '/superadmin/schools',
@@ -149,7 +154,7 @@ export const SuperadminRoutes = {
   settings:     () => '/superadmin/settings',
   logs:         () => '/superadmin/logs',
   permissions:  () => '/superadmin/permissions',
-  walkthroughs: () => '/superadmin/walkthroughs', // NEW – WalkthroughManager
+  walkthroughs: () => '/superadmin/walkthroughs',
 }
 
 // ---- Unified role-aware builders
@@ -176,10 +181,10 @@ export const RouteBuilders = {
   studentFlashcards:    StudentRoutes.flashcards,
 
   // Instructor aliases
-  instructorDashboard:      InstructorRoutes.dashboard,
-  instructorProfile:        InstructorRoutes.profile,
-  instructorChecklistReview:InstructorRoutes.checklistReview,
-  instructorStudentProfile: InstructorRoutes.studentProfile,
+  instructorDashboard:       InstructorRoutes.dashboard,
+  instructorProfile:         InstructorRoutes.profile,
+  instructorChecklistReview: InstructorRoutes.checklistReview,
+  instructorStudentProfile:  InstructorRoutes.studentProfile,
 
   // Admin aliases
   adminDashboard:  AdminRoutes.dashboard,
@@ -197,7 +202,7 @@ export const RouteBuilders = {
   superadminSettings:     SuperadminRoutes.settings,
   superadminLogs:         SuperadminRoutes.logs,
   superadminPermissions:  SuperadminRoutes.permissions,
-  superadminWalkthroughs: SuperadminRoutes.walkthroughs, // NEW
+  superadminWalkthroughs: SuperadminRoutes.walkthroughs,
 }
 
 // ======================================================================
@@ -225,7 +230,7 @@ export function getNavLinksForRole(role) {
         { to: SuperadminRoutes.schools(),      label: 'Schools',     icon: '🏫' },
         { to: SuperadminRoutes.users(),        label: 'Users',       icon: '👥' },
         { to: SuperadminRoutes.compliance(),   label: 'Compliance',  icon: '🛡️' },
-        { to: SuperadminRoutes.walkthroughs(), label: 'Walkthroughs',icon: '🧭' }, // NEW
+        { to: SuperadminRoutes.walkthroughs(), label: 'Walkthroughs',icon: '🧭' },
         { to: SuperadminRoutes.billing(),      label: 'Billing',     icon: '💳' },
         { to: SuperadminRoutes.settings(),     label: 'Settings',    icon: '⚙️' },
         { to: SuperadminRoutes.logs(),         label: 'Logs',        icon: '📜' },
@@ -249,10 +254,10 @@ export function getNavLinksForRole(role) {
     default:
       return [
         { to: StudentRoutes.dashboard(),     label: 'Dashboard',      icon: '🏠', exact: true },
-        { to: StudentRoutes.profile(),       label: 'Profile',        icon: '👤' },   // NEW
+        { to: StudentRoutes.profile(),       label: 'Profile',        icon: '👤' },
         { to: StudentRoutes.checklists(),    label: 'Checklists',     icon: '📋' },
         { to: StudentRoutes.practiceTests(), label: 'Practice Tests', icon: '📝' },
-        { to: StudentRoutes.walkthrough(),   label: 'Walkthrough',    icon: '🧭' },  // NEW
+        { to: StudentRoutes.walkthrough(),   label: 'Walkthrough',    icon: '🧭' },
         { to: StudentRoutes.flashcards(),    label: 'Flashcards',     icon: '🗂️' },
       ]
   }

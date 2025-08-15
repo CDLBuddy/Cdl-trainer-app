@@ -1,10 +1,29 @@
 // src/walkthrough-data/defaults/walkthrough-class-a.js
 // =============================================================================
-// CDL Class A — Full Pre-Trip Walkthrough (Air + Hydraulic + Electric lines)
+// CDL Class A — Full Pre-Trip Walkthrough (Air + Hydraulic + Electric)
 // Browning Mountain Training (default profile)
-// Schema: export default { id, classCode, label, version, source, sections[] }
-// - Section: { section, critical?, passFail?, steps[] }
-// - Step:    { label?, script, mustSay?, required?, passFail?, skip? }
+//
+// Schema:
+//   export default {
+//     id, classCode, label, version, source,
+//     sections: Array<{
+//       section: string,
+//       critical?: boolean,
+//       passFail?: boolean,
+//       steps: Array<{
+//         label?: string,
+//         script: string,
+//         mustSay?: boolean,
+//         required?: boolean,
+//         passFail?: boolean,
+//         skip?: boolean
+//       }>
+//     }>
+//   }
+//
+// Notes:
+// - This is a raw dataset object. The registry layer returns deep-frozen clones.
+// - Optional drill tokenization can be inferred at runtime from `script` text.
 // =============================================================================
 
 const walkthroughClassA = {
@@ -58,7 +77,7 @@ const walkthroughClassA = {
       ],
     },
 
-    /* ------------------------------ Steering Sys ----------------------------- */
+    /* ------------------------------ Steering System -------------------------- */
     {
       section: 'Steering System',
       steps: [
@@ -98,7 +117,7 @@ const walkthroughClassA = {
       critical: true,
       steps: [
         { label: 'Brake Hoses/Lines', script: 'Inspect hoses and lines for leaks, cracks, or wear.' },
-        { label: 'Brake Chamber', script: 'Check that the brake chamber is securely mounted and not leaking.' },
+        { label: 'Brake Chamber',     script: 'Check that the brake chamber is securely mounted and not leaking.' },
         {
           label: 'Slack Adjuster/Pushrod',
           script:
@@ -122,15 +141,15 @@ const walkthroughClassA = {
         {
           label: 'Tire Condition',
           script:
-            'Check that tire tread is evenly worn, has at least 4/32” tread depth on steer tires, and no cuts or bulges.',
+            'Check that tire tread is evenly worn, has at least 4/32" tread depth on steer tires, and no cuts or bulges.',
           mustSay: true,
           required: true,
           passFail: true,
         },
-        { label: 'Rims', script: 'Check rims for cracks or illegal welds.' },
-        { label: 'Lug Nuts', script: 'All lug nuts should be present, not loose, and have no rust trails.' },
-        { label: 'Hub Oil Seal', script: 'Check the hub oil seal for leaks and that oil level is adequate.' },
-        { label: 'Valve Stem', script: 'Valve stem and cap should not be missing, broken, or leaking.' },
+        { label: 'Rims',           script: 'Check rims for cracks or illegal welds.' },
+        { label: 'Lug Nuts',       script: 'All lug nuts should be present, not loose, and have no rust trails.' },
+        { label: 'Hub Oil Seal',   script: 'Check the hub oil seal for leaks and that oil level is adequate.' },
+        { label: 'Valve Stem',     script: 'Valve stem and cap should not be missing, broken, or leaking.' },
       ],
     },
 
@@ -138,11 +157,11 @@ const walkthroughClassA = {
     {
       section: 'Driver/Fuel Area',
       steps: [
-        { label: 'Door & Hinges', script: 'Check that the door opens and closes properly, hinges are secure, and seal is intact.' },
-        { label: 'Mirror Brackets', script: 'Check that the mirror brackets are securely mounted and not damaged.' },
-        { label: 'Fuel Tank/Cap/Leaks', script: 'Check that the fuel tank is secure, not leaking, and the cap is tight.' },
-        { label: 'Battery/Box', script: 'Check that the battery/box is secure, connections are tight, and no corrosion.' },
-        { label: 'Catwalk/Steps', script: 'Check that the catwalk and steps are solid, clear of objects, and securely bolted.' },
+        { label: 'Door & Hinges',        script: 'Check that the door opens and closes properly, hinges are secure, and seal is intact.' },
+        { label: 'Mirror Brackets',      script: 'Check that the mirror brackets are securely mounted and not damaged.' },
+        { label: 'Fuel Tank/Cap/Leaks',  script: 'Check that the fuel tank is secure, not leaking, and the cap is tight.' },
+        { label: 'Battery/Box',          script: 'Check that the battery/box is secure, connections are tight, and no corrosion.' },
+        { label: 'Catwalk/Steps',        script: 'Check that the catwalk and steps are solid, clear of objects, and securely bolted.' },
       ],
     },
 
@@ -180,8 +199,8 @@ const walkthroughClassA = {
       section: 'Rear Axle/Trailer Suspension',
       steps: [
         { label: 'Springs/Shocks', script: 'Check that the springs and shocks are not missing, broken, or leaking. Mounts are secure.' },
-        { label: 'Torque Arm', script: 'Check the torque arm for cracks or breaks and that it’s securely mounted.' },
-        { label: 'Air Bags', script: 'Check airbags (if equipped) for leaks, secure mounting, and no damage.' },
+        { label: 'Torque Arm',     script: 'Check the torque arm for cracks or breaks and that it’s securely mounted.' },
+        { label: 'Air Bags',       script: 'Check airbags (if equipped) for leaks, secure mounting, and no damage.' },
       ],
     },
 
@@ -191,7 +210,7 @@ const walkthroughClassA = {
       critical: true,
       steps: [
         { label: 'Brake Hoses/Lines', script: 'Check hoses and lines for leaks, cracks, or wear.' },
-        { label: 'Brake Chamber', script: 'Check that the brake chamber is securely mounted and not leaking.' },
+        { label: 'Brake Chamber',     script: 'Check that the brake chamber is securely mounted and not leaking.' },
         {
           label: 'Slack Adjuster/Pushrod',
           script:
@@ -215,15 +234,15 @@ const walkthroughClassA = {
         {
           label: 'Tire Condition',
           script:
-            'Tires should have at least 2/32” tread depth, be evenly worn, with no cuts, bulges, or other damage.',
+            'Tires should have at least 2/32" tread depth, be evenly worn, with no cuts, bulges, or other damage.',
           mustSay: true,
           required: true,
           passFail: true,
         },
-        { label: 'Rims', script: 'Check for cracks or illegal welds.' },
-        { label: 'Lug Nuts', script: 'All lug nuts should be present, not loose, and have no rust trails.' },
-        { label: 'Axle Seal', script: 'Check the axle seal for leaks.' },
-        { label: 'Valve Stem', script: 'Valve stem and cap should not be missing, broken, or leaking.' },
+        { label: 'Rims',        script: 'Check for cracks or illegal welds.' },
+        { label: 'Lug Nuts',    script: 'All lug nuts should be present, not loose, and have no rust trails.' },
+        { label: 'Axle Seal',   script: 'Check the axle seal for leaks.' },
+        { label: 'Valve Stem',  script: 'Valve stem and cap should not be missing, broken, or leaking.' },
         { label: 'Spacers/Budds', script: 'If equipped, check spacers are not bent, damaged, or rusted through. Dual tires should not be touching.' },
       ],
     },
@@ -232,9 +251,9 @@ const walkthroughClassA = {
     {
       section: 'Lights/Reflectors',
       steps: [
-        { label: 'Reflectors', script: 'Check all reflectors and clearance lights for proper color, cleanliness, and that they are not broken.' },
-        { label: 'Tail, Turn, Brake Lights', script: 'Check that all tail, turn signal, brake, and marker lights are the correct color and working.' },
-        { label: 'License Plate Light', script: 'License plate light is clean, working, and plate is secure.' },
+        { label: 'Reflectors',            script: 'Check all reflectors and clearance lights for proper color, cleanliness, and that they are not broken.' },
+        { label: 'Tail/Turn/Brake Lights', script: 'Check that all tail, turn signal, brake, and marker lights are the correct color and working.' },
+        { label: 'License Plate Light',   script: 'License plate light is clean, working, and plate is secure.' },
       ],
     },
 
@@ -250,17 +269,17 @@ const walkthroughClassA = {
           required: true,
           passFail: true,
         },
-        { label: 'Apron', script: 'Apron should not be bent, cracked, or broken.' },
-        { label: 'Mounting Bolts', script: 'Check that the mounting bolts are secure and not missing.' },
-        { label: 'Fifth Wheel', script: 'Fifth wheel should be properly greased, securely mounted, and not cracked or broken.' },
-        { label: 'Platform', script: 'Platform should not be cracked or broken and is properly secured.' },
-        { label: 'Release Arm', script: 'Check that the release arm is secure and in the locked position.' },
-        { label: 'Skid Plate', script: 'Skid plate should not be cracked, broken, or excessively worn.' },
+        { label: 'Apron',            script: 'Apron should not be bent, cracked, or broken.' },
+        { label: 'Mounting Bolts',   script: 'Check that the mounting bolts are secure and not missing.' },
+        { label: 'Fifth Wheel',      script: 'Fifth wheel should be properly greased, securely mounted, and not cracked or broken.' },
+        { label: 'Platform',         script: 'Platform should not be cracked or broken and is properly secured.' },
+        { label: 'Release Arm',      script: 'Check that the release arm is secure and in the locked position.' },
+        { label: 'Skid Plate',       script: 'Skid plate should not be cracked, broken, or excessively worn.' },
         { label: 'Trailer Front/Rear', script: 'Check trailer front and rear for damage. Inspect all lights, reflectors, and DOT tape.' },
-        { label: 'Landing Gear', script: 'Landing gear is fully raised, has no missing parts, is not bent or damaged, and the crank handle is secure.' },
+        { label: 'Landing Gear',     script: 'Landing gear is fully raised, has no missing parts, is not bent or damaged, and the crank handle is secure.' },
         { label: 'Frame/Crossmembers', script: 'Frame and crossmembers should not be cracked, broken, or missing.' },
-        { label: 'Floor', script: 'Floor should be solid, not broken or sagging.' },
-        { label: 'Doors/Ties/Lift', script: 'Doors and ties/lift should open, close, and latch properly.' },
+        { label: 'Floor',            script: 'Floor should be solid, not broken or sagging.' },
+        { label: 'Doors/Ties/Lift',  script: 'Doors and ties/lift should open, close, and latch properly.' },
       ],
     },
 
@@ -285,10 +304,10 @@ const walkthroughClassA = {
           required: true,
           passFail: true,
         },
-        { label: 'Gauges', script: 'Check all gauges—oil pressure, coolant temperature, and voltmeter—for normal readings.' },
-        { label: 'Lights/Horn/Wipers', script: 'Check operation of all lights, horn, windshield wipers, and washers.' },
-        { label: 'Heater/Defroster', script: 'Heater and defroster should work properly.' },
-        { label: 'Mirrors', script: 'Mirrors are clean, properly adjusted, and securely mounted.' },
+        { label: 'Gauges',            script: 'Check all gauges—oil pressure, coolant temperature, and voltmeter—for normal readings.' },
+        { label: 'Lights/Horn/Wipers',script: 'Check operation of all lights, horn, windshield wipers, and washers.' },
+        { label: 'Heater/Defroster',  script: 'Heater and defroster should work properly.' },
+        { label: 'Mirrors',           script: 'Mirrors are clean, properly adjusted, and securely mounted.' },
         {
           label: 'Emergency Equipment',
           script:
