@@ -7,6 +7,7 @@
 // - Accessible loading/empty/error states
 // ======================================================================
 
+import { doc, getDoc } from 'firebase/firestore'
 import React, {
   useCallback,
   useEffect,
@@ -15,11 +16,9 @@ import React, {
   useState,
 } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { doc, getDoc } from 'firebase/firestore'
 
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/ToastContext.js'
-
 import { db } from '@utils/firebase.js'
 import {
   getUserProgress,
@@ -39,7 +38,6 @@ import {
   TypePhraseDrill,
   VisualRecallDrill,
 } from './drills'
-
 import styles from './walkthrough.module.css'
 
 // Robust email fallback (uses session + localStorage)
@@ -128,7 +126,7 @@ export default function Walkthrough() {
         })
       } catch (e) {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.error('[Walkthrough] load error:', e)
         }
         if (alive) {

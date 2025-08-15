@@ -10,9 +10,10 @@ import {
 } from 'firebase/firestore'
 import React, { useEffect, useState, useRef } from 'react'
 
-import { useToast } from '@/components/ToastContext.js'
 import { db, auth } from '@utils/firebase.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
+
+import { useToast } from '@/components/ToastContext.js'
 
 // import jsPDF only when needed
 let jsPDF = null

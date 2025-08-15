@@ -127,6 +127,9 @@ export default defineConfig([
         {
           groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'type'],
           pathGroups: [
+            // NEW: keep React first in the external group
+            { pattern: 'react', group: 'external', position: 'before' },
+
             { pattern: '@{,**/*}', group: 'internal', position: 'before' },
 
             { pattern: '@utils/**', group: 'internal', position: 'before' },
@@ -157,7 +160,8 @@ export default defineConfig([
             { pattern: '@admin{,/**}', group: 'internal', position: 'before' },
             { pattern: '@superadmin{,/**}', group: 'internal', position: 'before' },
           ],
-          pathGroupsExcludedImportTypes: ['builtin', 'external'],
+          // CHANGED: exclude react so it stays pinned at the top of externals
+          pathGroupsExcludedImportTypes: ['react', 'builtin', 'external'],
           'newlines-between': 'always',
           alphabetize: { order: 'asc', caseInsensitive: true },
         },

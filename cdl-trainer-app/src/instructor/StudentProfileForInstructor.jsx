@@ -10,13 +10,14 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 
 import ChecklistReviewModal from '@components/ChecklistReviewModal.jsx' // Assume you move modal logic here
-import { useToast } from '@/components/ToastContext.js'
 import {
   verifyStudentProfile,
   verifyStudentPermit,
   verifyStudentVehicle,
   reviewStudentWalkthrough,
 } from '@utils/ui-helpers.js'
+
+import { useToast } from '@/components/ToastContext.js'
 
 export default function InstructorStudentProfile() {
   const { showToast } = useToast()

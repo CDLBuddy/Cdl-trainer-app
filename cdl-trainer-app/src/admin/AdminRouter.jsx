@@ -9,6 +9,7 @@
 
 import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+
 import { preloadAdminAll as _preload } from './preload.js' // single source for warming
 
 // ---- Lazy pages ---------------------------------------------------------
@@ -45,7 +46,7 @@ class AdminSectionErrorBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
+       
       console.error('[AdminRouter] render error:', error, info)
     }
   }

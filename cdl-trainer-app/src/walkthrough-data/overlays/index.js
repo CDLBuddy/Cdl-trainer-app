@@ -6,10 +6,10 @@
 // - Side-effect free; all objects are plain data
 // ======================================================================
 
+import * as common from './common/index.js'
+import * as phases from './phases/index.js'
 import * as restrictions from './restrictions/index.js'
 import * as school from './school/index.js'
-import * as phases from './phases/index.js'
-import * as common from './common/index.js'
 
 // Re-export category namespaces for convenience (tree-shakable)
 export { restrictions, school, phases, common }
@@ -38,10 +38,10 @@ function buildIdMap(list) {
     let { id } = ov
     if (!id) {
       id = `overlay:auto:${auto++}`
-      if (__DEV__) console.warn('[overlays] Overlay missing id; generated:', id, ov)
+      if (import.meta.env.DEV) console.warn('[overlays] Overlay missing id; generated:', id, ov)
     }
     if (out[id]) {
-      if (__DEV__) console.warn('[overlays] Duplicate overlay id (first wins):', id, { first: out[id], dup: ov })
+      if (import.meta.env.DEV) console.warn('[overlays] Duplicate overlay id (first wins):', id, { first: out[id], dup: ov })
       continue
     }
     out[id] = ov

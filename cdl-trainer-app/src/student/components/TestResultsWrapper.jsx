@@ -22,7 +22,7 @@ class Boundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
+       
       console.error('[TestResultsWrapper] render error:', error, info)
     }
   }

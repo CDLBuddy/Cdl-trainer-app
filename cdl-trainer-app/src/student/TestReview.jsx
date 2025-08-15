@@ -3,7 +3,6 @@ import { collection, query, where, getDocs } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import { useToast } from '@/components/ToastContext.js'
 import { db } from '@utils/firebase.js'
 import {
   incrementStudentStudyMinutes,
@@ -11,6 +10,8 @@ import {
   markStudentTestPassed,
   getUserProgress,
 } from '@utils/ui-helpers.js'
+
+import { useToast } from '@/components/ToastContext.js'
 
 // Centralized email getter
 function getCurrentUserEmail() {

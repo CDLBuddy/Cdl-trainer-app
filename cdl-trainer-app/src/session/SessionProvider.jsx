@@ -58,13 +58,13 @@ export default function SessionProvider({
   // Dev-time safety: warn when no value passed or unexpected keys found
   if (__DEV__) {
     if (value == null) {
-      // eslint-disable-next-line no-console
+       
       console.warn('[SessionProvider] No value passed. Using DEFAULT_SESSION.')
     } else {
       const allowed = new Set(['loading', 'isLoggedIn', 'role', 'user'])
       for (const k of Object.keys(value)) {
         if (!allowed.has(k)) {
-          // eslint-disable-next-line no-console
+           
           console.warn(
             `[SessionProvider] Unexpected key "${k}" in value. Allowed keys: loading, isLoggedIn, role, user.`
           )
@@ -74,7 +74,7 @@ export default function SessionProvider({
         value.loading != null &&
         typeof value.loading !== 'boolean'
       ) {
-        // eslint-disable-next-line no-console
+         
         console.warn(
           '[SessionProvider] "loading" should be a boolean; received:',
           typeof value.loading
@@ -84,7 +84,7 @@ export default function SessionProvider({
         value.isLoggedIn != null &&
         typeof value.isLoggedIn !== 'boolean'
       ) {
-        // eslint-disable-next-line no-console
+         
         console.warn(
           '[SessionProvider] "isLoggedIn" should be a boolean; received:',
           typeof value.isLoggedIn

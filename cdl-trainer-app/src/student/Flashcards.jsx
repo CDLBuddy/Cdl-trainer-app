@@ -7,9 +7,9 @@
 // - Logs study minutes on session completion
 // ======================================================================
 
+import { collection, query, where, getDocs } from 'firebase/firestore'
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { collection, query, where, getDocs } from 'firebase/firestore'
 
 import { useToast } from '@components/ToastContext.js'
 import { db, auth } from '@utils/firebase.js'
@@ -276,6 +276,12 @@ export default function StudentFlashcards() {
         aria-label="Flashcard: Press Enter or Space to flip. Use Left/Right arrows to navigate."
         ref={flashcardRef}
         onClick={handleFlip}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleFlip();
+          }
+        }}
       >
         <div className="flashcard-inner">
           <div className="flashcard-front">Q: {flashcards[current].q}</div>

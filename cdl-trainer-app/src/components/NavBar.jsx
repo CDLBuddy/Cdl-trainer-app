@@ -22,11 +22,12 @@ import {
   getDashboardRoute,
   getNavLinksForRole,
 } from '@navigation/navigation.js'
-import { preloadRoutesForRole } from '@/utils/route-preload.js'
 import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,
 } from '@utils/school-branding.js'
+
+import { preloadRoutesForRole } from '@/utils/route-preload.js'
 
 import { useSession } from '../session/useSession.js'
 

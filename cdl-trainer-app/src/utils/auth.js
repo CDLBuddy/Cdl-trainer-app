@@ -2,6 +2,7 @@
 // Simple auth utilities + status hook (Firebase Auth)
 
 import { useEffect, useMemo, useState } from 'react'
+
 import { auth } from './firebase.js' // assumes you've initialized Firebase Auth here
 
 /* =========================================================================
@@ -126,7 +127,7 @@ export function useAuthStatus() {
       //   }
       // } catch { setRole(!!u ? localRole : null) }
 
-      setRole(!!u ? localRole : null)
+      setRole(u ? localRole : null)
       setLoading(false)
     })
 
@@ -144,8 +145,8 @@ export function useAuthStatus() {
 
     return () => {
       mounted = false
-      try { unsubAuth() } catch {}
-      try { unsubToken() } catch {}
+      try { unsubAuth() } catch { /* no-op */ }
+      try { unsubToken() } catch { /* no-op */ }
       document.removeEventListener('visibilitychange', onVisible)
     }
   }, [])
@@ -168,7 +169,7 @@ export function useAuthStatus() {
 export function waitForAuthReady() {
   return new Promise((resolve) => {
     const unsub = auth.onAuthStateChanged(() => {
-      try { unsub() } catch {}
+      try { unsub() } catch { /* no-op */ }
       resolve(auth.currentUser || null)
     })
   })

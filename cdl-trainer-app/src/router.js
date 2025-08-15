@@ -10,10 +10,11 @@
 import React from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
-import AppLayout from './App.jsx'
 import SplashScreen from '@components/SplashScreen.jsx'
-import { RequireRole } from '@utils/RequireRole.jsx'
 import { getDashboardRoute } from '@navigation/navigation.js'
+import { RequireRole } from '@utils/RequireRole.jsx'
+
+import AppLayout from './App.jsx'
 
 // ---- Lazy pages (code-split) -------------------------------------------
 const Welcome  = React.lazy(() => import('@pages/Welcome.jsx'))
@@ -103,7 +104,7 @@ export const router = createBrowserRouter([
       {
         path: '/student/*',
         element: (
-          <RequireRole role="student" fallback={<SplashScreen message="Loading student…" showTip={false} />}>
+          <RequireRole requiredRole="student" fallback={<SplashScreen message="Loading student…" showTip={false} />}>
             <StudentRouter />
           </RequireRole>
         ),
@@ -113,7 +114,7 @@ export const router = createBrowserRouter([
       {
         path: '/instructor/*',
         element: (
-          <RequireRole role="instructor" fallback={<SplashScreen message="Loading instructor…" showTip={false} />}>
+          <RequireRole requiredRole="instructor" fallback={<SplashScreen message="Loading instructor…" showTip={false} />}>
             <InstructorRouter />
           </RequireRole>
         ),
@@ -123,7 +124,7 @@ export const router = createBrowserRouter([
       {
         path: '/admin/*',
         element: (
-          <RequireRole role="admin" fallback={<SplashScreen message="Loading admin…" showTip={false} />}>
+          <RequireRole requiredRole="admin" fallback={<SplashScreen message="Loading admin…" showTip={false} />}>
             <AdminRouter />
           </RequireRole>
         ),
@@ -133,7 +134,7 @@ export const router = createBrowserRouter([
       {
         path: '/superadmin/*',
         element: (
-          <RequireRole role="superadmin" fallback={<SplashScreen message="Loading super admin…" showTip={false} />}>
+          <RequireRole requiredRole="superadmin" fallback={<SplashScreen message="Loading super admin…" showTip={false} />}>
             <SuperadminRouter />
           </RequireRole>
         ),

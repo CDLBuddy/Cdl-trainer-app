@@ -91,7 +91,7 @@ export function toToken(input) {
     .toLowerCase()
     .replace(/_/g, '-')
     .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9\-]/g, '')
+    .replace(/[^a-z0-9-]/g, '')
 }
 
 /** Safe label lookup for UI (falls back to raw string). */

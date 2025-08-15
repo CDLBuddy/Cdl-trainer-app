@@ -33,7 +33,7 @@ export function Toast({
   showProgress = true,
 }) {
   const [leaving, setLeaving] = useState(false)
-  const [hovering, setHovering] = useState(false)
+  const [, setHovering] = useState(false)
   const [drag, setDrag] = useState(0)
   const [reduceMotion, setReduceMotion] = useState(false)
 

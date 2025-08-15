@@ -1,31 +1,13 @@
 // ============================================================================
-// resolveWalkthrough (v2)
+// resolveWalkthrough (v2)  —  NO REACT HOOKS HERE
 // Centralized utility for fetching + shaping the walkthrough for a CDL class.
-//
-// What’s new in v2
-// - Backward compatible API, PLUS optional `restrictions` overlays
-// - Keeps your current school-level *custom replacement* behavior
-// - Adds light-weight *overlay* support (school tweaks & restriction patches)
-// - Deterministic, idempotent overlay application (base → school → restrictions)
-//
-// API (all forms supported):
-//   resolveWalkthrough(classType, schoolId?)
-//   resolveWalkthrough({ classType, schoolId?, preferCustom?, softFail?, restrictions?: string[] })
-//
-// Returns (same as before):
-//   - simple form: WalkthroughScript | null
-//   - object form: { script, isCustom?, sourceHint?, applied?: string[] }  // +applied
-//
-// Notes
-// - “Custom replacement” = full script stored at Firestore: schools/{id}/walkthroughs/{token}
-// - “School overlay”      = patch rules stored at schools/{id}/walkthroughOverlays/{token}
-// - “Restriction overlays”= local code overlays (e.g. E, L/Z, O) mapped below
-// - Overlays are tiny objects: { id, rules: OverlayRule[] } (see rule ops below)
+// Supports optional toast callback passed in from React.
 // ============================================================================
 
 import { doc, getDoc } from 'firebase/firestore'
+
 import { db } from '@utils/firebase.js'
-import { showToast } from '@utils/ui-helpers.js'
+
 import { DEFAULT_WALKTHROUGHS, getWalkthroughByClass } from '@walkthrough-data'
 
 // ---------- token normalization (kept in sync with your barrels) ------------
@@ -55,18 +37,7 @@ function coerceToScript(payload) {
 
 // ============================================================================
 // Overlay engine (tiny + safe)
-// ----------------------------------------------------------------------------
-// Rule ops supported:
-// - renameSection:        { match:{section}, to }
-// - replaceSectionSteps:  { match:{section}, steps: Step[] }
-// - appendSteps:          { match:{section}, steps: Step[] }
-// - removeStep:           { match:{section, stepLabel? , tag?} }
-// - replaceStepText:      { match:{section, stepLabel}, to }
-//
-// Matching is by visible section title (string) and either step label or tag.
-// If a step has `tags:[]`, you can target by { tag: 'air-brake' } etc.
 // ============================================================================
-
 function deepClone(obj) {
   try { return structuredClone(obj) } catch { return JSON.parse(JSON.stringify(obj)) }
 }
@@ -94,14 +65,11 @@ function applyOverlay(baseScript, overlay) {
           out[idx].section = rule.to || out[idx].section
           break
         }
-
         case 'replaceSectionSteps': {
           out[idx].steps = Array.isArray(rule.steps) ? rule.steps : []
           break
         }
-
         case 'appendSteps': {
-          // create section if missing
           if (idx < 0) {
             out.push({ section: sectionTitle, steps: Array.isArray(rule.steps) ? rule.steps : [] })
           } else {
@@ -110,7 +78,6 @@ function applyOverlay(baseScript, overlay) {
           }
           break
         }
-
         case 'removeStep': {
           const { stepLabel, tag } = match
           const steps = Array.isArray(section.steps) ? section.steps : []
@@ -121,7 +88,6 @@ function applyOverlay(baseScript, overlay) {
           })
           break
         }
-
         case 'replaceStepText': {
           const { stepLabel } = match
           const steps = Array.isArray(section.steps) ? section.steps : []
@@ -132,7 +98,6 @@ function applyOverlay(baseScript, overlay) {
           )
           break
         }
-
         default:
           // ignore unknown ops
           break
@@ -150,26 +115,19 @@ function applyOverlays(baseScript, overlays = []) {
 }
 
 // ---------- Local (code) restriction overlays ------------------------------
-// Map restriction tokens -> lazy overlay loader. Overlays are optional.
-// If a file is missing, we silently skip it.
 const RESTRICTION_OVERLAY_LOADERS = {
-  // E: Automatic transmission only — remove clutch callouts, tweak safe start copy
   E: async () => {
     try {
       const mod = await import('../overlays/restrictions/automatic.js')
       return mod.default || null
     } catch { return null }
   },
-
-  // L/Z: No full air brakes — remove air-line/glad-hands + air-brake check; (optionally append hydraulic check)
   LZ: async () => {
     try {
       const mod = await import('../overlays/restrictions/no-air.js')
       return mod.default || null
     } catch { return null }
   },
-
-  // O: No tractor-trailer CMV — swap fifth-wheel coupling with pintle/gooseneck steps
   O: async () => {
     try {
       const mod = await import('../overlays/restrictions/no-fifth-wheel.js')
@@ -178,7 +136,6 @@ const RESTRICTION_OVERLAY_LOADERS = {
   },
 }
 
-// Deterministic application order so results are stable
 const RESTRICTION_ORDER = ['E', 'LZ', 'O']
 
 async function loadRestrictionOverlays(restrictions = []) {
@@ -205,7 +162,6 @@ async function loadSchoolOverlay(schoolId, token) {
     const snap = await getDoc(ref)
     if (!snap.exists()) return null
     const data = snap.data()
-    // expect { rules: [...] }
     if (data && Array.isArray(data.rules)) {
       return { id: `school:${schoolId}:${token}`, rules: data.rules }
     }
@@ -218,6 +174,12 @@ async function loadSchoolOverlay(schoolId, token) {
 // ============================================================================
 // Main resolver
 // ============================================================================
+
+/**
+ * @param {string|{classType:string, schoolId?:string, preferCustom?:boolean, softFail?:boolean, restrictions?:string[], toast?:(msg:string,type?:"info"|"success"|"error"|"warning")=>void}} arg1
+ * @param {string=} arg2 schoolId if using positional form
+ * @returns {Promise<any>}
+ */
 export async function resolveWalkthrough(arg1, arg2) {
   // Normalize args (back-compat)
   const opts =
@@ -225,10 +187,10 @@ export async function resolveWalkthrough(arg1, arg2) {
       ? { preferCustom: true, softFail: false, restrictions: [], ...arg1 }
       : { classType: arg1, schoolId: arg2, preferCustom: true, softFail: false, restrictions: [] }
 
-  const { classType, schoolId, preferCustom, softFail, restrictions = [] } = opts
+  const { classType, schoolId, preferCustom, softFail, restrictions = [], toast } = opts
 
   if (!classType) {
-    if (__DEV__) console.warn('[resolveWalkthrough] Missing classType')
+    if (import.meta.env.DEV) console.warn('[resolveWalkthrough] Missing classType')
     return typeof arg1 === 'object' ? { script: null, sourceHint: 'error' } : null
   }
 
@@ -243,21 +205,23 @@ export async function resolveWalkthrough(arg1, arg2) {
       if (snap.exists()) {
         const script = coerceToScript(snap.data())
         if (script && script.length) {
-          if (__DEV__) console.warn(`[resolveWalkthrough] Loaded custom walkthrough for ${token} (school ${schoolId})`)
-          // Even if a full custom exists, we still allow *restriction* overlays if desired.
+          if (import.meta.env.DEV) console.warn(`[resolveWalkthrough] Loaded custom walkthrough for ${token} (school ${schoolId})`)
           const restrOverlays = await loadRestrictionOverlays(restrictions)
           const finalScript = restrOverlays.length ? applyOverlays(script, restrOverlays) : script
           const resObj = { script: finalScript, isCustom: true, sourceHint: `school:${schoolId}`, applied: restrOverlays.map(o => o.id) }
           return typeof arg1 === 'object' ? resObj : finalScript
         }
-        if (__DEV__) console.warn(`[resolveWalkthrough] Custom walkthrough for ${token} exists but is empty/malformed`)
-      } else if (__DEV__) {
+        if (import.meta.env.DEV) console.warn(`[resolveWalkthrough] Custom walkthrough for ${token} exists but is empty/malformed`)
+      } else if (import.meta.env.DEV) {
         console.warn(`[resolveWalkthrough] No custom walkthrough found for ${token} at school ${schoolId}`)
       }
-    } catch (err) {
-      if (__DEV__) console.error('[resolveWalkthrough] Error fetching custom walkthrough:', err)
-      try { showToast?.('Failed to load custom walkthrough. Using default.', 'warning') } catch {}
-      // continue to defaults unless softFail says otherwise
+    } catch {
+      try {
+        // Use optional callback provided by caller (React layer)
+        toast?.('Failed to load custom walkthrough. Using default.', 'warning')
+      } catch (toastErr) {
+        if (import.meta.env.DEV) console.warn('[resolveWalkthrough] Failed to show toast for custom walkthrough error', toastErr)
+      }
       if (softFail) {
         return typeof arg1 === 'object' ? { script: null, sourceHint: 'custom-error' } : null
       }
@@ -265,14 +229,13 @@ export async function resolveWalkthrough(arg1, arg2) {
   }
 
   // 2) Base default
-  const base =
-    getWalkthroughByClass(token)  // accepts code or token; returns script
-    || DEFAULT_WALKTHROUGHS[token]
-    || null
-
+  const base = getWalkthroughByClass?.(token) || DEFAULT_WALKTHROUGHS?.[token] || null
   if (!base) {
-    if (__DEV__) console.error(`[resolveWalkthrough] No walkthrough found for "${token}"`)
-    try { showToast?.(`Walkthrough for ${classType} not available.`, 'error') } catch {}
+    try {
+      toast?.(`Walkthrough for ${classType} not available.`, 'error')
+    } catch (toastErr) {
+      if (import.meta.env.DEV) console.warn('[resolveWalkthrough] Failed to show toast for missing walkthrough', toastErr)
+    }
     return typeof arg1 === 'object' ? { script: null, sourceHint: 'not-found' } : null
   }
 

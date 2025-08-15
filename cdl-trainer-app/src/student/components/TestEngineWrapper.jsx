@@ -23,7 +23,7 @@ class TestEngineBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
+       
       console.error('[TestEngineWrapper] render error:', error, info)
     }
   }

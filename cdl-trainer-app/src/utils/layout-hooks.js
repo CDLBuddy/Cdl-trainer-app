@@ -10,6 +10,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+
 import {
   subscribeBrandingUpdated,
   getCachedBrandingSummary,
@@ -60,7 +61,9 @@ export function setRootCssVar(name, value) {
   if (typeof document === 'undefined') return
   try {
     document.documentElement.style.setProperty(name, value ?? '')
-  } catch {}
+  } catch {
+    // Intentionally ignore errors when setting CSS variable
+  }
 }
 
 /**

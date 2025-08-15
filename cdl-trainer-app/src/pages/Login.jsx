@@ -8,11 +8,12 @@ import {
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { auth } from '@/utils/firebase.js' // Adjust import as needed!
 import {
   getCurrentSchoolBranding,
   setCurrentSchool,
 } from '@utils/school-branding.js'
+
+import { auth } from '@/utils/firebase.js' // Adjust import as needed!
 
 import '@components/Shell.module.css' // Optional: import your CSS
 

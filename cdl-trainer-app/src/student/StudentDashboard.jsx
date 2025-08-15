@@ -3,9 +3,11 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
-import { getLatestUpdate } from '@/utils/firebase.js'
-import { useSession } from '@session/useSession.js'
 import { StudentRoutes } from '@navigation/navigation.js'
+import { useSession } from '@session/useSession.js'
+
+import { getLatestUpdate } from '@/utils/firebase.js'
+
 
 import styles from './StudentDashboard.module.css'
 

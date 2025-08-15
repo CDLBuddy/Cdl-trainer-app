@@ -45,7 +45,7 @@ function assertPathPrefix(item, role) {
   if (import.meta?.env?.DEV) {
     const ok = roleFromPath(item.to) === role || item.to === '/'
     if (!ok) {
-      // eslint-disable-next-line no-console
+       
       console.warn(`[navConfig] "${item.label}" path "${item.to}" is not under "/${role}".`)
     }
   }

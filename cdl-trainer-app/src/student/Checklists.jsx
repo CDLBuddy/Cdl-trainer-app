@@ -7,12 +7,12 @@
 // - A11y: roles, aria-expanded, aria-live, keyboard toggle
 // ======================================================================
 
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { collection, getDocs, query, where } from 'firebase/firestore'
 
-import { db, auth } from '@utils/firebase.js'
 import { useToast } from '@components/ToastContext.js'
+import { db, auth } from '@utils/firebase.js'
 
 // Template describing sections/items we compute statuses for
 const studentChecklistSectionsTemplate = [
@@ -132,7 +132,9 @@ export default function StudentChecklists() {
         if (!snap.empty) {
           profile = snap.docs[0].data()
           userRole = String(profile.role || 'student').toLowerCase()
-          try { localStorage.setItem('userRole', userRole) } catch {}
+          try { localStorage.setItem('userRole', userRole) } catch {
+            // Ignore errors from localStorage (e.g., quota exceeded)
+          }
         }
       } catch {
         // non-fatal

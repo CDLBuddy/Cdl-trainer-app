@@ -2,6 +2,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useToast } from '@utils/ui-helpers.js'
+
 import {
   getCurrentUserEmail,
   getCurrentUserRole,
@@ -13,7 +15,6 @@ import {
   getCurrentSchoolId,
   applyBrandingForSchool, // NEW
 } from '@/utils/schoolSwitching.js'
-import { useToast } from '@utils/ui-helpers.js'
 
 export default function SchoolSwitch() {
   const navigate = useNavigate()

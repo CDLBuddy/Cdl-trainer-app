@@ -6,13 +6,12 @@
 // - Guarded access + progress bar
 // ============================================================================
 
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/ToastContext.js'
-
 import { auth, storage } from '@utils/firebase.js'
 import {
   markStudentProfileComplete,
@@ -24,10 +23,10 @@ import {
   updateUserProfileFields,
   calculateProfileCompletion,
 } from '@utils/userProfile.js'
+
 import { getWalkthroughLabel } from '@walkthrough-data'
 
 import styles from './Profile.module.css'
-
 // Sections via barrel
 import {
   BasicInfoSection,
@@ -158,7 +157,7 @@ export default function Profile() {
           checklistFn(email).catch(() => {})
         }
       } catch (e) {
-        // eslint-disable-next-line no-console
+         
         console.error(e)
         showToast(`Failed to upload ${field}.`, 'error')
       }
@@ -193,7 +192,7 @@ export default function Profile() {
           dirtyRef.current = false
         }
       } catch (e) {
-        // eslint-disable-next-line no-console
+         
         console.error(e)
         showToast('Auto-save failed. Check your connection.', 'error')
       } finally {

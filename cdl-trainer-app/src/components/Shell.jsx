@@ -24,12 +24,13 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import AICoachModal from '@components/AICoachModal.jsx'
 import { ToastContext } from '@components/ToastContext.js'
 import { getTopNavForRole, getDashboardRoute } from '@navigation/navConfig.js'
-import { preloadRoutesForRole } from '@/utils/route-preload.js'
 import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,
 } from '@utils/school-branding.js'
 import { registerToastHandler } from '@utils/ui-helpers.js'
+
+import { preloadRoutesForRole } from '@/utils/route-preload.js'
 
 import { useSession } from '../session/useSession.js'
 

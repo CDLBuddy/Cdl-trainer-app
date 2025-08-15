@@ -34,7 +34,7 @@ export function parseMarkdownToWalkthrough(md, meta = {}) {
   const sections = [];
   let cur = null;
 
-  for (let raw of lines) {
+  for (const raw of lines) {
     const line = raw.trim();
     if (!line) continue;
 
@@ -71,7 +71,7 @@ export function parseMarkdownToWalkthrough(md, meta = {}) {
 /* Parsers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-const FLAG_RE = /\[([a-z\/\-]+)\]/gi;
+const FLAG_RE = /\[([a-z/-]+)\]/gi;
 
 function parseHeading(line) {
   // ## Title [critical] [passfail]
@@ -89,7 +89,7 @@ function parseHeading(line) {
 
 function parseBullet(line) {
   // - **Label:** Script [must] [required] ...
-  if (!/^\-|\*/.test(line[0])) return null;
+  if (!/^[-*]/.test(line[0])) return null;
 
   let text = line.replace(/^[-*]\s+/, '');
 

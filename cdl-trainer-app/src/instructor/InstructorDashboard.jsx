@@ -10,9 +10,10 @@ import React, {
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@/components/ToastContext.js'
 import { db, auth } from '@utils/firebase.js'
 import { getNextChecklistAlert } from '@utils/ui-helpers.js'
+
+import { useToast } from '@/components/ToastContext.js'
 
 import styles from './InstructorDashboard.module.css'
 
@@ -141,7 +142,7 @@ export default function InstructorDashboard() {
           }
         })
       } catch (err) {
-        // eslint-disable-next-line no-console
+         
         console.error('Assigned students fetch error:', err)
         showToast('Error fetching assigned students.', 'error')
       }
@@ -181,7 +182,7 @@ export default function InstructorDashboard() {
           })
         )
       } catch (err) {
-        // eslint-disable-next-line no-console
+         
         console.error('Latest test results error:', err)
         showToast('Error fetching test results.', 'error')
       }

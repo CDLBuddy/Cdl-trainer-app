@@ -6,12 +6,12 @@
 // - A11y on progress + buttons, defensive timestamp/math
 // ======================================================================
 
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { collection, getDocs, query, where } from 'firebase/firestore'
 
-import { db, auth } from '@utils/firebase.js'
 import { useToast } from '@components/ToastContext.js'
+import { db, auth } from '@utils/firebase.js'
 
 // TODO: later move this to Firestore/config
 const TESTS = ['General Knowledge', 'Air Brakes', 'Combination Vehicles']
@@ -80,7 +80,7 @@ export default function PracticeTests() {
         if (!cancelled) setTestScores(next)
       } catch (e) {
         if (!cancelled) {
-          // eslint-disable-next-line no-console
+           
           console.error('Error loading test results:', e)
           showToast('Could not load your test results.', 'error')
         }

@@ -17,21 +17,17 @@ import { RouterProvider } from 'react-router-dom'
 import './styles/index.css'
 
 // Providers
+import SplashScreen from '@components/SplashScreen.jsx'
 import { ToastProvider } from '@components/ToastContext.js'
-import { SessionProvider, syncSessionDebug } from '@session'
+import { syncSessionDebug } from '@session/useSession'
 import { useAuthStatus } from '@utils/auth.js'
+import { warmRoutesOnSession } from '@utils/route-preload.js'
+import { getCurrentSchoolBranding } from '@utils/school-branding.js'
+
+import { SessionProvider } from '@session'
 
 // Router
 import { router } from './router.js'
-
-// Fallback UI for router-level suspend/errors during boot
-import SplashScreen from '@components/SplashScreen.jsx'
-
-// Branding preload (sets CSS vars + theme-color)
-import { getCurrentSchoolBranding } from '@utils/school-branding.js'
-
-// Route preloading (idle + network aware)
-import { warmRoutesOnSession } from '@utils/route-preload.js'
 
 // ---- Bootstrap (Vite supports top-level await) -------------------------
 await (async () => {
@@ -53,7 +49,8 @@ await (async () => {
 })()
 
 // ---- Session bridge: compute once, provide everywhere -------------------
-function SessionRoot({ children }) {
+// Exporting makes React Refresh happy without moving them to separate files.
+export function SessionRoot({ children }) {
   const auth = useAuthStatus() // { loading, isLoggedIn, role, user }
 
   const value = React.useMemo(
@@ -71,13 +68,13 @@ function SessionRoot({ children }) {
   // Warm public pages immediately (idle) and role routers once known
   React.useEffect(() => {
     warmRoutesOnSession(value)
-  }, [value.loading, value.isLoggedIn, value.role])
+  }, [value])
 
   return <SessionProvider value={value}>{children}</SessionProvider>
 }
 
 // ---- Optional: tiny top-level error boundary ----------------------------
-class ErrorBoundary extends React.Component {
+export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)
     this.state = { err: null }
@@ -86,7 +83,6 @@ class ErrorBoundary extends React.Component {
     return { err }
   }
   componentDidCatch(error, info) {
-    // eslint-disable-next-line no-console
     console.error('Uncaught app error:', error, info)
   }
   render() {

@@ -7,13 +7,13 @@
 // - Optional router preload hook (warms role router bundle)
 // ======================================================================
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
 import { onAuthStateChanged, getIdTokenResult } from 'firebase/auth'
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
 
-import { auth, db } from '@utils/firebase.js'
 import SplashScreen from '@components/SplashScreen.jsx'
+import { auth, db } from '@utils/firebase.js'
 import { preloadRoutesForRole } from '@utils/route-preload.js'
 
 // --------------------------- Config -----------------------------------
@@ -117,7 +117,7 @@ export function useUserRole(options = {}) {
 
 /**
  * RequireRole
- * - role: string | string[] | (role) => boolean
+ * - requiredRole (preferred) | role (legacy): string | string[] | (role) => boolean
  * - redirectTo: path for unauthenticated users
  * - fallback: ReactNode while checking
  * - onDeny: ReactNode when authed but not authorized
@@ -125,7 +125,8 @@ export function useUserRole(options = {}) {
  * - sources: override role resolution order
  */
 export function RequireRole({
-  role,
+  requiredRole,
+  role: legacyRole,
   children,
   redirectTo = '/login',
   fallback = <DefaultLoader text="Checking permissions…" />,
@@ -147,12 +148,15 @@ export function RequireRole({
     },
   })
 
+  // Prefer the new prop; fall back to the legacy prop name
+  const required = requiredRole ?? legacyRole
+
   const allowed = useMemo(() => {
-    if (!role) return true // only requires sign-in
-    if (typeof role === 'function') return !!role(currentRole)
-    if (Array.isArray(role)) return role.map(normalizeRole).includes(currentRole)
-    return normalizeRole(role) === currentRole
-  }, [role, currentRole])
+    if (!required) return true // only requires sign-in
+    if (typeof required === 'function') return !!required(currentRole)
+    if (Array.isArray(required)) return required.map(normalizeRole).includes(currentRole)
+    return normalizeRole(required) === currentRole
+  }, [required, currentRole])
 
   // Not signed in → send to login, preserve "from"
   if (!loading && !user) {
