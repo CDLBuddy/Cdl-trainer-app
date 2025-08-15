@@ -1,3 +1,4 @@
+// vite.config.js
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
@@ -7,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const r = p => path.resolve(__dirname, p)
 
-// Optional bundle analyzer: run with VISUALIZE=1 vite build
+// Optional bundle analyzer: run with VISUALIZE=1 (or VITE_VISUALIZE=1) vite build
 async function maybeVisualizer(enabled) {
   if (!enabled) return null
   const { visualizer } = await import('rollup-plugin-visualizer')
@@ -20,15 +21,29 @@ async function maybeVisualizer(enabled) {
   })
 }
 
+// Optional: vite-plugin-inspect — run with INSPECT=1 (or VITE_INSPECT=1) vite dev
+async function maybeInspect(enabled) {
+  if (!enabled) return null
+  const Inspect = (await import('vite-plugin-inspect')).default
+  return Inspect()
+}
+
 export default defineConfig(async ({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-  const isProd = mode === 'production'
-  const analyze = !!env.VISUALIZE
+  // Load both VITE_* and bare envs so your existing VISUALIZE keeps working
+  const envVite = loadEnv(mode, process.cwd(), 'VITE_')
+  const envAll  = loadEnv(mode, process.cwd(), '') // includes non-VITE_ (e.g., VISUALIZE)
+
+  const isProd   = mode === 'production'
+  const analyze  = (envVite.VITE_VISUALIZE ?? envAll.VISUALIZE) ? true : false
+  const inspect  = (envVite.VITE_INSPECT ?? envAll.INSPECT) ? true : false
+
   const visualizerPlugin = await maybeVisualizer(analyze)
+  const inspectPlugin    = await maybeInspect(inspect)
 
   return {
     plugins: [
       react(),
+      ...(inspectPlugin ? [inspectPlugin] : []),
       ...(visualizerPlugin ? [visualizerPlugin] : []),
     ],
 
@@ -52,10 +67,8 @@ export default defineConfig(async ({ mode }) => {
         '@walkthrough-defaults': r('src/walkthrough-data/defaults'),
         '@walkthrough-loaders': r('src/walkthrough-data/loaders'),
         '@walkthrough-utils': r('src/walkthrough-data/utils'),
-
-        // Optional: overlays (folder alias)
         '@walkthrough-overlays': r('src/walkthrough-data/overlays'),
-        // Restriction overlay single-file aliases (nice DX for imports)
+        // Restriction single-file aliases
         '@walkthrough-restriction-automatic': r('src/walkthrough-data/overlays/restrictions/automatic.js'),
         '@walkthrough-restriction-no-air': r('src/walkthrough-data/overlays/restrictions/no-air.js'),
         '@walkthrough-restriction-no-fifth-wheel': r('src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'),
@@ -76,9 +89,10 @@ export default defineConfig(async ({ mode }) => {
     },
 
     server: {
+      host: true,       // allow LAN access (useful for device testing)
       port: 5173,
+      strictPort: true, // fail fast if port is taken
       open: true,
-      // strictPort: true,
       // headers: { 'Cache-Control': 'no-store' },
     },
 
@@ -99,6 +113,9 @@ export default defineConfig(async ({ mode }) => {
         'firebase/storage',
       ],
       // exclude: ['firebase'],
+      esbuildOptions: {
+        target: 'es2020',
+      },
     },
 
     build: {
@@ -124,10 +141,9 @@ export default defineConfig(async ({ mode }) => {
     },
 
     define: {
-      __DEV__: !isProd, // used in your loaders/guards
+      __DEV__: !isProd, // keep for back-compat while you finish migrating to import.meta.env.DEV
     },
 
-    // Optional: quiet down noisy optimize warnings in dev
     // logLevel: 'info',
   }
 })

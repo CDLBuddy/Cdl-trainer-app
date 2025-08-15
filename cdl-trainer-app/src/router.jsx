@@ -1,4 +1,4 @@
-// src/router.js
+// src/router.jsx
 // ======================================================================
 // Central route table (React Router Data Router)
 // - AppLayout wraps all routes
@@ -8,13 +8,14 @@
 // ======================================================================
 
 import React from 'react'
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
 
 import SplashScreen from '@components/SplashScreen.jsx'
-import { getDashboardRoute } from '@navigation/navigation.js'
 import { RequireRole } from '@utils/RequireRole.jsx'
 
 import AppLayout from './App.jsx'
+// Helpers moved out to keep this file export-only (no local components)
+import { RequireNotLoggedIn, RootRedirect } from './router-helpers.jsx'
 
 // ---- Lazy pages (code-split) -------------------------------------------
 const Welcome  = React.lazy(() => import('@pages/Welcome.jsx'))
@@ -27,34 +28,6 @@ const StudentRouter    = React.lazy(() => import('@student/StudentRouter.jsx'))
 const InstructorRouter = React.lazy(() => import('@instructor/InstructorRouter.jsx'))
 const AdminRouter      = React.lazy(() => import('@admin/AdminRouter.jsx'))
 const SuperadminRouter = React.lazy(() => import('@superadmin/SuperadminRouter.jsx'))
-
-/* =========================
-   Public-guard helper
-   ========================= */
-function RequireNotLoggedIn({ children }) {
-  const role =
-    (typeof localStorage !== 'undefined' && localStorage.getItem('userRole')) ||
-    (typeof window !== 'undefined' && window.currentUserRole) ||
-    null
-
-  // If we *know* the user has a role, bounce them to their dashboard.
-  return role ? <Navigate to={getDashboardRoute(role)} replace /> : children
-}
-
-/* =========================
-   Role-aware root redirect
-   ========================= */
-function RootRedirect() {
-  try {
-    const role =
-      (typeof localStorage !== 'undefined' && localStorage.getItem('userRole')) ||
-      (typeof window !== 'undefined' && window.currentUserRole) ||
-      null
-    return role ? <Navigate to={getDashboardRoute(role)} replace /> : <Navigate to="/login" replace />
-  } catch {
-    return <Navigate to="/login" replace />
-  }
-}
 
 /* =========================
    Router (Data Router API)
@@ -143,11 +116,8 @@ export const router = createBrowserRouter([
       // ---------- 404 ----------
       { path: '/404', element: <NotFound /> },
       { path: '*', element: <NotFound /> },
-      // If you prefer a role-aware catch-all instead, replace the line above with:
-      // { path: '*', element: <RootRedirect /> },
     ],
   },
 ])
 
-// (Optional) export the route records for tests/tools
 export default router

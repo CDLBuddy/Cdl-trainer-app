@@ -27,7 +27,7 @@ import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 import { SessionProvider } from '@session'
 
 // Router
-import { router } from './router.js'
+import { router } from './router.jsx'
 
 // ---- Bootstrap (Vite supports top-level await) -------------------------
 await (async () => {
