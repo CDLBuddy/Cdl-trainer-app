@@ -1,56 +1,82 @@
 // ======================================================================
-// Instructor — preload utilities (pure; no JSX)
-// - Preload core instructor screens on demand / hover / idle
-// - Safe in SSR and in dev (Fast Refresh friendly)
-// - Small helpers you can call from routers/nav
+// Instructor — route preloader (pure; no JSX)
+// - Standard API for global preloader:
+//     * preloadAboveTheFold()  → light, high-use screens
+//     * preloadAll()           → everything in Instructor area
+//     * preloadRoute(key)      → targeted warm by key
+// - Also keeps your convenience helpers (idle/soon/hover)
+// - Safe in SSR and dev (Fast Refresh friendly)
 // ======================================================================
 
-/** Respect users with reduced-motion preferences (skip aggressive preloads). */
+// Small one-shot guard so we don't import the same chunk repeatedly
+const _onceKeys = new Set()
+async function _once(key, loader) {
+  if (_onceKeys.has(key)) return
+  _onceKeys.add(key)
+  try { await loader() } catch { /* non-fatal */ }
+}
+
+// Respect reduced-motion users (be polite with aggressive preloads)
 function prefersReducedMotion() {
-  try {
-    return !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
-  } catch {
-    return false
-  }
+  try { return !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches } catch { return false }
+}
+export const isReducedMotion = prefersReducedMotion
+
+// ---- Lazy entries (use aliases to mirror eslint/vite config) -------------
+const _entries = {
+  dashboard: () => import('@instructor/InstructorDashboard.jsx'),
+  profile:   () => import('@instructor/InstructorProfile.jsx'),
+  review:    () => import('@instructor/ChecklistReviewForInstructor.jsx'),
+  student:   () => import('@instructor/StudentProfileForInstructor.jsx'),
+  // add new screens here as you create them, e.g.:
+  // attendance: () => import('@instructor/Attendance.jsx'),
 }
 
-/** List of lazy chunks to warm for the Instructor area. */
-function getInstructorEntries() {
-  return [
-    () => import('./InstructorDashboard.jsx'),
-    () => import('./InstructorProfile.jsx'),
-    () => import('./StudentProfileForInstructor.jsx'),
-    () => import('./ChecklistReviewForInstructor.jsx'),
-    // (Optional future screens — leave commented until they exist)
-    // () => import('./components/SomePopover.jsx'),
-  ]
-}
-
-/**
- * Preload the core Instructor routes right away.
- * Returns a promise that always resolves (errors are swallowed).
- */
-export async function preloadInstructorCore() {
+// ---- Public API: above-the-fold (light set) -------------------------------
+export async function preloadAboveTheFold() {
   if (typeof window === 'undefined') return
-  const entries = getInstructorEntries()
-  await Promise.allSettled(entries.map((fn) => {
-    try { return fn() } catch { return Promise.resolve() }
-  }))
+  await Promise.allSettled([
+    _once('instructor:dashboard', _entries.dashboard),
+    _once('instructor:profile',   _entries.profile),
+    _once('instructor:review',    _entries.review),
+  ])
 }
-export default preloadInstructorCore
 
+// ---- Public API: full warm (everything instructor) -----------------------
+export async function preloadAll() {
+  if (typeof window === 'undefined') return
+  await Promise.allSettled(Object.entries(_entries).map(([key, loader]) =>
+    _once(`instructor:${key}`, loader)
+  ))
+}
+
+// ---- Public API: targeted warm by logical key ----------------------------
 /**
- * Schedule a gentle idle warm-up of the Instructor area.
- * Returns a cleanup function to cancel the scheduled work.
+ * @param { 'dashboard'|'profile'|'review'|'student' | string } name
  */
-export function warmInstructorOnIdle(timeout = 2000) {
-  if (typeof window === 'undefined') return () => {}
-  if (prefersReducedMotion()) return () => {}
+export async function preloadRoute(name) {
+  if (typeof window === 'undefined') return
+  const key = String(name)
+  const loader = _entries[key]
+  if (loader) await _once(`instructor:${key}`, loader)
+}
 
-  const run = () => { preloadInstructorCore().catch(() => {}) }
+// ---- Back-compat aliases (matches your previous exports) -----------------
+export const preloadInstructorCore = preloadAboveTheFold
+export default preloadAboveTheFold
+
+// ======================================================================
+// Convenience helpers (hover/idle/soon) — unchanged behavior
+// ======================================================================
+
+/** Schedule a gentle idle warm-up of the Instructor area. */
+export function warmInstructorOnIdle(timeout = 2000) {
+  if (typeof window === 'undefined' || prefersReducedMotion()) return () => {}
+
+  const run = () => { preloadAboveTheFold().catch(() => {}) }
 
   if ('requestIdleCallback' in window) {
-    // @ts-ignore - not in TS lib by default
+    // @ts-ignore: not in standard lib
     const id = window.requestIdleCallback(run, { timeout })
     return () => window.cancelIdleCallback?.(id)
   }
@@ -58,14 +84,10 @@ export function warmInstructorOnIdle(timeout = 2000) {
   return () => clearTimeout(t)
 }
 
-/**
- * Kick preloading soon (after a small delay). Useful right after login
- * or when you land on a role-neutral screen.
- */
+/** Kick preloading soon (after a short delay). Useful post-login. */
 export function warmInstructorSoon(delay = 300) {
-  if (typeof window === 'undefined') return () => {}
-  if (prefersReducedMotion()) return () => {}
-  const t = setTimeout(() => { preloadInstructorCore().catch(() => {}) }, delay)
+  if (typeof window === 'undefined' || prefersReducedMotion()) return () => {}
+  const t = setTimeout(() => { preloadAboveTheFold().catch(() => {}) }, delay)
   return () => clearTimeout(t)
 }
 
@@ -86,7 +108,7 @@ export function preloadInstructorOnHover(elOrSelector) {
   if (!el || typeof el.addEventListener !== 'function') return () => {}
 
   const handler = () => {
-    preloadInstructorCore().catch(() => {})
+    preloadAboveTheFold().catch(() => {})
     cleanup()
   }
 
@@ -102,6 +124,3 @@ export function preloadInstructorOnHover(elOrSelector) {
 
   return cleanup
 }
-
-/** Handy export if you need to branch in UI code. */
-export const isReducedMotion = prefersReducedMotion

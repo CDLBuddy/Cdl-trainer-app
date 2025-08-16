@@ -2,10 +2,18 @@
 // =============================================================================
 // CDL Class B — Full Pre-Trip Walkthrough
 // Browning Mountain Training (default profile)
-// Schema: export default { id, classCode, label, version, source, sections[] }
-// - Section: { section, critical?, passFail?, steps[] }
-// - Step:    { label?, script, mustSay?, required?, passFail?, skip? }
 // =============================================================================
+
+/** Belt-and-suspenders immutability */
+function deepFreeze(o) {
+  if (!o || typeof o !== 'object' || Object.isFrozen(o)) return o
+  Object.freeze(o)
+  for (const k of Object.keys(o)) {
+    const v = o[k]
+    if (v && typeof v === 'object' && !Object.isFrozen(v)) deepFreeze(v)
+  }
+  return o
+}
 
 const walkthroughClassB = {
   id: 'walkthrough-class-b',
@@ -78,7 +86,7 @@ const walkthroughClassB = {
         },
         {
           label: 'Spring Mounts & U-Bolts',
-          script: 'Spring mounts and U-bolts are not cracked or broken.',
+          script: 'Spring mounts and U-Bolts are not cracked or broken.',
         },
       ],
     },
@@ -88,8 +96,8 @@ const walkthroughClassB = {
       section: 'Front Brakes',
       critical: true,
       steps: [
-        { label: 'Brake Hoses/Lines', script: 'Inspect for leaks, cracks, or wear.' },
-        { label: 'Brake Chamber', script: 'Chamber securely mounted and not leaking.' },
+        { label: 'Brake Hoses/Lines', script: 'Inspect for leaks, cracks, or wear.', tags: ['air-brake'] },
+        { label: 'Brake Chamber', script: 'Chamber securely mounted and not leaking.', tags: ['air-brake'] },
         {
           label: 'Slack Adjuster/Pushrod',
           script:
@@ -97,10 +105,12 @@ const walkthroughClassB = {
           mustSay: true,
           required: true,
           passFail: true,
+          tags: ['air-brake'],
         },
         {
           label: 'Drum/Linings',
           script: 'Drum and linings have no cracks, excessive wear, or dangerously thin linings.',
+          tags: ['air-brake'],
         },
       ],
     },
@@ -142,7 +152,7 @@ const walkthroughClassB = {
       steps: [
         { label: 'Springs/Shocks', script: 'Springs and shocks not missing, broken, or leaking. Mounts secure.' },
         { label: 'Torque Arm', script: 'Torque arm not cracked or broken; securely mounted.' },
-        { label: 'Air Bags (if equipped)', script: 'Air bags not leaking, mounted securely, not damaged.' },
+        { label: 'Air Bags (if equipped)', script: 'Air bags not leaking, mounted securely, not damaged.', tags: ['air-brake'] },
       ],
     },
 
@@ -151,8 +161,8 @@ const walkthroughClassB = {
       section: 'Rear Brakes',
       critical: true,
       steps: [
-        { label: 'Brake Hoses/Lines', script: 'Inspect for leaks, cracks, or wear.' },
-        { label: 'Brake Chamber', script: 'Chamber securely mounted and not leaking.' },
+        { label: 'Brake Hoses/Lines', script: 'Inspect for leaks, cracks, or wear.', tags: ['air-brake'] },
+        { label: 'Brake Chamber', script: 'Chamber securely mounted and not leaking.', tags: ['air-brake'] },
         {
           label: 'Slack Adjuster/Pushrod',
           script:
@@ -160,8 +170,9 @@ const walkthroughClassB = {
           mustSay: true,
           required: true,
           passFail: true,
+          tags: ['air-brake'],
         },
-        { label: 'Drum/Linings', script: 'Drum and linings have no cracks, excessive wear, or dangerously thin linings.' },
+        { label: 'Drum/Linings', script: 'Drum and linings have no cracks, excessive wear, or dangerously thin linings.', tags: ['air-brake'] },
       ],
     },
 
@@ -248,10 +259,13 @@ const walkthroughClassB = {
           mustSay: true,
           required: true,
           passFail: true,
+          tags: ['air-brake'],
         },
       ],
     },
   ],
 }
+
+deepFreeze(walkthroughClassB)
 
 export default walkthroughClassB

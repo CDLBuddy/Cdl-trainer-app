@@ -2,10 +2,18 @@
 // =============================================================================
 // CDL Passenger Bus — Full Pre-Trip Walkthrough (Default)
 // Browning Mountain Training (baseline profile)
-// Schema: export default { id, classCode, label, version, source, sections[] }
-// - Section: { section, critical?, passFail?, steps[] }
-// - Step:    { label?, script, mustSay?, required?, passFail?, skip? }
 // =============================================================================
+
+/** Belt-and-suspenders immutability */
+function deepFreeze(o) {
+  if (!o || typeof o !== 'object' || Object.isFrozen(o)) return o
+  Object.freeze(o)
+  for (const k of Object.keys(o)) {
+    const v = o[k]
+    if (v && typeof v === 'object' && !Object.isFrozen(v)) deepFreeze(v)
+  }
+  return o
+}
 
 const walkthroughPassengerBus = {
   id: 'walkthrough-passenger-bus',
@@ -46,10 +54,7 @@ const walkthroughPassengerBus = {
           script: 'Look for leaks/puddles under the engine and inspect all hoses for leaks, cracks, or wear.',
           mustSay: true,
         },
-        {
-          label: 'Belts',
-          script: 'Inspect belts for proper tension; no cracks, frays, or glazing.',
-        },
+        { label: 'Belts', script: 'Inspect belts for proper tension; no cracks, frays, or glazing.' },
       ],
     },
 
@@ -57,14 +62,8 @@ const walkthroughPassengerBus = {
     {
       section: 'Steering System',
       steps: [
-        {
-          label: 'Steering Box & Hoses',
-          script: 'Steering box securely mounted, not leaking; hoses intact with no leaks.',
-        },
-        {
-          label: 'Steering Linkage',
-          script: 'No worn, cracked, or loose linkage components; joints and sockets tight.',
-        },
+        { label: 'Steering Box & Hoses', script: 'Steering box securely mounted, not leaking; hoses intact with no leaks.' },
+        { label: 'Steering Linkage', script: 'No worn, cracked, or loose linkage components; joints and sockets tight.' },
       ],
     },
 
@@ -72,14 +71,8 @@ const walkthroughPassengerBus = {
     {
       section: 'Front Suspension',
       steps: [
-        {
-          label: 'Springs/Shocks',
-          script: 'Springs and shocks not missing, broken, or leaking; mounts secure.',
-        },
-        {
-          label: 'Spring Mounts & U-Bolts',
-          script: 'Spring mounts and U-bolts not cracked or broken; hardware present.',
-        },
+        { label: 'Springs/Shocks', script: 'Springs and shocks not missing, broken, or leaking; mounts secure.' },
+        { label: 'Spring Mounts & U-Bolts', script: 'Spring mounts and U-bolts not cracked or broken; hardware present.' },
       ],
     },
 
@@ -88,16 +81,17 @@ const walkthroughPassengerBus = {
       section: 'Front Brakes',
       critical: true,
       steps: [
-        { label: 'Brake Hoses/Lines', script: 'Inspect for leaks, cracks, or wear.' },
-        { label: 'Brake Chamber', script: 'Chamber securely mounted and not leaking.' },
+        { label: 'Brake Hoses/Lines', script: 'Inspect for leaks, cracks, or wear.', tags: ['air-brake'] },
+        { label: 'Brake Chamber', script: 'Chamber securely mounted and not leaking.', tags: ['air-brake'] },
         {
           label: 'Slack Adjuster/Pushrod',
           script: 'With brakes released, pushrod should not move more than 1 inch by hand.',
           mustSay: true,
           required: true,
           passFail: true,
+          tags: ['air-brake'],
         },
-        { label: 'Drum/Linings', script: 'No cracks, excessive wear, or dangerously thin linings.' },
+        { label: 'Drum/Linings', script: 'No cracks, excessive wear, or dangerously thin linings.', tags: ['air-brake'] },
       ],
     },
 
@@ -148,7 +142,7 @@ const walkthroughPassengerBus = {
       steps: [
         { label: 'Springs/Shocks', script: 'Not missing, broken, or leaking; mounts secure.' },
         { label: 'Torque Arm', script: 'Not cracked, broken, or loose; securely mounted.' },
-        { label: 'Air Bags (if equipped)', script: 'No leaks; properly mounted; bladders undamaged.' },
+        { label: 'Air Bags (if equipped)', script: 'No leaks; properly mounted; bladders undamaged.', tags: ['air-brake'] },
       ],
     },
 
@@ -157,16 +151,17 @@ const walkthroughPassengerBus = {
       section: 'Rear Brakes',
       critical: true,
       steps: [
-        { label: 'Brake Hoses/Lines', script: 'Inspect for leaks, cracks, or wear.' },
-        { label: 'Brake Chamber', script: 'Chamber securely mounted and not leaking.' },
+        { label: 'Brake Hoses/Lines', script: 'Inspect for leaks, cracks, or wear.', tags: ['air-brake'] },
+        { label: 'Brake Chamber', script: 'Chamber securely mounted and not leaking.', tags: ['air-brake'] },
         {
           label: 'Slack Adjuster/Pushrod',
           script: 'With brakes released, pushrod should not move more than 1 inch by hand.',
           mustSay: true,
           required: true,
           passFail: true,
+          tags: ['air-brake'],
         },
-        { label: 'Drum/Linings', script: 'No cracks, excessive wear, or dangerously thin linings.' },
+        { label: 'Drum/Linings', script: 'No cracks, excessive wear, or dangerously thin linings.', tags: ['air-brake'] },
       ],
     },
 
@@ -269,10 +264,13 @@ const walkthroughPassengerBus = {
           mustSay: true,
           required: true,
           passFail: true,
+          tags: ['air-brake'],
         },
       ],
     },
   ],
 }
+
+deepFreeze(walkthroughPassengerBus)
 
 export default walkthroughPassengerBus

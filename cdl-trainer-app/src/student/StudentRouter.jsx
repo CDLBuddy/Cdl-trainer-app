@@ -1,3 +1,4 @@
+// src/student/StudentRouter.jsx
 // ======================================================================
 // Student Router (nested under /student/*)
 // - Lazy-loads student pages and wrappers
@@ -27,7 +28,12 @@ const TestResultsWrapper = lazy(() => import('@student-components/TestResultsWra
 // ---- Local loading UI --------------------------------------------------
 function LoadingScreen({ text = 'Loading student page…' }) {
   return (
-    <div className="loading-container" role="status" aria-live="polite">
+    <div
+      className="loading-container"
+      role="status"
+      aria-live="polite"
+      style={{ textAlign: 'center', marginTop: '4rem' }}
+    >
       <div className="spinner" />
       <p>{text}</p>
     </div>
@@ -45,7 +51,7 @@ class StudentSectionErrorBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-       
+      // eslint-disable-next-line no-console
       console.error('[StudentRouter] render error:', error, info)
     }
   }
@@ -56,7 +62,7 @@ class StudentSectionErrorBoundary extends React.Component {
           className="error-overlay"
           role="alert"
           aria-live="assertive"
-          style={{ padding: '3rem 1rem' }}
+          style={{ padding: '3rem 1rem', textAlign: 'center' }}
         >
           <h2>Student area failed to load</h2>
           <p style={{ color: '#b22' }}>{String(this.state.err)}</p>
@@ -79,9 +85,10 @@ function StudentNotFound() {
 export default function StudentRouter() {
   // Optional: lightly warm common screens once the route mounts.
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
     const prefersReduced =
-      typeof window !== 'undefined' &&
-      window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+      !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
 
     const run = () => {
       if (!prefersReduced) {
@@ -89,8 +96,9 @@ export default function StudentRouter() {
       }
     }
 
+    // Schedule on idle (fallback to short timeout)
     if ('requestIdleCallback' in window) {
-      // @ts-expect-error: not in standard lib for JS
+      // @ts-expect-error: requestIdleCallback is not in default TS lib for JS
       const id = window.requestIdleCallback(run, { timeout: 2000 })
       return () => window.cancelIdleCallback?.(id)
     }

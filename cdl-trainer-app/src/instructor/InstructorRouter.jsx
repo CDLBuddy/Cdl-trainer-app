@@ -1,17 +1,19 @@
+// src/instructor/InstructorRouter.jsx
 // ======================================================================
 // Instructor Router (nested under /instructor/*)
 // - Lazy-loads only the screens you actually have
 // - Local Suspense fallback to keep app chrome responsive
 // - Lightweight error boundary for render safety
+// - Idle, post-mount warm-up of common screens (optional)
 // - Note: Preload helpers live in ./preload.js (not exported here)
 //   to satisfy react-refresh/only-export-components
 // ======================================================================
 
-import React, { Suspense, lazy } from 'react'
+import React, { Suspense, lazy, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 
-// (Optional) If you want to warm chunks from outside (e.g., on idle/hover):
-// import { warmInstructorOnIdle, preloadInstructorCore } from './preload.js'
+// Optional: warm chunks after mount (idle) for perceived snappiness
+import { preloadInstructorCore } from './preload.js'
 
 // ---- Lazy pages you actually use ---------------------------------------
 const InstructorDashboard          = lazy(() => import('@instructor/InstructorDashboard.jsx'))
@@ -45,7 +47,7 @@ class InstructorSectionErrorBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-       
+      // eslint-disable-next-line no-console
       console.error('[InstructorRouter] render error:', error, info)
     }
   }
@@ -77,6 +79,28 @@ function InstructorNotFound() {
 
 // ---- Router component ---------------------------------------------------
 export default function InstructorRouter() {
+  // Optional: lightly warm common screens once the route mounts.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const prefersReduced =
+      !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+
+    const run = () => {
+      if (!prefersReduced) {
+        preloadInstructorCore().catch(() => {})
+      }
+    }
+
+    if ('requestIdleCallback' in window) {
+      // @ts-expect-error: not in default lib for JS
+      const id = window.requestIdleCallback(run, { timeout: 2000 })
+      return () => window.cancelIdleCallback?.(id)
+    }
+    const t = setTimeout(run, 300)
+    return () => clearTimeout(t)
+  }, [])
+
   return (
     <InstructorSectionErrorBoundary>
       <Suspense fallback={<Loading text="Loading instructor area…" />}>

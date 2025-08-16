@@ -1,3 +1,4 @@
+// Path: /eslint.config.js
 // eslint.config.js — Flat config w/ compat + Vite alias resolver
 import js from '@eslint/js'
 import globals from 'globals'
@@ -18,7 +19,7 @@ const legacy = compat
   .extends(
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
-    'plugin:jsx-a11y/recommended'
+    'plugin:jsx-a11y/recommended',
   )
   .map(cfg => ({
     ...cfg,
@@ -36,7 +37,7 @@ export default defineConfig([
     '.vite',
     '.vercel',
     'stats.html',
-    '**/*.d.ts', // NEW: don’t lint ambient TS type files
+    '**/*.d.ts', // don’t lint ambient TS type files
   ]),
 
   // Report stray /* eslint-disable */ that no longer suppress anything
@@ -62,6 +63,7 @@ export default defineConfig([
       'jsx-a11y': a11y,
       import: importPlugin,
     },
+
     extends: [js.configs.recommended, reactRefresh.configs.vite],
 
     rules: {
@@ -120,14 +122,14 @@ export default defineConfig([
       'import/no-unresolved': ['error', { commonjs: true, caseSensitive: true }],
       'import/no-duplicates': 'warn',
       'import/newline-after-import': 'warn',
-      // CHANGED: turn off extension policing — your code uses explicit .jsx
+      // We allow explicit .jsx in imports
       'import/extensions': 'off',
       'import/order': [
         'warn',
         {
           groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'type'],
           pathGroups: [
-            // NEW: keep React first in the external group
+            // Keep React first in the external group
             { pattern: 'react', group: 'external', position: 'before' },
 
             { pattern: '@{,**/*}', group: 'internal', position: 'before' },
@@ -157,10 +159,14 @@ export default defineConfig([
             { pattern: '@student-walkthrough{,/**}', group: 'internal', position: 'before' },
 
             { pattern: '@instructor{,/**}', group: 'internal', position: 'before' },
+
+            // ✅ Added admin-walkthroughs alias (and admin root)
+            { pattern: '@admin-walkthroughs{,/**}', group: 'internal', position: 'before' },
             { pattern: '@admin{,/**}', group: 'internal', position: 'before' },
+
             { pattern: '@superadmin{,/**}', group: 'internal', position: 'before' },
           ],
-          // CHANGED: exclude react so it stays pinned at the top of externals
+          // Exclude react/builtin/external from auto-repositioning (keeps React pinned)
           pathGroupsExcludedImportTypes: ['react', 'builtin', 'external'],
           'newlines-between': 'always',
           alphabetize: { order: 'asc', caseInsensitive: true },
@@ -184,7 +190,7 @@ export default defineConfig([
     settings: {
       react: { version: 'detect' },
       'import/resolver': {
-        node: { extensions: ['.js', '.jsx', '.json', '.css', '.d.ts'] }, // +.d.ts for completeness
+        node: { extensions: ['.js', '.jsx', '.json', '.css', '.d.ts'] },
         alias: {
           map: [
             ['@', './src'],
@@ -217,6 +223,7 @@ export default defineConfig([
 
             ['@instructor', './src/instructor'],
             ['@admin', './src/admin'],
+            ['@admin-walkthroughs', './src/admin/walkthroughs'], // ✅ keep in sync with Vite
             ['@superadmin', './src/superadmin'],
           ],
           extensions: ['.js', '.jsx', '.json', '.css'], // keep this in sync with Vite

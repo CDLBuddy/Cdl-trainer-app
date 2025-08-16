@@ -1,16 +1,18 @@
 // src/admin/AdminRouter.jsx
 // ======================================================================
 // Admin Router (nested under /admin/*)
-// - Lazy-loads admin pages
+// - Lazy-loads admin pages (incl. Walkthroughs suite)
 // - Local Suspense fallback (keeps app chrome responsive)
 // - Lightweight error boundary for render-time safety
 // - Preload hook: AdminRouter.preload() (delegates to ./preload.js)
+// - Idle post-mount warm-up of *core* screens (lighter than full preload)
 // ======================================================================
 
-import React, { Suspense, lazy } from 'react'
+import React, { Suspense, lazy, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 
-import { preloadAdminAll as _preload } from './preload.js' // single source for warming
+// Preload helpers (single source of truth)
+import { preloadAdminAll as _preloadAll, preloadAdminCore as _preloadCore } from './preload.js'
 
 // ---- Lazy pages ---------------------------------------------------------
 const AdminDashboard = lazy(() => import('@admin/AdminDashboard.jsx'))
@@ -19,6 +21,9 @@ const AdminUsers     = lazy(() => import('@admin/AdminUsers.jsx'))
 const AdminCompanies = lazy(() => import('@admin/AdminCompanies.jsx'))
 const AdminReports   = lazy(() => import('@admin/AdminReports.jsx'))
 // const AdminBilling = lazy(() => import('@admin/AdminBilling.jsx')) // when ready
+
+// NEW: Walkthrough Management (barrel-safe direct path)
+const WalkthroughManager = lazy(() => import('@admin/walkthroughs/WalkthroughManager.jsx'))
 
 // ---- Local loading UI (accessible) -------------------------------------
 function Loading({ text = 'Loading admin page…' }) {
@@ -46,7 +51,7 @@ class AdminSectionErrorBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-       
+      // eslint-disable-next-line no-console
       console.error('[AdminRouter] render error:', error, info)
     }
   }
@@ -78,12 +83,27 @@ function AdminNotFound() {
 
 // ---- Router component ---------------------------------------------------
 export default function AdminRouter() {
+  // Light idle warm-up of core screens after mount (skip on reduced motion)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const prefersReduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+    const run = () => { if (!prefersReduced) _preloadCore().catch(() => {}) }
+
+    if ('requestIdleCallback' in window) {
+      // @ts-expect-error not in std lib
+      const id = window.requestIdleCallback(run, { timeout: 2000 })
+      return () => window.cancelIdleCallback?.(id)
+    }
+    const t = setTimeout(run, 300)
+    return () => clearTimeout(t)
+  }, [])
+
   return (
     <AdminSectionErrorBoundary>
       <Suspense
         fallback={
           <Loading text="Loading admin area…" />
-          // Or global splash:
+          // Or a global splash:
           // <SplashScreen message="Loading admin area…" showTip={false} />
         }
       >
@@ -99,6 +119,9 @@ export default function AdminRouter() {
           <Route path="reports"   element={<AdminReports />} />
           {/* <Route path="billing" element={<AdminBilling />} /> */}
 
+          {/* NEW: Walkthrough management hub (all editor/upload/list views live under this) */}
+          <Route path="walkthroughs/*" element={<WalkthroughManager />} />
+
           {/* Fallback */}
           <Route path="*" element={<AdminNotFound />} />
         </Routes>
@@ -108,11 +131,11 @@ export default function AdminRouter() {
 }
 
 /**
- * Optional: warm chunks (hover/idle/route-guard).
+ * Optional: warm *all* admin chunks (hover/idle/route-guard).
  * Usage: import AdminRouter from '@admin/AdminRouter.jsx'
  *        AdminRouter.preload?.()
- * Note: this keeps the file exporting only a component (no named exports),
- * so it plays nicely with react-refresh/only-export-components.
+ * Keeping a single default export (component) satisfies the
+ * react-refresh/only-export-components rule.
  * @type {() => Promise<void>}
  */
-AdminRouter.preload = _preload
+AdminRouter.preload = _preloadAll

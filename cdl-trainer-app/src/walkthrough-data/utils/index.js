@@ -1,4 +1,4 @@
-// src/walkthrough-data/utils/index.js
+// Path: /src/walkthrough-data/utils/index.js
 // ======================================================================
 // Walkthrough utilities barrel
 // - Re-exports individual helpers for tree-shaking
@@ -8,27 +8,59 @@
 
 // @ts-check
 
-// Robust namespace imports so this file works whether the children export
-// named functions or default exports.
+// ---------------------------
+// Robust namespace imports
+// ---------------------------
 import * as csvNS from './parseCsv.js'
 import * as mdNS from './parseMarkdown.js'
+import * as xlsxNS from './parseXlsx.js'
 import * as validateNS from './validateWalkthroughs.js'
 
-// Normalize to named symbols (prefer named, fall back to default)
-const parseCsv = /** @type {any} */ (csvNS).parseCsv ?? /** @type {any} */ (csvNS).default
-const parseMarkdown = /** @type {any} */ (mdNS).parseMarkdown ?? /** @type {any} */ (mdNS).default
+// ---------------------------
+// Normalize to named symbols
+// Prefer explicit *ToWalkthrough names; then generic; then default
+// ---------------------------
+const parseCsv =
+  /** @type {any} */ (csvNS).parseCsvToWalkthrough ??
+  /** @type {any} */ (csvNS).parseCsv ??
+  /** @type {any} */ (csvNS).default
+
+const parseMarkdown =
+  /** @type {any} */ (mdNS).parseMarkdownToWalkthrough ??
+  /** @type {any} */ (mdNS).parseMarkdown ??
+  /** @type {any} */ (mdNS).default
+
+const parseXlsx =
+  /** @type {any} */ (xlsxNS).parseXlsxToWalkthrough ??
+  /** @type {any} */ (xlsxNS).default
+
+const isXlsxAvailable =
+  /** @type {any} */ (xlsxNS).isXlsxAvailable ??
+  (async () => false)
+
 const validateWalkthroughs =
   /** @type {any} */ (validateNS).validateWalkthroughs ??
   /** @type {any} */ (validateNS).default?.validateWalkthroughs ??
   /** @type {any} */ (validateNS).default
+
 const validateWalkthroughShape =
   /** @type {any} */ (validateNS).validateWalkthroughShape ??
   /** @type {any} */ (validateNS).default?.validateWalkthroughShape
 
+// Also expose the overlay applier from the utils barrel for convenience.
+export { applyOverlays } from './applyOverlays.js'
+
 // ---------------------------
 // Named exports (preferred)
 // ---------------------------
-export { parseCsv, parseMarkdown, validateWalkthroughs, validateWalkthroughShape }
+export {
+  parseCsv,
+  parseMarkdown,
+  parseXlsx,
+  isXlsxAvailable,
+  validateWalkthroughs,
+  validateWalkthroughShape,
+}
 
 // ---------------------------
 // Optional convenience default
@@ -36,6 +68,8 @@ export { parseCsv, parseMarkdown, validateWalkthroughs, validateWalkthroughShape
 export default {
   parseCsv,
   parseMarkdown,
+  parseXlsx,
+  isXlsxAvailable,
   validateWalkthroughs,
   validateWalkthroughShape,
 }

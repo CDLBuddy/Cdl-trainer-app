@@ -1,0 +1,347 @@
+/* Path: /src/admin/walkthroughs/walkthroughStyles.module.css
+------------------------------------------------------------------------------
+Styles for Admin Walkthrough UI (CSS Module)
+- Lightweight, utility-style classes to keep React components lean
+- Consistent cards, buttons, inputs, tables, chips, tabs
+- Mobile-first with responsive tweaks
+- Safe defaults: no global resets; variables scoped via :global(:root)
+------------------------------------------------------------------------------ */
+
+/* -------------------------------------------------------------------------- */
+/* Theme Tokens (scoped)                                                      */
+/* -------------------------------------------------------------------------- */
+:global(:root) {
+  --aw-bg: #ffffff;
+  --aw-surface: #ffffff;
+  --aw-muted: #6b7280;
+  --aw-text: #111827;
+
+  --aw-border: #e5e7eb;
+  --aw-border-subtle: #f3f4f6;
+
+  --aw-primary: #111827;
+  --aw-primary-contrast: #ffffff;
+
+  --aw-accent: #2563eb;
+  --aw-accent-contrast: #ffffff;
+
+  --aw-danger: #b91c1c;
+  --aw-danger-contrast: #ffffff;
+
+  --aw-warn: #b45309;
+  --aw-warn-contrast: #ffffff;
+
+  --aw-radius: 12px;
+  --aw-radius-sm: 8px;
+
+  --aw-shadow-1: 0 1px 2px rgba(0,0,0,.06);
+  --aw-shadow-2: 0 8px 24px rgba(0,0,0,.08);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Layout                                                                     */
+/* -------------------------------------------------------------------------- */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.grid {
+  display: grid;
+  gap: 10px;
+}
+
+/* Responsive helpers */
+@media (min-width: 720px) {
+  .gridCols-2 { grid-template-columns: 1fr 1fr; }
+  .gridCols-3 { grid-template-columns: 1fr 1fr 1fr; }
+}
+@media (min-width: 1024px) {
+  .gridCols-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Card + Panel                                                               */
+/* -------------------------------------------------------------------------- */
+.card {
+  background: var(--aw-surface);
+  border: 1px solid var(--aw-border);
+  border-radius: var(--aw-radius);
+  box-shadow: var(--aw-shadow-1);
+  padding: 16px;
+}
+
+.cardMuted {
+  composes: card;
+  background: #fafafa;
+}
+
+.cardWarn {
+  composes: card;
+  border-color: #fecaca;
+  background: #fff7ed;
+}
+
+.cardInset {
+  composes: card;
+  padding: 12px;
+  border-radius: var(--aw-radius-sm);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Buttons                                                                    */
+/* -------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--aw-border);
+  background: #ffffff;
+  color: var(--aw-text);
+  cursor: pointer;
+  transition: transform .02s ease-in-out, box-shadow .12s ease-in-out;
+}
+.btn:hover { box-shadow: var(--aw-shadow-1); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.btnPrimary {
+  composes: btn;
+  background: var(--aw-primary);
+  color: var(--aw-primary-contrast);
+  border-color: var(--aw-primary);
+}
+
+.btnAccent {
+  composes: btn;
+  background: var(--aw-accent);
+  color: var(--aw-accent-contrast);
+  border-color: var(--aw-accent);
+}
+
+.btnWarn {
+  composes: btn;
+  background: var(--aw-warn);
+  color: var(--aw-warn-contrast);
+  border-color: var(--aw-warn);
+}
+
+.btnDanger {
+  composes: btn;
+  background: var(--aw-danger);
+  color: var(--aw-danger-contrast);
+  border-color: var(--aw-danger);
+}
+
+.btnGhost {
+  composes: btn;
+  background: transparent;
+}
+
+/* Icon-only button */
+.iconBtn {
+  composes: btn;
+  padding: 6px 8px;
+  width: 32px;
+  height: 32px;
+}
+
+/* Toolbar group */
+.toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Inputs                                                                     */
+/* -------------------------------------------------------------------------- */
+.input, .select, .textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--aw-border);
+  background: #fff;
+  color: var(--aw-text);
+  outline: none;
+}
+.textarea {
+  resize: vertical;
+  min-height: 96px;
+  font-family: inherit;
+}
+.input:focus, .select:focus, .textarea:focus {
+  border-color: #c7d2fe;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, .25);
+}
+
+/* Field label + hint */
+.label {
+  display: block;
+  font-size: 12px;
+  color: var(--aw-muted);
+  margin-bottom: 4px;
+}
+
+.help {
+  font-size: 12px;
+  color: var(--aw-muted);
+}
+
+/* Checkbox row */
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Tabs                                                                       */
+/* -------------------------------------------------------------------------- */
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tab {
+  composes: btn;
+  border-color: #d1d5db;
+  background: #fff;
+}
+.tabActive {
+  composes: tab;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Table                                                                      */
+/* -------------------------------------------------------------------------- */
+.table {
+  border: 1px solid var(--aw-border);
+  border-radius: var(--aw-radius);
+  overflow: hidden;
+  background: #fff;
+}
+
+.thead {
+  display: grid;
+  grid-template-columns: 240px 110px 90px 120px 1fr 260px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-bottom: 1px solid var(--aw-border);
+  font-weight: 600;
+}
+
+.trow {
+  display: grid;
+  grid-template-columns: 240px 110px 90px 120px 1fr 260px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--aw-border-subtle);
+  align-items: center;
+}
+
+@media (max-width: 840px) {
+  .thead, .trow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Chips                                                                      */
+/* -------------------------------------------------------------------------- */
+.chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 18px;
+  background: rgba(107,114,128,.12);
+  color: #1f2937;
+}
+.chipOk   { background: rgba(16,185,129,.12); color: #065f46; }
+.chipWarn { background: rgba(245,158,11,.12); color: #92400e; }
+.chipErr  { background: rgba(239,68,68,.12); color: #7f1d1d; }
+.chipInfo { background: #e0e7ff; color: #3730a3; }
+
+/* -------------------------------------------------------------------------- */
+/* Section / Step blocks                                                      */
+/* -------------------------------------------------------------------------- */
+.section {
+  composes: card;
+  margin-bottom: 16px;
+}
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sectionTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+.step {
+  border-top: 1px dashed var(--aw-border);
+  padding: 8px 0;
+}
+.stepRow {
+  display: grid;
+  gap: 8px;
+}
+.stepFlags {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Alerts                                                                     */
+/* -------------------------------------------------------------------------- */
+.alert {
+  composes: card;
+  background: #fff7ed;
+  border-color: #fecaca;
+}
+.alertOk {
+  composes: card;
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Misc                                                                       */
+/* -------------------------------------------------------------------------- */
+.placeholder {
+  border: 1px dashed #ccc;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: var(--aw-radius-sm);
+}
+
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.muted { color: var(--aw-muted); }
+
+.hr {
+  height: 1px;
+  background: var(--aw-border);
+  border: 0;
+  margin: 12px 0;
+}

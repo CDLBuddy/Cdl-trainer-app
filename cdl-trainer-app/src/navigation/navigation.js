@@ -56,7 +56,7 @@ export function toURL(input) {
 export function withQuery(urlLike, params = {}) {
   const url = urlLike instanceof URL ? urlLike : toURL(urlLike)
   Object.entries(params).forEach(([k, v]) => {
-    if (v === undefined || v === null) return
+    if (v == null) return
     url.searchParams.set(k, String(v))
   })
   return url
@@ -86,7 +86,7 @@ export function safeNavigate(navigate, to, options = {}) {
     if (typeof navigate === 'function') navigate(to, options)
     else window.location.assign(to)
   } catch (err) {
-     
+    // eslint-disable-next-line no-console
     console.error('[navigation] navigate failed:', err)
     try { window.location.assign(to) } catch { /* noop */ }
   }
@@ -135,13 +135,14 @@ export const InstructorRoutes = {
   studentProfile:  (studentId) => `/instructor/student-profile/${encodeURIComponent(studentId)}`,
 }
 
-// ---- Admin
+// ---- Admin (✅ now includes Walkthrough Manager)
 export const AdminRoutes = {
-  dashboard: () => '/admin/dashboard',
-  profile:   () => '/admin/profile',
-  users:     () => '/admin/users',
-  companies: () => '/admin/companies',
-  reports:   () => '/admin/reports',
+  dashboard:     () => '/admin/dashboard',
+  profile:       () => '/admin/profile',
+  users:         () => '/admin/users',
+  companies:     () => '/admin/companies',
+  reports:       () => '/admin/reports',
+  walkthroughs:  () => '/admin/walkthroughs', // NEW: Admin Walkthrough Manager
 }
 
 // ---- Superadmin (includes Walkthrough Manager)
@@ -187,11 +188,12 @@ export const RouteBuilders = {
   instructorStudentProfile:  InstructorRoutes.studentProfile,
 
   // Admin aliases
-  adminDashboard:  AdminRoutes.dashboard,
-  adminProfile:    AdminRoutes.profile,
-  adminUsers:      AdminRoutes.users,
-  adminCompanies:  AdminRoutes.companies,
-  adminReports:    AdminRoutes.reports,
+  adminDashboard:    AdminRoutes.dashboard,
+  adminProfile:      AdminRoutes.profile,
+  adminUsers:        AdminRoutes.users,
+  adminCompanies:    AdminRoutes.companies,
+  adminReports:      AdminRoutes.reports,
+  adminWalkthroughs: AdminRoutes.walkthroughs, // NEW
 
   // Superadmin aliases
   superadminDashboard:    SuperadminRoutes.dashboard,
@@ -226,23 +228,24 @@ export function getNavLinksForRole(role) {
   switch (normalizeRole(role)) {
     case 'superadmin':
       return [
-        { to: SuperadminRoutes.dashboard(),    label: 'Dashboard',   icon: '🏠', exact: true },
-        { to: SuperadminRoutes.schools(),      label: 'Schools',     icon: '🏫' },
-        { to: SuperadminRoutes.users(),        label: 'Users',       icon: '👥' },
-        { to: SuperadminRoutes.compliance(),   label: 'Compliance',  icon: '🛡️' },
-        { to: SuperadminRoutes.walkthroughs(), label: 'Walkthroughs',icon: '🧭' },
-        { to: SuperadminRoutes.billing(),      label: 'Billing',     icon: '💳' },
-        { to: SuperadminRoutes.settings(),     label: 'Settings',    icon: '⚙️' },
-        { to: SuperadminRoutes.logs(),         label: 'Logs',        icon: '📜' },
-        { to: SuperadminRoutes.permissions(),  label: 'Permissions', icon: '🔐' },
+        { to: SuperadminRoutes.dashboard(),    label: 'Dashboard',    icon: '🏠', exact: true },
+        { to: SuperadminRoutes.schools(),      label: 'Schools',      icon: '🏫' },
+        { to: SuperadminRoutes.users(),        label: 'Users',        icon: '👥' },
+        { to: SuperadminRoutes.compliance(),   label: 'Compliance',   icon: '🛡️' },
+        { to: SuperadminRoutes.walkthroughs(), label: 'Walkthroughs', icon: '🧭' },
+        { to: SuperadminRoutes.billing(),      label: 'Billing',      icon: '💳' },
+        { to: SuperadminRoutes.settings(),     label: 'Settings',     icon: '⚙️' },
+        { to: SuperadminRoutes.logs(),         label: 'Logs',         icon: '📜' },
+        { to: SuperadminRoutes.permissions(),  label: 'Permissions',  icon: '🔐' },
       ]
     case 'admin':
       return [
-        { to: AdminRoutes.dashboard(),  label: 'Dashboard', icon: '🏠', exact: true },
-        { to: AdminRoutes.profile(),    label: 'Profile',   icon: '👤' },
-        { to: AdminRoutes.users(),      label: 'Users',     icon: '👥' },
-        { to: AdminRoutes.companies(),  label: 'Companies', icon: '🏢' },
-        { to: AdminRoutes.reports(),    label: 'Reports',   icon: '📄' },
+        { to: AdminRoutes.dashboard(),    label: 'Dashboard',    icon: '🏠', exact: true },
+        { to: AdminRoutes.profile(),      label: 'Profile',      icon: '👤' },
+        { to: AdminRoutes.users(),        label: 'Users',        icon: '👥' },
+        { to: AdminRoutes.companies(),    label: 'Companies',    icon: '🏢' },
+        { to: AdminRoutes.reports(),      label: 'Reports',      icon: '📄' },
+        { to: AdminRoutes.walkthroughs(), label: 'Walkthroughs', icon: '🧭' }, // NEW
       ]
     case 'instructor':
       return [

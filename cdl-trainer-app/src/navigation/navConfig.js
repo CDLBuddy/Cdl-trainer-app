@@ -45,7 +45,7 @@ function assertPathPrefix(item, role) {
   if (import.meta?.env?.DEV) {
     const ok = roleFromPath(item.to) === role || item.to === '/'
     if (!ok) {
-       
+      // eslint-disable-next-line no-console
       console.warn(`[navConfig] "${item.label}" path "${item.to}" is not under "/${role}".`)
     }
   }
@@ -77,9 +77,9 @@ export const STUDENT_DEEP_LINKS = [
 
 /** @type {NavItem[]} */
 export const INSTRUCTOR_TOP_NAV = [
-  { to: '/instructor/dashboard',       label: 'Dashboard',        icon: '🏠', exact: true, prefetchRole: 'instructor' },
-  { to: '/instructor/profile',         label: 'Profile',          icon: '👤',              prefetchRole: 'instructor' },
-  { to: '/instructor/checklist-review',label: 'Checklist Review', icon: '✅',              prefetchRole: 'instructor' },
+  { to: '/instructor/dashboard',        label: 'Dashboard',        icon: '🏠', exact: true, prefetchRole: 'instructor' },
+  { to: '/instructor/profile',          label: 'Profile',          icon: '👤',              prefetchRole: 'instructor' },
+  { to: '/instructor/checklist-review', label: 'Checklist Review', icon: '✅',              prefetchRole: 'instructor' },
 ]
 
 export const INSTRUCTOR_DEEP_LINKS = [
@@ -92,15 +92,17 @@ export const INSTRUCTOR_DEEP_LINKS = [
 
 /** @type {NavItem[]} */
 export const ADMIN_TOP_NAV = [
-  { to: '/admin/dashboard',  label: 'Dashboard', icon: '🏠', exact: true, prefetchRole: 'admin' },
-  { to: '/admin/profile',    label: 'Profile',   icon: '👤',              prefetchRole: 'admin' },
-  { to: '/admin/users',      label: 'Users',     icon: '👥',              prefetchRole: 'admin' },
-  { to: '/admin/companies',  label: 'Companies', icon: '🏢',              prefetchRole: 'admin' },
-  { to: '/admin/reports',    label: 'Reports',   icon: '📄',              prefetchRole: 'admin' },
-  // { to: '/admin/billing',  label: 'Billing',   icon: '💳',              prefetchRole: 'admin' },
+  { to: '/admin/dashboard',    label: 'Dashboard',    icon: '🏠', exact: true, prefetchRole: 'admin' },
+  { to: '/admin/profile',      label: 'Profile',      icon: '👤',              prefetchRole: 'admin' },
+  { to: '/admin/users',        label: 'Users',        icon: '👥',              prefetchRole: 'admin' },
+  { to: '/admin/companies',    label: 'Companies',    icon: '🏢',              prefetchRole: 'admin' },
+  { to: '/admin/reports',      label: 'Reports',      icon: '📄',              prefetchRole: 'admin' },
+  { to: '/admin/walkthroughs', label: 'Walkthroughs', icon: '🧭',              prefetchRole: 'admin' }, // NEW
 ]
 
-export const ADMIN_DEEP_LINKS = []
+export const ADMIN_DEEP_LINKS = [
+  // keep empty for now; add detail routes here if they shouldn't appear in top nav
+]
 
 // ----------------------------------------------------------------------
 // Superadmin
@@ -112,14 +114,16 @@ export const SUPERADMIN_TOP_NAV = [
   { to: '/superadmin/schools',      label: 'Schools',      icon: '🏫',              prefetchRole: 'superadmin' },
   { to: '/superadmin/users',        label: 'Users',        icon: '👥',              prefetchRole: 'superadmin' },
   { to: '/superadmin/compliance',   label: 'Compliance',   icon: '🛡️',              prefetchRole: 'superadmin' },
-  { to: '/superadmin/walkthroughs', label: 'Walkthroughs', icon: '🧭',              prefetchRole: 'superadmin' }, // Walkthrough Manager
+  { to: '/superadmin/walkthroughs', label: 'Walkthroughs', icon: '🧭',              prefetchRole: 'superadmin' },
   { to: '/superadmin/billing',      label: 'Billing',      icon: '💳',              prefetchRole: 'superadmin' },
   { to: '/superadmin/settings',     label: 'Settings',     icon: '⚙️',              prefetchRole: 'superadmin' },
   { to: '/superadmin/logs',         label: 'Logs',         icon: '📜',              prefetchRole: 'superadmin' },
   { to: '/superadmin/permissions',  label: 'Permissions',  icon: '🔐',              prefetchRole: 'superadmin' },
 ]
 
-export const SUPERADMIN_DEEP_LINKS = []
+export const SUPERADMIN_DEEP_LINKS = [
+  // add hidden detail routes here if needed
+]
 
 // ----------------------------------------------------------------------
 // Helpers

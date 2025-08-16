@@ -1,0 +1,18 @@
+// Firestore security rules (dev-relaxed)
+// Replace with tighter rules before production.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return request.auth.token.role == 'admin' || request.auth.token.role == 'superadmin'; }
+    function isSuper() { return request.auth.token.role == 'superadmin'; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+
+    match /{document=**} {
+      allow read: if signedIn();
+      allow write: if signedIn();
+    }
+  }
+}

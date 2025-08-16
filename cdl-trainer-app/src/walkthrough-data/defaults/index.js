@@ -1,34 +1,28 @@
-// src/walkthrough-data/defaults/index.js
 // =============================================================================
-// Default Walkthrough Registry (Browning Mountain Training baseline)
-// - Aggregates all default datasets in this folder
+// Defaults — datasets barrel (BASE walkthroughs only)
+// - Aggregates immutable default datasets in this folder
 // - Fast lookups by classCode and id
 // - Returns frozen (immutable) copies to prevent accidental mutation
 // - Dev-only guard: exported Maps are read-only (mutations throw)
 // =============================================================================
 
-import walkthroughClassAWoAirElec from './walkthrough-class-a-wo-air-elec.js'
-import walkthroughClassAWoHydElec from './walkthrough-class-a-wo-hyd-elec.js'
-import walkthroughClassA          from './walkthrough-class-a.js'
-import walkthroughClassB          from './walkthrough-class-b.js'
-import walkthroughPassengerBus    from './walkthrough-passenger-bus.js'
+// BASE scripts (no restriction variants here)
+import walkthroughClassA       from './walkthrough-class-a.js'
+import walkthroughClassB       from './walkthrough-class-b.js'
+import walkthroughPassengerBus from './walkthrough-passenger-bus.js'
 
-/** Master list in one place (order doesn’t matter) */
+// ---- Master list (order doesn’t matter) ------------------------------------
 const DEFAULT_WALKTHROUGHS_RAW = [
   walkthroughClassA,
-  walkthroughClassAWoAirElec,
-  walkthroughClassAWoHydElec,
   walkthroughClassB,
   walkthroughPassengerBus,
 ]
 
 // ---- Normalizers ------------------------------------------------------------
-
 const norm = v => (v == null ? '' : String(v).trim())
 const up   = v => norm(v).toUpperCase()
 
 // ---- Immutability helpers ---------------------------------------------------
-
 function deepFreeze(o) {
   if (!o || typeof o !== 'object' || Object.isFrozen(o)) return o
   Object.freeze(o)
@@ -39,10 +33,7 @@ function deepFreeze(o) {
   return o
 }
 
-/**
- * Return a deep-frozen clone to keep the source datasets pristine.
- * Uses structuredClone when available; falls back to JSON clone.
- */
+/** Return a deep-frozen clone to keep the source datasets pristine. */
 function cloneAndFreeze(obj) {
   let out
   if (typeof structuredClone === 'function') out = structuredClone(obj)
@@ -62,8 +53,7 @@ function readonlyMap(map) {
   return map
 }
 
-// ---- Indexes ---------------------------------------------------------------
-
+// ---- Indexes ----------------------------------------------------------------
 const _byClassCode = new Map()
 const _byId        = new Map()
 
@@ -80,24 +70,20 @@ export const DEFAULT_WALKTHROUGH_VERSION =
   Math.max(...DEFAULT_WALKTHROUGHS_RAW.map(w => Number(w.version || 1))) || 1
 
 // ---- Public data (frozen clones) -------------------------------------------
-
-/**
- * Frozen list of default datasets.
- * These are deep-frozen clones, so callers cannot mutate them.
- */
+/** Frozen list of default datasets (deep-frozen clones). */
 export const DEFAULT_WALKTHROUGHS = Object.freeze(
   DEFAULT_WALKTHROUGHS_RAW.map(cloneAndFreeze)
 )
 
 // ---- Public API =============================================================
 
-/** Get by class code, e.g. 'A', 'A-WO-AIR-ELEC', 'B', 'PASSENGER-BUS' */
+/** Get by class code, e.g. 'A', 'B', 'PASSENGER-BUS' */
 export function getDefaultWalkthroughByClass(classCode) {
   const hit = _byClassCode.get(up(classCode))
   return hit ? cloneAndFreeze(hit) : null
 }
 
-/** Get by dataset id, e.g. 'walkthrough-class-a' */
+/** Get by dataset id, e.g. 'walkthrough:class-a' */
 export function getDefaultWalkthroughById(id) {
   const hit = _byId.get(norm(id))
   return hit ? cloneAndFreeze(hit) : null

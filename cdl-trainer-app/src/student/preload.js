@@ -1,54 +1,87 @@
-// src/student/preload.js
 // ======================================================================
 // Student route preloader
-// - Warm up page and wrapper bundles before navigation
-// - Safe to call on hover/focus from nav links
-// - Does not export any React components
+// - Exposes the standard API the global preloader expects:
+//     * preloadAboveTheFold()  → light, most-used screens
+//     * preloadAll()           → everything student may touch
+//     * preloadRoute(name)     → targeted warm by route key
+// - Keeps your original names as aliases for compatibility
+// - Pure module (no React imports, no side effects)
 // ======================================================================
 
-// ---- Pages -------------------------------------------------------------
+// ---- Pages (dynamic imports only run when called) ---------------------
 const preloadStudentDashboard = () => import('@student/StudentDashboard.jsx')
-const preloadProfile           = () => import('@student-profile/Profile.jsx')
-const preloadChecklists        = () => import('@student/Checklists.jsx')
-const preloadPracticeTests     = () => import('@student/PracticeTests.jsx')
-const preloadWalkthrough       = () => import('@student-walkthrough/Walkthrough.jsx')
-const preloadFlashcards        = () => import('@student/Flashcards.jsx')
+const preloadProfile          = () => import('@student-profile/Profile.jsx')
+const preloadChecklists       = () => import('@student/Checklists.jsx')
+const preloadPracticeTests    = () => import('@student/PracticeTests.jsx')
+const preloadWalkthrough      = () => import('@student-walkthrough/Walkthrough.jsx')
+const preloadFlashcards       = () => import('@student/Flashcards.jsx')
 
-// ---- Wrappers (via barrel loader fns) ----------------------------------
-// Using loader fns means Vite won't actually pull the module until called
+// ---- Wrappers (via components barrel loader fns) ----------------------
+// If these loader fns aren’t exported yet, you can safely swap to direct
+// dynamic imports like: () => import('@student-components/TestEngineWrapper.jsx')
 import {
   loadTestEngineWrapper,
   loadTestReviewWrapper,
   loadTestResultsWrapper,
 } from '@student-components'
 
-// ---- Public API --------------------------------------------------------
-/**
- * Preload all student-related routes + test wrappers.
- * Call this before navigating (e.g., on hover) to reduce perceived latency.
- */
-export async function preloadStudentRoutes() {
+// ---- Above-the-fold (light set) --------------------------------------
+export async function preloadAboveTheFold() {
   await Promise.allSettled([
+    preloadStudentDashboard(),
+    preloadProfile(),
+    preloadChecklists(),
+  ])
+}
+
+// ---- Full warm (everything student) -----------------------------------
+export async function preloadAll() {
+  await Promise.allSettled([
+    // Core pages
     preloadStudentDashboard(),
     preloadProfile(),
     preloadChecklists(),
     preloadPracticeTests(),
     preloadWalkthrough(),
     preloadFlashcards(),
+    // Test flow wrappers
     loadTestEngineWrapper(),
     loadTestReviewWrapper(),
     loadTestResultsWrapper(),
   ])
 }
 
+// ---- Targeted route warmers -------------------------------------------
 /**
- * Preload a minimal set of core routes (lighter, faster).
- * Useful if you only want the most-used pages warmed.
+ * Preload a specific student route by key.
+ * Keys are yours to choose; keep them consistent across app.
+ *
+ * Supported (suggested) keys:
+ *  - 'dashboard' | 'profile' | 'checklists' | 'practice'
+ *  - 'walkthrough' | 'flashcards'
+ *  - 'test:engine' | 'test:review' | 'test:results'
  */
-export async function preloadStudentCore() {
-  await Promise.allSettled([
-    preloadStudentDashboard(),
-    preloadProfile(),
-    preloadChecklists(),
-  ])
+export async function preloadRoute(name) {
+  switch (String(name)) {
+    case 'dashboard':  return preloadStudentDashboard()
+    case 'profile':    return preloadProfile()
+    case 'checklists': return preloadChecklists()
+    case 'practice':   return preloadPracticeTests()
+    case 'walkthrough':return preloadWalkthrough()
+    case 'flashcards': return preloadFlashcards()
+
+    case 'test:engine':  return loadTestEngineWrapper()
+    case 'test:review':  return loadTestReviewWrapper()
+    case 'test:results': return loadTestResultsWrapper()
+
+    default:
+      // No-op for unknown keys; keep best-effort
+      return
+  }
 }
+
+// ---- Back-compat aliases (optional, keep if used elsewhere) -----------
+/** Old name: warm everything student-related */
+export const preloadStudentRoutes = preloadAll
+/** Old name: warm a minimal core subset */
+export const preloadStudentCore = preloadAboveTheFold

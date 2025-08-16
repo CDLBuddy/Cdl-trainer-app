@@ -1,4 +1,4 @@
-// vite.config.js
+// Path: /vite.config.js
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 // ESM-safe __dirname
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
-const r = p => path.resolve(__dirname, p)
+const r = (p) => path.resolve(__dirname, p)
 
 // Optional bundle analyzer: run with VISUALIZE=1 (or VITE_VISUALIZE=1) vite build
 async function maybeVisualizer(enabled) {
@@ -29,13 +29,13 @@ async function maybeInspect(enabled) {
 }
 
 export default defineConfig(async ({ mode }) => {
-  // Load both VITE_* and bare envs so your existing VISUALIZE keeps working
+  // Load both VITE_* and bare envs so your existing VISUALIZE/INSPECT keep working
   const envVite = loadEnv(mode, process.cwd(), 'VITE_')
   const envAll  = loadEnv(mode, process.cwd(), '') // includes non-VITE_ (e.g., VISUALIZE)
 
-  const isProd   = mode === 'production'
-  const analyze  = (envVite.VITE_VISUALIZE ?? envAll.VISUALIZE) ? true : false
-  const inspect  = (envVite.VITE_INSPECT ?? envAll.INSPECT) ? true : false
+  const isProd  = mode === 'production'
+  const analyze = (envVite.VITE_VISUALIZE ?? envAll.VISUALIZE) ? true : false
+  const inspect = (envVite.VITE_INSPECT   ?? envAll.INSPECT)   ? true : false
 
   const visualizerPlugin = await maybeVisualizer(analyze)
   const inspectPlugin    = await maybeInspect(inspect)
@@ -83,15 +83,16 @@ export default defineConfig(async ({ mode }) => {
 
         '@instructor': r('src/instructor'),
         '@admin': r('src/admin'),
+        '@admin-walkthroughs': r('src/admin/walkthroughs'), // ✅ added for clean imports
         '@superadmin': r('src/superadmin'),
       },
       dedupe: ['react', 'react-dom'],
     },
 
     server: {
-      host: true,       // allow LAN access (useful for device testing)
+      host: true,        // allow LAN access (useful for device testing)
       port: 5173,
-      strictPort: true, // fail fast if port is taken
+      strictPort: true,  // fail fast if port is taken
       open: true,
       // headers: { 'Cache-Control': 'no-store' },
     },
@@ -111,6 +112,8 @@ export default defineConfig(async ({ mode }) => {
         'firebase/auth',
         'firebase/firestore',
         'firebase/storage',
+        // If you later want to parse XLSX during dev (NOT required because we dynamically import it):
+        // 'xlsx',
       ],
       // exclude: ['firebase'],
       esbuildOptions: {
@@ -141,7 +144,7 @@ export default defineConfig(async ({ mode }) => {
     },
 
     define: {
-      __DEV__: !isProd, // keep for back-compat while you finish migrating to import.meta.env.DEV
+      __DEV__: !isProd, // Back-compat; prefer import.meta.env.DEV in new code
     },
 
     // logLevel: 'info',

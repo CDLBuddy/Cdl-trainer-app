@@ -1,79 +1,133 @@
 // ======================================================================
-// Admin preloader helpers
-// - Call from nav hovers, idle callbacks, or route guards to warm chunks
-// - Side-effect free until you call one of these functions
+// Admin — route preloader (pure; no JSX)
+// - Standard API:
+//     * preloadAboveTheFold()  → light, high-use screens
+//     * preloadAll()           → everything in Admin area
+//     * preloadRoute(key)      → targeted warm by key
+// - Back-compat aliases: preloadAdminCore/preloadAdminAll/preloadAdminRoutes
+// - Convenience: warmAdminOnIdle, preloadAdminOnHover, prefetchAdminByPath
 // ======================================================================
 
-// Core screens your router actually uses
-const chunks = {
-  dashboard: () => import('./AdminDashboard.jsx'),
-  profile:   () => import('./AdminProfile.jsx'),
-  users:     () => import('./AdminUsers.jsx'),
-  companies: () => import('./AdminCompanies.jsx'),
-  reports:   () => import('./AdminReports.jsx'),
-  // billing:   () => import('./AdminBilling.jsx'), // add when page exists
+// ---- one-shot guard so we don't import the same chunk repeatedly -------
+const _onceKeys = new Set()
+async function _once(key, loader) {
+  if (_onceKeys.has(key)) return
+  _onceKeys.add(key)
+  try { await loader() } catch { /* non-fatal: best-effort */ }
 }
 
-/** Preload only the core, most-hit screens. */
-export async function preloadAdminCore() {
+// Respect reduced-motion users (be polite with aggressive preloads)
+function prefersReducedMotion() {
+  try { return !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches } catch { return false }
+}
+export const isReducedMotion = prefersReducedMotion
+
+// Skip aggressive warms on slow/Data Saver connections
+function isConstrainedNetwork() {
+  try {
+    const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection
+    if (!c) return false
+    if (c.saveData === true) return true
+    return /(^| )(slow-2g|2g|3g)( |$)/.test(c.effectiveType || '')
+  } catch { return false }
+}
+
+// ---- Lazy entries (alias-safe; mirrors vite/eslint config) --------------
+const entries = {
+  dashboard: () => import('@admin/AdminDashboard.jsx'),
+  profile:   () => import('@admin/AdminProfile.jsx'),
+  users:     () => import('@admin/AdminUsers.jsx'),
+  companies: () => import('@admin/AdminCompanies.jsx'),
+  reports:   () => import('@admin/AdminReports.jsx'),
+  // billing: () => import('@admin/AdminBilling.jsx'), // add when page exists
+}
+
+// ---- Public API: above-the-fold (light set) -----------------------------
+export async function preloadAboveTheFold() {
+  if (typeof window === 'undefined') return
   await Promise.allSettled([
-    chunks.dashboard(),
-    chunks.users(),
+    _once('admin:dashboard', entries.dashboard),
+    _once('admin:users',     entries.users),
   ])
 }
 
-/** Preload everything that currently exists under /admin. */
-export async function preloadAdminAll() {
-  await Promise.allSettled([
-    chunks.dashboard(),
-    chunks.profile(),
-    chunks.users(),
-    chunks.companies(),
-    chunks.reports(),
-    // chunks.billing?.(),
-  ])
+// ---- Public API: full warm (everything admin) --------------------------
+export async function preloadAll() {
+  if (typeof window === 'undefined') return
+  await Promise.allSettled(Object.entries(entries).map(([k, loader]) =>
+    _once(`admin:${k}`, loader)
+  ))
 }
 
-/** Old Router-style bulk preloader (handy if something calls this name). */
-export async function preloadAdminRoutes() {
-  return preloadAdminAll()
+// ---- Public API: targeted warm by logical key --------------------------
+/** @param {'dashboard'|'profile'|'users'|'companies'|'reports'|'billing'|string} name */
+export async function preloadRoute(name) {
+  if (typeof window === 'undefined') return
+  const key = String(name)
+  const loader = entries[key]
+  if (loader) await _once(`admin:${key}`, loader)
 }
 
-/**
- * Warm the core screens at browser idle time.
- * Use from app shell: warmAdminOnIdle()
- */
-export function warmAdminOnIdle() {
-  const ric = typeof window !== 'undefined' && window.requestIdleCallback
-    ? window.requestIdleCallback
-    : (fn) => setTimeout(fn, 150)
+// ---- Back-compat exports (keep old call sites working) -----------------
+export const preloadAdminCore   = preloadAboveTheFold
+export const preloadAdminAll    = preloadAll
+export async function preloadAdminRoutes() { return preloadAll() }
+export default preloadAboveTheFold
 
-  ric(() => { void preloadAdminCore() })
+// ======================================================================
+// Convenience helpers (idle / hover / path-based) — idempotent, safe
+// ======================================================================
+
+/** Warm the core screens at browser idle time (returns cancel fn). */
+export function warmAdminOnIdle(timeout = 1200) {
+  if (typeof window === 'undefined' || prefersReducedMotion()) return () => {}
+  const run = () => { preloadAboveTheFold().catch(() => {}) }
+  if ('requestIdleCallback' in window) {
+    // @ts-ignore
+    const id = window.requestIdleCallback(run, { timeout })
+    return () => window.cancelIdleCallback?.(id)
+  }
+  const t = setTimeout(run, 200)
+  return () => clearTimeout(t)
 }
 
-/**
- * Attach hover/focus preloading to a link or a getter that returns a link.
- * Usage: preloadAdminOnHover(() => document.querySelector('a[href="/admin"]'))
- */
+/** Attach one-shot hover/focus preloading to a link (returns cleanup). */
 export function preloadAdminOnHover(elOrGetter) {
+  if (typeof window === 'undefined') return () => {}
+
   const el = typeof elOrGetter === 'function' ? elOrGetter() : elOrGetter
-  if (!el) return
-  const on = () => { el.removeEventListener('mouseenter', on); el.removeEventListener('focusin', on); void preloadAdminCore() }
-  el.addEventListener('mouseenter', on, { once: true })
-  el.addEventListener('focusin', on, { once: true })
+  if (!el || typeof el.addEventListener !== 'function') return () => {}
+
+  const handler = () => {
+    preloadAboveTheFold().catch(() => {})
+    cleanup()
+  }
+
+  el.addEventListener('pointerenter', handler, { once: true })
+  el.addEventListener('focus', handler, { once: true, capture: true })
+
+  function cleanup() {
+    try {
+      el.removeEventListener('pointerenter', handler, { capture: false })
+      el.removeEventListener('focus', handler, { capture: true })
+    } catch { /* noop */ }
+  }
+  return cleanup
 }
 
-/**
- * Preload a specific screen by path (useful in route guards or redirects).
- * Example: prefetchAdminByPath('/admin/users')
- */
+/** Preload a specific screen by path (useful inside guards/redirects). */
 export function prefetchAdminByPath(path = '') {
   const p = String(path || '').toLowerCase()
-  if (p.includes('/admin/users'))      return chunks.users()
-  if (p.includes('/admin/companies'))  return chunks.companies()
-  if (p.includes('/admin/reports'))    return chunks.reports()
-  if (p.includes('/admin/profile'))    return chunks.profile()
-  // if (p.includes('/admin/billing')) return chunks.billing?.()
-  // default: dashboard
-  return chunks.dashboard()
+  if (p.includes('/admin/users'))      return entries.users()
+  if (p.includes('/admin/companies'))  return entries.companies()
+  if (p.includes('/admin/reports'))    return entries.reports()
+  if (p.includes('/admin/profile'))    return entries.profile()
+  // if (p.includes('/admin/billing'))  return entries.billing?.()
+  return entries.dashboard()
+}
+
+// Optional: eager warm after router shell loads (skip on slow networks)
+export async function warmAdminAfterShell() {
+  if (isConstrainedNetwork()) return
+  await preloadAboveTheFold()
 }

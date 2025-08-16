@@ -1,11 +1,22 @@
 // src/session/useSession.js
+// ======================================================================
 // Hooks + helpers (no components). Import where needed.
-//
-import { useContext, useRef, useDebugValue } from 'react'
+// ======================================================================
 
+import { useContext, useRef, useDebugValue } from 'react'
 import SessionContext, { DEFAULT_SESSION } from './SessionContext.js'
 
 const __DEV__ = (import.meta?.env?.MODE !== 'production')
+
+// ---- internal ----------------------------------------------------------
+
+function normalizeRole(r) {
+  if (r == null) return null
+  const v = String(r).toLowerCase().trim()
+  return v || null
+}
+
+// ---- useSession --------------------------------------------------------
 
 /**
  * useSession()
@@ -16,7 +27,7 @@ const __DEV__ = (import.meta?.env?.MODE !== 'production')
 export function useSession() {
   const ctx = useContext(SessionContext)
   if (__DEV__ && (ctx === DEFAULT_SESSION || ctx == null)) {
-     
+    // eslint-disable-next-line no-console
     console.warn('[useSession] Used outside <SessionProvider>. Returning default (logged out).')
   }
   const value = ctx || DEFAULT_SESSION
@@ -26,8 +37,9 @@ export function useSession() {
   return value
 }
 
+// ---- useSessionSelector ------------------------------------------------
+
 /**
- * useSessionSelector(selector, isEqual?)
  * Select a slice of session state with memoized return to avoid
  * downstream re-renders when the selected value is referentially equal.
  *
@@ -46,13 +58,12 @@ export function useSessionSelector(selector, isEqual = Object.is) {
     selected = typeof selector === 'function' ? selector(session) : session
   } catch (e) {
     if (__DEV__) {
-       
+      // eslint-disable-next-line no-console
       console.warn('[useSessionSelector] Selector threw:', e)
     }
     selected = undefined
   }
 
-  // Keep previous reference if equal (prevents child updates / effect churn)
   if (isEqual(selected, prevRef.current)) return prevRef.current
   prevRef.current = selected
   return selected
@@ -72,30 +83,34 @@ export function shallowEqual(a, b) {
   return true
 }
 
-/** Convenience helpers */
+// ---- Convenience hooks -------------------------------------------------
+
 export function useUser()       { return useSessionSelector(s => s.user) }
-export function useRole()       { return useSessionSelector(s => s.role) }
-export function useIsLoggedIn() { return useSessionSelector(s => s.isLoggedIn) }
-export function useIsLoading()  { return useSessionSelector(s => s.loading) }
+export function useRole()       { return useSessionSelector(s => normalizeRole(s.role)) }
+export function useIsLoggedIn() { return useSessionSelector(s => !!s.isLoggedIn) }
+export function useIsLoading()  { return useSessionSelector(s => !!s.loading) }
 
 /**
- * Role utilities (client-only checks)
+ * Role utilities
  * - useHasRole('admin')
- * - useHasAnyRole(['admin','superadmin'])
+ * - useHasRole(['admin','superadmin'])
+ * - useHasRole(role => role === 'admin' || role === 'superadmin')
  */
-export function useHasRole(role) {
+export function useHasRole(required) {
   const current = useRole()
-  return current === role
-}
-export function useHasAnyRole(roles = []) {
-  const current = useRole()
-  if (!Array.isArray(roles) || roles.length === 0) return false
-  return roles.includes(current)
+  if (!required) return true
+  if (typeof required === 'function') return !!required(current)
+  if (Array.isArray(required)) return required.map(normalizeRole).includes(current)
+  return normalizeRole(required) === current
 }
 
-/**
- * Fallback accessors (handy during early boot / outside React)
- */
+/** Back-compat helper name */
+export function useHasAnyRole(roles = []) {
+  return useHasRole(roles)
+}
+
+// ---- Fallback accessors (outside React / early boot) -------------------
+
 export function getCurrentUserEmailFallback() {
   const last = (typeof window !== 'undefined' && window.__lastSession) || {}
   const ctx = safePeekContext()
@@ -106,10 +121,11 @@ export function getCurrentUserEmailFallback() {
     null
   )
 }
+
 export function getCurrentRoleFallback() {
   const last = (typeof window !== 'undefined' && window.__lastSession) || {}
   const ctx = safePeekContext()
-  return (
+  return normalizeRole(
     last?.role ||
     ctx?.role ||
     (typeof localStorage !== 'undefined' && localStorage.getItem('userRole')) ||
@@ -123,7 +139,8 @@ export function getCurrentRoleFallback() {
  */
 export function syncSessionDebug(sessionValue) {
   if (__DEV__ && typeof window !== 'undefined') {
-    window.__lastSession = sessionValue
+    // Freeze a shallow copy so accidental mutations in the console don’t affect consumers
+    window.__lastSession = Object.freeze({ ...sessionValue })
   }
 }
 
@@ -139,8 +156,8 @@ export function peekSession() {
 /** Internal: best-effort peek for fallbacks (no crash if unavailable). */
 function safePeekContext() {
   try {
-    // React sets _currentValue on contexts in modern builds.
-    return SessionContext?._currentValue || DEFAULT_SESSION
+    // React stores internal current value on one of these fields
+    return SessionContext?._currentValue ?? SessionContext?._currentValue2 ?? DEFAULT_SESSION
   } catch {
     return DEFAULT_SESSION
   }

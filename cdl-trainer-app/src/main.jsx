@@ -19,12 +19,11 @@ import './styles/index.css'
 // Providers
 import SplashScreen from '@components/SplashScreen.jsx'
 import { ToastProvider } from '@components/ToastContext.js'
-import { syncSessionDebug } from '@session/useSession'
 import { useAuthStatus } from '@utils/auth.js'
 import { warmRoutesOnSession } from '@utils/route-preload.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
-import { SessionProvider } from '@session'
+import { SessionProvider, syncSessionDebug } from '@session'
 
 // Router
 import { router } from './router.jsx'
@@ -49,7 +48,6 @@ await (async () => {
 })()
 
 // ---- Session bridge: compute once, provide everywhere -------------------
-// Exporting makes React Refresh happy without moving them to separate files.
 export function SessionRoot({ children }) {
   const auth = useAuthStatus() // { loading, isLoggedIn, role, user }
 

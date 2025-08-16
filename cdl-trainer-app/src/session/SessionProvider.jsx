@@ -1,7 +1,7 @@
 // src/session/SessionProvider.jsx
 // Component-only file to satisfy react-refresh rule
 
-import React, { useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
 import SessionContext, { DEFAULT_SESSION } from './SessionContext.js'
 
@@ -95,7 +95,7 @@ export default function SessionProvider({
     // Optional window debug mirror
     if (exposeDebug && typeof window !== 'undefined') {
       // Expose a read-only snapshot (helps when debugging outside React)
-      window.__lastSession = stableValue
+      window.__lastSession = Object.freeze({ ...stableValue })
     }
   }
 
