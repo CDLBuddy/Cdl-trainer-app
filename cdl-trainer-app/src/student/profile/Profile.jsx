@@ -7,9 +7,9 @@
 // - Section status plumbed for SectionHeader (used inside sections)
 // ============================================================================
 
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/ToastContext.js'
@@ -26,13 +26,14 @@ import {
 } from '@utils/userProfile.js'
 
 import { getWalkthroughLabel } from '@walkthrough-data'
+
+import styles from './Profile.module.css'
 import {
   getEnrollmentReadiness,
   getBTWReadiness,
   getSectionStatus,
 } from './schema/calculators.js'
 
-import styles from './Profile.module.css'
 
 // Sections via barrel
 import {

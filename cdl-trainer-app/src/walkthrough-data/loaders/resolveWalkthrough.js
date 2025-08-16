@@ -11,11 +11,14 @@
 import { doc, getDoc } from 'firebase/firestore'
 
 import { db } from '@utils/firebase.js'
+
 import {
   DEFAULT_WALKTHROUGHS,
   getWalkthroughByClass,   // UI-friendly token/code helper
 } from '@walkthrough-data'
+
 import { applyOverlays } from '@walkthrough-utils'
+
 import { overlaysForRestrictions } from '@walkthrough-overlays'
 
 // ---------- Token normalization (kept in sync with your barrels) ----------

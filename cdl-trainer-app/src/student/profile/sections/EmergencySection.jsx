@@ -1,10 +1,10 @@
 // src/student/profile/sections/EmergencySection.jsx
 import React, { useCallback, useId, useMemo } from 'react'
 
-import SectionHeader from './SectionHeader.jsx'
 import { getSectionStatus } from '../schema/calculators.js'
-
 import Field from '../ui/Field.jsx'
+
+import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
 
 const DEFAULT_PHONE_PATTERN = '[0-9\\-\\(\\)\\+ ]{10,15}'

@@ -1,12 +1,12 @@
 // src/student/profile/sections/BasicInfoSection.jsx
 import React, { useMemo, useCallback, useState } from 'react'
 
-import SectionHeader from './SectionHeader.jsx'
 import { getSectionStatus } from '../schema/calculators.js'
-
 import Field from '../ui/Field.jsx'
 import ui from '../ui/fields.module.css'
 import UploadField from '../ui/UploadField.jsx'
+
+import SectionHeader from './SectionHeader.jsx'
 import s from './sections.module.css'
 
 /**

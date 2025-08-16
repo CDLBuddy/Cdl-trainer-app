@@ -1,13 +1,14 @@
 // src/admin/companies/CompanyDetail.jsx
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
 
+import { AddStudentDrawer } from '@admin/companies' // <- from the companies barrel
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/ToastContext.js'
 import { db } from '@utils/firebase.js'
+
 import { getEnrollmentReadiness, getBTWReadiness } from '@student/profile/schema/calculators.js'
-import { AddStudentDrawer } from '@admin/companies' // <- from the companies barrel
 
 /* Helpers */
 const pct = n => Math.max(0, Math.min(100, Math.round(Number.isFinite(n) ? n : 0)))

@@ -7,12 +7,14 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 
 // Reuse Admin preview so the “student view” matches what admins see
+import { showToast } from '@utils/ui-helpers.js'
+import * as WTValidate from '@walkthrough-utils/validateWalkthroughs.js'
+
 import WalkthroughPreview from '@admin/walkthroughs/WalkthroughPreview.jsx'
 
 // Prefer shared validator; fall back gracefully if export names differ
-import * as WTValidate from '@walkthrough-utils/validateWalkthroughs.js'
 
-import { showToast } from '@utils/ui-helpers.js'
+
 import {
   getSubmission,
   approveAndPublish,
@@ -20,7 +22,6 @@ import {
   rejectSubmission,
   getCurrentPublishedForToken,
 } from './SaWalkthroughApi.js'
-
 import styles from './saWalkthroughStyles.module.css'
 
 // -----------------------------------------------------------------------------

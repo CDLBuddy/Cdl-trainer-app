@@ -1,12 +1,11 @@
 // src/student/profile/sections/CoursePaymentSection.jsx
 import React, { useMemo } from 'react'
 
-import SectionHeader from './SectionHeader.jsx'
 import { getSectionStatus } from '../schema/calculators.js'
-
 import Select from '../ui/Select.jsx'
 import UploadField from '../ui/UploadField.jsx'
 
+import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
 
 const PAYMENT_STATUS_OPTIONS = [

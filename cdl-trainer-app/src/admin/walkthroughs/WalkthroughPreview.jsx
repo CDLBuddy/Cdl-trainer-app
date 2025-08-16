@@ -114,7 +114,7 @@ function validateScript(script) {
 export default function WalkthroughPreview({ item, onClose, onSubmit }) {
   const script = Array.isArray(item?.script) ? item.script : []
   const stats = useMemo(() => {
-    let sections = script.length
+    const sections = script.length
     let steps = 0
     let required = 0
     let passFail = 0

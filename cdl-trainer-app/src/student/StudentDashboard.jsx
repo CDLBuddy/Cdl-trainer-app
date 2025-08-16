@@ -7,13 +7,14 @@ import { StudentRoutes } from '@navigation/navigation.js'
 import { useSession } from '@session/useSession.js'
 
 // keep your existing util import path
-import { getLatestUpdate } from '@/utils/firebase.js'
-
 import {
   getEnrollmentReadiness,
   getBTWReadiness,
   getNextActions,
 } from '@student/profile/schema/calculators.js'
+
+import { getLatestUpdate } from '@/utils/firebase.js'
+
 
 import styles from './StudentDashboard.module.css'
 

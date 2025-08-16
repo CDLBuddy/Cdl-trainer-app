@@ -12,9 +12,9 @@ import {
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useToast } from '@components/ToastContext.js'
 import { db, auth } from '@utils/firebase.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
-import { useToast } from '@components/ToastContext.js'
 
 /** Lazy-load jsPDF only when exporting to PDF */
 let jsPDF = null

@@ -1,10 +1,10 @@
 // src/student/profile/sections/WaiverSection.jsx
 import React, { useId, useMemo } from 'react'
 
-import SectionHeader from './SectionHeader.jsx'
 import { getSectionStatus } from '../schema/calculators.js'
-
 import Field from '../ui/Field.jsx'
+
+import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
 
 export default function WaiverSection({ value, onChange }) {

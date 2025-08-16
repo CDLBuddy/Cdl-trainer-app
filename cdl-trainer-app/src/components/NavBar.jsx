@@ -18,11 +18,18 @@ import React, {
 } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 
+import preloadAdminCore, {
+  warmAdminOnIdle,
+  preloadRoute as preloadAdminRoute,
+} from '@admin/preload.js'
+import preloadInstructorCore, {
+  warmInstructorOnIdle,
+  preloadRoute as preloadInstructorRoute,
+} from '@instructor/preload.js'
 import {
   getDashboardRoute,
   getTopNavForRole, // (renamed from getNavLinksForRole)
 } from '@navigation/navConfig.js'
-
 import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,
@@ -33,16 +40,9 @@ import {
 import { preloadRoutesForRole } from '@/utils/route-preload.js'
 
 // Role-specific warmers (safe, idempotent)
-import preloadAdminCore, {
-  warmAdminOnIdle,
-  preloadRoute as preloadAdminRoute,
-} from '@admin/preload.js'
-import preloadInstructorCore, {
-  warmInstructorOnIdle,
-  preloadRoute as preloadInstructorRoute,
-} from '@instructor/preload.js'
 
 import { useSession } from '../session/useSession.js'
+
 import styles from './NavBar.module.css'
 
 /** Infer role from a path target like "/student", "/instructor", etc. */

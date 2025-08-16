@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 
 import { auth } from '@utils/firebase.js'
 import { updateUserProfileFields } from '@utils/userProfile.js'
+
 import { deriveOverlays } from '@admin/utils/enrollmentAssignments.js'
 
 /**

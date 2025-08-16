@@ -5,8 +5,8 @@
 // - Immutable + light DEV validation
 // ======================================================================
 
-import renameSections from './rename-sections.js'
 import mergeSteps from './merge-steps.js'
+import renameSections from './rename-sections.js'
 
 // ----- Named exports for direct importing --------------------------------
 export { renameSections, mergeSteps }

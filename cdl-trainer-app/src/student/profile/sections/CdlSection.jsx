@@ -1,10 +1,11 @@
 // src/student/profile/sections/CdlSection.jsx
 import React, { useMemo } from 'react'
 
-import SectionHeader from './SectionHeader.jsx'
-import { getSectionStatus } from '../schema/calculators.js'
 import { getWalkthroughLabel } from '@walkthrough-data'
 
+import { getSectionStatus } from '../schema/calculators.js'
+
+import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
 
 /**

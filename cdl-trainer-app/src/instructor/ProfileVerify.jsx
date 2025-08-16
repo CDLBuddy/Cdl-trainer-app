@@ -8,12 +8,12 @@ import { auth } from '@utils/firebase.js'
 import { subscribeUserProfile, updateUserProfileFields } from '@utils/userProfile.js'
 
 // Shared student helpers
-import SectionHeader from '@student/profile/sections/SectionHeader.jsx'
 import {
   getSectionStatus,
   getEnrollmentReadiness,
   getBTWReadiness,
 } from '@student/profile/schema/calculators.js'
+import SectionHeader from '@student/profile/sections/SectionHeader.jsx'
 
 const SECTION_META = [
   { key: 'basicInfo', title: 'Basic Info' },
