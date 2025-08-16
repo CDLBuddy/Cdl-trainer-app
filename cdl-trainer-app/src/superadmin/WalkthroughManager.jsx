@@ -1,24 +1,22 @@
 // src/superadmin/WalkthroughManager.jsx
-import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore'
 import React, { useEffect, useMemo, useState } from 'react'
+import { collection, doc, getDoc, getDocs, setDoc, serverTimestamp } from 'firebase/firestore'
 
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@components/ToastContext.js' // case/extension exact
+import { useToast } from '@components/ToastContext.js' // keep exact casing/extension per your setup
 import { db, auth } from '@utils/firebase.js'
 
+/* Walkthrough data utils */
 import {
-  // defaults helpers (from src/walkthrough-data/defaults/index.js)
   getDefaultWalkthroughByClass,
-  // global helpers (from src/walkthrough-data/index.js)
   getWalkthroughLabel,
-  resolveWalkthrough, // re-exported from walkthrough-data/index.js
-} from '../walkthrough-data'
+  resolveWalkthrough,
+} from '@walkthrough-data' // alias → src/walkthrough-data/index.js
 
-// Use CDL class *codes* as the selector values.
-// These work with both getDefaultWalkthroughByClass and resolveWalkthrough.
+// Hybrid plan: CDL class tokens supported by defaults + resolver
 const CLASS_TOKENS = ['A', 'A-WO-AIR-ELEC', 'A-WO-HYD-ELEC', 'B', 'PASSENGER-BUS']
 
-/** Lightweight validator so we can guard before saving */
+/* --------------------------- helpers -------------------------------------- */
 function validateScript(script) {
   const problems = []
   if (!Array.isArray(script)) problems.push('Top-level must be an array of sections.')
@@ -45,7 +43,6 @@ function validateScript(script) {
   return { ok: problems.length === 0, problems }
 }
 
-/** Small, read-only counts for quick sanity checks */
 function countItems(script) {
   if (!Array.isArray(script)) return { sections: 0, steps: 0 }
   const sections = script.length
@@ -53,6 +50,18 @@ function countItems(script) {
   return { sections, steps }
 }
 
+function coerceDate(x) {
+  try {
+    if (!x) return null
+    if (typeof x === 'number') return new Date(x)
+    if (typeof x === 'object' && typeof x.toDate === 'function') return x.toDate()
+    return new Date(x)
+  } catch {
+    return null
+  }
+}
+
+/* --------------------------- component ------------------------------------ */
 export default function WalkthroughManager() {
   const { showToast } = useToast()
 
@@ -69,10 +78,7 @@ export default function WalkthroughManager() {
   const [validation, setValidation] = useState({ ok: true, problems: [] })
 
   // Defaults (readonly)
-  const defaultScript = useMemo(
-    () => getDefaultWalkthroughByClass(classToken),
-    [classToken]
-  )
+  const defaultScript = useMemo(() => getDefaultWalkthroughByClass(classToken), [classToken])
   const defaultCounts = useMemo(() => countItems(defaultScript), [defaultScript])
 
   // Derived preview of editor JSON
@@ -84,10 +90,9 @@ export default function WalkthroughManager() {
       return null
     }
   }, [jsonText])
-
   const editorCounts = useMemo(() => countItems(parsedEditorScript), [parsedEditorScript])
 
-  // 1) Load schools for picker (name + id) — run once
+  /* 1) Load schools for picker (name + id) — once */
   useEffect(() => {
     let alive = true
     ;(async () => {
@@ -104,9 +109,10 @@ export default function WalkthroughManager() {
       }
     })()
     return () => { alive = false }
-  }, [schoolId, showToast]) // only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // run once
 
-  // 2) Load current custom for school+class
+  /* 2) Load current custom for school+class */
   useEffect(() => {
     if (!schoolId || !classToken) return
     let alive = true
@@ -129,7 +135,7 @@ export default function WalkthroughManager() {
           setJsonText(JSON.stringify(data.script || [], null, 2))
         } else {
           setCustomDocMeta(null)
-          // No custom yet → seed editor with default for convenience
+          // Seed editor with default for convenience
           setJsonText(JSON.stringify(defaultScript || [], null, 2))
         }
       } catch (e) {
@@ -142,7 +148,7 @@ export default function WalkthroughManager() {
     return () => { alive = false }
   }, [schoolId, classToken, defaultScript, showToast])
 
-  // 3) Parse + validate on change
+  /* 3) Parse + validate on change */
   useEffect(() => {
     if (!jsonText.trim()) { setParseErr(''); setValidation({ ok: true, problems: [] }); return }
     try {
@@ -156,29 +162,27 @@ export default function WalkthroughManager() {
   }, [jsonText])
 
   async function save() {
-    if (parseErr) {
-      showToast('Fix JSON errors before saving.', 'error')
-      return
-    }
-    if (!validation.ok) {
-      showToast('Please resolve validation problems before saving.', 'error')
-      return
-    }
+    if (parseErr) return showToast('Fix JSON errors before saving.', 'error')
+    if (!validation.ok) return showToast('Please resolve validation problems before saving.', 'error')
+
     try {
       setSaving(true)
       const ref = doc(db, 'schools', schoolId, 'walkthroughs', classToken)
       const editorScript = JSON.parse(jsonText)
-      const nowIso = new Date().toISOString()
-      await setDoc(ref, {
-        script: editorScript,
-        updatedAt: nowIso,
-        updatedBy: auth?.currentUser?.email || 'superadmin',
-        source: 'superadmin-ui',
-        version: 1,
-      }, { merge: true })
+      await setDoc(
+        ref,
+        {
+          script: editorScript,
+          updatedAt: serverTimestamp(),
+          updatedBy: auth?.currentUser?.email || auth?.currentUser?.uid || 'superadmin',
+          source: 'superadmin-ui',
+          // If you version: bump later from publish flow
+        },
+        { merge: true }
+      )
       setCustomDocMeta({
-        updatedAt: nowIso,
-        updatedBy: auth?.currentUser?.email || 'superadmin',
+        updatedAt: new Date(), // local echo; Firestore will return server ts next fetch
+        updatedBy: auth?.currentUser?.email || auth?.currentUser?.uid || 'superadmin',
         isCustom: true,
       })
       showToast('Walkthrough saved.')
@@ -198,15 +202,12 @@ export default function WalkthroughManager() {
   async function previewResolved() {
     try {
       const res = await resolveWalkthrough({
-        classType: classToken,     // CDL code
+        classType: classToken, // CDL code
         schoolId,
         preferCustom: true,
         softFail: true,
       })
-      if (!res?.script) {
-        showToast('No walkthrough resolved (check defaults? custom?)', 'error')
-        return
-      }
+      if (!res?.script) return showToast('No walkthrough resolved (check defaults/custom).', 'error')
       const { sections, steps } = countItems(res.script)
       showToast(`Resolved script (${res.isCustom ? 'custom' : 'default'}): ${sections} sections, ${steps} steps.`)
     } catch (e) {
@@ -214,6 +215,8 @@ export default function WalkthroughManager() {
       showToast('Resolver failed. See console.', 'error')
     }
   }
+
+  const lastUpdated = coerceDate(customDocMeta?.updatedAt)
 
   return (
     <Shell title="Walkthrough Manager">
@@ -235,6 +238,7 @@ export default function WalkthroughManager() {
               ))}
             </select>
           </div>
+
           <div>
             <label className="label" htmlFor="class-select">Class</label>
             <select
@@ -250,15 +254,18 @@ export default function WalkthroughManager() {
               ))}
             </select>
           </div>
+
           <div style={{ alignSelf: 'end', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
             <button className="btn outline" onClick={resetToDefault} disabled={loading}>Reset to Default</button>
             <button className="btn outline" onClick={previewResolved} disabled={loading}>Preview Resolve</button>
-            <button className="btn" onClick={save} disabled={loading || saving}>💾 Save</button>
+            <button className="btn" onClick={save} disabled={loading || saving || !validation.ok || !!parseErr}>
+              {saving ? 'Saving…' : '💾 Save'}
+            </button>
           </div>
         </div>
 
         {/* Meta */}
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ opacity: .8 }}>
             Default: <b>{defaultCounts.sections}</b> sections / <b>{defaultCounts.steps}</b> steps
           </span>
@@ -270,7 +277,7 @@ export default function WalkthroughManager() {
             <>
               <span style={{ opacity: .5 }}>•</span>
               <span style={{ opacity: .8 }}>
-                Last custom: {customDocMeta.updatedAt ? new Date(customDocMeta.updatedAt).toLocaleString() : '—'}
+                Last custom: {lastUpdated ? lastUpdated.toLocaleString() : '—'}
                 {customDocMeta.updatedBy ? ` by ${customDocMeta.updatedBy}` : ''}
               </span>
             </>

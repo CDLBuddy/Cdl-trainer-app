@@ -6,6 +6,7 @@
 // - Re-exports preload helpers from ./preload.js
 // ======================================================================
 
+// Core pages
 export { default as SuperAdminDashboard } from './SuperAdminDashboard.jsx'
 export { default as SchoolManagement }    from './SchoolManagement.jsx'
 export { default as UserManagement }      from './UserManagement.jsx'
@@ -17,6 +18,10 @@ export { default as Permissions }         from './Permissions.jsx'
 
 // Walkthroughs (custom/default script management per school)
 export { default as WalkthroughManager }  from './WalkthroughManager.jsx'
+
+// Superadmin Walkthrough Review (queue + detail)
+// (Forwarded from the walkthroughs barrel for convenience)
+export { SAReviewQueue, SAReviewDetail }  from './walkthroughs'
 
 // Preload helpers (tree-shakable)
 export * from './preload.js'

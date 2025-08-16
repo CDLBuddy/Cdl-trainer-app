@@ -1,11 +1,6 @@
 // src/superadmin/SuperadminRouter.jsx
 // ======================================================================
 // Superadmin Router (nested under /superadmin/*)
-// - Lazy-loads superadmin pages
-// - Local Suspense fallback (keeps app chrome responsive)
-// - Lightweight error boundary for render-time safety
-// - Idle post-mount warm-up of *core* screens (lighter than full preload)
-// - Optional: SuperadminRouter.preload() to warm everything
 // ======================================================================
 
 import React, { Suspense, lazy, useEffect } from 'react'
@@ -25,6 +20,14 @@ const Settings            = lazy(() => import('@superadmin/Settings.jsx'))
 const Logs                = lazy(() => import('@superadmin/Logs.jsx'))
 const Permissions         = lazy(() => import('@superadmin/Permissions.jsx'))
 const WalkthroughManager  = lazy(() => import('@superadmin/WalkthroughManager.jsx'))
+
+// Walkthrough Review (from barrel: src/superadmin/walkthroughs/index.js)
+const SAReviewQueue  = lazy(() =>
+  import('@superadmin/walkthroughs').then(m => ({ default: m.SAReviewQueue }))
+)
+const SAReviewDetail = lazy(() =>
+  import('@superadmin/walkthroughs').then(m => ({ default: m.SAReviewDetail }))
+)
 
 // ---- Local loading UI ---------------------------------------------------
 function Loading({ text = 'Loading superadmin page…' }) {
@@ -120,6 +123,11 @@ export default function SuperadminRouter() {
           {/* Walkthrough authoring/branding */}
           <Route path="walkthroughs" element={<WalkthroughManager />} />
 
+          {/* Walkthrough review (superadmin) */}
+          <Route path="walkthroughs/review" element={<SAReviewQueue />} />
+          {/* Include schoolId so Detail can fetch the doc path directly */}
+          <Route path="walkthroughs/review/:schoolId/:submissionId" element={<SAReviewDetail />} />
+
           {/* Fallback */}
           <Route path="*" element={<SuperadminNotFound />} />
         </Routes>
@@ -132,8 +140,5 @@ export default function SuperadminRouter() {
  * Optional: warm *all* superadmin chunks (hover/idle/route-guard).
  * Usage: import SuperadminRouter from '@superadmin/SuperadminRouter.jsx'
  *        SuperadminRouter.preload?.()
- * Keeping a single default export (component) satisfies the
- * react-refresh/only-export-components rule.
- * @type {() => Promise<void>}
  */
 SuperadminRouter.preload = _preloadAll

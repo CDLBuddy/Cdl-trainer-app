@@ -1,12 +1,5 @@
 // ======================================================================
 // Superadmin — route preloader (pure; no JSX)
-// - Standard API:
-//     * preloadAboveTheFold()  → light, high-use screens
-//     * preloadAll()           → everything in Superadmin area
-//     * preloadRoute(key)      → targeted warm by key
-// - Back-compat aliases preserved (your existing function names)
-// - Convenience: warmSuperadminOnIdle, preloadSuperadminOnHover,
-//               prefetchSuperadminByPath, warmSuperadminAfterShell
 // ======================================================================
 
 // ---- one-shot guard so we don't import the same chunk repeatedly -------
@@ -21,7 +14,9 @@ async function _once(key, loader) {
 function prefersReducedMotion() {
   try { return !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches } catch { return false }
 }
-export const isReducedMotion = prefersReducedMotion
+export function isReducedMotion() {
+  return prefersReducedMotion()
+}
 
 // Skip aggressive warms on slow/Data Saver connections
 function isConstrainedNetwork() {
@@ -32,6 +27,7 @@ function isConstrainedNetwork() {
     return /(^| )(slow-2g|2g|3g)( |$)/.test(c.effectiveType || '')
   } catch { return false }
 }
+export { isConstrainedNetwork } // optionally useful to callers
 
 // ---- Lazy entries (alias-safe; mirrors vite/eslint config) --------------
 const entries = {
@@ -44,6 +40,12 @@ const entries = {
   logs:         () => import('@superadmin/Logs.jsx'),
   permissions:  () => import('@superadmin/Permissions.jsx'),
   walkthroughs: () => import('@superadmin/WalkthroughManager.jsx'),
+
+  // New: Superadmin Walkthrough Review (loaded via barrel)
+  'walkthroughs-review-queue': () =>
+    import('@superadmin/walkthroughs').then(m => ({ default: m.SAReviewQueue })),
+  'walkthroughs-review-detail': () =>
+    import('@superadmin/walkthroughs').then(m => ({ default: m.SAReviewDetail })),
 }
 
 // ---- Public API: above-the-fold (light set) -----------------------------
@@ -60,13 +62,13 @@ export async function preloadAboveTheFold() {
 // ---- Public API: full warm (everything superadmin) ---------------------
 export async function preloadAll() {
   if (typeof window === 'undefined') return
-  await Promise.allSettled(Object.entries(entries).map(([k, loader]) =>
-    _once(`sa:${k}`, loader)
-  ))
+  await Promise.allSettled(
+    Object.entries(entries).map(([k, loader]) => _once(`sa:${k}`, loader))
+  )
 }
 
 // ---- Public API: targeted warm by logical key --------------------------
-/** @param {'dashboard'|'schools'|'users'|'compliance'|'billing'|'settings'|'logs'|'permissions'|'walkthroughs'|string} name */
+/** @param {'dashboard'|'schools'|'users'|'compliance'|'billing'|'settings'|'logs'|'permissions'|'walkthroughs'|'walkthroughs-review-queue'|'walkthroughs-review-detail'|string} name */
 export async function preloadRoute(name) {
   if (typeof window === 'undefined') return
   const key = String(name)
@@ -84,6 +86,10 @@ export async function preloadSuperadminSettings()    { return _once('sa:settings
 export async function preloadSuperadminLogs()        { return _once('sa:logs',       entries.logs) }
 export async function preloadSuperadminPermissions() { return _once('sa:permissions',entries.permissions) }
 export async function preloadSuperadminWalkthroughs(){ return _once('sa:walkthroughs',entries.walkthroughs) }
+
+// New back-compat style helpers for review pages (optional)
+export async function preloadSAReviewQueue()  { return _once('sa:walkthroughs-review-queue',  entries['walkthroughs-review-queue']) }
+export async function preloadSAReviewDetail() { return _once('sa:walkthroughs-review-detail', entries['walkthroughs-review-detail']) }
 
 export async function preloadSuperadminCore() { return preloadAboveTheFold() }
 export async function preloadSuperadminOps()  {
@@ -133,8 +139,8 @@ export function preloadSuperadminOnHover(elOrGetter) {
 
   function cleanup() {
     try {
-      el.removeEventListener('pointerenter', handler, { capture: false })
-      el.removeEventListener('focus', handler, { capture: true })
+      el.removeEventListener('pointerenter', handler)
+      el.removeEventListener('focus', handler, true)
     } catch { /* noop */ }
   }
   return cleanup
@@ -143,14 +149,16 @@ export function preloadSuperadminOnHover(elOrGetter) {
 /** Preload a specific screen by URL path (useful in guards/redirects). */
 export function prefetchSuperadminByPath(path = '') {
   const p = String(path || '').toLowerCase()
-  if (p.includes('/superadmin/schools'))      return entries.schools()
-  if (p.includes('/superadmin/users'))        return entries.users()
-  if (p.includes('/superadmin/compliance'))   return entries.compliance()
-  if (p.includes('/superadmin/settings'))     return entries.settings()
-  if (p.includes('/superadmin/logs'))         return entries.logs()
-  if (p.includes('/superadmin/permissions'))  return entries.permissions()
-  if (p.includes('/superadmin/billing'))      return entries.billing()
-  if (p.includes('/superadmin/walkthroughs')) return entries.walkthroughs()
+  if (p.includes('/superadmin/schools'))                 return entries.schools()
+  if (p.includes('/superadmin/users'))                   return entries.users()
+  if (p.includes('/superadmin/compliance'))              return entries.compliance()
+  if (p.includes('/superadmin/settings'))                return entries.settings()
+  if (p.includes('/superadmin/logs'))                    return entries.logs()
+  if (p.includes('/superadmin/permissions'))             return entries.permissions()
+  if (p.includes('/superadmin/billing'))                 return entries.billing()
+  if (p.includes('/superadmin/walkthroughs/review/'))    return entries['walkthroughs-review-detail']()
+  if (p.includes('/superadmin/walkthroughs/review'))     return entries['walkthroughs-review-queue']()
+  if (p.includes('/superadmin/walkthroughs'))            return entries.walkthroughs()
   return entries.dashboard()
 }
 

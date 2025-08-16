@@ -1,9 +1,11 @@
-// Path: /src/superadmin/walkthroughs/index.js
+// src/superadmin/walkthroughs/index.js
 // -----------------------------------------------------------------------------
-// Barrel for Superadmin walkthrough review module.
+// Superadmin Walkthroughs — Barrel exports
 // -----------------------------------------------------------------------------
 
-export { default as SAReviewQueue }  from './SAReviewQueue.jsx'
+// Pages
+export { default as SAReviewQueue } from './SAReviewQueue.jsx'
 export { default as SAReviewDetail } from './SAReviewDetail.jsx'
 
-export * from './saWalkthroughApi.js'
+// Firestore API (named exports)
+export * from './SaWalkthroughApi.js'
