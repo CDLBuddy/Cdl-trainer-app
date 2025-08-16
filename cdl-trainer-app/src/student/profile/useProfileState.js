@@ -1,24 +1,38 @@
 // src/student/profile/useProfileState.js
-import * as React from 'react'
+// ============================================================================
+// useProfileState(email, options?)
+// Lightweight profile loader with optional realtime subscription.
+// Adds derived flags + a safe nested selector for dotted paths.
+// ============================================================================
 
-import { getUserProfile, subscribeUserProfile } from '@/utils/userProfile.js'
+import * as React from 'react'
+import { getUserProfile, subscribeUserProfile } from '@utils/userProfile.js'
+
+/**
+ * @typedef {Object} UseProfileOptions
+ * @property {Object|null} [initial=null]  Initial profile value (used if no email)
+ * @property {boolean} [realtime=true]     Subscribe to live updates
+ */
+
+/**
+ * @typedef {Object} UseProfileReturn
+ * @property {Object|null} profile
+ * @property {(updater: Function|Object) => void} setProfile
+ * @property {boolean} loading
+ * @property {Error|null} error
+ * @property {() => Promise<void>} refresh
+ * @property {boolean} isEmployerPaid         billing.mode === 'employer'
+ * @property {boolean} isIndividual           billing.mode === 'individual'
+ * @property {boolean} hasVehicle             vehicleQualified === 'yes'
+ * @property {Object}  verified               verified block (or {})
+ * @property {(path:string, fallback?:any)=>any} select  Safe dotted getter, e.g. select('billing.mode','employer')
+ */
 
 /**
  * useProfileState(email, options?)
- * Lightweight profile loader with optional realtime subscription.
- *
  * @param {string|null|undefined} email
- * @param {Object} [options]
- * @param {Object|null} [options.initial=null]  - initial profile shape
- * @param {boolean} [options.realtime=true]     - subscribe to live updates
- *
- * @returns {{
- *   profile: Object|null,
- *   setProfile: (updater: Function|Object) => void,
- *   loading: boolean,
- *   error: Error|null,
- *   refresh: () => Promise<void>
- * }}
+ * @param {UseProfileOptions} [options]
+ * @returns {UseProfileReturn}
  */
 export function useProfileState(email, { initial = null, realtime = true } = {}) {
   const [profile, setProfile] = React.useState(initial)
@@ -62,16 +76,13 @@ export function useProfileState(email, { initial = null, realtime = true } = {})
     let unsub = () => {}
     let mounted = true
 
-    // Initial load
     ;(async () => {
       await refresh()
       if (!mounted) return
 
-      // Optional realtime subscription
       if (realtime && email) {
         try {
           unsub = subscribeUserProfile(email, (live) => {
-            // Ignore if the effect has since re-run for a different email
             if (!mounted || latestEmailRef.current !== email) return
             if (live) setProfileShallow(live)
           })
@@ -83,14 +94,40 @@ export function useProfileState(email, { initial = null, realtime = true } = {})
 
     return () => {
       mounted = false
-      try { unsub && unsub() } catch {
-        // intentionally ignore unsubscribe errors
-      }
+      try { unsub && unsub() } catch { /* ignore unsubscribe errors */ }
     }
-    // Intentionally depend only on email/realtime; refresh is stable but we avoid double-calls.
+    // Intentionally depend only on email/realtime.
   }, [email, realtime]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { profile, setProfile: setProfileShallow, loading, error, refresh }
+  /* ---------------------------------------------------------------------- */
+  /* Derived flags + selector                                               */
+  /* ---------------------------------------------------------------------- */
+
+  const select = React.useCallback((path, fallback = undefined) => {
+    if (!profile || !path) return fallback
+    const val = path.split('.').reduce((acc, key) => (acc == null ? acc : acc[key]), profile)
+    return val == null ? fallback : val
+  }, [profile])
+
+  const billingMode = String(select('billing.mode', '')).toLowerCase()
+  const isEmployerPaid = billingMode === 'employer'
+  const isIndividual   = billingMode === 'individual'
+  const hasVehicle     = String(select('vehicleQualified', '')).toLowerCase() === 'yes'
+  const verified       = select('verified', {}) || {}
+
+  return {
+    profile,
+    setProfile: setProfileShallow,
+    loading,
+    error,
+    refresh,
+    // derived
+    isEmployerPaid,
+    isIndividual,
+    hasVehicle,
+    verified,
+    select,
+  }
 }
 
 /* -------------------------------------------------------------------------- */

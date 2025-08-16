@@ -6,66 +6,23 @@ import Shell from '@components/Shell.jsx'
 import { StudentRoutes } from '@navigation/navigation.js'
 import { useSession } from '@session/useSession.js'
 
+// keep your existing util import path
 import { getLatestUpdate } from '@/utils/firebase.js'
 
+import {
+  getEnrollmentReadiness,
+  getBTWReadiness,
+  getNextActions,
+} from '@student/profile/schema/calculators.js'
 
 import styles from './StudentDashboard.module.css'
 
 /* ------------------------------------------------------------------ *
  * Local helpers
  * ------------------------------------------------------------------ */
-function clamp01to100(n) {
+function clampPct(n) {
   const x = Number.isFinite(n) ? n : 0
   return Math.max(0, Math.min(100, Math.round(x)))
-}
-
-function computeProfileCompletion(profile = {}) {
-  const keysToCheck = [
-    'name',
-    'dob',
-    'profilePicUrl',
-    'cdlClass',
-    'experience',
-    'cdlPermit',
-    'permitPhotoUrl',
-    'driverLicenseUrl',
-    'medicalCardUrl',
-    'vehicleQualified',
-    'emergencyName',
-    'emergencyPhone',
-    'waiverSigned',
-    'course',
-    'paymentStatus',
-  ]
-  const filled = keysToCheck.filter(k => Boolean(profile?.[k])).length
-  return clamp01to100((filled / keysToCheck.length) * 100)
-}
-
-function getNextChecklistHint(user = {}) {
-  if (!user.cdlClass || !user.cdlPermit || !user.experience) {
-    const missing = []
-    if (!user.cdlClass) missing.push('CDL class')
-    if (!user.cdlPermit) missing.push('CDL permit status')
-    if (!user.experience) missing.push('experience level')
-    return `Complete your profile: ${missing.join(', ')}.`
-  }
-  if (user.cdlPermit === 'yes' && !user.permitPhotoUrl) {
-    return 'Upload a photo of your CDL permit.'
-  }
-  if (user.vehicleQualified === 'yes' && (!user.truckPlateUrl || !user.trailerPlateUrl)) {
-    const which = [
-      !user.truckPlateUrl ? 'truck' : null,
-      !user.trailerPlateUrl ? 'trailer' : null,
-    ].filter(Boolean).join(' & ')
-    return `Upload your ${which} data plate photo${which.includes('&') ? 's' : ''}.`
-  }
-  if (typeof user.lastTestScore === 'number' && user.lastTestScore < 80) {
-    return 'Pass a practice test (80%+ required).'
-  }
-  if (!user.walkthroughProgress || user.walkthroughProgress < 1) {
-    return 'Complete at least one walkthrough drill.'
-  }
-  return 'All required steps complete! 🎉'
 }
 
 function formatDate(dateInput) {
@@ -84,11 +41,23 @@ function formatDate(dateInput) {
 export default function StudentDashboard() {
   const navigate = useNavigate()
   const { user } = useSession() || {}
-
   const profile = useMemo(() => user?.profile || user || {}, [user])
-  const profilePct = useMemo(() => computeProfileCompletion(profile), [profile])
-  const nextHint = useMemo(() => getNextChecklistHint(profile), [profile])
-  const isComplete = nextHint.startsWith('All required steps complete')
+
+  // Dual readiness via schema calculators
+  const enrollPct = clampPct(getEnrollmentReadiness(profile))
+  const btwPct = clampPct(getBTWReadiness(profile))
+
+  const billingMode = String(profile?.billing?.mode || '').toLowerCase()
+  const isEmployerPaid = billingMode === 'employer'
+
+  // Next actions (filter payment if employer-paid)
+  const nextActionsRaw = useMemo(() => getNextActions(profile, 3) || [], [profile])
+  const nextActions = useMemo(
+    () => nextActionsRaw.filter(a => (isEmployerPaid ? a.section !== 'payment' : true)),
+    [nextActionsRaw, isEmployerPaid]
+  )
+
+  const allSet = enrollPct === 100 && btwPct === 100
 
   // Latest update card
   const [latestUpdate, setLatestUpdate] = useState(null)
@@ -113,7 +82,7 @@ export default function StudentDashboard() {
     return () => { alive = false }
   }, [])
 
-  // Title (Shell renders header; we still set document title for the tab)
+  // Title
   useEffect(() => {
     const prev = document.title
     document.title = 'Student Dashboard • CDL Trainer'
@@ -122,7 +91,7 @@ export default function StudentDashboard() {
 
   const quickLinks = useMemo(
     () => [
-      { to: StudentRoutes.checklists(),   label: 'Open Checklists', icon: '📋' },
+      { to: StudentRoutes.checklists(),    label: 'Open Checklists', icon: '📋' },
       { to: StudentRoutes.practiceTests(), label: 'Practice Tests',  icon: '📝' },
       { to: StudentRoutes.walkthrough(),   label: 'Walkthrough',     icon: '🚚' },
       { to: StudentRoutes.flashcards(),    label: 'Flashcards',      icon: '🗂️' },
@@ -135,30 +104,48 @@ export default function StudentDashboard() {
 
   const goProfile = useCallback(() => navigate(StudentRoutes.profile()), [navigate])
 
-  const progressNow = Math.min(100, Math.max(0, profilePct))
-
   return (
     <Shell title="Student Dashboard" showFab showFooter>
       <div className={styles.wrapper}>
-        {/* KPIs */}
-        <section className={styles.kpiRow} aria-label="Key metrics">
+        {/* Readiness KPIs */}
+        <section className={styles.kpiRow} aria-label="Readiness">
           <article className={styles.kpiCard}>
-            <h3 className={styles.kpiTitle}>Profile Completion</h3>
+            <h3 className={styles.kpiTitle}>Enrollment Readiness</h3>
             <div className={styles.kpiValue}>
-              {profilePct}<span className={styles.kpiUnit}>%</span>
+              {enrollPct}<span className={styles.kpiUnit}>%</span>
             </div>
             <div
               className={styles.progressTrack}
               role="progressbar"
-              aria-label="Profile completion"
+              aria-label="Enrollment readiness"
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-valuenow={progressNow}
+              aria-valuenow={enrollPct}
             >
-              <div className={styles.progressFill} style={{ width: `${progressNow}%` }} />
+              <div className={styles.progressFill} style={{ width: `${enrollPct}%` }} />
             </div>
             <p className={styles.kpiHint}>
-              {profilePct < 100 ? 'Finish your profile to 100%.' : 'Nice work!'}
+              {enrollPct < 100 ? 'Complete the required enrollment items.' : 'Enrollment complete!'}
+            </p>
+          </article>
+
+          <article className={styles.kpiCard}>
+            <h3 className={styles.kpiTitle}>BTW Readiness</h3>
+            <div className={styles.kpiValue}>
+              {btwPct}<span className={styles.kpiUnit}>%</span>
+            </div>
+            <div
+              className={styles.progressTrack}
+              role="progressbar"
+              aria-label="Behind-the-wheel readiness"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={btwPct}
+            >
+              <div className={styles.progressFill} style={{ width: `${btwPct}%` }} />
+            </div>
+            <p className={styles.kpiHint}>
+              {btwPct < 100 ? 'Finish permit/license/medical (and vehicle if applicable).' : 'Ready for scheduling!'}
             </p>
           </article>
 
@@ -176,31 +163,41 @@ export default function StudentDashboard() {
                 : 'Take a practice test to see a score.'}
             </p>
           </article>
-
-          <article className={styles.kpiCard}>
-            <h3 className={styles.kpiTitle}>Study Streak</h3>
-            <div className={styles.kpiValue}>
-              {streakDays}<span className={styles.kpiUnit}>d</span>
-            </div>
-            <p className={styles.kpiHint}>
-              {streakDays > 0 ? 'Keep that streak alive!' : 'Start a session today.'}
-            </p>
-          </article>
         </section>
 
-        {/* Next step banner */}
+        {/* Next steps banner */}
         <section
-          className={`${styles.banner} ${isComplete ? styles.bannerSuccess : styles.bannerInfo}`}
+          className={`${styles.banner} ${allSet ? styles.bannerSuccess : styles.bannerInfo}`}
           role="status"
           aria-live="polite"
         >
           <div className={styles.bannerIcon} aria-hidden>
-            {isComplete ? '✅' : '➡️'}
+            {allSet ? '✅' : '➡️'}
           </div>
-          <div className={styles.bannerText}>{nextHint}</div>
-          {!isComplete && (
+          <div className={styles.bannerText}>
+            {allSet
+              ? 'All set! Contact your instructor to schedule BTW.'
+              : (
+                <>
+                  Next up:
+                  <ul className={styles.nextList}>
+                    {nextActions.length === 0 ? (
+                      <li>Review your profile details.</li>
+                    ) : nextActions.map(({ section, label }) => (
+                      <li key={section}>
+                        <Link to={`${StudentRoutes.profile()}#${section}`} className={styles.nextLink}>
+                          {label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )
+            }
+          </div>
+          {!allSet && (
             <button type="button" className={styles.bannerCta} onClick={goProfile}>
-              Fix it
+              Open Profile
             </button>
           )}
         </section>
@@ -215,7 +212,7 @@ export default function StudentDashboard() {
           ))}
         </nav>
 
-        {/* Latest Update card */}
+        {/* What's New */}
         <section className={styles.updateCard} aria-labelledby="whats-new-title">
           <div className={styles.updateHeader}>
             <span id="whats-new-title">📢 What’s New</span>

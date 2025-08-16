@@ -128,3 +128,60 @@
     -webkit-backdrop-filter: none;
   }
 }
+/* === SectionHeader basics === */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin: 1.25rem 0 .5rem;
+}
+
+.sectionTitle {
+  font-size: 1.125rem; /* ~18px */
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.sectionMeta {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  white-space: nowrap;
+}
+
+.sectionSubtle {
+  color: var(--muted-foreground, #6b7280);
+  font-size: .875rem; /* ~14px */
+}
+
+/* === Status chips (minimal) === */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem; /* ~13px */
+  line-height: 1;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.chipOk {
+  background: rgba(16, 185, 129, 0.12);     /* emerald-500-ish */
+  color: #065f46;                            /* emerald-800-ish */
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.chipWarn {
+  background: rgba(245, 158, 11, 0.12);     /* amber-500-ish */
+  color: #92400e;                            /* amber-800-ish */
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.chipPending {
+  background: rgba(59, 130, 246, 0.12);     /* blue-500-ish */
+  color: #1e40af;                            /* blue-800-ish */
+  border-color: rgba(59, 130, 246, 0.4);
+}

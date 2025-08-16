@@ -1,11 +1,13 @@
 // src/student/profile/sections/EmergencySection.jsx
-import React, { useCallback, useId } from 'react'
+import React, { useCallback, useId, useMemo } from 'react'
+
+import SectionHeader from './SectionHeader.jsx'
+import { getSectionStatus } from '../schema/calculators.js'
 
 import Field from '../ui/Field.jsx'
-
 import styles from './sections.module.css'
 
-const PHONE_PATTERN = '[0-9\\-\\(\\)\\+ ]{10,15}'
+const DEFAULT_PHONE_PATTERN = '[0-9\\-\\(\\)\\+ ]{10,15}'
 
 function formatPhoneUS(digits) {
   // very light formatter: 10 digits => (XXX) XXX-XXXX
@@ -16,31 +18,47 @@ function formatPhoneUS(digits) {
   return `(${p1}) ${p2}-${p3}`
 }
 
-export default function EmergencySection({ value, onChange }) {
+/**
+ * EmergencySection
+ * Props:
+ * - value:       { emergencyName, emergencyPhone, emergencyRelation, verified? }
+ * - onChange:    (key, value) => void
+ * - phonePattern?: string (optional) — falls back to DEFAULT_PHONE_PATTERN
+ */
+export default function EmergencySection({ value, onChange, phonePattern = DEFAULT_PHONE_PATTERN }) {
   const v = value || {}
   const sectionId = useId()
   const hintId = `${sectionId}-hint`
 
-  const setField = useCallback(
-    (k, val) => onChange?.(k, val),
-    [onChange]
+  // derive status chip using schema helpers
+  const status = useMemo(
+    () => getSectionStatus('emergency', v, v?.verified || {}),
+    [v]
   )
+  const verifiedBy = v?.verified?.by
+  const verifiedAt = v?.verified?.at
 
-  const handlePhoneBlur = useCallback(
-    (raw) => {
-      const digits = String(raw || '').replace(/\D+/g, '')
-      const formatted = formatPhoneUS(digits)
-      if (formatted) setField('emergencyPhone', formatted)
-    },
-    [setField]
-  )
+  const setField = useCallback((k, val) => onChange?.(k, val), [onChange])
+
+  const handlePhoneBlur = useCallback(() => {
+    const digits = String(v.emergencyPhone || '').replace(/\D+/g, '')
+    const formatted = formatPhoneUS(digits)
+    if (formatted) setField('emergencyPhone', formatted)
+  }, [v?.emergencyPhone, setField])
 
   return (
-    <section className={styles.section} aria-labelledby={`${sectionId}-title`}>
-      <header className={styles.header}>
-        <h3 id={`${sectionId}-title`} className={styles.title}>🆘 Emergency Contact</h3>
-        <div id={hintId} className={styles.sub}>Required for safety and compliance</div>
-      </header>
+    <section id="emergency" className={styles.section} aria-labelledby={`${sectionId}-title`}>
+      <SectionHeader
+        title="Emergency Contact"
+        status={status}
+        verifiedBy={verifiedBy}
+        verifiedAt={verifiedAt}
+      />
+
+      <div id={`${sectionId}-title`} className="visually-hidden">Emergency Contact</div>
+      <div id={hintId} className={styles.sub}>
+        Required for Enrollment • Used for safety and compliance.
+      </div>
 
       <div className={styles.grid2}>
         <Field
@@ -56,12 +74,12 @@ export default function EmergencySection({ value, onChange }) {
           type="tel"
           label="Phone"
           required
-          pattern={PHONE_PATTERN}
+          pattern={phonePattern}
           inputMode="tel"
           placeholder="(555) 555-5555"
           value={v.emergencyPhone || ''}
           onChange={val => setField('emergencyPhone', val)}
-          onBlur={() => handlePhoneBlur(v.emergencyPhone)}
+          onBlur={handlePhoneBlur}
           autoComplete="tel"
           ariaDescribedBy={hintId}
         />

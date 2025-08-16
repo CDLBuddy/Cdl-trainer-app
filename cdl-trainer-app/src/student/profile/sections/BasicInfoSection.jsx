@@ -1,16 +1,18 @@
 // src/student/profile/sections/BasicInfoSection.jsx
-import React, { useMemo, useRef, useCallback } from 'react'
+import React, { useMemo, useCallback, useState } from 'react'
+
+import SectionHeader from './SectionHeader.jsx'
+import { getSectionStatus } from '../schema/calculators.js'
 
 import Field from '../ui/Field.jsx'
-import f from '../ui/fields.module.css'
+import ui from '../ui/fields.module.css'
 import UploadField from '../ui/UploadField.jsx'
-
 import s from './sections.module.css'
 
 /**
  * BasicInfoSection
  * Props:
- * - value:  { name, dob, profilePicUrl, ... }
+ * - value:  { name, dob, profilePicUrl, verified?: { by, at, ... } }
  * - onChange: (key, value) => void
  * - onUpload?: (file, path, field, checklistFn?) => Promise<void>
  * - minAgeYears?: number   // default 15
@@ -23,82 +25,85 @@ export default function BasicInfoSection({
   minAgeYears = 15,
   maxAgeYears = 90,
 }) {
-  const fileInputRef = useRef(null)
-  const preview = useMemo(() => value.profilePicUrl || '', [value.profilePicUrl])
+  const [dobInvalid, setDobInvalid] = useState(false)
 
   // --- Derived DOB bounds (YYYY-MM-DD) ---
   const { minDob, maxDob } = useMemo(() => {
     const today = new Date()
     const toISO = d => d.toISOString().slice(0, 10)
-    const max = new Date(today) // youngest allowed (today - minAge)
-    max.setFullYear(max.getFullYear() - minAgeYears)
 
-    const min = new Date(today) // oldest allowed (today - maxAge)
-    min.setFullYear(min.getFullYear() - maxAgeYears)
+    const youngest = new Date(today) // today - minAgeYears
+    youngest.setFullYear(youngest.getFullYear() - minAgeYears)
 
-    return { minDob: toISO(min), maxDob: toISO(max) }
+    const oldest = new Date(today) // today - maxAgeYears
+    oldest.setFullYear(oldest.getFullYear() - maxAgeYears)
+
+    return { minDob: toISO(oldest), maxDob: toISO(youngest) }
   }, [minAgeYears, maxAgeYears])
 
+  // --- Section status (chips) ---
+  const status = useMemo(
+    () => getSectionStatus('basicInfo', value, value?.verified || {}),
+    [value]
+  )
+  const verifiedBy = value?.verified?.by
+  const verifiedAt = value?.verified?.at
+
   // --- Handlers ---
-  const handleName = useCallback((e) => {
-    onChange?.('name', e.target.value)
-  }, [onChange])
+  const handleName = useCallback(
+    (e) => onChange?.('name', e.target.value),
+    [onChange]
+  )
 
-  const handleDob = useCallback((e) => {
-    const val = e.target.value
-    // Set validity messages inline (native a11y + form UX)
-    if (val && (val < minDob || val > maxDob)) {
-      e.target.setCustomValidity(`Please enter a valid date of birth between ${minDob} and ${maxDob}.`)
-    } else {
-      e.target.setCustomValidity('')
-    }
-    onChange?.('dob', val)
-  }, [onChange, minDob, maxDob])
+  const handleDob = useCallback(
+    (e) => {
+      const val = e.target.value
+      const isOutOfRange = !!val && (val < minDob || val > maxDob)
+      setDobInvalid(isOutOfRange)
+      // optional native constraint message for better a11y UX
+      if (isOutOfRange) {
+        e.target.setCustomValidity(`Enter a valid birth date between ${minDob} and ${maxDob}.`)
+      } else {
+        e.target.setCustomValidity('')
+      }
+      onChange?.('dob', val)
+    },
+    [onChange, minDob, maxDob]
+  )
 
-  const handleProfilePic = useCallback(async (file) => {
-    if (!file) return
-
-    // Guard: basic size/type checks before any upload
-    const MAX_MB = 6
-    const OK_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
-    const tooBig = file.size > MAX_MB * 1024 * 1024
-    const badType = file.type && !OK_TYPES.includes(file.type.toLowerCase())
-
-    if (tooBig || badType) {
-      // Let UploadField show the inline error if it supports it,
-      // otherwise we can set a temporary message here (kept minimal).
-      alert(
-        tooBig
-          ? `Please choose an image under ${MAX_MB}MB.`
-          : 'Unsupported image type. Use JPG/PNG/WebP.'
-      )
-      return
-    }
-
-    if (typeof onUpload === 'function') {
-      await onUpload(file, 'profilePics', 'profilePicUrl')
-      return
-    }
-
-    // Fallback: local preview so UI still feels responsive
-    const url = URL.createObjectURL(file)
-    onChange?.('profilePicUrl', url)
-  }, [onChange, onUpload])
-
-  const clearPhoto = useCallback(() => {
-    onChange?.('profilePicUrl', '')
-    // Also clear the hidden input so the same file can be re-selected
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }, [onChange])
+  const handleProfilePic = useCallback(
+    async (file) => {
+      if (!file) return
+      if (typeof onUpload === 'function') {
+        // delegate upload → parent writes profilePicUrl
+        await onUpload(file, 'students/profile', 'profilePicUrl')
+      } else {
+        // graceful fallback: local object URL (will be replaced when saved)
+        const url = URL.createObjectURL(file)
+        onChange?.('profilePicUrl', url)
+      }
+    },
+    [onUpload, onChange]
+  )
 
   return (
-    <section className={s.section} aria-labelledby="basic-info-h3">
-      <h3 id="basic-info-h3" className={s.h3}>Basic Info</h3>
+    <section id="basicInfo" className={s.section} aria-labelledby="basic-info-h3">
+      <SectionHeader
+        title="Basic Information"
+        status={status}
+        verifiedBy={verifiedBy}
+        verifiedAt={verifiedAt}
+      />
 
       {/* Name */}
-      <Field label="Full Name" required hint="Use your legal name for enrollment & compliance.">
+      <Field
+        label="Full Name"
+        required
+        hint="Required for Enrollment • Use your legal name for school and compliance."
+      >
         <input
-          className="input"
+          className={ui.input}
+          id="profile_name"
           type="text"
           placeholder="e.g., Alex Johnson"
           value={value.name || ''}
@@ -107,10 +112,10 @@ export default function BasicInfoSection({
           autoCapitalize="words"
           inputMode="text"
           required
-          aria-describedby="name-help"
+          aria-describedby="name_help"
         />
-        <small id="name-help" className={f.hint}>
-          This will appear on your school profile and forms.
+        <small id="name_help" className={ui.hint}>
+          This appears on your school profile and forms.
         </small>
       </Field>
 
@@ -118,49 +123,58 @@ export default function BasicInfoSection({
       <Field
         label="Date of Birth"
         required
-        hint={`Allowed range: ${minDob} → ${maxDob}`}
+        hint={`Required for Enrollment • Allowed range: ${minDob} → ${maxDob}`}
       >
         <input
-          className="input"
+          className={ui.input}
+          id="profile_dob"
           type="date"
           value={value.dob || ''}
           onChange={handleDob}
           min={minDob}
           max={maxDob}
           required
-          aria-describedby="dob-help"
+          aria-describedby="dob_help"
+          aria-invalid={dobInvalid || undefined}
         />
-        <small id="dob-help" className={f.hint}>
-          Used for enrollment & compliance forms.
+        <small id="dob_help" className={dobInvalid ? ui.errorText : ui.hint}>
+          {dobInvalid
+            ? `Enter a date between ${minDob} and ${maxDob}.`
+            : 'Used for enrollment & compliance forms.'}
         </small>
       </Field>
 
       {/* Profile Photo (optional but encouraged) */}
-      <div className={f.field}>
-        <span className={f.label}>Profile Photo <span className={f.optional}>(optional)</span></span>
+      <div className={ui.field}>
+        <span className={ui.label}>
+          Profile Photo <span className={ui.optional}>(optional)</span>
+        </span>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <div className={ui.uploadRow}>
           <UploadField
-            label={preview ? 'Change image' : 'Choose image'}
+            label={value.profilePicUrl ? 'Replace image' : 'Upload image'}
+            currentUrl={value.profilePicUrl}
+            onSelectFile={handleProfilePic}
+            hint="Accepted: image/* • Max 8MB"
             accept="image/*"
-            preview={preview}
-            onSelect={handleProfilePic}
-            // Optional: constrain preview look via props your UploadField supports
-            // shape="rounded" size={88}
+            maxSizeMB={8}
+            imageOnly
+            capture="environment"
           />
-          {preview ? (
-            <button type="button" className="btn outline" onClick={clearPhoto}>
+          {value.profilePicUrl && (
+            <button
+              type="button"
+              className="btn outline"
+              onClick={() => onChange?.('profilePicUrl', '')}
+            >
               Remove
             </button>
-          ) : null}
+          )}
         </div>
 
-        <small className={f.hint}>
-          JPG/PNG/WebP, under 6MB. A clear face photo helps instructors recognize you.
+        <small className={ui.hint}>
+          JPG/PNG/WebP, under 8&nbsp;MB. A clear face photo helps instructors recognize you.
         </small>
-
-        {/* Hidden input reference so we can reset it on clear (UploadField holds its own input) */}
-        <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} />
       </div>
     </section>
   )

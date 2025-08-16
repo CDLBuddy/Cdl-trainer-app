@@ -1,6 +1,9 @@
 // src/student/profile/sections/PermitSection.jsx
 import React, { useId, useMemo } from 'react'
 
+import SectionHeader from './SectionHeader.jsx'
+import { getSectionStatus } from '../schema/calculators.js'
+
 import Field from '../ui/Field.jsx'
 import Select from '../ui/Select.jsx'
 import UploadField from '../ui/UploadField.jsx'
@@ -11,26 +14,41 @@ export default function PermitSection({ value, onChange, onUpload, afterUpload }
   const v = value || {}
   const sectionId = useId()
   const hintId = `${sectionId}-hint`
-  const hasPermit = v.cdlPermit === 'yes'
+  const hasPermit = String(v.cdlPermit || '').toLowerCase() === 'yes'
 
   // yyyy-mm-dd for <input type="date">
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
+
+  // status chip via schema helpers
+  const status = useMemo(
+    () => getSectionStatus('permit', v, v?.verified || {}),
+    [v]
+  )
+  const verifiedBy = v?.verified?.by
+  const verifiedAt = v?.verified?.at
 
   const setField = (k, val) => onChange?.(k, val)
   const handleUpload = async (file) => {
     if (!file) return
     // Persist and allow caller to react (e.g., mark checklist)
-    await onUpload?.(file, 'permits', 'permitPhotoUrl', afterUpload)
+    await onUpload?.(file, 'students/permits', 'permitPhotoUrl', afterUpload)
   }
 
+  const expiryInvalid = hasPermit && v.permitExpiry && v.permitExpiry < today
+
   return (
-    <section className={styles.section} aria-labelledby={`${sectionId}-title`}>
-      <header className={styles.header}>
-        <h3 id={`${sectionId}-title`} className={styles.title}>🪪 CDL Permit</h3>
-        <div id={hintId} className={styles.sub}>
-          If you already have a permit, upload a clear photo and set the expiry date.
-        </div>
-      </header>
+    <section id="permit" className={styles.section} aria-labelledby={`${sectionId}-title`}>
+      <SectionHeader
+        title="CDL Permit"
+        status={status}
+        verifiedBy={verifiedBy}
+        verifiedAt={verifiedAt}
+      />
+
+      <div id={`${sectionId}-title`} className="visually-hidden">CDL Permit</div>
+      <div id={hintId} className={styles.sub}>
+        Required before Behind-the-Wheel • If you already have a permit, upload a clear photo and set the expiry date.
+      </div>
 
       <div className={styles.grid2}>
         <Select
@@ -49,12 +67,23 @@ export default function PermitSection({ value, onChange, onUpload, afterUpload }
         {hasPermit && (
           <Field
             type="date"
-            label="Permit Expiry"
+            label="Permit Expiration"
             value={v.permitExpiry || ''}
             onChange={(val) => setField('permitExpiry', val)}
-            min={today}                       // avoid past dates
-            ariaDescribedBy={hintId}
-          />
+            min={today} // future-only per schema (future: true)
+            ariaDescribedBy={`${hintId} ${sectionId}-expiry-help`}
+            ariaInvalid={expiryInvalid || undefined}
+          >
+            {/* inline hint/error */}
+            <small
+              id={`${sectionId}-expiry-help`}
+              className={expiryInvalid ? styles.errorText : styles.subtle}
+            >
+              {expiryInvalid
+                ? 'Expiration must be in the future.'
+                : `Must be a future date.`}
+            </small>
+          </Field>
         )}
       </div>
 
@@ -63,11 +92,15 @@ export default function PermitSection({ value, onChange, onUpload, afterUpload }
           <UploadField
             label="Permit Photo"
             currentUrl={v.permitPhotoUrl}
-            accept="image/*,application/pdf"  // allow scans/PDFs
+            accept="image/*"            // schema validate: image: true
+            maxSizeMB={8}               // schema validate: maxMB: 8
+            imageOnly
+            capture="environment"
             onSelectFile={handleUpload}
             previewAlt="CDL permit"
             ariaDescribedBy={hintId}
           />
+          <p className={styles.subtle}>Accepted formats: JPG/PNG/WebP • Max 8&nbsp;MB.</p>
         </div>
       )}
     </section>

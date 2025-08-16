@@ -1,14 +1,15 @@
 // src/student/profile/Profile.jsx
 // ============================================================================
-// Student Profile
-// - Uses barrel imports for sections & UI atoms
-// - Debounced autosave, upload helpers, and checklist side-effects
-// - Guarded access + progress bar
+// Student Profile (Responsibility-shifted, Schema-driven)
+// - Dual readiness (Enrollment & BTW) using pure calculators
+// - Debounced autosave, resilient uploads
+// - Visibility rules (payment hidden for employer billing, CDL info read-only)
+// - Section status plumbed for SectionHeader (used inside sections)
 // ============================================================================
 
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/ToastContext.js'
@@ -21,12 +22,18 @@ import {
 import {
   subscribeUserProfile,
   updateUserProfileFields,
-  calculateProfileCompletion,
+  // calculateProfileCompletion, // legacy single-bar (replaced)
 } from '@utils/userProfile.js'
 
 import { getWalkthroughLabel } from '@walkthrough-data'
+import {
+  getEnrollmentReadiness,
+  getBTWReadiness,
+  getSectionStatus,
+} from './schema/calculators.js'
 
 import styles from './Profile.module.css'
+
 // Sections via barrel
 import {
   BasicInfoSection,
@@ -53,25 +60,29 @@ const getCurrentUserEmail = () =>
   localStorage.getItem('currentUserEmail') ||
   null
 
+/* Small helper for dotted access (e.g., "billing.mode") */
+const byPath = (obj, path) =>
+  (path || '').split('.').reduce((acc, k) => (acc == null ? acc : acc[k]), obj)
+
 /* --------------------------------- Component ----------------------------- */
 export default function Profile() {
   const navigate = useNavigate()
   const { showToast } = useToast()
   const email = getCurrentUserEmail()
 
-  // Single object for form state (easy save/merge)
+  // Unified profile state
   const [p, setP] = useState({
     // basic
     name: '', dob: '', profilePicUrl: '',
-    // cdl
-    cdlClass: '', endorsements: [], restrictions: [], experience: '',
+    // cdl / admin-owned
+    cdlClass: '', overlays: [], // endorsements/restrictions deprecated in favor of overlays
     // assignments
     assignedCompany: '', assignedInstructor: '',
     // permit
     cdlPermit: '', permitPhotoUrl: '', permitExpiry: '',
     // license
     driverLicenseUrl: '', licenseExpiry: '',
-    // med card
+    // medical
     medicalCardUrl: '', medCardExpiry: '',
     // vehicle
     vehicleQualified: '', truckPlateUrl: '', trailerPlateUrl: '',
@@ -79,25 +90,47 @@ export default function Profile() {
     emergencyName: '', emergencyPhone: '', emergencyRelation: '',
     // waiver
     waiverSigned: false, waiverSignature: '',
-    // course/schedule
-    course: '', schedulePref: '', scheduleNotes: '',
-    // payment
+    // course / billing (admin)
+    course: '', billing: { mode: '' },
+    // payment (student only when individual)
     paymentStatus: '', paymentProofUrl: '',
     // meta
-    status: 'active', role: 'student', profileProgress: 0,
+    status: 'active', role: 'student', verified: {},
   })
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  // Refs to manage live-sync/autosave behavior
+  // Refs for live-sync/autosave behavior
   const serverRef = useRef(null)
   const dirtyRef = useRef(false)
   const autosaveTimer = useRef(null)
   const unsubRef = useRef(null)
 
-  // Derived
-  const progress = useMemo(() => calculateProfileCompletion(p), [p])
+  /* ----------------------------- Derived flags --------------------------- */
+  const isEmployerPaid = (byPath(p, 'billing.mode') || '').toLowerCase() === 'employer'
+  const verified = p?.verified || {}
+
+  // Dual readiness (0–100)
+  const enrollmentPct = useMemo(() => getEnrollmentReadiness(p), [p])
+  const btwPct = useMemo(() => getBTWReadiness(p), [p])
+
+  // Per-section status for SectionHeader chips (sections will use these)
+  const sectionStatus = useMemo(
+    () => ({
+      basicInfo: getSectionStatus('basicInfo', p, verified),
+      cdlInfo: getSectionStatus('cdlInfo', p, verified),
+      permit: getSectionStatus('permit', p, verified),
+      license: getSectionStatus('license', p, verified),
+      medical: getSectionStatus('medical', p, verified),
+      vehicle: getSectionStatus('vehicle', p, verified),
+      emergency: getSectionStatus('emergency', p, verified),
+      waiver: getSectionStatus('waiver', p, verified),
+      payment: getSectionStatus('payment', p, verified),
+      assignments: getSectionStatus('assignments', p, verified),
+    }),
+    [p, verified]
+  )
 
   /* ----------------------------- Guard + Subscribe ------------------------ */
   useEffect(() => {
@@ -107,11 +140,8 @@ export default function Profile() {
       return
     }
 
-    // Live subscribe to user profile
     unsubRef.current = subscribeUserProfile(email, data => {
       const incoming = data || {}
-
-      // Guard role
       const role = incoming.role || localStorage.getItem('userRole') || 'student'
       if (role !== 'student') {
         showToast('Access denied: Student profile only.', 'error')
@@ -157,7 +187,6 @@ export default function Profile() {
           checklistFn(email).catch(() => {})
         }
       } catch (e) {
-         
         console.error(e)
         showToast(`Failed to upload ${field}.`, 'error')
       }
@@ -165,7 +194,7 @@ export default function Profile() {
     [email, setField, showToast]
   )
 
-  // Reactive checklist marks
+  // Reactive checklist marks (vehicle + permit)
   useEffect(() => {
     if (p.truckPlateUrl && p.trailerPlateUrl) {
       markStudentVehicleUploaded(email).catch(() => {})
@@ -192,7 +221,6 @@ export default function Profile() {
           dirtyRef.current = false
         }
       } catch (e) {
-         
         console.error(e)
         showToast('Auto-save failed. Check your connection.', 'error')
       } finally {
@@ -240,28 +268,118 @@ export default function Profile() {
   /* -------------------------------- Render -------------------------------- */
   return (
     <Shell title="Student Profile">
-      {/* Progress bar under Shell’s h1 */}
-      <div
-        className={styles.progressBar}
-        role="progressbar"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={progress}
-      >
-        <div className={styles.progressFill} style={{ width: `${progress}%` }} />
-        <span className={styles.progressLabel}>{progress}% Complete</span>
+      {/* Dual progress group */}
+      <div className={styles.progressGroup} aria-live="polite">
+        <div
+          className={styles.progressBar}
+          role="progressbar"
+          aria-label="Enrollment readiness"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={enrollmentPct}
+        >
+          <div className={styles.progressFill} style={{ width: `${enrollmentPct}%` }} />
+          <span className={styles.progressLabel}>Enrollment: {enrollmentPct}%</span>
+        </div>
+
+        <div
+          className={`${styles.progressBar} ${styles.progressBarSecondary}`}
+          role="progressbar"
+          aria-label="Behind-the-wheel readiness"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={btwPct}
+        >
+          <div className={styles.progressFill} style={{ width: `${btwPct}%` }} />
+          <span className={styles.progressLabel}>BTW: {btwPct}%</span>
+        </div>
       </div>
 
       <form className={styles.form} onSubmit={e => e.preventDefault()} autoComplete="off">
-        <BasicInfoSection value={p} onChange={setField} />
-        <CdlSection value={p} onChange={setField} onToggle={toggleInArray} />
-        <PermitSection value={p} onChange={setField} onUpload={handleUpload} />
-        <LicenseSection value={p} onChange={setField} onUpload={handleUpload} />
-        <MedicalSection value={p} onChange={setField} onUpload={handleUpload} />
-        <VehicleSection value={p} onChange={setField} onUpload={handleUpload} />
-        <EmergencySection value={p} onChange={setField} phonePattern={PHONE_PATTERN} />
-        <WaiverSection value={p} onChange={setField} />
-        <CoursePaymentSection value={p} onChange={setField} onUpload={handleUpload} />
+        {/* Each section will render its own SectionHeader using status + verified */}
+        <BasicInfoSection
+          value={p}
+          onChange={setField}
+          status={sectionStatus.basicInfo}
+          verifiedBy={verified?.by}
+          verifiedAt={verified?.at}
+        />
+
+        {/* CDL info is admin-owned → read-only */}
+        <CdlSection
+          value={p}
+          onChange={setField}
+          onToggle={toggleInArray}
+          readOnly
+          status={sectionStatus.cdlInfo}
+          verifiedBy={verified?.by}
+          verifiedAt={verified?.at}
+        />
+
+        <PermitSection
+          value={p}
+          onChange={setField}
+          onUpload={handleUpload}
+          status={sectionStatus.permit}
+          verifiedBy={verified?.by}
+          verifiedAt={verified?.at}
+        />
+
+        <LicenseSection
+          value={p}
+          onChange={setField}
+          onUpload={handleUpload}
+          status={sectionStatus.license}
+          verifiedBy={verified?.by}
+          verifiedAt={verified?.at}
+        />
+
+        <MedicalSection
+          value={p}
+          onChange={setField}
+          onUpload={handleUpload}
+          status={sectionStatus.medical}
+          verifiedBy={verified?.by}
+          verifiedAt={verified?.at}
+        />
+
+        <VehicleSection
+          value={p}
+          onChange={setField}
+          onUpload={handleUpload}
+          status={sectionStatus.vehicle}
+          verifiedBy={verified?.by}
+          verifiedAt={verified?.at}
+        />
+
+        <EmergencySection
+          value={p}
+          onChange={setField}
+          phonePattern={PHONE_PATTERN}
+          status={sectionStatus.emergency}
+          verifiedBy={verified?.by}
+          verifiedAt={verified?.at}
+        />
+
+        <WaiverSection
+          value={p}
+          onChange={setField}
+          status={sectionStatus.waiver}
+          verifiedBy={verified?.by}
+          verifiedAt={verified?.at}
+        />
+
+        {/* Payment is hidden when employer-paid */}
+        {!isEmployerPaid && (
+          <CoursePaymentSection
+            value={p}
+            onChange={setField}
+            onUpload={handleUpload}
+            status={sectionStatus.payment}
+            verifiedBy={verified?.by}
+            verifiedAt={verified?.at}
+          />
+        )}
       </form>
 
       <div className={styles.footerRow}>
@@ -274,8 +392,8 @@ export default function Profile() {
       </div>
 
       <div className={styles.afterNote}>
-        <strong>Your selected CDL Class:</strong>{' '}
-        <span>{getWalkthroughLabel?.(p.cdlClass) || <i>Not selected</i>}</span>
+        <strong>Your assigned CDL Class:</strong>{' '}
+        <span>{getWalkthroughLabel?.(p.cdlClass) || <i>Not set by admin</i>}</span>
       </div>
     </Shell>
   )

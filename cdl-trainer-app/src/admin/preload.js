@@ -1,3 +1,4 @@
+// src/admin/preload.js
 // ======================================================================
 // Admin — route preloader (pure; no JSX)
 // - Standard API:
@@ -34,12 +35,15 @@ function isConstrainedNetwork() {
 
 // ---- Lazy entries (alias-safe; mirrors vite/eslint config) --------------
 const entries = {
-  dashboard: () => import('@admin/AdminDashboard.jsx'),
-  profile:   () => import('@admin/AdminProfile.jsx'),
-  users:     () => import('@admin/AdminUsers.jsx'),
-  companies: () => import('@admin/AdminCompanies.jsx'),
-  reports:   () => import('@admin/AdminReports.jsx'),
-  // billing: () => import('@admin/AdminBilling.jsx'), // add when page exists
+  dashboard:      () => import('@admin/AdminDashboard.jsx'),
+  profile:        () => import('@admin/AdminProfile.jsx'),
+  users:          () => import('@admin/AdminUsers.jsx'),
+  companies:      () => import('@/admin/companies/AdminCompanies.jsx'),
+  companyDetail:  () => import('@/admin/companies/CompanyDetail.jsx'),     // NEW
+  addStudent:     () => import('@/admin/companies/AddStudentDrawer.jsx'),  // NEW (non-route, used by detail)
+  reports:        () => import('@admin/AdminReports.jsx'),
+  billing:        () => import('@admin/billing/Billing.jsx'),              // NEW
+  walkthroughs:   () => import('@admin/walkthroughs/WalkthroughManager.jsx'), // optional
 }
 
 // ---- Public API: above-the-fold (light set) -----------------------------
@@ -48,6 +52,7 @@ export async function preloadAboveTheFold() {
   await Promise.allSettled([
     _once('admin:dashboard', entries.dashboard),
     _once('admin:users',     entries.users),
+    _once('admin:companies', entries.companies), // commonly visited
   ])
 }
 
@@ -60,7 +65,7 @@ export async function preloadAll() {
 }
 
 // ---- Public API: targeted warm by logical key --------------------------
-/** @param {'dashboard'|'profile'|'users'|'companies'|'reports'|'billing'|string} name */
+/** @param {'dashboard'|'profile'|'users'|'companies'|'companyDetail'|'addStudent'|'reports'|'billing'|'walkthroughs'|string} name */
 export async function preloadRoute(name) {
   if (typeof window === 'undefined') return
   const key = String(name)
@@ -118,11 +123,14 @@ export function preloadAdminOnHover(elOrGetter) {
 /** Preload a specific screen by path (useful inside guards/redirects). */
 export function prefetchAdminByPath(path = '') {
   const p = String(path || '').toLowerCase()
-  if (p.includes('/admin/users'))      return entries.users()
+  if (p.includes('/admin/companies/')) {      // detail route
+    entries.companies()
+    return entries.companyDetail()
+  }
   if (p.includes('/admin/companies'))  return entries.companies()
+  if (p.includes('/admin/billing'))    return entries.billing?.()
   if (p.includes('/admin/reports'))    return entries.reports()
   if (p.includes('/admin/profile'))    return entries.profile()
-  // if (p.includes('/admin/billing'))  return entries.billing?.()
   return entries.dashboard()
 }
 

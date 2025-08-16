@@ -4,6 +4,7 @@
 // - Delegates to role preload modules (student/instructor/admin/superadmin)
 // - Best effort (idempotent, network-aware, idle-friendly)
 // - Falls back to direct dynamic imports if a role's preload module is absent
+// - Provides back-compat aliases for older call sites
 // ======================================================================
 
 /** In-memory guard so we don't import the same chunk repeatedly */
@@ -41,6 +42,7 @@ function isConstrainedNetwork() {
 export function onIdle(fn, { timeout = 1200 } = {}) {
   if (typeof window === 'undefined') return // SSR/Tests
   if ('requestIdleCallback' in window) {
+    // @ts-ignore
     window.requestIdleCallback(fn, { timeout })
   } else {
     setTimeout(fn, timeout)
@@ -80,7 +82,7 @@ export async function preloadAllRoleRouters() {
    ====================================================================== */
 
 // Safe dynamic imports of role preload modules
-async function _loadStudentPreload()   { try { return await import('@student/preload.js') } catch { return null } }
+async function _loadStudentPreload()    { try { return await import('@student/preload.js') } catch { return null } }
 async function _loadInstructorPreload() { try { return await import('@instructor/preload.js') } catch { return null } }
 async function _loadAdminPreload()      { try { return await import('@admin/preload.js') } catch { return null } }
 async function _loadSuperPreload()      { try { return await import('@superadmin/preload.js') } catch { return null } }
@@ -90,12 +92,12 @@ async function _fallbackCorePages(role) {
   switch (role) {
     case 'student':
       await Promise.allSettled([
-        _once('student:dashboard', () => import('@student/StudentDashboard.jsx')),
-        _once('student:profile',   () => import('@student/profile/Profile.jsx')),
-        _once('student:checks',    () => import('@student/Checklists.jsx')),
-        _once('student:practice',  () => import('@student/PracticeTests.jsx')),
-        _once('student:walk',      () => import('@student/walkthrough/Walkthrough.jsx')),
-        _once('student:flash',     () => import('@student/Flashcards.jsx')),
+        _once('student:dashboard',   () => import('@student/StudentDashboard.jsx')),
+        _once('student:profile',     () => import('@student/profile/Profile.jsx')),
+        _once('student:checks',      () => import('@student/Checklists.jsx')),
+        _once('student:practice',    () => import('@student/PracticeTests.jsx')),
+        _once('student:walk',        () => import('@student/walkthrough/Walkthrough.jsx')),
+        _once('student:flash',       () => import('@student/Flashcards.jsx')),
         _once('student:testEngine',  () => import('@student-components/TestEngineWrapper.jsx')),
         _once('student:testReview',  () => import('@student-components/TestReviewWrapper.jsx')),
         _once('student:testResults', () => import('@student-components/TestResultsWrapper.jsx')),
@@ -107,6 +109,7 @@ async function _fallbackCorePages(role) {
         _once('instructor:dashboard', () => import('@instructor/InstructorDashboard.jsx')),
         _once('instructor:profile',   () => import('@instructor/InstructorProfile.jsx')),
         _once('instructor:review',    () => import('@instructor/ChecklistReviewForInstructor.jsx')),
+        _once('instructor:student',   () => import('@instructor/StudentProfileForInstructor.jsx')),
       ])
       break
 
@@ -114,8 +117,9 @@ async function _fallbackCorePages(role) {
       await Promise.allSettled([
         _once('admin:dashboard', () => import('@admin/AdminDashboard.jsx')),
         _once('admin:users',     () => import('@admin/AdminUsers.jsx')),
-        _once('admin:companies', () => import('@admin/AdminCompanies.jsx')),
+        _once('admin:companies', () => import('@/admin/companies/AdminCompanies.jsx')),
         _once('admin:reports',   () => import('@admin/AdminReports.jsx')),
+        // _once('admin:billing', () => import('@admin/billing/Billing.jsx')), // enable when routed
       ])
       break
 
@@ -161,7 +165,7 @@ export async function preloadRoutesForRole(roleInput) {
 
   // Try the role preload module
   let api = null
-  if (role === 'student')      api = await _loadStudentPreload()
+  if (role === 'student')        api = await _loadStudentPreload()
   else if (role === 'instructor') api = await _loadInstructorPreload()
   else if (role === 'admin')      api = await _loadAdminPreload()
   else if (role === 'superadmin') api = await _loadSuperPreload()
@@ -181,7 +185,7 @@ export async function preloadAllForRole(roleInput) {
 
   // Load the module if present
   let api = null
-  if (role === 'student')      api = await _loadStudentPreload()
+  if (role === 'student')        api = await _loadStudentPreload()
   else if (role === 'instructor') api = await _loadInstructorPreload()
   else if (role === 'admin')      api = await _loadAdminPreload()
   else if (role === 'superadmin') api = await _loadSuperPreload()
@@ -202,7 +206,7 @@ export async function preloadRoleRoute(roleInput, routeName) {
   if (!role || !routeName) return
 
   let api = null
-  if (role === 'student')      api = await _loadStudentPreload()
+  if (role === 'student')        api = await _loadStudentPreload()
   else if (role === 'instructor') api = await _loadInstructorPreload()
   else if (role === 'admin')      api = await _loadAdminPreload()
   else if (role === 'superadmin') api = await _loadSuperPreload()
@@ -227,6 +231,13 @@ export function warmRoutesOnSession({ loading, isLoggedIn, role }) {
     onIdle(() => preloadRoutesForRole(role))
   }
 }
+
+/* ======================================================================
+   Back-compat aliases (older call sites)
+   ====================================================================== */
+
+export const preloadForRole   = preloadRoutesForRole
+export const prefetchRoleRoute = preloadRoleRoute
 
 /* ======================================================================
    Test helpers (optional)

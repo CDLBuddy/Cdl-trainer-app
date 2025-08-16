@@ -1,4 +1,3 @@
-// src/instructor/InstructorRouter.jsx
 // ======================================================================
 // Instructor Router (nested under /instructor/*)
 // - Lazy-loads only the screens you actually have
@@ -20,6 +19,9 @@ const InstructorDashboard          = lazy(() => import('@instructor/InstructorDa
 const InstructorProfile            = lazy(() => import('@instructor/InstructorProfile.jsx'))
 const StudentProfileForInstructor  = lazy(() => import('@instructor/StudentProfileForInstructor.jsx'))
 const ChecklistReviewForInstructor = lazy(() => import('@instructor/ChecklistReviewForInstructor.jsx'))
+
+// NEW: Verify a student's profile (per-section checked by instructor)
+const ProfileVerify               = lazy(() => import('@instructor/ProfileVerify.jsx'))
 
 // ---- Local loading UI (accessible) -------------------------------------
 function Loading({ text = 'Loading instructor page…' }) {
@@ -113,6 +115,9 @@ export default function InstructorRouter() {
           <Route path="profile" element={<InstructorProfile />} />
           <Route path="student-profile/:studentId" element={<StudentProfileForInstructor />} />
           <Route path="checklist-review" element={<ChecklistReviewForInstructor />} />
+
+          {/* NEW: Per-student verification screen */}
+          <Route path="verify/:studentId" element={<ProfileVerify />} />
 
           {/* Fallback */}
           <Route path="*" element={<InstructorNotFound />} />

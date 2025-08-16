@@ -3,7 +3,7 @@
 // NavBar
 // - Brand (logo + schoolName) from prop or branding bus
 // - Role-aware links from central navigation config
-// - Role router preloading on hover (idle-aware)
+// - Role router preloading on hover/focus (idle-aware + fallbacks)
 // - Accessible menus, keyboard toggles, outside-click & ESC handling
 // - Active link styling works for nested routes
 // ======================================================================
@@ -20,17 +20,29 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 
 import {
   getDashboardRoute,
-  getNavLinksForRole,
-} from '@navigation/navigation.js'
+  getTopNavForRole, // (renamed from getNavLinksForRole)
+} from '@navigation/navConfig.js'
+
 import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,
 } from '@utils/school-branding.js'
 
+// If present, this wrapper will route to the correct role preloader.
+// We call it best-effort and also keep robust fallbacks below.
 import { preloadRoutesForRole } from '@/utils/route-preload.js'
 
-import { useSession } from '../session/useSession.js'
+// Role-specific warmers (safe, idempotent)
+import preloadAdminCore, {
+  warmAdminOnIdle,
+  preloadRoute as preloadAdminRoute,
+} from '@admin/preload.js'
+import preloadInstructorCore, {
+  warmInstructorOnIdle,
+  preloadRoute as preloadInstructorRoute,
+} from '@instructor/preload.js'
 
+import { useSession } from '../session/useSession.js'
 import styles from './NavBar.module.css'
 
 /** Infer role from a path target like "/student", "/instructor", etc. */
@@ -128,10 +140,21 @@ function NavBar({ brand: brandProp }) {
     }
   }, [profileOpen])
 
+  // Idle warm-up for role routers (gentle, idempotent)
+  useEffect(() => {
+    // We warm admin & instructor shells lightly; they self-guard for reduced motion.
+    const cancelAdmin = warmAdminOnIdle?.() || (() => {})
+    const cancelInstr = warmInstructorOnIdle?.() || (() => {})
+    return () => {
+      try { cancelAdmin() } catch {}
+      try { cancelInstr() } catch {}
+    }
+  }, [])
+
   // Build visible nav from central config
   const links = useMemo(() => {
     const base = [{ to: '/', label: 'Home', icon: '🏠', exact: true, prefetchRole: null }]
-    const roleLinks = (getNavLinksForRole(role || 'student') || []).map(l => ({
+    const roleLinks = (getTopNavForRole(role || 'student') || []).map(l => ({
       exact: false,              // nested routes remain active
       prefetchRole: roleFromPath(l.to),
       ...l,
@@ -167,14 +190,21 @@ function NavBar({ brand: brandProp }) {
     navigate(role ? getDashboardRoute(role) : '/')
   }, [navigate, role])
 
-  // Preload role router on nav intent (hover/focus)
+  // Preload role router on nav intent (hover/focus) — best-effort wrapper
   const handleLinkPrefetch = useCallback((to) => {
-    try {
-      const r = roleFromPath(to)
-      if (r) preloadRoutesForRole(r) // util is idle/network-aware
-    } catch {
-      /* best-effort only */
+    const r = roleFromPath(to)
+    if (!r) return
+    // Prefer the app’s central helper if present
+    if (typeof preloadRoutesForRole === 'function') {
+      try { preloadRoutesForRole(r) } catch {}
+      return
     }
+    // Fallbacks: warm the right area
+    try {
+      if (r === 'admin')       preloadAdminCore?.()
+      else if (r === 'instructor') preloadInstructorCore?.()
+      // (student has no dedicated preloader)
+    } catch {}
   }, [])
 
   const email = user?.email || ''
@@ -223,7 +253,6 @@ function NavBar({ brand: brandProp }) {
             end={!!link.exact}
             role="menuitem"
           >
-            {/* optional icon from nav config */}
             {link.icon ? (
               <span className={styles.linkIcon} aria-hidden>{link.icon}</span>
             ) : null}

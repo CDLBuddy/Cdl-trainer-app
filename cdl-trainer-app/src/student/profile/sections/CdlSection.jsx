@@ -1,120 +1,125 @@
 // src/student/profile/sections/CdlSection.jsx
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo } from 'react'
 
-import CheckboxGroup from '../ui/CheckboxGroup.jsx'
-import Select from '../ui/Select.jsx'
+import SectionHeader from './SectionHeader.jsx'
+import { getSectionStatus } from '../schema/calculators.js'
+import { getWalkthroughLabel } from '@walkthrough-data'
 
 import styles from './sections.module.css'
 
-const ENDORSEMENT_OPTIONS = [
-  { value: 'H',        label: 'Hazmat (H)' },
-  { value: 'N',        label: 'Tanker (N)' },
-  { value: 'T',        label: 'Double/Triple (T)' },
-  { value: 'P',        label: 'Passenger (P)' },
-  { value: 'S',        label: 'School Bus (S)' },
-  { value: 'AirBrakes',label: 'Air Brakes' },
-  { value: 'Other',    label: 'Other' },
-]
-
-const RESTRICTION_OPTIONS = [
-  { value: 'auto',      label: 'Remove Automatic Restriction' },
-  { value: 'airbrake',  label: 'Remove Air Brake Restriction' },
-  { value: 'refresher', label: 'One-day Refresher' },
-  { value: 'roadtest',  label: 'Road Test Prep' },
-]
-
-const CDL_OPTIONS = [
-  { value: '',               label: 'Select class…' },
-  { value: 'A',              label: 'Class A' },
-  { value: 'A-WO-AIR-ELEC',  label: 'Class A w/o Air/Electric' },
-  { value: 'A-WO-HYD-ELEC',  label: 'Class A w/o Hydraulic/Electric' },
-  { value: 'B',              label: 'Class B' },
-  { value: 'PASSENGER-BUS',  label: 'Passenger Bus' },
-]
-
-export default function CdlSection({ value, onChange, onToggle }) {
-  const v = value ?? {}
-
-  const endorsements = useMemo(
-    () => (Array.isArray(v.endorsements) ? v.endorsements : []),
-    [v.endorsements]
-  )
-  const restrictions = useMemo(
-    () => (Array.isArray(v.restrictions) ? v.restrictions : []),
-    [v.restrictions]
+/**
+ * CdlSection (read-only for students)
+ * Props:
+ * - value: { course, cdlClass, overlays?: string[], assignedInstructor? , verified? }
+ * - onChange?: (key, val) => void   // accepted but unused (read-only)
+ * - onToggle?: (key, val) => void   // accepted but unused (read-only)
+ */
+export default function CdlSection({ value = {} /* onChange, onToggle, read-only */ }) {
+  const overlays = useMemo(
+    () => (Array.isArray(value.overlays) ? value.overlays.filter(Boolean) : []),
+    [value.overlays]
   )
 
-  const endoCount = endorsements.length
-  const restCount = restrictions.length
-
-  // Safe wrappers so we don’t explode if a handler is missing
-  const setField = useCallback(
-    (key, val) => onChange?.(key, val),
-    [onChange]
+  const status = useMemo(
+    () => getSectionStatus('cdlInfo', value, value?.verified || {}),
+    [value]
   )
-  const toggleInArray = useCallback(
-    (key, val) => onToggle?.(key, val),
-    [onToggle]
-  )
+  const verifiedBy = value?.verified?.by
+  const verifiedAt = value?.verified?.at
 
-  // Small, context-aware hint for CDL class
-  const classHint = useMemo(() => {
-    if (!v.cdlClass) return 'Choose the CDL class you are pursuing.'
-    if (v.cdlClass === 'A') return 'Class A covers combination vehicles (tractor-trailer).'
-    if (v.cdlClass === 'B') return 'Class B covers single vehicles (e.g., buses, box trucks).'
-    return 'Make sure this matches what your instructor/school expects.'
-  }, [v.cdlClass])
+  const prettyClass = getWalkthroughLabel?.(value.cdlClass) || value.cdlClass || ''
 
   return (
-    <section className={styles.section} aria-labelledby="cdl-h3">
-      <header className={styles.header}>
-        <h3 id="cdl-h3" className={styles.title}>🚚 CDL Details</h3>
-        <div className={styles.sub}>Class, endorsements & experience</div>
-      </header>
+    <section id="cdlInfo" className={styles.section} aria-labelledby="cdl-info-title">
+      <SectionHeader
+        title="CDL Assignment (Admin-set)"
+        status={status}
+        verifiedBy={verifiedBy}
+        verifiedAt={verifiedAt}
+      />
 
-      <div className={styles.grid2}>
-        <Select
-          label="CDL Class"
-          required
-          value={v.cdlClass || ''}
-          onChange={val => setField('cdlClass', val)}
-          options={CDL_OPTIONS}
-          hint={classHint}
-        />
+      <h3 id="cdl-info-title" className="visually-hidden">CDL Assignment</h3>
 
-        <Select
-          label="Experience"
-          required
-          value={v.experience || ''}
-          onChange={val => setField('experience', val)}
-          options={[
-            { value: '',    label: 'Select…' },
-            { value: 'none',label: 'No Experience' },
-            { value: '1-2', label: '1–2 Years' },
-            { value: '3-5', label: '3–5 Years' },
-            { value: '6-10',label: '6–10 Years' },
-            { value: '10+', label: '10+ Years' },
-          ]}
-          hint="Rough estimate is fine—this helps tailor your study flow."
-        />
+      {/* Read-only summary card */}
+      <div
+        className={styles.readonlyCard}
+        style={{
+          border: '1px solid rgba(0,0,0,0.08)',
+          borderRadius: 12,
+          padding: '12px 14px',
+          background: 'var(--panel, #fff)',
+        }}
+        aria-live="polite"
+      >
+        <Row label="Course">
+          {value.course ? value.course : <i>Not set</i>}
+        </Row>
+
+        <Row label="CDL Class">
+          {prettyClass ? prettyClass : <i>Not set</i>}
+        </Row>
+
+        <Row label="Overlays / Restrictions">
+          {overlays.length ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {overlays.map((o) => (
+                <span
+                  key={o}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '2px 8px',
+                    borderRadius: 999,
+                    fontSize: 12,
+                    lineHeight: 1.4,
+                    background: 'rgba(59,130,246,0.12)',
+                    color: '#1e40af',
+                    border: '1px solid rgba(59,130,246,0.35)',
+                  }}
+                >
+                  {o}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <i>None</i>
+          )}
+        </Row>
+
+        <Row label="Assigned Instructor">
+          {value.assignedInstructor ? value.assignedInstructor : <i>Unassigned</i>}
+        </Row>
       </div>
 
-      <div className={styles.grid}>
-        <CheckboxGroup
-          label={`Endorsements${endoCount ? ` • ${endoCount}` : ''}`}
-          values={endorsements}
-          options={ENDORSEMENT_OPTIONS}
-          onToggle={val => toggleInArray('endorsements', val)}
-          hint="Select any endorsements you plan to pursue."
-        />
-        <CheckboxGroup
-          label={`Restrictions / Programs${restCount ? ` • ${restCount}` : ''}`}
-          values={restrictions}
-          options={RESTRICTION_OPTIONS}
-          onToggle={val => toggleInArray('restrictions', val)}
-          hint="Pick any add-ons or programs that apply to you."
-        />
-      </div>
+      <p className={styles.sub} style={{ marginTop: 8 }}>
+        These fields are set by your school and are read-only. Contact your administrator if something looks off.
+      </p>
     </section>
+  )
+}
+
+/** Small helper for consistent read-only rows */
+function Row({ label, children }) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '160px 1fr',
+        gap: 8,
+        alignItems: 'start',
+        padding: '6px 0',
+      }}
+    >
+      <div
+        style={{
+          fontSize: 13,
+          color: 'var(--muted-foreground, #6b7280)',
+          fontWeight: 600,
+        }}
+      >
+        {label}
+      </div>
+      <div style={{ minWidth: 0, wordBreak: 'break-word' }}>{children}</div>
+    </div>
   )
 }

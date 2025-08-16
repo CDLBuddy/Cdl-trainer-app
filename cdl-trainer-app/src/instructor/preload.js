@@ -1,3 +1,4 @@
+// src/instructor/preload.js
 // ======================================================================
 // Instructor — route preloader (pure; no JSX)
 // - Standard API for global preloader:
@@ -28,6 +29,7 @@ const _entries = {
   profile:   () => import('@instructor/InstructorProfile.jsx'),
   review:    () => import('@instructor/ChecklistReviewForInstructor.jsx'),
   student:   () => import('@instructor/StudentProfileForInstructor.jsx'),
+  verify:    () => import('@instructor/ProfileVerify.jsx'), // NEW
   // add new screens here as you create them, e.g.:
   // attendance: () => import('@instructor/Attendance.jsx'),
 }
@@ -39,6 +41,7 @@ export async function preloadAboveTheFold() {
     _once('instructor:dashboard', _entries.dashboard),
     _once('instructor:profile',   _entries.profile),
     _once('instructor:review',    _entries.review),
+    _once('instructor:verify',    _entries.verify), // NEW (commonly used)
   ])
 }
 
@@ -52,7 +55,7 @@ export async function preloadAll() {
 
 // ---- Public API: targeted warm by logical key ----------------------------
 /**
- * @param { 'dashboard'|'profile'|'review'|'student' | string } name
+ * @param { 'dashboard'|'profile'|'review'|'student'|'verify' | string } name
  */
 export async function preloadRoute(name) {
   if (typeof window === 'undefined') return

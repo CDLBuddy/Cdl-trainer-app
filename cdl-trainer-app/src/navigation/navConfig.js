@@ -72,7 +72,7 @@ export const STUDENT_DEEP_LINKS = [
 ]
 
 // ----------------------------------------------------------------------
-// Instructor
+/* Instructor */
 // ----------------------------------------------------------------------
 
 /** @type {NavItem[]} */
@@ -83,11 +83,12 @@ export const INSTRUCTOR_TOP_NAV = [
 ]
 
 export const INSTRUCTOR_DEEP_LINKS = [
-  '/instructor/student-profile/:studentId',
+  '/instructor/student-profile/:studentId', // legacy/detail
+  '/instructor/verify/:studentId',          // NEW verify screen
 ]
 
 // ----------------------------------------------------------------------
-// Admin
+/* Admin */
 // ----------------------------------------------------------------------
 
 /** @type {NavItem[]} */
@@ -96,16 +97,17 @@ export const ADMIN_TOP_NAV = [
   { to: '/admin/profile',      label: 'Profile',      icon: '👤',              prefetchRole: 'admin' },
   { to: '/admin/users',        label: 'Users',        icon: '👥',              prefetchRole: 'admin' },
   { to: '/admin/companies',    label: 'Companies',    icon: '🏢',              prefetchRole: 'admin' },
+  { to: '/admin/billing',      label: 'Billing',      icon: '💳',              prefetchRole: 'admin' }, // NEW
   { to: '/admin/reports',      label: 'Reports',      icon: '📄',              prefetchRole: 'admin' },
-  { to: '/admin/walkthroughs', label: 'Walkthroughs', icon: '🧭',              prefetchRole: 'admin' }, // NEW
+  { to: '/admin/walkthroughs', label: 'Walkthroughs', icon: '🧭',              prefetchRole: 'admin' },
 ]
 
 export const ADMIN_DEEP_LINKS = [
-  // keep empty for now; add detail routes here if they shouldn't appear in top nav
+  '/admin/companies/:companyId', // detail route not shown in top nav
 ]
 
 // ----------------------------------------------------------------------
-// Superadmin
+/* Superadmin */
 // ----------------------------------------------------------------------
 
 /** @type {NavItem[]} */

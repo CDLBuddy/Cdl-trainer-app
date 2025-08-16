@@ -18,11 +18,16 @@ import { preloadAdminAll as _preloadAll, preloadAdminCore as _preloadCore } from
 const AdminDashboard = lazy(() => import('@admin/AdminDashboard.jsx'))
 const AdminProfile   = lazy(() => import('@admin/AdminProfile.jsx'))
 const AdminUsers     = lazy(() => import('@admin/AdminUsers.jsx'))
-const AdminCompanies = lazy(() => import('@admin/AdminCompanies.jsx'))
 const AdminReports   = lazy(() => import('@admin/AdminReports.jsx'))
-// const AdminBilling = lazy(() => import('@admin/AdminBilling.jsx')) // when ready
 
-// NEW: Walkthrough Management (barrel-safe direct path)
+// Companies suite
+const AdminCompanies = lazy(() => import('@admin/companies/AdminCompanies.jsx'))
+const CompanyDetail  = lazy(() => import('@admin/companies/CompanyDetail.jsx'))
+
+// Billing
+const AdminBilling   = lazy(() => import('@admin/billing/Billing.jsx'))
+
+// Walkthrough Management (barrel-safe direct path)
 const WalkthroughManager = lazy(() => import('@admin/walkthroughs/WalkthroughManager.jsx'))
 
 // ---- Local loading UI (accessible) -------------------------------------
@@ -116,10 +121,11 @@ export default function AdminRouter() {
           <Route path="profile"   element={<AdminProfile />} />
           <Route path="users"     element={<AdminUsers />} />
           <Route path="companies" element={<AdminCompanies />} />
+          <Route path="companies/:companyId" element={<CompanyDetail />} />
           <Route path="reports"   element={<AdminReports />} />
-          {/* <Route path="billing" element={<AdminBilling />} /> */}
+          <Route path="billing"   element={<AdminBilling />} />
 
-          {/* NEW: Walkthrough management hub (all editor/upload/list views live under this) */}
+          {/* Walkthrough management hub */}
           <Route path="walkthroughs/*" element={<WalkthroughManager />} />
 
           {/* Fallback */}
