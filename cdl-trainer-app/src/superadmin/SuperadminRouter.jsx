@@ -4,11 +4,16 @@
 // - Lazy-loads superadmin pages
 // - Local Suspense fallback (keeps app chrome responsive)
 // - Lightweight error boundary for render-time safety
-// - Optional: call SuperadminRouter.preload() for hover/idle warming
+// - Idle post-mount warm-up of *core* screens (lighter than full preload)
+// - Optional: SuperadminRouter.preload() to warm everything
 // ======================================================================
 
-import React, { Suspense, lazy } from 'react'
+import React, { Suspense, lazy, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import {
+  preloadSuperadminAll as _preloadAll,
+  preloadSuperadminCore as _preloadCore,
+} from './preload.js'
 
 // ---- Lazy pages ---------------------------------------------------------
 const SuperAdminDashboard = lazy(() => import('@superadmin/SuperAdminDashboard.jsx'))
@@ -48,7 +53,7 @@ class SuperadminSectionErrorBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-       
+      // eslint-disable-next-line no-console
       console.error('[SuperadminRouter] render error:', error, info)
     }
   }
@@ -80,6 +85,21 @@ function SuperadminNotFound() {
 
 // ---- Router component ---------------------------------------------------
 export default function SuperadminRouter() {
+  // Light idle warm-up of core screens after mount (skip on reduced motion)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const prefersReduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+    const run = () => { if (!prefersReduced) _preloadCore().catch(() => {}) }
+
+    if ('requestIdleCallback' in window) {
+      // @ts-expect-error not in std lib
+      const id = window.requestIdleCallback(run, { timeout: 2000 })
+      return () => window.cancelIdleCallback?.(id)
+    }
+    const t = setTimeout(run, 300)
+    return () => clearTimeout(t)
+  }, [])
+
   return (
     <SuperadminSectionErrorBoundary>
       <Suspense fallback={<Loading text="Loading superadmin area…" />}>
@@ -108,23 +128,12 @@ export default function SuperadminRouter() {
   )
 }
 
-/* -----------------------------------------------------------------------
-   Optional chunk preloader (attached to component to avoid react-refresh
-   complaints about multiple exports in a component file).
-   Usage: SuperadminRouter.preload?.()
------------------------------------------------------------------------- */
-async function _preloadSuperadminRoutes() {
-  await Promise.allSettled([
-    import('@superadmin/SuperAdminDashboard.jsx'),
-    import('@superadmin/SchoolManagement.jsx'),
-    import('@superadmin/UserManagement.jsx'),
-    import('@superadmin/ComplianceCenter.jsx'),
-    import('@superadmin/Billings.jsx'),
-    import('@superadmin/Settings.jsx'),
-    import('@superadmin/Logs.jsx'),
-    import('@superadmin/Permissions.jsx'),
-    import('@superadmin/WalkthroughManager.jsx'),
-  ])
-}
-
-SuperadminRouter.preload = _preloadSuperadminRoutes
+/**
+ * Optional: warm *all* superadmin chunks (hover/idle/route-guard).
+ * Usage: import SuperadminRouter from '@superadmin/SuperadminRouter.jsx'
+ *        SuperadminRouter.preload?.()
+ * Keeping a single default export (component) satisfies the
+ * react-refresh/only-export-components rule.
+ * @type {() => Promise<void>}
+ */
+SuperadminRouter.preload = _preloadAll

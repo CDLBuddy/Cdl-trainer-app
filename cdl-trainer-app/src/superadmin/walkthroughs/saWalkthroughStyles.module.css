@@ -1,0 +1,25 @@
+/* Path: /src/superadmin/walkthroughs/saWalkthroughStyles.module.css
+------------------------------------------------------------------------------
+Styles for the superadmin walkthrough review UI (queue + detail).
+------------------------------------------------------------------------------ */
+
+.wrap { max-width: 1200px; margin: 0 auto; padding: 16px; }
+.header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.filters { display: flex; gap: 12px; align-items: center; }
+.meta { color: #6b7280; margin-top: 4px; }
+
+.actions { display: flex; gap: 8px; }
+.primary { background: #111827; color: white; border: 1px solid #111827; padding: 8px 12px; border-radius: 8px; }
+.secondary { background: white; color: #111827; border: 1px solid #d1d5db; padding: 8px 12px; border-radius: 8px; }
+.danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 8px 12px; border-radius: 8px; }
+
+.placeholder { border: 1px dashed #d1d5db; color: #6b7280; padding: 16px; border-radius: 8px; background: #f9fafb; }
+
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+.link { text-decoration: none; color: #2563eb; }
+
+.alert { border: 1px solid #f59e0b; background: #fffbeb; color: #92400e; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+.noteBox { border: 1px solid #c7d2fe; background: #eef2ff; color: #3730a3; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+.compareBox { margin-top: 12px; color: #6b7280; }
+.footer { margin-top: 16px; }
