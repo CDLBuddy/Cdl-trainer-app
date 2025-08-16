@@ -57,12 +57,12 @@ const IS_DEV =
 if (IS_DEV) {
   try {
     if (!(typeof overlay.id === 'string' && overlay.id.length > 0)) {
-      // eslint-disable-next-line no-console
+       
       console.warn('[overlays/school:example-school] Missing or invalid id')
     }
 
     if (!Array.isArray(overlay.rules)) {
-      // eslint-disable-next-line no-console
+       
       console.warn(
         '[overlays/school:example-school] rules must be an array; got:',
         typeof overlay.rules
@@ -70,7 +70,7 @@ if (IS_DEV) {
     } else {
       overlay.rules.forEach((r, i) => {
         if (!r || typeof r !== 'object') {
-          // eslint-disable-next-line no-console
+           
           console.warn(
             `[overlays/school:example-school] Rule at index ${i} must be an object`
           )
@@ -82,7 +82,7 @@ if (IS_DEV) {
             r?.match && typeof r.match.section === 'string' && r.match.section.length > 0
           const okTo = typeof r.to === 'string' && r.to.length > 0
           if (!(okMatch && okTo)) {
-            // eslint-disable-next-line no-console
+             
             console.warn(
               `[overlays/school:example-school] Invalid renameSection rule at ${i}`
             )
@@ -92,13 +92,13 @@ if (IS_DEV) {
             r?.match && typeof r.match.section === 'string' && r.match.section.length > 0
           const okSteps = Array.isArray(r.steps)
           if (!(okMatch && okSteps)) {
-            // eslint-disable-next-line no-console
+             
             console.warn(
               `[overlays/school:example-school] Invalid replaceSectionSteps rule at ${i}`
             )
           }
         } else {
-          // eslint-disable-next-line no-console
+           
           console.warn(
             `[overlays/school:example-school] Unknown op "${op}" at index ${i}`
           )

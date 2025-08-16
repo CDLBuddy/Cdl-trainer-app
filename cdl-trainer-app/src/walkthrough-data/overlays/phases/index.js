@@ -51,16 +51,16 @@ if (IS_DEV) {
     ALL.forEach((o, i) => {
       const okId = typeof o?.id === 'string' && o.id.length > 0
       if (!okId) {
-        // eslint-disable-next-line no-console
+         
         console.warn(`[overlays/phases] Missing/invalid id at index ${i}`, o)
       } else if (ids.has(o.id)) {
-        // eslint-disable-next-line no-console
+         
         console.warn(`[overlays/phases] Duplicate id "${o.id}" at index ${i}`)
       } else {
         ids.add(o.id)
       }
       if (o.rules && !Array.isArray(o.rules)) {
-        // eslint-disable-next-line no-console
+         
         console.warn(
           `[overlays/phases] "rules" should be an array for id "${o.id}"`
         )

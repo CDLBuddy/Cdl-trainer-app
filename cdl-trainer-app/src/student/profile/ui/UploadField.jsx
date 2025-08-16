@@ -254,7 +254,7 @@ export default function UploadField({
               className={cls.thumbLink}
               title="Open full image"
             >
-              {/* eslint-disable-next-line jsx-a11y/alt-text */}
+              { }
               <img className={cls.thumb} src={previewUrl} alt={previewAlt} />
             </a>
           ) : null}

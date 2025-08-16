@@ -160,7 +160,7 @@ function applyRule(script, rule) {
 
     default: {
       if (IS_DEV) {
-        // eslint-disable-next-line no-console
+         
         console.warn('[applyOverlays] Unknown op:', op, 'rule:', rule)
       }
       return out
@@ -189,7 +189,7 @@ export function applyOverlays(baseScript, overlays = []) {
     if (!ov || !Array.isArray(ov.rules) || ov.rules.length === 0) continue
 
     if (IS_DEV && typeof ov.id !== 'string') {
-      // eslint-disable-next-line no-console
+       
       console.warn('[applyOverlays] Overlay missing/invalid id:', ov)
     }
 

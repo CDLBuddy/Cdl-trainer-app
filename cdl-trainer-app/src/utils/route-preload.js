@@ -19,7 +19,7 @@ async function _once(key, loader) {
   } catch (err) {
     // Non-fatal: preloading is best-effort
     if (import.meta.env?.DEV) {
-      // eslint-disable-next-line no-console
+       
       console.warn(`[route-preload] Failed to preload "${key}":`, err)
     }
   }

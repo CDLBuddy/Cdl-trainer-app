@@ -43,12 +43,12 @@ if (IS_DEV) {
   try {
     const seenId = typeof overlay.id === 'string' && overlay.id.length > 0
     if (!seenId) {
-      // eslint-disable-next-line no-console
+       
       console.warn('[overlays/common:rename-sections] Missing or invalid id')
     }
 
     if (!Array.isArray(overlay.rules)) {
-      // eslint-disable-next-line no-console
+       
       console.warn(
         '[overlays/common:rename-sections] rules must be an array; got:',
         typeof overlay.rules
@@ -59,7 +59,7 @@ if (IS_DEV) {
         const okMatch = r && r.match && typeof r.match.section === 'string'
         const okTo = r && typeof r.to === 'string'
         if (!(okOp && okMatch && okTo)) {
-          // eslint-disable-next-line no-console
+           
           console.warn(
             `[overlays/common:rename-sections] Invalid rule at index ${i}:`,
             r

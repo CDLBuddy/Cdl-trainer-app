@@ -50,13 +50,13 @@ function buildIdMap(list) {
     if (!id) {
       id = `overlay:auto:${auto++}`
       if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
-        // eslint-disable-next-line no-console
+         
         console.warn('[overlays] Overlay missing id; generated:', id, ov)
       }
     }
     if (out[id]) {
       if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
-        // eslint-disable-next-line no-console
+         
         console.warn('[overlays] Duplicate overlay id (first wins):', id, { first: out[id], dup: ov })
       }
       continue
@@ -135,7 +135,7 @@ export function overlaysForRestrictions(codes = []) {
       out.push(ov)
       seen.add(id)
     } else if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
-      // eslint-disable-next-line no-console
+       
       console.warn('[overlays] Restriction mapped to missing overlay id:', id, 'for code:', c)
     }
   }

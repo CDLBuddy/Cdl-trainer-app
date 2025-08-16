@@ -86,7 +86,7 @@ export function safeNavigate(navigate, to, options = {}) {
     if (typeof navigate === 'function') navigate(to, options)
     else window.location.assign(to)
   } catch (err) {
-    // eslint-disable-next-line no-console
+     
     console.error('[navigation] navigate failed:', err)
     try { window.location.assign(to) } catch { /* noop */ }
   }

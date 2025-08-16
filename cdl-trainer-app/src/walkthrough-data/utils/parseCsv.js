@@ -278,7 +278,7 @@ export function normalizeWalkthrough(w = {}, meta = {}) {
   if (IS_DEV) {
     try {
       if (!Array.isArray(result.sections) || result.sections.length === 0) {
-        // eslint-disable-next-line no-console
+         
         console.warn('[parseCsv] Produced walkthrough has no sections')
       }
     } catch {

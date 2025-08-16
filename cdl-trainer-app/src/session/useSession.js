@@ -28,7 +28,7 @@ function normalizeRole(r) {
 export function useSession() {
   const ctx = useContext(SessionContext)
   if (__DEV__ && (ctx === DEFAULT_SESSION || ctx == null)) {
-    // eslint-disable-next-line no-console
+     
     console.warn('[useSession] Used outside <SessionProvider>. Returning default (logged out).')
   }
   const value = ctx || DEFAULT_SESSION
@@ -59,7 +59,7 @@ export function useSessionSelector(selector, isEqual = Object.is) {
     selected = typeof selector === 'function' ? selector(session) : session
   } catch (e) {
     if (__DEV__) {
-      // eslint-disable-next-line no-console
+       
       console.warn('[useSessionSelector] Selector threw:', e)
     }
     selected = undefined

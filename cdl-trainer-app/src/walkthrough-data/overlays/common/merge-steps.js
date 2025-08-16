@@ -52,12 +52,12 @@ const IS_DEV =
 if (IS_DEV) {
   try {
     if (!(typeof overlay.id === 'string' && overlay.id.length > 0)) {
-      // eslint-disable-next-line no-console
+       
       console.warn('[overlays/common:merge-steps] Missing or invalid id')
     }
 
     if (!Array.isArray(overlay.rules)) {
-      // eslint-disable-next-line no-console
+       
       console.warn(
         '[overlays/common:merge-steps] rules must be an array; got:',
         typeof overlay.rules
@@ -65,7 +65,7 @@ if (IS_DEV) {
     } else {
       overlay.rules.forEach((r, i) => {
         if (!r || typeof r !== 'object') {
-          // eslint-disable-next-line no-console
+           
           console.warn(
             `[overlays/common:merge-steps] Rule at index ${i} must be an object`
           )
@@ -79,20 +79,20 @@ if (IS_DEV) {
         if (op === 'replaceStepText') {
           const hasTo = typeof r.to === 'string' && r.to.length > 0
           if (!(hasMatchLabel && hasTo)) {
-            // eslint-disable-next-line no-console
+             
             console.warn(
               `[overlays/common:merge-steps] Invalid replaceStepText rule at ${i} — requires match.stepLabel and to`
             )
           }
         } else if (op === 'removeStep' || op === 'hideStep') {
           if (!hasMatchLabel) {
-            // eslint-disable-next-line no-console
+             
             console.warn(
               `[overlays/common:merge-steps] Invalid ${op} rule at ${i} — requires match.stepLabel`
             )
           }
         } else {
-          // eslint-disable-next-line no-console
+           
           console.warn(
             `[overlays/common:merge-steps] Unknown op "${op}" at index ${i}`
           )

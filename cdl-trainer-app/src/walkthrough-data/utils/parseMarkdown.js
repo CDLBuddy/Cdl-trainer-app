@@ -67,7 +67,7 @@ export function parseMarkdownToWalkthrough(md, meta = {}) {
   if (IS_DEV) {
     try {
       if (!Array.isArray(result.sections) || result.sections.length === 0) {
-        // eslint-disable-next-line no-console
+         
         console.warn('[parseMarkdown] Produced walkthrough has no sections')
       }
     } catch {}

@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom'
 
 import { showToast } from '@utils/ui-helpers.js'
 
-import { listSubmissions } from './saWalkthroughApi.js'
+import { listSubmissions } from './SaWalkthroughApi.js'
 import styles from './saWalkthroughStyles.module.css'
 
 const STATUS_OPTIONS = [

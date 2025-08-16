@@ -55,7 +55,7 @@ const MULTI_TAB       = String(import.meta.env.VITE_FIRESTORE_MULTI_TAB || 'fals
 if (IS_DEV && !IS_EMU) {
   const missing = Object.entries(firebaseConfig).filter(([_, v]) => !v)
   if (missing.length) {
-    // eslint-disable-next-line no-console
+     
     console.warn(
       '[firebase] Missing real env for:',
       missing.map(([k]) => k).join(', '),
@@ -129,7 +129,7 @@ export async function __firebaseHealthcheck() {
     // eslint-disable-next-line no-console
     console.info('[firebase] Firestore reachable')
   } catch (e) {
-    // eslint-disable-next-line no-console
+     
     console.error('[firebase] Firestore unreachable', e)
   }
 }
