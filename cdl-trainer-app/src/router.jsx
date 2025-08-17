@@ -5,6 +5,7 @@
 // - Public pages (welcome/login/signup)
 // - Role routers (student/instructor/admin/superadmin)
 // - Role-aware redirects + consistent fallbacks
+// - Suspense fallbacks for all lazy chunks
 // ======================================================================
 
 import React from 'react'
@@ -14,7 +15,6 @@ import SplashScreen from '@components/SplashScreen.jsx'
 import { RequireRole } from '@utils/RequireRole.jsx'
 
 import AppLayout from './App.jsx'
-// Helpers moved out to keep this file export-only (no local components)
 import { RequireNotLoggedIn, RootRedirect } from './router-helpers.jsx'
 
 // ---- Lazy pages (code-split) -------------------------------------------
@@ -28,6 +28,13 @@ const StudentRouter    = React.lazy(() => import('@student/StudentRouter.jsx'))
 const InstructorRouter = React.lazy(() => import('@instructor/InstructorRouter.jsx'))
 const AdminRouter      = React.lazy(() => import('@admin/AdminRouter.jsx'))
 const SuperadminRouter = React.lazy(() => import('@superadmin/SuperadminRouter.jsx'))
+
+// Small helper to wrap lazy elements with a consistent splash
+const withSuspense = (node, message) => (
+  <React.Suspense fallback={<SplashScreen message={message} showTip={false} />}>
+    {node}
+  </React.Suspense>
+)
 
 /* =========================
    Router (Data Router API)
@@ -49,7 +56,7 @@ export const router = createBrowserRouter([
         index: true,
         element: (
           <RequireNotLoggedIn>
-            <Welcome />
+            {withSuspense(<Welcome />, 'Loading…')}
           </RequireNotLoggedIn>
         ),
       },
@@ -57,7 +64,7 @@ export const router = createBrowserRouter([
         path: '/login',
         element: (
           <RequireNotLoggedIn>
-            <Login />
+            {withSuspense(<Login />, 'Loading login…')}
           </RequireNotLoggedIn>
         ),
       },
@@ -65,20 +72,23 @@ export const router = createBrowserRouter([
         path: '/signup',
         element: (
           <RequireNotLoggedIn>
-            <Signup />
+            {withSuspense(<Signup />, 'Loading signup…')}
           </RequireNotLoggedIn>
         ),
       },
 
-      // Optional: a role-aware landing if someone visits /dashboard directly
+      // Role-aware landing for post-auth redirects
       { path: '/dashboard', element: <RootRedirect /> },
 
       // ---------- Student ----------
       {
         path: '/student/*',
         element: (
-          <RequireRole requiredRole="student" fallback={<SplashScreen message="Loading student…" showTip={false} />}>
-            <StudentRouter />
+          <RequireRole
+            requiredRole="student"
+            fallback={<SplashScreen message="Loading student…" showTip={false} />}
+          >
+            {withSuspense(<StudentRouter />, 'Loading student…')}
           </RequireRole>
         ),
       },
@@ -87,8 +97,11 @@ export const router = createBrowserRouter([
       {
         path: '/instructor/*',
         element: (
-          <RequireRole requiredRole="instructor" fallback={<SplashScreen message="Loading instructor…" showTip={false} />}>
-            <InstructorRouter />
+          <RequireRole
+            requiredRole="instructor"
+            fallback={<SplashScreen message="Loading instructor…" showTip={false} />}
+          >
+            {withSuspense(<InstructorRouter />, 'Loading instructor…')}
           </RequireRole>
         ),
       },
@@ -97,8 +110,11 @@ export const router = createBrowserRouter([
       {
         path: '/admin/*',
         element: (
-          <RequireRole requiredRole="admin" fallback={<SplashScreen message="Loading admin…" showTip={false} />}>
-            <AdminRouter />
+          <RequireRole
+            requiredRole="admin"
+            fallback={<SplashScreen message="Loading admin…" showTip={false} />}
+          >
+            {withSuspense(<AdminRouter />, 'Loading admin…')}
           </RequireRole>
         ),
       },
@@ -107,15 +123,18 @@ export const router = createBrowserRouter([
       {
         path: '/superadmin/*',
         element: (
-          <RequireRole requiredRole="superadmin" fallback={<SplashScreen message="Loading super admin…" showTip={false} />}>
-            <SuperadminRouter />
+          <RequireRole
+            requiredRole="superadmin"
+            fallback={<SplashScreen message="Loading super admin…" showTip={false} />}
+          >
+            {withSuspense(<SuperadminRouter />, 'Loading super admin…')}
           </RequireRole>
         ),
       },
 
       // ---------- 404 ----------
-      { path: '/404', element: <NotFound /> },
-      { path: '*', element: <NotFound /> },
+      { path: '/404', element: withSuspense(<NotFound />, 'Loading…') },
+      { path: '*',    element: withSuspense(<NotFound />, 'Loading…') },
     ],
   },
 ])

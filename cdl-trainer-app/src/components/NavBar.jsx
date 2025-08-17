@@ -3,7 +3,8 @@
 // NavBar
 // - Brand (logo + schoolName) from prop or branding bus
 // - Role-aware links from central navigation config
-// - Role router preloading on hover/focus (idle-aware + fallbacks)
+// - Route preloading on hover/focus (uses central helper if available,
+//   else role-specific route-level preloader, else shell warmer)
 // - Accessible menus, keyboard toggles, outside-click & ESC handling
 // - Active link styling works for nested routes
 // ======================================================================
@@ -38,8 +39,6 @@ import {
 // If present, this wrapper will route to the correct role preloader.
 // We call it best-effort and also keep robust fallbacks below.
 import { preloadRoutesForRole } from '@/utils/route-preload.js'
-
-// Role-specific warmers (safe, idempotent)
 
 import { useSession } from '../session/useSession.js'
 
@@ -146,8 +145,12 @@ function NavBar({ brand: brandProp }) {
     const cancelAdmin = warmAdminOnIdle?.() || (() => {})
     const cancelInstr = warmInstructorOnIdle?.() || (() => {})
     return () => {
-      try { cancelAdmin() } catch {}
-      try { cancelInstr() } catch {}
+      try { cancelAdmin() } catch (_e) {
+        // ignore cleanup errors
+      }
+      try { cancelInstr() } catch (_e) {
+        // ignore cleanup errors
+      }
     }
   }, [])
 
@@ -194,17 +197,35 @@ function NavBar({ brand: brandProp }) {
   const handleLinkPrefetch = useCallback((to) => {
     const r = roleFromPath(to)
     if (!r) return
-    // Prefer the app’s central helper if present
-    if (typeof preloadRoutesForRole === 'function') {
-      try { preloadRoutesForRole(r) } catch {}
-      return
-    }
-    // Fallbacks: warm the right area
+
     try {
-      if (r === 'admin')       preloadAdminCore?.()
-      else if (r === 'instructor') preloadInstructorCore?.()
+      // Prefer central helper if present. If it accepts (role, path), pass both.
+      if (typeof preloadRoutesForRole === 'function') {
+        const res = preloadRoutesForRole.length >= 2
+          ? preloadRoutesForRole(r, to)
+          : preloadRoutesForRole(r)
+        void res // ignore promise
+        return
+      }
+
+      // Fallbacks: prefer route-level preloader, else warm the shell.
+      if (r === 'admin') {
+        if (typeof preloadAdminRoute === 'function') {
+          void preloadAdminRoute(to)
+        } else {
+          void preloadAdminCore?.()
+        }
+      } else if (r === 'instructor') {
+        if (typeof preloadInstructorRoute === 'function') {
+          void preloadInstructorRoute(to)
+        } else {
+          void preloadInstructorCore?.()
+        }
+      }
       // (student has no dedicated preloader)
-    } catch {}
+    } catch {
+      // swallow prefetch errors; navigation remains unaffected
+    }
   }, [])
 
   const email = user?.email || ''

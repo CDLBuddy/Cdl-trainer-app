@@ -1,27 +1,72 @@
+// src/walkthrough-data/utils/validateWalkthroughs.js
 // ============================================================================
-// Walkthrough validator (dev utility, no deps)
-// - Validates the structure used by your loaders and student UI.
+// Walkthrough validator (dev utility, zero deps)
+//
+// - Validates the structure used by loaders and Student UI.
 // - Can validate a single walkthrough array or a map of many.
 // - Tolerates optional fields used by overlays/parsers (tags, hidden, etc).
+// - Extras: options for stricter checks, consistent path messages.
 // ============================================================================
 
+/** Dev-mode guard for gentle console warnings */
 const IS_DEV =
   typeof import.meta !== 'undefined' &&
-  import.meta.env &&
-  import.meta.env.DEV === true
+  import.meta?.env?.DEV === true
+
+/**
+ * @typedef {Object} ValidateOptions
+ * @property {boolean} [allowEmpty=false]              Allow an empty walkthrough array without flagging an error
+ * @property {boolean} [requireSectionSteps=true]      Each section must have a steps array
+ * @property {boolean} [requireStepScript=true]        Each step must have a non-empty string `script`
+ * @property {boolean} [requireLabel=false]            If true, every step must include a `label` (or `stepLabel`)
+ * @property {boolean} [trimStrings=true]              Trim string fields before validation checks
+ * @property {boolean} [warnPassFailNotRequired=true]  Warn if a passFail step is not marked required
+ */
+
+/** Default options (non-breaking) */
+const DEFAULT_OPTS = Object.freeze(
+  /** @type {ValidateOptions} */ ({
+    allowEmpty: false,
+    requireSectionSteps: true,
+    requireStepScript: true,
+    requireLabel: false,
+    trimStrings: true,
+    warnPassFailNotRequired: true,
+  })
+)
+
+/** Push a message with a normalized path prefix */
+function push(problems, path, msg) {
+  problems.push(`${path}: ${msg}`)
+}
+
+/** Basic helpers */
+const isObj = (v) => v !== null && typeof v === 'object'
+const isBool = (v) => typeof v === 'boolean'
+const isStr  = (v) => typeof v === 'string'
 
 /**
  * Validate a single walkthrough (array of sections).
  * @param {string} name - human label for logs (e.g., "class-a")
  * @param {any} data - the walkthrough content (array of sections)
+ * @param {ValidateOptions} [options]
  * @returns {{ ok: boolean, problems: string[] }}
  */
-export function validateWalkthrough(name, data) {
+export function validateWalkthrough(name, data, options) {
+  const opts = { ...DEFAULT_OPTS, ...(options || {}) }
   const problems = []
 
   if (!Array.isArray(data)) {
     problems.push(`"${name}" must export an array. Got ${typeof data}.`)
     return { ok: false, problems }
+  }
+
+  if (!opts.allowEmpty && data.length === 0) {
+    // treat as error for clarity; switch to warn only if you prefer
+    push(problems, name, 'walkthrough has no sections (empty array).')
+  } else if (IS_DEV && problems.length === 0 && data.length === 0) {
+    // optional dev nudge if empty is allowed
+    console.warn(`[validateWalkthrough] "${name}" is an empty walkthrough array.`)
   }
 
   // Detect duplicate section names (often accidental)
@@ -30,93 +75,98 @@ export function validateWalkthrough(name, data) {
   data.forEach((section, sIdx) => {
     const path = `${name}[${sIdx}]`
 
-    if (!section || typeof section !== 'object') {
-      problems.push(`${path} must be an object.`)
+    if (!isObj(section)) {
+      push(problems, path, 'section must be an object.')
       return
     }
 
-    // section.section
-    if (!section.section || typeof section.section !== 'string') {
-      problems.push(`${path}.section must be a non-empty string.`)
+    // section.section (name)
+    let sectionKey = section.section
+    if (opts.trimStrings && isStr(sectionKey)) sectionKey = sectionKey.trim()
+
+    if (!isStr(sectionKey) || sectionKey.length === 0) {
+      push(problems, path, 'section.section must be a non-empty string.')
     } else {
-      const key = section.section
-      if (sectionNames.has(key)) {
-        problems.push(`${path}.section "${key}" is duplicated within "${name}".`)
+      if (sectionNames.has(sectionKey)) {
+        push(problems, path, `section "${sectionKey}" is duplicated within "${name}".`)
       } else {
-        sectionNames.add(key)
+        sectionNames.add(sectionKey)
       }
     }
 
     // section flags (optional)
-    if ('critical' in section && typeof section.critical !== 'boolean') {
-      problems.push(`${path}.critical must be boolean when present.`)
-    }
-    if ('passFail' in section && typeof section.passFail !== 'boolean') {
-      problems.push(`${path}.passFail must be boolean when present.`)
-    }
-    if ('hidden' in section && typeof section.hidden !== 'boolean') {
-      problems.push(`${path}.hidden must be boolean when present.`)
+    for (const key of ['critical', 'passFail', 'hidden']) {
+      if (key in section && !isBool(section[key])) {
+        push(problems, path, `${key} must be boolean when present.`)
+      }
     }
 
-    // section.steps
+    // steps (required unless relaxed)
     if (!Array.isArray(section.steps)) {
-      problems.push(`${path}.steps must be an array.`)
+      if (opts.requireSectionSteps) {
+        push(problems, path, 'steps must be an array.')
+      }
       return
     }
 
     section.steps.forEach((step, stIdx) => {
       const spath = `${path}.steps[${stIdx}]`
-      if (!step || typeof step !== 'object') {
-        problems.push(`${spath} must be an object.`)
+      if (!isObj(step)) {
+        push(problems, spath, 'step must be an object.')
         return
       }
 
-      // Required fields
-      if (!step.script || typeof step.script !== 'string') {
-        problems.push(`${spath}.script is required (string).`)
+      // script (required by default)
+      let script = step.script
+      if (opts.trimStrings && isStr(script)) script = script.trim()
+      if (opts.requireStepScript) {
+        if (!isStr(script) || script.length === 0) {
+          push(problems, spath, 'script is required (non-empty string).')
+        }
+      } else if (script != null && !isStr(script)) {
+        push(problems, spath, 'script must be a string when provided.')
       }
 
-      // Optional label (some sources use stepLabel)
-      if (step.label != null && typeof step.label !== 'string') {
-        problems.push(`${spath}.label must be a string when provided.`)
-      }
-      if (step.stepLabel != null && typeof step.stepLabel !== 'string') {
-        problems.push(`${spath}.stepLabel must be a string when provided.`)
+      // Labels (optional; some sources use stepLabel)
+      let label = step.label ?? step.stepLabel
+      if (opts.trimStrings && isStr(label)) label = label.trim()
+      if (opts.requireLabel && (!isStr(label) || label.length === 0)) {
+        push(problems, spath, 'label is required (string); stepLabel may be used as an alias.')
+      } else {
+        if (step.label != null && !isStr(step.label)) {
+          push(problems, spath, 'label must be a string when provided.')
+        }
+        if (step.stepLabel != null && !isStr(step.stepLabel)) {
+          push(problems, spath, 'stepLabel must be a string when provided.')
+        }
       }
 
       // Boolean flags
       for (const flag of ['mustSay', 'required', 'skip', 'passFail', 'hidden']) {
-        if (flag in step && typeof step[flag] !== 'boolean') {
-          problems.push(`${spath}.${flag} must be boolean when present.`)
+        if (flag in step && !isBool(step[flag])) {
+          push(problems, spath, `${flag} must be boolean when present.`)
         }
       }
 
       // Tags
       if ('tags' in step) {
         if (!Array.isArray(step.tags)) {
-          problems.push(`${spath}.tags must be an array of strings when present.`)
+          push(problems, spath, 'tags must be an array of strings when present.')
         } else {
           for (let i = 0; i < step.tags.length; i++) {
-            if (typeof step.tags[i] !== 'string') {
-              problems.push(`${spath}.tags[${i}] must be a string.`)
+            if (!isStr(step.tags[i])) {
+              push(problems, `${spath}.tags[${i}]`, 'tag must be a string.')
             }
           }
         }
       }
 
       // Nudge: passFail steps should usually be required
-      if (step.passFail === true && step.required !== true) {
-        problems.push(
-          `${spath} is passFail but not marked required: consider required:true.`
-        )
+      if (opts.warnPassFailNotRequired && step.passFail === true && step.required !== true) {
+        push(problems, spath, 'is passFail but not marked required: consider required:true.')
       }
     })
   })
-
-  if (IS_DEV && problems.length === 0 && data.length === 0) {
-    // eslint-disable-next-line no-console
-    console.warn(`[validateWalkthrough] "${name}" is an empty walkthrough array.`)
-  }
 
   return { ok: problems.length === 0, problems }
 }
@@ -124,30 +174,33 @@ export function validateWalkthrough(name, data) {
 /**
  * Validate a single walkthrough by shape only (no name required).
  * @param {any} data
+ * @param {ValidateOptions} [options]
  * @returns {{ ok: boolean, problems: string[] }}
  */
-export function validateWalkthroughShape(data) {
-  return validateWalkthrough('walkthrough', data)
+export function validateWalkthroughShape(data, options) {
+  return validateWalkthrough('walkthrough', data, options)
 }
 
 /**
  * Validate a map of walkthroughs: { "class-a": [...], "class-b": [...] }
  * @param {Record<string, any>} map
+ * @param {ValidateOptions} [options]
  * @returns {{ ok: boolean, results: Record<string, {ok:boolean, problems:string[]}> }}
  */
-export function validateWalkthroughs(map) {
+export function validateWalkthroughs(map, options) {
   /** @type {Record<string, {ok:boolean, problems:string[]}>} */
-  const results = {}
+  const results = Object.create(null)
   let allOk = true
 
-  Object.entries(map || {}).forEach(([key, value]) => {
-    const res = validateWalkthrough(key, value)
+  for (const [key, value] of Object.entries(map || {})) {
+    const res = validateWalkthrough(key, value, options)
     results[key] = res
     if (!res.ok) allOk = false
-  })
+  }
 
   return { ok: allOk, results }
 }
 
-// Back-compat named export some callers may use (alias to shape validator)
-export const validateWalkthrough = validateWalkthroughShape
+// Canonical exports
+// (Named exports already declared above via 'export function ...')
+export default validateWalkthrough

@@ -70,7 +70,7 @@ export default function CompanyDetail() {
         if (!alive) return
         setCompany(c)
         setRoster(r)
-      } catch (e) {
+      } catch (_e) {
         showToast('Failed to load company roster.', 'error')
       } finally {
         if (alive) setLoading(false)

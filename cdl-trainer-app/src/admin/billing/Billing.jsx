@@ -345,7 +345,8 @@ function IndividualTab() {
 
 function StatusPill({ value, individual = false }) {
   const val = String(value || '').toLowerCase()
-  let bg = '#e5e7eb', fg = '#374151', label = val || '—'
+  let bg = '#e5e7eb', fg = '#374151'
+  const label = val || '—'
   if (individual) {
     if (val === 'paid')   { bg = '#dcfce7'; fg = '#166534' }
     if (val === 'partial'){ bg = '#fffbeb'; fg = '#92400e' }

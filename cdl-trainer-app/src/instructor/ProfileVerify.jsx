@@ -54,11 +54,13 @@ export default function ProfileVerify() {
       showToast('Failed to subscribe to student profile.', 'error')
     }
     return () => {
-      try { unsubRef.current?.() } catch {}
+      try { unsubRef.current?.() } catch {
+        // intentionally ignored
+      }
     }
   }, [email, showToast])
 
-  const verified = profile?.verified || {}
+  const verified = useMemo(() => profile?.verified || {}, [profile])
   const sectionStatuses = useMemo(() => {
     if (!profile) return {}
     return SECTION_META.reduce((acc, s) => {
@@ -89,7 +91,7 @@ export default function ProfileVerify() {
       }
       await updateUserProfileFields(email, { verified: next }, actorEmail)
       showToast(checked ? `Marked ${sectionKey} verified.` : `Unverified ${sectionKey}.`, 'success')
-    } catch (e) {
+    } catch {
       showToast('Failed to update verification.', 'error')
     } finally {
       setSaving(false)

@@ -1,4 +1,4 @@
-/* ===========================================================
+/* =========================================================== 
    Global stylesheet entry
    - Imports theme tokens
    - CSS Layers (reset → base → components → utilities)
@@ -8,8 +8,9 @@
 /* 1) Declare layer order up-front */
 @layer reset, base, components, utilities;
 
-/* 2) Theme/tokens first (no layer so vars are always available) */
-@import './theme.css';
+/* 2) Imports must be at the top (PostCSS rule) */
+@import './theme.css';                 /* tokens (no layer so vars are global) */
+@import './utilities.css' layer(utilities); /* utilities loaded last by layer order */
 
 /* -----------------------------------------------------------
    RESET
@@ -151,8 +152,3 @@
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 8%);
   }
 }
-
-/* -----------------------------------------------------------
-   UTILITIES  (imported last so they can override)
-   ----------------------------------------------------------- */
-@import './utilities.css' layer(utilities);

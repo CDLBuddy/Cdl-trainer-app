@@ -7,6 +7,9 @@ import { updateUserProfileFields } from '@utils/userProfile.js'
 
 import { deriveOverlays } from '@admin/utils/enrollmentAssignments.js'
 
+// Stable regex hoisted outside component so it doesn't trigger useMemo dependency changes
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 /**
  * AddStudentDrawer (slide-over)
  *
@@ -28,10 +31,12 @@ export default function AddStudentDrawer({ open = true, companyId, onClose }) {
   const [error, setError] = useState('')
   const [render, setRender] = useState(open) // keep in DOM during exit animation
 
+  const ANIM_MS = 240
+  const lastActiveRef = useRef(null)
   const panelRef = useRef(null)
   const firstFieldRef = useRef(null)
-  const lastActiveRef = useRef(null)
-  const ANIM_MS = 240
+
+  const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }))
 
   // Mount/unmount with animation
   useEffect(() => {
@@ -63,29 +68,32 @@ export default function AddStudentDrawer({ open = true, companyId, onClose }) {
       }
     }
     document.addEventListener('keydown', onKey)
-    // focus first field after mount tick
     const id = setTimeout(() => firstFieldRef.current?.focus(), 0)
     return () => {
       clearTimeout(id)
       document.removeEventListener('keydown', onKey)
       // restore focus
-      if (lastActiveRef.current && lastActiveRef.current.focus) {
-        lastActiveRef.current.focus()
-      }
+      try { lastActiveRef.current?.focus?.() } catch { /* noop */ }
     }
   }, [open, onClose])
 
+  // Derived overlays
   const overlays = useMemo(
     () => deriveOverlays(form.course, form.cdlClass) || [],
     [form.course, form.cdlClass]
   )
+  const canSave = useMemo(() => {
+    const email = (form.email || '').trim().toLowerCase()
+    const course = (form.course || '').trim()
+    const klass = form.cdlClass || ''
+    return Boolean(companyId) && EMAIL_RE.test(email) && course && klass
+  }, [form.email, form.course, form.cdlClass, companyId])
 
-  const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }))
-
+  // Validate before submit (for messages)
   const validate = () => {
     const email = (form.email || '').trim().toLowerCase()
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Please enter a valid email.'
-    if (!form.course.trim()) return 'Please enter a course.'
+    if (!EMAIL_RE.test(email)) return 'Please enter a valid email.'
+    if (!(form.course || '').trim()) return 'Please enter a course.'
     if (!form.cdlClass) return 'Please select a CDL class.'
     if (!companyId) return 'Missing companyId; cannot attach student.'
     return ''
@@ -124,7 +132,7 @@ export default function AddStudentDrawer({ open = true, companyId, onClose }) {
     try {
       await updateUserProfileFields(email, payload, actor)
       onClose?.(true)
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save student. Please try again.')
     } finally {
       setSaving(false)
@@ -142,17 +150,24 @@ export default function AddStudentDrawer({ open = true, companyId, onClose }) {
         display: 'grid',
         gridTemplateColumns: '1fr auto',
       }}
-      onMouseDown={(e) => {
-        // backdrop click = close (but ignore clicks inside the panel)
-        if (e.target === e.currentTarget) onClose?.(false)
-      }}
     >
-      {/* Scrim */}
-      <div
+      {/* Scrim: interactive element to satisfy a11y rule */}
+      <button
+        type="button"
+        aria-label="Close dialog"
+        onClick={() => onClose?.(false)}
+        tabIndex={-1}
         style={{
+          width: '100%',
+          height: '100%',
           background: 'rgba(15, 23, 42, 0.5)',
           opacity: open ? 1 : 0,
           transition: `opacity ${ANIM_MS}ms ease`,
+          border: 0,
+          padding: 0,
+          margin: 0,
+          display: 'block',
+          cursor: 'default',
         }}
       />
 
@@ -172,7 +187,6 @@ export default function AddStudentDrawer({ open = true, companyId, onClose }) {
           display: 'flex',
           flexDirection: 'column',
         }}
-        onMouseDown={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <header style={{ padding: '16px 16px 10px', borderBottom: '1px solid #eef0f4' }}>
@@ -302,9 +316,29 @@ export default function AddStudentDrawer({ open = true, companyId, onClose }) {
         </div>
 
         {/* Footer */}
-        <footer style={{ padding: 12, borderTop: '1px solid #eef0f4', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button type="button" className="btn outline" onClick={() => onClose?.(false)}>Cancel</button>
-          <button type="submit" className="btn" disabled={saving} onClick={submit}>
+        <footer
+          style={{
+            padding: 12,
+            borderTop: '1px solid #eef0f4',
+            display: 'flex',
+            gap: 8,
+            justifyContent: 'flex-end',
+          }}
+        >
+          <button
+            type="button"
+            className="btn outline"
+            onClick={() => onClose?.(false)}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="btn"
+            form={/* ensure it submits the nearest form */ undefined}
+            disabled={saving || !canSave}
+            onClick={submit}
+          >
             {saving ? 'Saving…' : 'Save'}
           </button>
         </footer>

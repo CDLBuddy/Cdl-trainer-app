@@ -2,25 +2,30 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom'
 
+import SplashScreen from '@components/SplashScreen.jsx'
 import { getDashboardRoute } from '@navigation/navigation.js'
+import { useAuthStatus } from '@utils/auth.js'
 
 export function RequireNotLoggedIn({ children }) {
-  const role =
-    (typeof localStorage !== 'undefined' && localStorage.getItem('userRole')) ||
-    (typeof window !== 'undefined' && window.currentUserRole) ||
-    null
+  const { loading, isLoggedIn, role } = useAuthStatus() || {}
 
-  return role ? <Navigate to={getDashboardRoute(role)} replace /> : children
+  if (loading) {
+    return <SplashScreen message="Loading…" showTip={false} />
+  }
+
+  return isLoggedIn
+    ? <Navigate to={getDashboardRoute(role || 'student')} replace />
+    : children
 }
 
 export function RootRedirect() {
-  try {
-    const role =
-      (typeof localStorage !== 'undefined' && localStorage.getItem('userRole')) ||
-      (typeof window !== 'undefined' && window.currentUserRole) ||
-      null
-    return role ? <Navigate to={getDashboardRoute(role)} replace /> : <Navigate to="/login" replace />
-  } catch {
-    return <Navigate to="/login" replace />
+  const { loading, isLoggedIn, role } = useAuthStatus() || {}
+
+  if (loading) {
+    return <SplashScreen message="Loading…" showTip={false} />
   }
+
+  return isLoggedIn
+    ? <Navigate to={getDashboardRoute(role || 'student')} replace />
+    : <Navigate to="/login" replace />
 }

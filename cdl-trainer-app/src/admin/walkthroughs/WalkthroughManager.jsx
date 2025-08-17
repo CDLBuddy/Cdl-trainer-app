@@ -1,4 +1,4 @@
-// Path: /src/admin/walkthroughs/WalkthroughManager.jsx
+// src/admin/walkthroughs/WalkthroughManager.jsx
 // -----------------------------------------------------------------------------
 // Admin • Walkthrough Manager (hub)
 // - Loads + lists school walkthroughs (defaults + custom)
@@ -11,13 +11,10 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 
-// Child admin screens
-import WalkthroughList from './WalkthroughList.jsx'
+import { parseXlsxFile } from '@walkthrough-data/utils/parseXlsx.js'
+
+ // XLSX (exceljs) parser helper
 import WalkthroughEditor from './WalkthroughEditor.jsx'
-import WalkthroughUpload from './WalkthroughUpload.jsx'
-import WalkthroughPreview from './WalkthroughPreview.jsx'
-
-
 // Local helpers (UI-centric helpers)
 import {
   toToken,
@@ -26,9 +23,10 @@ import {
   cloneDeep,
   inferLabelFromToken,
 } from './walkthroughHelpers.js'
-
-//Data-layer parser now centralized with CSV/MD:
-import { parseXlsx } from '@walkthrough-data/utils'
+// Child admin screens
+import WalkthroughList from './WalkthroughList.jsx'
+import WalkthroughPreview from './WalkthroughPreview.jsx'
+import WalkthroughUpload from './WalkthroughUpload.jsx'
 
 // Optional: light styles (kept inline for portability)
 const toolbarBtn = {
@@ -219,6 +217,12 @@ export default function WalkthroughManager() {
     URL.revokeObjectURL(url)
   }
 
+  // Wrapper using exceljs helper — returns rows as objects (header → value)
+  const parseXlsx = async (file) => {
+    // coerce to strings & map by header row
+    return await parseXlsxFile(file, { hasHeader: true, coerceStrings: true })
+  }
+
   // Render
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: 16 }}>
@@ -275,7 +279,7 @@ export default function WalkthroughManager() {
         <WalkthroughUpload
           onImported={(dataset) => handleImport(dataset)}
           onCancel={toList}
-          parseXlsx={parseXlsx}   {/* ✅ XLSX wired in */}
+          parseXlsx={parseXlsx}
         />
       )}
 
@@ -283,7 +287,7 @@ export default function WalkthroughManager() {
         <WalkthroughPreview
           item={active}
           onClose={toList}
-          onSubmit={handleSubmit}  {/* Optional: allow submit from preview */}
+          onSubmit={handleSubmit}
         />
       )}
 

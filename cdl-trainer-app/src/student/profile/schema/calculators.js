@@ -170,7 +170,7 @@ function achievedWeightForTier(tier, profile) {
  * @param {typeof PROFILE_SCHEMA} [schema]
  * @param {typeof TIERS} [tiers]
  */
-export function getEnrollmentReadiness(profile, schema = PROFILE_SCHEMA, tiers = TIERS) {
+export function getEnrollmentReadiness(profile, _schema = PROFILE_SCHEMA, _tiers = TIERS) {
   // schema/tiers accepted for signature parity; we use module-level constants
   const total = totalWeightForTier("enrollment", profile);
   if (total === 0) return 0;
@@ -184,7 +184,7 @@ export function getEnrollmentReadiness(profile, schema = PROFILE_SCHEMA, tiers =
  * @param {typeof PROFILE_SCHEMA} [schema]
  * @param {typeof TIERS} [tiers]
  */
-export function getBTWReadiness(profile, schema = PROFILE_SCHEMA, tiers = TIERS) {
+export function getBTWReadiness(profile, _schema = PROFILE_SCHEMA, _tiers = TIERS) {
   const total = totalWeightForTier("btw", profile);
   if (total === 0) return 0;
   const done = achievedWeightForTier("btw", profile);

@@ -171,7 +171,7 @@ function buildHeaderMap(headerRow = []) {
   }
 }
 
-function defaultHeaderMap(firstRow = []) {
+function defaultHeaderMap(_firstRow = []) {
   // Fallback order when there is no recognized header row:
   // section, stepLabel, script, mustSay, required, passFail, critical, skip, tags
   return {

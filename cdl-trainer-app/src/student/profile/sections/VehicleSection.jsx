@@ -9,7 +9,7 @@ import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
 
 export default function VehicleSection({ value, onChange, onUpload }) {
-  const v = value || {}
+  const v = useMemo(() => value || {}, [value])
   const sectionId = useId()
   const hintId = `${sectionId}-hint`
   const qualified = String(v.vehicleQualified || '').toLowerCase() === 'yes'

@@ -1,3 +1,4 @@
+// src/pages/Login.jsx (or wherever this lives)
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
@@ -8,18 +9,32 @@ import {
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import {
-  getCurrentSchoolBranding,
-  setCurrentSchool,
-} from '@utils/school-branding.js'
+import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
-import { auth } from '@/utils/firebase.js' // Adjust import as needed!
+import { auth } from '@/utils/firebase.js'
 
-import '@components/Shell.module.css' // Optional: import your CSS
+import '@components/Shell.module.css'
 
 const supportEmailDefault = 'support@cdltrainerapp.com'
 const demoEmail = 'demo@cdltrainerapp.com'
 const demoPassword = 'test1234'
+
+function mapFirebaseError(err) {
+  const code = err?.code || ''
+  switch (code) {
+    case 'auth/invalid-credential': // modern wrong-credentials code
+    case 'auth/wrong-password':
+      return 'Incorrect email or password. Try again or reset it.'
+    case 'auth/user-not-found':
+      return 'No user found for that email.'
+    case 'auth/invalid-email':
+      return 'That email looks invalid.'
+    case 'auth/popup-closed-by-user':
+      return 'Sign-in popup was closed before completing.'
+    default:
+      return err?.message || 'Login failed. Please try again.'
+  }
+}
 
 function Login() {
   const navigate = useNavigate()
@@ -29,7 +44,7 @@ function Login() {
   const [showPwd, setShowPwd] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  // School branding (optional: load from context if you want)
+  // School branding (optional)
   const schoolBrand = getCurrentSchoolBranding() || {}
   const schoolLogo = schoolBrand.logoUrl || '/default-logo.svg'
   const schoolName = schoolBrand.schoolName || 'CDL Trainer'
@@ -37,27 +52,22 @@ function Login() {
   const supportEmail = schoolBrand.contactEmail || supportEmailDefault
 
   // ---- Handlers ----
-  const handleLogin = async e => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
-    setLoading(true)
     if (!email || !pwd) {
       setError('Please enter both email and password.')
-      setLoading(false)
       return
     }
+    setLoading(true)
     try {
       await signInWithEmailAndPassword(auth, email.trim(), pwd)
-      // onAuthStateChanged in App will handle redirect
-      setLoading(false)
-      // Optionally, navigate("/student-dashboard") here if you want manual routing
+      // CHANGE: give immediate UX and let route guards take over next
+      navigate('/', { replace: true })
     } catch (err) {
+      setError(mapFirebaseError(err))
+    } finally {
       setLoading(false)
-      if (err.code === 'auth/user-not-found')
-        setError('No user found. Please sign up first!')
-      else if (err.code === 'auth/wrong-password')
-        setError('Incorrect password. Try again or reset.')
-      else setError(err.message || 'Login failed. Try again.')
     }
   }
 
@@ -66,23 +76,26 @@ function Login() {
     setLoading(true)
     try {
       await signInWithPopup(auth, new GoogleAuthProvider())
-      setLoading(false)
+      // CHANGE: navigate so the app visibly moves after success
+      navigate('/', { replace: true })
     } catch (err) {
+      setError(mapFirebaseError(err))
+    } finally {
       setLoading(false)
-      setError('Google Sign-In failed: ' + err.message)
     }
   }
 
   const handleResetPassword = async () => {
+    setError('')
     if (!email) {
       setError('Enter your email to receive a reset link.')
       return
     }
     try {
       await sendPasswordResetEmail(auth, email.trim())
-      setError('📬 Reset link sent!')
+      setError('📬 Reset link sent! Check your inbox.')
     } catch (err) {
-      setError('Error: ' + err.message)
+      setError(mapFirebaseError(err))
     }
   }
 
@@ -91,18 +104,18 @@ function Login() {
     setLoading(true)
     try {
       await signInWithEmailAndPassword(auth, demoEmail, demoPassword)
-      setLoading(false)
+      // CHANGE: navigate for consistency
+      navigate('/', { replace: true })
     } catch (_err) {
-      setLoading(false)
       setError('Demo login unavailable.')
+    } finally {
+      setLoading(false)
     }
   }
 
   const handleLogoutAndBack = async () => {
-    try {
-      await signOut(auth)
-    } catch (_err) {
-      /* ignore */
+    try { await signOut(auth) } catch {
+      // intentionally ignore signOut errors
     }
     navigate('/')
   }
@@ -136,6 +149,7 @@ function Login() {
           🚛 {schoolName} Login
         </h2>
       </div>
+
       <form autoComplete="off" aria-label="Login form" onSubmit={handleLogin}>
         <div className="form-group">
           <label htmlFor="email" style={{ color: '#fff' }}>
@@ -148,9 +162,10 @@ function Login() {
             required
             autoComplete="username"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
+
         <div className="form-group password-group">
           <label htmlFor="login-password" style={{ color: '#fff' }}>
             Password
@@ -164,7 +179,7 @@ function Login() {
               autoComplete="current-password"
               style={{ paddingRight: '2.3rem' }}
               value={pwd}
-              onChange={e => setPwd(e.target.value)}
+              onChange={(e) => setPwd(e.target.value)}
             />
             <button
               type="button"
@@ -181,9 +196,9 @@ function Login() {
                 fontSize: '1.17em',
                 cursor: 'pointer',
               }}
-              onClick={() => setShowPwd(p => !p)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') setShowPwd(p => !p)
+              onClick={() => setShowPwd((p) => !p)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') setShowPwd((p) => !p)
               }}
               tabIndex={0}
             >
@@ -191,6 +206,7 @@ function Login() {
             </button>
           </div>
         </div>
+
         {error && (
           <div
             role="alert"
@@ -199,6 +215,7 @@ function Login() {
             {error}
           </div>
         )}
+
         <button
           className="btn primary"
           type="submit"
@@ -208,6 +225,7 @@ function Login() {
         >
           {loading ? 'Logging in…' : 'Log In'}
         </button>
+
         <button
           type="button"
           className="btn"
@@ -231,6 +249,7 @@ function Login() {
           />
           Sign in with Google
         </button>
+
         <button
           type="button"
           className="btn outline"
@@ -240,6 +259,7 @@ function Login() {
         >
           Forgot Password?
         </button>
+
         <button
           type="button"
           className="btn outline"
@@ -250,10 +270,8 @@ function Login() {
           🔑 Demo/Test Account
         </button>
       </form>
-      <div
-        className="login-footer"
-        style={{ marginTop: '1.2rem', color: '#ccc' }}
-      >
+
+      <div className="login-footer" style={{ marginTop: '1.2rem', color: '#ccc' }}>
         New?{' '}
         <button
           className="btn outline"
@@ -264,6 +282,7 @@ function Login() {
           Sign Up
         </button>
       </div>
+
       <div style={{ textAlign: 'center', marginTop: '0.7rem' }}>
         <button
           className="btn outline"
@@ -291,6 +310,7 @@ function Login() {
           🏫 Switch School
         </button>
       </div>
+
       <div
         style={{
           marginTop: '1.1rem',

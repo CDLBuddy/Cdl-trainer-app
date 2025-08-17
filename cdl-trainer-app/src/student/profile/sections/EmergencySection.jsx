@@ -26,7 +26,7 @@ function formatPhoneUS(digits) {
  * - phonePattern?: string (optional) — falls back to DEFAULT_PHONE_PATTERN
  */
 export default function EmergencySection({ value, onChange, phonePattern = DEFAULT_PHONE_PATTERN }) {
-  const v = value || {}
+  const v = useMemo(() => value || {}, [value])
   const sectionId = useId()
   const hintId = `${sectionId}-hint`
 

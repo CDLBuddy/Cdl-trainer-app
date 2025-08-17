@@ -70,7 +70,9 @@ export function parseMarkdownToWalkthrough(md, meta = {}) {
          
         console.warn('[parseMarkdown] Produced walkthrough has no sections')
       }
-    } catch {}
+    } catch {
+      // intentionally empty: non-fatal check
+    }
   }
 
   return result

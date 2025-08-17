@@ -8,7 +8,7 @@ import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
 
 export default function WaiverSection({ value, onChange }) {
-  const v = value || {}
+  const v = useMemo(() => value || {}, [value])
   const sectionId = useId()
   const titleId = `${sectionId}-title`
   const hintId = `${sectionId}-hint`

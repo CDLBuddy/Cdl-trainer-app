@@ -10,7 +10,7 @@ import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
 
 export default function PermitSection({ value, onChange, onUpload, afterUpload }) {
-  const v = value || {}
+  const v = useMemo(() => value || {}, [value])
   const sectionId = useId()
   const hintId = `${sectionId}-hint`
   const hasPermit = String(v.cdlPermit || '').toLowerCase() === 'yes'

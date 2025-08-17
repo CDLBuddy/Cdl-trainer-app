@@ -142,7 +142,9 @@ export async function resolveWalkthrough(arg1, arg2) {
         console.warn(`[resolveWalkthrough] No custom walkthrough found for ${token} at school ${schoolId}`)
       }
     } catch (e) {
-      try { toast?.('Failed to load custom walkthrough. Using default.', 'warning') } catch {}
+      try { toast?.('Failed to load custom walkthrough. Using default.', 'warning') } catch {
+        // Intentionally ignore toast errors (non-critical)
+      }
       if (!softFail) throw e
       // fall through to defaults
     }
@@ -155,7 +157,7 @@ export async function resolveWalkthrough(arg1, arg2) {
     null
 
   if (!base) {
-    try { toast?.(`Walkthrough for ${classType} not available.`, 'error') } catch {}
+    try { toast?.(`Walkthrough for ${classType} not available.`, 'error') } catch { /* ignore toast errors */ }
     return typeof arg1 === 'object' ? { script: null, sourceHint: 'not-found' } : null
   }
 

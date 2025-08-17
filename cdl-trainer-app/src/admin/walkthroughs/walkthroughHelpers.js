@@ -2,7 +2,7 @@
 // -----------------------------------------------------------------------------
 // Shared helper functions for admin walkthrough management.
 // - Delegates CSV/Markdown parsing + validation to @walkthrough-data/utils
-// - Implements XLSX parsing via dynamic import of `xlsx` (SheetJS) if available
+// - Implements XLSX parsing via central utils (exceljs under the hood)
 // - Provides id/timestamp/label helpers used across Admin screens
 // -----------------------------------------------------------------------------
 
@@ -10,7 +10,7 @@
 import {
   parseCsv as coreParseCsv,                // parseCsvToWalkthrough compatible
   parseMarkdown as coreParseMarkdown,      // parseMarkdownToWalkthrough compatible
-  validateWalkthroughs as coreValidateAll, // optional
+  parseXlsx as coreParseXlsx,              // exceljs-based XLSX -> dataset
   validateWalkthroughShape as coreValidateShape,
 } from '@walkthrough-data/utils'
 
@@ -122,169 +122,17 @@ export function parseMarkdown(mdText, meta) {
   return coreParseMarkdown(mdText, meta)
 }
 
-// ---- XLSX parsing (SheetJS) ------------------------------------------------
-// We dynamically import `xlsx` so this file works even before you install it.
-// Install when ready:
-//   npm i xlsx
-// or
-//   pnpm add xlsx
-// -----------------------------------------------------------------------------
+// ---- XLSX (delegated to @walkthrough-data/utils; exceljs under the hood) ---
 
-let _xlsxMod = null
-let _xlsxChecked = false
-
-async function ensureXlsx() {
-  if (_xlsxChecked && _xlsxMod) return _xlsxMod
-  if (_xlsxChecked && !_xlsxMod) throw new Error('xlsx module not available')
-
-  _xlsxChecked = true
-  try {
-    // Vite + ESM friendly dynamic import
-    _xlsxMod = await import('xlsx')
-    return _xlsxMod
-  } catch (err) {
-    _xlsxMod = null
-    throw new Error(
-      'XLSX parsing is not available. Install "xlsx" (SheetJS) to enable Excel imports.'
-    )
-  }
-}
-
-/** Allow callers to check availability (for UI hints) */
+/** Back-compat: simple availability check (true when core parser is present). */
 export async function isXlsxAvailable() {
-  try {
-    await ensureXlsx()
-    return true
-  } catch {
-    return false
-  }
-}
-
-// Flexible header matching like parseCsv
-const HEADER_ALIASES = {
-  section: ['section', 'part', 'area', 'sectionname', 'title'],
-  stepLabel: ['steplabel', 'label', 'item', 'title'],
-  script: ['script', 'text', 'line', 'content'],
-  mustSay: ['mustsay', 'must', 'say'],
-  required: ['required', 'req'],
-  passFail: ['passfail', 'pass', 'pf'],
-  skip: ['skip', 'omit'],
-  // optional: section-level critical flag (if a column exists per row)
-  critical: ['critical', 'sectioncritical', 'pass/fail'],
-}
-
-function norm(s) {
-  return String(s ?? '').trim()
-}
-function normLower(s) {
-  return norm(s).toLowerCase()
-}
-function toBool(v) {
-  const s = normLower(v)
-  return s === 'true' || s === 'yes' || s === 'y' || s === '1'
-}
-
-/** Map the first matching header key in HEADER_ALIASES to its column name */
-function buildHeaderMap(headers) {
-  const lower = headers.map(h => normLower(h))
-  const find = (key) => {
-    for (const alias of HEADER_ALIASES[key]) {
-      const idx = lower.indexOf(alias)
-      if (idx !== -1) return headers[idx]
-    }
-    return null
-  }
-  return {
-    section: find('section'),
-    stepLabel: find('stepLabel'),
-    script: find('script'),
-    mustSay: find('mustSay'),
-    required: find('required'),
-    passFail: find('passFail'),
-    skip: find('skip'),
-    critical: find('critical'),
-  }
+  return typeof coreParseXlsx === 'function'
 }
 
 /**
- * Parse an .xlsx File into { sections } compatible with WalkthroughScript.
- * Uses first worksheet, flexible headers, and aggregates steps by section name.
+ * Parse an .xlsx source into a normalized dataset (sections/steps).
+ * Accepts File/Blob/ArrayBuffer/Uint8Array/Buffer depending on environment.
  */
-export async function parseXlsx(file) {
-  if (!(file instanceof File)) {
-    throw new Error('parseXlsx expects a File')
-  }
-  const XLSX = await ensureXlsx()
-
-  // read into workbook
-  const buf = await file.arrayBuffer()
-  const wb = XLSX.read(buf, { type: 'array' })
-
-  const firstSheetName = wb.SheetNames[0]
-  if (!firstSheetName) return { sections: [] }
-
-  const ws = wb.Sheets[firstSheetName]
-  // Use defval to keep empty strings for missing cells, header:1 to grab header row
-  const rows = XLSX.utils.sheet_to_json(ws, { defval: '', raw: false })
-  if (!Array.isArray(rows) || rows.length === 0) return { sections: [] }
-
-  // Build header map from the keys of the first row
-  const headers = Object.keys(rows[0] || {})
-  const map = buildHeaderMap(headers)
-
-  // Aggregate by section
-  /** @type {Map<string, {section:string, critical?:boolean, passFail?:boolean, steps:any[]}>} */
-  const sectionsByName = new Map()
-
-  for (const row of rows) {
-    const sectionName = norm(row[map.section])
-    const script = norm(row[map.script])
-    const label = norm(row[map.stepLabel])
-
-    if (!sectionName && !script) continue
-    if (!script) continue
-
-    const mustSay = toBool(row[map.mustSay])
-    const required = toBool(row[map.required])
-    const passFail = toBool(row[map.passFail])
-    const skip = toBool(row[map.skip])
-    const critical = toBool(row[map.critical])
-
-    const key = sectionName || 'Untitled'
-    let section = sectionsByName.get(key)
-    if (!section) {
-      section = { section: key, critical: false, passFail: false, steps: [] }
-      sectionsByName.set(key, section)
-    }
-
-    // Elevate section flags if present on any row
-    if (critical) section.critical = true
-    if (passFail && !section.passFail) section.passFail = true
-
-    section.steps.push({
-      label: label || undefined,
-      script,
-      mustSay: mustSay || undefined,
-      required: required || undefined,
-      passFail: passFail || undefined,
-      skip: skip || undefined,
-    })
-  }
-
-  // Normalize to array
-  const sections = Array.from(sectionsByName.values()).map(sec => ({
-    section: sec.section,
-    critical: !!sec.critical,
-    passFail: !!sec.passFail,
-    steps: (sec.steps || []).filter(st => norm(st.script)).map(st => ({
-      label: st.label,
-      script: st.script,
-      mustSay: !!st.mustSay,
-      required: !!st.required,
-      passFail: !!st.passFail,
-      skip: !!st.skip,
-    })),
-  })).filter(s => Array.isArray(s.steps) && s.steps.length > 0)
-
-  return { sections }
+export async function parseXlsx(fileOrBuffer, options) {
+  return coreParseXlsx(fileOrBuffer, options)
 }

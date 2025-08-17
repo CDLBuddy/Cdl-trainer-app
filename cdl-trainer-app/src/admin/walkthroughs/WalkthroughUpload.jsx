@@ -24,6 +24,7 @@
 // -----------------------------------------------------------------------------
 
 import React, { useMemo, useRef, useState } from 'react'
+
 import * as WTUtils from '@walkthrough-data/utils'
 
 const parseMarkdownAny =
@@ -250,8 +251,9 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
       <div style={{ ...card, marginBottom: 12 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 140px 120px', gap: 10 }}>
           <div>
-            <label style={{ display: 'block', fontSize: 12, color: '#6b7280' }}>Label</label>
+            <label htmlFor="walkthrough-label" style={{ display: 'block', fontSize: 12, color: '#6b7280' }}>Label</label>
             <input
+              id="walkthrough-label"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="Optional label (e.g., “East Campus – Class A”)"
@@ -259,8 +261,9 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
             />
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 12, color: '#6b7280' }}>Class</label>
+            <label htmlFor="walkthrough-class" style={{ display: 'block', fontSize: 12, color: '#6b7280' }}>Class</label>
             <select
+              id="walkthrough-class"
               value={classCode}
               onChange={(e) => setClassCode(e.target.value)}
               style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #d1d5db' }}
@@ -271,8 +274,9 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
             </select>
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 12, color: '#6b7280' }}>Version</label>
+            <label htmlFor="walkthrough-version" style={{ display: 'block', fontSize: 12, color: '#6b7280' }}>Version</label>
             <input
+              id="walkthrough-version"
               type="number"
               min={1}
               value={version}
@@ -379,7 +383,7 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
         <div style={{ ...card, ...row }}>
           <p style={{ margin: 0, color: '#374151' }}>
             Paste <strong>JSON</strong>. Accepts either a dataset object (
-            <code>{'{'}label, classCode, version, sections[]}{'}'}</code>) or a bare{' '}
+            <code>{`{label, classCode, version, sections[]}`}</code>) or a bare{' '}
             <code>sections[]</code> array.
           </p>
           <textarea

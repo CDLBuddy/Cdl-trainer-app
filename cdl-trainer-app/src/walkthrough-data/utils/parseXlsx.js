@@ -1,217 +1,271 @@
-// Path: /src/walkthrough-data/utils/parseXlsx.js
-// ============================================================================
-// XLSX → Walkthrough parser (SheetJS-backed, flexible headers)
-// - Works like your CSV/Markdown parsers and returns the same normalized shape
-// - Dynamic import of `xlsx` so your app loads even if the lib isn’t installed
-// - First worksheet only; headers are case-insensitive and alias-friendly
-// - Section-level flags can be repeated on any row and are elevated
-// - Boolean-like values: "true/false", "yes/no", "y/n", "1/0"
-// - Pass optional meta: { id, label, classCode, version } (merged into result)
-// ============================================================================
+// src/walkthrough-data/utils/parseXlsx.js
+// Robust Excel helpers using exceljs (read + write) with safety guards.
+// - Browser-first; Node-safe fallbacks behind feature checks.
+// - Guards: file type/size, max rows/cols, null-prototype + key sanitization.
+// - Sheet selection by name or index.
+// - Optional header mapping (return objects keyed by header row).
 
-/** @typedef {import('../schema').WalkthroughSection} WalkthroughSection */
-/** @typedef {import('../schema').WalkthroughScript} WalkthroughScript */
+import ExcelJS from 'exceljs'
 
-// ---------- Dynamic SheetJS import -----------------------------------------
-let _xlsxMod = null
-let _xlsxChecked = false
+/** Block prototype-pollution keys */
+const BLOCKED_KEYS = new Set(['__proto__', 'prototype', 'constructor'])
 
-async function ensureXlsx() {
-  if (_xlsxChecked && _xlsxMod) return _xlsxMod
-  if (_xlsxChecked && !_xlsxMod) {
-    throw new Error('xlsx module not available')
+/** Create a null-prototype object and copy safe keys */
+function createSafeObject(entries) {
+  const obj = Object.create(null)
+  for (const [k, v] of entries) {
+    if (!BLOCKED_KEYS.has(k)) obj[k] = v
   }
-  _xlsxChecked = true
-  try {
-    _xlsxMod = await import('xlsx') // ESM-friendly dynamic import
-    return _xlsxMod
-  } catch {
-    _xlsxMod = null
-    throw new Error(
-      'XLSX parsing is not available. Install "xlsx" (SheetJS) to enable Excel imports.'
-    )
-  }
+  return obj
 }
 
-/** Allow UI to feature-detect XLSX support. */
-export async function isXlsxAvailable() {
-  try {
-    await ensureXlsx()
-    return true
-  } catch {
-    return false
-  }
-}
+/** Safe, cross-platform filename sanitizer (no control chars in regex) */
+function sanitizeFilename(name = 'export.xlsx') {
+  const s = String(name)
 
-// ---------- Header aliases & helpers ---------------------------------------
-const HEADER_ALIASES = {
-  section:  ['section', 'part', 'area', 'sectionname', 'title'],
-  stepLabel:['steplabel', 'label', 'item', 'title'],
-  script:   ['script', 'text', 'line', 'content'],
-  mustSay:  ['mustsay', 'must', 'say'],
-  required: ['required', 'req'],
-  passFail: ['passfail', 'pass', 'pf'],
-  skip:     ['skip', 'omit'],
-  // section-level flag (optional column)
-  critical: ['critical', 'sectioncritical', 'pass/fail'],
-}
-
-const norm  = (s) => String(s ?? '').trim()
-const lower = (s) => norm(s).toLowerCase()
-const toBool = (v) => {
-  const s = lower(v)
-  return s === 'true' || s === 'yes' || s === 'y' || s === '1'
-}
-
-function buildHeaderMap(headers) {
-  const low = headers.map((h) => lower(h))
-  const find = (key) => {
-    for (const alias of HEADER_ALIASES[key]) {
-      const i = low.indexOf(alias)
-      if (i !== -1) return headers[i]
+  // Replace control chars + forbidden Win/Mac chars without using control-char regex
+  let cleaned = ''
+  const forbidden = '<>:"/\\|?*' // printable only
+  for (const ch of s) {
+    const cp = ch.codePointAt(0)
+    if (cp <= 31 || forbidden.includes(ch)) {
+      cleaned += '_'
+    } else {
+      cleaned += ch
     }
-    return null
   }
-  return {
-    section:  find('section'),
-    stepLabel:find('stepLabel'),
-    script:   find('script'),
-    mustSay:  find('mustSay'),
-    required: find('required'),
-    passFail: find('passFail'),
-    skip:     find('skip'),
-    critical: find('critical'),
+
+  // Trim and strip trailing spaces/dots (Windows)
+  cleaned = cleaned.trim().replace(/[. ]+$/g, '')
+
+  // Disallow "." and ".."
+  if (cleaned === '' || cleaned === '.' || cleaned === '..') cleaned = 'unnamed'
+
+  // Split base/ext
+  let base = cleaned
+  let ext = ''
+  const lastDot = cleaned.lastIndexOf('.')
+  if (lastDot > 0) {
+    base = cleaned.slice(0, lastDot)
+    ext = cleaned.slice(lastDot)
   }
+
+  // Windows reserved device names
+  if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(base)) {
+    base = '_' + base
+  }
+
+  // Collapse multiple underscores
+  base = base.replace(/_+/g, '_')
+
+  // Enforce max length (keep extension)
+  const MAX = 180
+  const allowBase = Math.max(1, MAX - ext.length)
+  if (base.length > allowBase) base = base.slice(0, allowBase)
+
+  return base + ext
 }
 
-// ---------- Normalizer (matches CSV/Markdown normalizers) ------------------
-function deepFreeze(o) {
-  if (!o || typeof o !== 'object') return o
-  Object.freeze(o)
-  for (const k of Object.keys(o)) {
-    const v = o[k]
-    if (v && typeof v === 'object' && !Object.isFrozen(v)) deepFreeze(v)
+/** Is this environment a browser? */
+const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
+
+/** Coerce supported inputs to ArrayBuffer */
+async function toArrayBuffer(input) {
+  if (input == null) throw new TypeError('parseXlsxFile: no input provided')
+  if (input instanceof ArrayBuffer) return input
+  if (typeof Blob !== 'undefined' && input instanceof Blob) {
+    return await input.arrayBuffer()
   }
-  return o
+  // Node Buffer support (optional)
+  if (typeof Buffer !== 'undefined' && typeof input === 'object' && Buffer.isBuffer?.(input)) {
+    return input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength)
+  }
+  // Typed arrays
+  if (ArrayBuffer.isView?.(input)) {
+    const { buffer, byteOffset, byteLength } = input
+    return buffer.slice(byteOffset, byteOffset + byteLength)
+  }
+  // Fallback: assume already an ArrayBuffer-like
+  if (input?.byteLength != null && input?.slice) return input
+  throw new TypeError('parseXlsxFile: unsupported input type')
 }
 
-/** Normalize to canonical walkthrough shape; adds meta if provided. */
-export function normalizeWalkthrough(w = {}, meta = {}) {
-  const id = norm(meta.id ?? w.id) || undefined
-  const label = norm(meta.label ?? w.label) || undefined
-  const classCode = norm(meta.classCode ?? w.classCode) || undefined
-  const version = Number(meta.version ?? w.version ?? 1) || 1
-
-  const sections = Array.isArray(w.sections) ? w.sections : []
-  const cleaned = sections
-    .map((s) => ({
-      section: norm(s.section) || 'Untitled',
-      critical: !!s.critical,
-      passFail: !!s.passFail,
-      steps: Array.isArray(s.steps)
-        ? s.steps
-            .map((st) => {
-              const script = norm(st.script)
-              if (!script) return null
-              const out = { script }
-              if (st.label) out.label = norm(st.label)
-              if (st.mustSay != null) out.mustSay = !!st.mustSay
-              if (st.required != null) out.required = !!st.required
-              if (st.passFail != null) out.passFail = !!st.passFail
-              if (st.skip != null) out.skip = !!st.skip
-              return out
-            })
-            .filter(Boolean)
-        : [],
-    }))
-    .filter((s) => s.steps.length > 0)
-
-  return deepFreeze({
-    id,
-    label,
-    classCode,
-    version,
-    sections: cleaned,
-  })
-}
-
-// ---------- Parser ----------------------------------------------------------
 /**
- * Parse an .xlsx File into a normalized Walkthrough object
- * compatible with your CSV/Markdown parsers.
- *
- * @param {File} file
- * @param {{ id?:string, label?:string, classCode?:string, version?:number }} meta
- * @returns {Promise<{ id?:string, label?:string, classCode?:string, version?:number, sections: WalkthroughScript }>}
+ * Parse an .xlsx into rows or objects.
+ * @param {File|Blob|ArrayBuffer|Buffer|Uint8Array} file
+ * @param {{
+ *   sheet?: number|string,          // index (0-based) or sheet name (default: first sheet)
+ *   hasHeader?: boolean,            // if true, map rows to objects using first row as headers
+ *   maxBytes?: number,              // hard size cap (default 8 MB)
+ *   maxRows?: number,               // hard row cap (default 20000)
+ *   maxCols?: number,               // hard column cap (default 256)
+ *   trimHeader?: boolean,           // trim header cell text
+ *   coerceStrings?: boolean,        // coerce non-string cell types to string
+ * }=} options
+ * @returns {Promise<Array<Array<any>>|Array<Record<string, any>>>}
  */
-export async function parseXlsxToWalkthrough(file, meta = {}) {
-  if (!(file instanceof File)) {
-    throw new Error('parseXlsxToWalkthrough expects a File')
+export async function parseXlsxFile(file, options = {}) {
+  const {
+    sheet = 0,
+    hasHeader = false,
+    maxBytes = 8 * 1024 * 1024, // 8MB
+    maxRows = 20000,
+    maxCols = 256,
+    trimHeader = true,
+    coerceStrings = false,
+  } = options
+
+  // Basic type/size checks (browser only)
+  if (isBrowser && typeof File !== 'undefined' && file instanceof File) {
+    const okType =
+      file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      file.name?.toLowerCase().endsWith('.xlsx')
+    if (!okType) {
+      throw new Error(`parseXlsxFile: expected .xlsx file, got "${file.type || file.name}"`)
+    }
+    if (file.size > maxBytes) {
+      throw new Error(`parseXlsxFile: file too large (${file.size} bytes > ${maxBytes})`)
+    }
   }
 
-  const XLSX = await ensureXlsx()
-  const buf = await file.arrayBuffer()
-  const wb = XLSX.read(buf, { type: 'array' })
+  const buffer = await toArrayBuffer(file)
 
-  const firstSheetName = wb.SheetNames[0]
-  if (!firstSheetName) return normalizeWalkthrough({ sections: [] }, meta)
-
-  const ws = wb.Sheets[firstSheetName]
-  const rows = XLSX.utils.sheet_to_json(ws, { defval: '', raw: false })
-  if (!Array.isArray(rows) || rows.length === 0) {
-    return normalizeWalkthrough({ sections: [] }, meta)
+  const workbook = new ExcelJS.Workbook()
+  try {
+    await workbook.xlsx.load(buffer)
+  } catch (err) {
+    throw new Error(`parseXlsxFile: failed to read workbook — ${String(err?.message || err)}`)
   }
 
-  const headers = Object.keys(rows[0] || {})
-  const map = buildHeaderMap(headers)
+  // Select worksheet
+  let worksheet
+  if (typeof sheet === 'string') {
+    worksheet = workbook.getWorksheet(sheet)
+    if (!worksheet) throw new Error(`parseXlsxFile: sheet "${sheet}" not found`)
+  } else {
+    worksheet = workbook.worksheets?.[sheet] || workbook.worksheets?.[0]
+    if (!worksheet) throw new Error('parseXlsxFile: no worksheets found')
+  }
 
-  /** @type {Map<string, {section:string, critical?:boolean, passFail?:boolean, steps:any[]}>} */
-  const sectionsByName = new Map()
+  // Hard caps based on sheet metadata (quick fail)
+  const metaRows = worksheet?.rowCount ?? 0
+  const metaCols = worksheet?.columnCount ?? 0
+  if (metaRows > 0 && metaRows > maxRows) {
+    throw new Error(`parseXlsxFile: too many rows (${metaRows} > ${maxRows})`)
+  }
+  if (metaCols > 0 && metaCols > maxCols) {
+    throw new Error(`parseXlsxFile: too many columns (${metaCols} > ${maxCols})`)
+  }
 
-  for (const row of rows) {
-    const sectionName = norm(row[map.section])
-    const script = norm(row[map.script])
-    const label = norm(row[map.stepLabel])
+  const out = []
+  let rowCount = 0
+  let headers = null
 
-    if (!sectionName && !script) continue
-    if (!script) continue
+  worksheet.eachRow((row) => {
+    // exceljs row.values is 1-based; index 0 is undefined
+    const arr = row.values.slice(1)
 
-    const mustSay  = toBool(row[map.mustSay])
-    const required = toBool(row[map.required])
-    const passFail = toBool(row[map.passFail])
-    const skip     = toBool(row[map.skip])
-    const critical = toBool(row[map.critical])
-
-    const key = sectionName || 'Untitled'
-    let section = sectionsByName.get(key)
-    if (!section) {
-      section = { section: key, critical: false, passFail: false, steps: [] }
-      sectionsByName.set(key, section)
+    if (arr.length > maxCols) {
+      throw new Error(`parseXlsxFile: too many columns in a row (${arr.length} > ${maxCols})`)
     }
 
-    // Elevate section flags if present on any row
-    if (critical) section.critical = true
-    if (passFail && !section.passFail) section.passFail = true
+    // Coerce values if desired
+    const normalized = coerceStrings ? arr.map((v) => (v == null ? '' : String(v))) : arr
 
-    section.steps.push({
-      label: label || undefined,
-      script,
-      mustSay: mustSay || undefined,
-      required: required || undefined,
-      passFail: passFail || undefined,
-      skip: skip || undefined,
-    })
-  }
+    if (hasHeader && rowCount === 0) {
+      headers = normalized.map((h) => {
+        let key = h == null ? '' : String(h)
+        if (trimHeader) key = key.trim()
+        // Replace invalid/empty keys with safe placeholders
+        if (!key) key = 'col_' + Math.random().toString(36).slice(2, 8)
+        // Sanitize keys
+        if (BLOCKED_KEYS.has(key)) key = `_${key}`
+        return key
+      })
+    } else if (hasHeader && headers) {
+      // Map to object with null-prototype and safe keys
+      const pairs = headers.map((k, i) => [k, normalized[i]])
+      out.push(createSafeObject(pairs))
+    } else {
+      out.push(normalized)
+    }
 
-  // Normalize and attach an inferred label if none was supplied
-  const sections = Array.from(sectionsByName.values())
-  const inferredLabel =
-    meta.label ||
-    wb.Props?.Title ||
-    firstSheetName ||
-    (typeof file.name === 'string' ? file.name.replace(/\.[^.]+$/, '') : undefined)
+    rowCount++
+    if (rowCount > maxRows) {
+      throw new Error(`parseXlsxFile: too many rows (${rowCount} > ${maxRows})`)
+    }
+  })
 
-  return normalizeWalkthrough({ sections, label: inferredLabel, classCode: meta.classCode, id: meta.id, version: meta.version }, meta)
+  return out
 }
 
-export default parseXlsxToWalkthrough
+/**
+ * Create an .xlsx from rows or objects and trigger a download (browser),
+ * or return a Buffer (Node).
+ * @param {Array<Array<any>>|Array<Record<string, any>>} data
+ * @param {{
+ *   filename?: string,
+ *   sheetName?: string,
+ *   fromObjects?: boolean,     // if true, treat input as objects; headers auto-generated
+ *   headers?: string[],        // optional explicit header order when fromObjects=true
+ * }} options
+ * @returns {Promise<void|Uint8Array|Buffer>}
+ */
+export async function exportXlsxFile(
+  data,
+  { filename = 'export.xlsx', sheetName = 'Sheet1', fromObjects = false, headers = null } = {}
+) {
+  const workbook = new ExcelJS.Workbook()
+  const worksheet = workbook.addWorksheet(sheetName)
+
+  if (fromObjects) {
+    if (!Array.isArray(data) || (data[0] && typeof data[0] !== 'object')) {
+      throw new TypeError('exportXlsxFile: expected array of objects when fromObjects=true')
+    }
+    const keys =
+      headers && headers.length
+        ? headers
+        : Array.from(
+            new Set(
+              data.flatMap((row) => Object.keys(row || {})).filter((k) => !BLOCKED_KEYS.has(k))
+            )
+          )
+
+    worksheet.addRow(keys) // header row
+    for (const obj of data) {
+      const safe = createSafeObject(Object.entries(obj || {}))
+      worksheet.addRow(keys.map((k) => safe[k] ?? ''))
+    }
+  } else {
+    // array-of-arrays
+    if (!Array.isArray(data)) {
+      throw new TypeError('exportXlsxFile: expected array of arrays')
+    }
+    for (const row of data) worksheet.addRow(Array.isArray(row) ? row : [row])
+  }
+
+  if (isBrowser) {
+    const buffer = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    })
+    const url = URL.createObjectURL(blob)
+    try {
+      const a = document.createElement('a')
+      a.href = url
+      a.download = sanitizeFilename(filename)
+      // Safari fallback
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    } finally {
+      URL.revokeObjectURL(url)
+    }
+    return
+  } else {
+    // Node: return a Buffer/Uint8Array to the caller
+    // (caller can write to disk: fs.writeFileSync(filename, buffer))
+    const buf = await workbook.xlsx.writeBuffer()
+    return typeof Buffer !== 'undefined' ? Buffer.from(buf) : buf
+  }
+}

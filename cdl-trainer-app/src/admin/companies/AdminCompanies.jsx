@@ -576,7 +576,7 @@ export default function AdminCompanies() {
                     type="checkbox"
                     checked={allChecked}
                     onChange={(e) => {
-                      setSelected((prev) => {
+                      setSelected((_prev) => {
                         if (e.target.checked) {
                           return new Set(filtered.map((c) => c.id))
                         }

@@ -28,8 +28,8 @@ import { SessionProvider, syncSessionDebug } from '@session'
 // Router
 import { router } from './router.jsx'
 
-// ---- Bootstrap (Vite supports top-level await) -------------------------
-await (async () => {
+// ---- Bootstrap (no top-level await) -----------------------------------
+void (async () => {
   try {
     const brand = await getCurrentSchoolBranding()
 
@@ -38,16 +38,17 @@ await (async () => {
     if (meta && brand?.primaryColor) meta.setAttribute('content', brand.primaryColor)
 
     // React to later branding switches (e.g., school switcher)
-    window.addEventListener('branding:updated', e => {
+    window.addEventListener('branding:updated', (e) => {
       const b = e?.detail
       if (meta && b?.primaryColor) meta.setAttribute('content', b.primaryColor)
     })
-  } catch {
+  } catch (err) {
     // Non-fatal: continue rendering even if branding fetch fails
+    if (import.meta?.env?.DEV) console.warn('Branding bootstrap failed:', err)
   }
 })()
 
-// ---- Session bridge: compute once, provide everywhere -------------------
+// src/main.jsx (only the SessionRoot effect changes)
 export function SessionRoot({ children }) {
   const auth = useAuthStatus() // { loading, isLoggedIn, role, user }
 
@@ -63,10 +64,18 @@ export function SessionRoot({ children }) {
 
   if (import.meta.env.DEV) syncSessionDebug(value)
 
-  // Warm public pages immediately (idle) and role routers once known
+  // 🔒 Only fire when isLoggedIn/role truly change
+  const last = React.useRef({ isLoggedIn: null, role: null })
   React.useEffect(() => {
-    warmRoutesOnSession(value)
-  }, [value])
+    const next = { isLoggedIn: !!value.isLoggedIn, role: value.role || null }
+    if (
+      next.isLoggedIn !== last.current.isLoggedIn ||
+      next.role !== last.current.role
+    ) {
+      warmRoutesOnSession(next)
+      last.current = next
+    }
+  }, [value.isLoggedIn, value.role])
 
   return <SessionProvider value={value}>{children}</SessionProvider>
 }

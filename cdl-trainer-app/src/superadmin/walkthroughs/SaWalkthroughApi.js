@@ -201,9 +201,7 @@ export async function getCurrentPublishedForToken(schoolId, token) {
 // ============================================================================
 //  Helpers
 // ============================================================================
-function throwIf(cond, msg) {
-  if (cond) throw new Error(msg)
-}
+// (removed unused throwIf helper)
 
 // Optional: if you *do* know schoolId at call time for requestChanges/reject:
 export async function _setSubmissionStatus({

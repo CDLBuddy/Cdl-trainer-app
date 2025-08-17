@@ -8,19 +8,18 @@
 // ======================================================================
 
 /** In-memory guard so we don't import the same chunk repeatedly */
-const _preloadCache = new Set()
+const _preloadCache = new Set();
 
-/** Wrap a task so it runs only once per key */
+/** Wrap a task so it runs only once per key (even if scheduled multiple times) */
 async function _once(key, loader) {
-  if (_preloadCache.has(key)) return
-  _preloadCache.add(key)
+  if (_preloadCache.has(key)) return;
+  _preloadCache.add(key);
   try {
-    await loader()
+    await loader();
   } catch (err) {
     // Non-fatal: preloading is best-effort
-    if (import.meta.env?.DEV) {
-       
-      console.warn(`[route-preload] Failed to preload "${key}":`, err)
+    if (import.meta?.env?.DEV) {
+      console.warn(`[route-preload] Failed to preload "${key}":`, err);
     }
   }
 }
@@ -28,25 +27,55 @@ async function _once(key, loader) {
 /** Detect slow or data-saver connections; skip aggressive preloads if so */
 function isConstrainedNetwork() {
   try {
-    const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection
-    if (!c) return false
-    if (c.saveData === true) return true // respect Data Saver
-    const type = c.effectiveType || ''
-    return /(^|\b)(slow-2g|2g|3g)\b/.test(type)
+    const c =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection;
+    if (!c) return false;
+    if (c.saveData === true) return true; // respect Data Saver
+    const type = c.effectiveType || '';
+    return /(^|\b)(slow-2g|2g|3g)\b/.test(type);
   } catch {
-    return false
+    return false;
   }
 }
 
-/** Run a task when the browser is idle (fallback to timeout) */
-export function onIdle(fn, { timeout = 1200 } = {}) {
-  if (typeof window === 'undefined') return // SSR/Tests
+/* ----------------------------------------------------------------------
+   Idle scheduler with de-dupe: each key schedules at most once.
+   This prevents stacks of pending idle tasks in StrictMode.
+------------------------------------------------------------------------ */
+const _idleHandles = new Map();
+
+function _requestIdleCallback(cb, { timeout = 1200 } = {}) {
+  if (typeof window === 'undefined') return null;
   if ('requestIdleCallback' in window) {
     // @ts-ignore
-    window.requestIdleCallback(fn, { timeout })
-  } else {
-    setTimeout(fn, timeout)
+    return window.requestIdleCallback(cb, { timeout });
   }
+  return setTimeout(() => cb({ didTimeout: true, timeRemaining: () => 0 }), timeout);
+}
+
+function _cancelIdleCallback(handle) {
+  if (!handle) return;
+  if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+    // @ts-ignore
+    window.cancelIdleCallback(handle);
+  } else {
+    clearTimeout(handle);
+  }
+}
+
+/** Schedule an idle task at most once per key */
+function scheduleIdleOnce(key, fn, { timeout = 1200 } = {}) {
+  if (_idleHandles.has(key)) return;
+  const handle = _requestIdleCallback(async () => {
+    try {
+      await fn();
+    } finally {
+      _idleHandles.delete(key);
+    }
+  }, { timeout });
+  _idleHandles.set(key, handle);
 }
 
 /* ======================================================================
@@ -60,7 +89,7 @@ export async function preloadPublicRoutes() {
     _once('page:login',    () => import('@pages/Login.jsx')),
     _once('page:signup',   () => import('@pages/Signup.jsx')),
     _once('page:notfound', () => import('@pages/NotFound.jsx')),
-  ])
+  ]);
 }
 
 /* ======================================================================
@@ -74,7 +103,7 @@ export async function preloadAllRoleRouters() {
     _once('router:instructor', () => import('@instructor/InstructorRouter.jsx')),
     _once('router:admin',      () => import('@admin/AdminRouter.jsx')),
     _once('router:superadmin', () => import('@superadmin/SuperadminRouter.jsx')),
-  ])
+  ]);
 }
 
 /* ======================================================================
@@ -82,10 +111,10 @@ export async function preloadAllRoleRouters() {
    ====================================================================== */
 
 // Safe dynamic imports of role preload modules
-async function _loadStudentPreload()    { try { return await import('@student/preload.js') } catch { return null } }
-async function _loadInstructorPreload() { try { return await import('@instructor/preload.js') } catch { return null } }
-async function _loadAdminPreload()      { try { return await import('@admin/preload.js') } catch { return null } }
-async function _loadSuperPreload()      { try { return await import('@superadmin/preload.js') } catch { return null } }
+async function _loadStudentPreload()    { try { return await import('@student/preload.js'); } catch { return null; } }
+async function _loadInstructorPreload() { try { return await import('@instructor/preload.js'); } catch { return null; } }
+async function _loadAdminPreload()      { try { return await import('@admin/preload.js'); } catch { return null; } }
+async function _loadSuperPreload()      { try { return await import('@superadmin/preload.js'); } catch { return null; } }
 
 /** Fallback core-page warmers if a role preload module is missing */
 async function _fallbackCorePages(role) {
@@ -101,8 +130,8 @@ async function _fallbackCorePages(role) {
         _once('student:testEngine',  () => import('@student-components/TestEngineWrapper.jsx')),
         _once('student:testReview',  () => import('@student-components/TestReviewWrapper.jsx')),
         _once('student:testResults', () => import('@student-components/TestResultsWrapper.jsx')),
-      ])
-      break
+      ]);
+      break;
 
     case 'instructor':
       await Promise.allSettled([
@@ -110,8 +139,8 @@ async function _fallbackCorePages(role) {
         _once('instructor:profile',   () => import('@instructor/InstructorProfile.jsx')),
         _once('instructor:review',    () => import('@instructor/ChecklistReviewForInstructor.jsx')),
         _once('instructor:student',   () => import('@instructor/StudentProfileForInstructor.jsx')),
-      ])
-      break
+      ]);
+      break;
 
     case 'admin':
       await Promise.allSettled([
@@ -120,8 +149,8 @@ async function _fallbackCorePages(role) {
         _once('admin:companies', () => import('@/admin/companies/AdminCompanies.jsx')),
         _once('admin:reports',   () => import('@admin/AdminReports.jsx')),
         // _once('admin:billing', () => import('@admin/billing/Billing.jsx')), // enable when routed
-      ])
-      break
+      ]);
+      break;
 
     case 'superadmin':
       await Promise.allSettled([
@@ -133,8 +162,8 @@ async function _fallbackCorePages(role) {
         _once('sa:logs',       () => import('@superadmin/Logs.jsx')),
         _once('sa:perms',      () => import('@superadmin/Permissions.jsx')),
         _once('sa:billing',    () => import('@superadmin/Billings.jsx')),
-      ])
-      break
+      ]);
+      break;
   }
 }
 
@@ -144,75 +173,75 @@ async function _fallbackCorePages(role) {
  * - Falls back to direct imports if not
  */
 export async function preloadRoutesForRole(roleInput) {
-  if (!roleInput) return
-  const role = String(roleInput).toLowerCase()
+  if (!roleInput) return;
+  const role = String(roleInput).toLowerCase();
 
   // Always warm the router shell first
   switch (role) {
     case 'student':
-      await _once('router:student',    () => import('@student/StudentRouter.jsx')); break
+      await _once('router:student',    () => import('@student/StudentRouter.jsx')); break;
     case 'instructor':
-      await _once('router:instructor', () => import('@instructor/InstructorRouter.jsx')); break
+      await _once('router:instructor', () => import('@instructor/InstructorRouter.jsx')); break;
     case 'admin':
-      await _once('router:admin',      () => import('@admin/AdminRouter.jsx')); break
+      await _once('router:admin',      () => import('@admin/AdminRouter.jsx')); break;
     case 'superadmin':
-      await _once('router:superadmin', () => import('@superadmin/SuperadminRouter.jsx')); break
+      await _once('router:superadmin', () => import('@superadmin/SuperadminRouter.jsx')); break;
     default:
-      return // unknown role
+      return; // unknown role
   }
 
-  if (isConstrainedNetwork()) return
+  if (isConstrainedNetwork()) return;
 
   // Try the role preload module
-  let api = null
-  if (role === 'student')        api = await _loadStudentPreload()
-  else if (role === 'instructor') api = await _loadInstructorPreload()
-  else if (role === 'admin')      api = await _loadAdminPreload()
-  else if (role === 'superadmin') api = await _loadSuperPreload()
+  let api = null;
+  if (role === 'student')         api = await _loadStudentPreload();
+  else if (role === 'instructor') api = await _loadInstructorPreload();
+  else if (role === 'admin')      api = await _loadAdminPreload();
+  else if (role === 'superadmin') api = await _loadSuperPreload();
 
   if (api?.preloadAboveTheFold) {
-    await _once(`preload:aot:${role}`, () => api.preloadAboveTheFold())
+    await _once(`preload:aot:${role}`, () => api.preloadAboveTheFold());
   } else {
     // Fallback
-    await _once(`preload:aot:${role}`, () => _fallbackCorePages(role))
+    await _once(`preload:aot:${role}`, () => _fallbackCorePages(role));
   }
 }
 
 /** Preload *all* pages for a role (heavier than above-the-fold) */
 export async function preloadAllForRole(roleInput) {
-  if (!roleInput) return
-  const role = String(roleInput).toLowerCase()
+  if (!roleInput) return;
+  const role = String(roleInput).toLowerCase();
 
   // Load the module if present
-  let api = null
-  if (role === 'student')        api = await _loadStudentPreload()
-  else if (role === 'instructor') api = await _loadInstructorPreload()
-  else if (role === 'admin')      api = await _loadAdminPreload()
-  else if (role === 'superadmin') api = await _loadSuperPreload()
+  let api = null;
+  if (role === 'student')         api = await _loadStudentPreload();
+  else if (role === 'instructor') api = await _loadInstructorPreload();
+  else if (role === 'admin')      api = await _loadAdminPreload();
+  else if (role === 'superadmin') api = await _loadSuperPreload();
 
   if (api?.preloadAll) {
-    await _once(`preload:all:${role}`, () => api.preloadAll())
-    return
+    await _once(`preload:all:${role}`, () => api.preloadAll());
+    return;
   }
 
   // Fallback: warm the router, then core pages
-  await preloadRoutesForRole(role)
-  await _once(`preload:all-fallback:${role}`, () => _fallbackCorePages(role))
+  await preloadRoutesForRole(role);
+  await _once(`preload:all-fallback:${role}`, () => _fallbackCorePages(role));
 }
 
 /** Targeted route-level preload (delegates to role preload module) */
 export async function preloadRoleRoute(roleInput, routeName) {
-  const role = String(roleInput || '').toLowerCase()
-  if (!role || !routeName) return
+  const role = String(roleInput || '').toLowerCase();
+  if (!role || !routeName) return;
 
-  let api = null
-  if (role === 'student')        api = await _loadStudentPreload()
-  else if (role === 'instructor') api = await _loadInstructorPreload()
-  else if (role === 'admin')      api = await _loadAdminPreload()
-  else if (role === 'superadmin') api = await _loadSuperPreload()
+  let api = null;
+  if (role === 'student')         api = await _loadStudentPreload();
+  else if (role === 'instructor') api = await _loadInstructorPreload();
+  else if (role === 'admin')      api = await _loadAdminPreload();
+  else if (role === 'superadmin') api = await _loadSuperPreload();
 
   if (api?.preloadRoute) {
-    await _once(`preload:route:${role}:${routeName}`, () => api.preloadRoute(routeName))
+    await _once(`preload:route:${role}:${routeName}`, () => api.preloadRoute(routeName));
   }
 }
 
@@ -221,14 +250,18 @@ export async function preloadRoleRoute(roleInput, routeName) {
    ====================================================================== */
 
 /**
- * Smart preloader: warms public routes immediately, then (if network is not
+ * Smart preloader: warms public routes immediately (once), then (if network is not
  * constrained) warms the role router + above-the-fold pages once we know the role.
  */
 export function warmRoutesOnSession({ loading, isLoggedIn, role }) {
-  onIdle(() => preloadPublicRoutes())
+  // Public pages: schedule once
+  scheduleIdleOnce('idle:public', () => preloadPublicRoutes());
 
+  // Role pages: only when we actually have a role and not on constrained networks
   if (!loading && isLoggedIn && role && !isConstrainedNetwork()) {
-    onIdle(() => preloadRoutesForRole(role))
+    scheduleIdleOnce(`idle:role:${String(role).toLowerCase()}`, () =>
+      preloadRoutesForRole(role)
+    );
   }
 }
 
@@ -236,13 +269,16 @@ export function warmRoutesOnSession({ loading, isLoggedIn, role }) {
    Back-compat aliases (older call sites)
    ====================================================================== */
 
-export const preloadForRole   = preloadRoutesForRole
-export const prefetchRoleRoute = preloadRoleRoute
+export const preloadForRole    = preloadRoutesForRole;
+export const prefetchRoleRoute = preloadRoleRoute;
 
 /* ======================================================================
    Test helpers (optional)
    ====================================================================== */
 
 export function __resetPreloadCacheForTests() {
-  _preloadCache.clear()
+  _preloadCache.clear();
+  // cancel any pending idle jobs
+  for (const h of _idleHandles.values()) _cancelIdleCallback(h);
+  _idleHandles.clear();
 }

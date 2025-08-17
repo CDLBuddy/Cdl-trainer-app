@@ -31,6 +31,7 @@
     "prebuild": "node scripts/ensure-env.mjs || true && npm run check"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "firebase": "^12.1.0",
     "jspdf": "^3.0.1",
     "prop-types": "^15.8.1",

@@ -16,16 +16,16 @@ const PAYMENT_STATUS_OPTIONS = [
 ]
 
 export default function CoursePaymentSection({ value, onChange, onUpload }) {
-  const v = value || {}
+  const v = useMemo(() => value || {}, [value])
   const mode = String(v?.billing?.mode || '').toLowerCase()
-
-  // Hide completely when employer-paid
-  if (mode !== 'individual') return null
 
   const status = useMemo(
     () => getSectionStatus('payment', v, v?.verified || {}),
     [v]
   )
+
+  // Hide completely when employer-paid
+  if (mode !== 'individual') return null
   const verifiedBy = v?.verified?.by
   const verifiedAt = v?.verified?.at
   const setField = (k, val) => onChange?.(k, val)

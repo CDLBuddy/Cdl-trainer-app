@@ -76,7 +76,7 @@ if (IS_EMU && IS_BROWSER) {
     const authUrl = `http://${EMU_HOST}:${EMU_AUTH_PORT}`
     // @ts-expect-error: disableWarnings accepted by SDK
     connectAuthEmulator(auth, authUrl, { disableWarnings: true })
-    if (IS_DEV) console.info('[firebase] Auth emulator:', authUrl)
+    if (IS_DEV) console.warn('[firebase] Auth emulator:', authUrl)
   } catch (e) {
     if (IS_DEV) console.warn('[firebase] Failed to connect Auth emulator', e)
   }
@@ -103,7 +103,7 @@ try {
 if (IS_EMU && IS_BROWSER) {
   try {
     connectFirestoreEmulator(db, EMU_HOST, EMU_FS_PORT)
-    if (IS_DEV) console.info('[firebase] Firestore emulator:', `${EMU_HOST}:${EMU_FS_PORT}`)
+    if (IS_DEV) console.warn('[firebase] Firestore emulator:', `${EMU_HOST}:${EMU_FS_PORT}`)
   } catch (e) {
     if (IS_DEV) console.warn('[firebase] Failed to connect Firestore emulator', e)
   }
@@ -115,7 +115,7 @@ const storage = getStorage(app)
 if (IS_EMU && IS_BROWSER) {
   try {
     connectStorageEmulator(storage, EMU_HOST, EMU_STO_PORT)
-    if (IS_DEV) console.info('[firebase] Storage emulator:', `${EMU_HOST}:${EMU_STO_PORT}`)
+    if (IS_DEV) console.warn('[firebase] Storage emulator:', `${EMU_HOST}:${EMU_STO_PORT}`)
   } catch (e) {
     if (IS_DEV) console.warn('[firebase] Failed to connect Storage emulator', e)
   }

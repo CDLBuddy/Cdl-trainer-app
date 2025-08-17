@@ -23,7 +23,8 @@
 // -----------------------------------------------------------------------------
 
 import React, { useMemo, useState } from 'react'
-import { parseCsv, parseMarkdown, validateWalkthroughs as _validateAll, validateWalkthroughShape } from '@walkthrough-data/utils'
+
+import { parseCsv, parseMarkdown } from '@walkthrough-data/utils'
 
 // ----- Small helpers ---------------------------------------------------------
 
@@ -383,7 +384,7 @@ export default function WalkthroughEditor({
       {activeTab === 'json' && (
         <div>
           <p style={{ marginBottom: 8 }}>
-            Paste <strong>JSON</strong> (either a bare <code>WalkthroughScript</code> array or an object with <code>{{'{'}sections: [...] {'}'}}</code>).
+            Paste <strong>JSON</strong> (either a bare <code>WalkthroughScript</code> array or an object with <code>{'{'}sections: [...] {'}'}</code>).
           </p>
           <textarea
             value={rawJson}

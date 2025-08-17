@@ -8,7 +8,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { showToast } from '@utils/ui-helpers.js'
+import { useToast } from '@components/ToastContext.js'
+
+// import { showToast } from '@utils/ui-helpers.js'
 
 import { listSubmissions } from './SaWalkthroughApi.js'
 import styles from './saWalkthroughStyles.module.css'
@@ -37,8 +39,8 @@ function toDate(x) {
     return null
   }
 }
-
 export default function SAReviewQueue() {
+  const { showToast } = useToast()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -75,7 +77,7 @@ export default function SAReviewQueue() {
     return () => {
       alive = false
     }
-  }, [validStatus, schoolId])
+  }, [validStatus, schoolId, showToast])
 
   return (
     <div className={styles.wrap}>

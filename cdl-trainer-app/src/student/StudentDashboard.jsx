@@ -101,7 +101,6 @@ export default function StudentDashboard() {
   )
 
   const lastScore = Number.isFinite(profile?.lastTestScore) ? profile.lastTestScore : null
-  const streakDays = Number.isFinite(profile?.studyStreakDays) ? profile.studyStreakDays : 0
 
   const goProfile = useCallback(() => navigate(StudentRoutes.profile()), [navigate])
 

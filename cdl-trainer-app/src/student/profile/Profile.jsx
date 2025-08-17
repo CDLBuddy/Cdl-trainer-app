@@ -33,8 +33,6 @@ import {
   getBTWReadiness,
   getSectionStatus,
 } from './schema/calculators.js'
-
-
 // Sections via barrel
 import {
   BasicInfoSection,
@@ -110,7 +108,7 @@ export default function Profile() {
 
   /* ----------------------------- Derived flags --------------------------- */
   const isEmployerPaid = (byPath(p, 'billing.mode') || '').toLowerCase() === 'employer'
-  const verified = p?.verified || {}
+  const verified = useMemo(() => p?.verified || {}, [p?.verified])
 
   // Dual readiness (0–100)
   const enrollmentPct = useMemo(() => getEnrollmentReadiness(p), [p])

@@ -6,8 +6,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 
+import { useToast } from '@components/ToastContext.js'
 // Reuse Admin preview so the “student view” matches what admins see
-import { showToast } from '@utils/ui-helpers.js'
 import * as WTValidate from '@walkthrough-utils/validateWalkthroughs.js'
 
 import WalkthroughPreview from '@admin/walkthroughs/WalkthroughPreview.jsx'
@@ -63,10 +63,10 @@ function coerceDate(x) {
     return null
   }
 }
-
 export default function SAReviewDetail() {
   const { schoolId, submissionId } = useParams()
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   const [item, setItem] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -102,7 +102,7 @@ export default function SAReviewDetail() {
       }
     })()
     return () => { alive = false }
-  }, [schoolId, submissionId])
+  }, [schoolId, submissionId, showToast])
 
   const validation = useMemo(() => runValidation(item), [item])
 

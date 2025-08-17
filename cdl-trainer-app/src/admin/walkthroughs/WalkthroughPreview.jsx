@@ -47,7 +47,6 @@ const ul = { listStyle: 'none', paddingLeft: 0, margin: '8px 0 0 0' }
 const li = { padding: '8px 0', borderTop: '1px dashed #e5e7eb' }
 const metaRow = { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }
 const kpi = { fontSize: 12, color: '#6b7280' }
-const flag = { fontSize: 12, color: '#374151' }
 const toolbar = { display: 'flex', gap: 8, marginLeft: 'auto' }
 const btn = {
   padding: '8px 12px',
@@ -112,7 +111,7 @@ function validateScript(script) {
 }
 
 export default function WalkthroughPreview({ item, onClose, onSubmit }) {
-  const script = Array.isArray(item?.script) ? item.script : []
+  const script = useMemo(() => Array.isArray(item?.script) ? item.script : [], [item?.script])
   const stats = useMemo(() => {
     const sections = script.length
     let steps = 0

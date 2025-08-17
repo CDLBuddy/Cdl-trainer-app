@@ -1,16 +1,15 @@
 // src/student/profile/sections/MedicalSection.jsx
 import React, { useId, useMemo } from 'react'
 
-import SectionHeader from './SectionHeader.jsx'
 import { getSectionStatus } from '../schema/calculators.js'
-
 import Field from '../ui/Field.jsx'
 import UploadField from '../ui/UploadField.jsx'
 
+import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
 
 export default function MedicalSection({ value, onChange, onUpload }) {
-  const v = value || {}
+  const v = useMemo(() => value || {}, [value])
   const sectionId = useId()
   const hintId = `${sectionId}-hint`
 
@@ -47,11 +46,12 @@ export default function MedicalSection({ value, onChange, onUpload }) {
       </div>
 
       <div className={styles.grid2}>
+        {/* schema validate: image: true, maxMB: 8 */}
         <UploadField
           label={v.medicalCardUrl ? 'Replace Medical Card Image' : 'Upload Medical Card Image'}
           currentUrl={v.medicalCardUrl}
-          accept="image/*"           {/* schema validate: image: true */}
-          maxSizeMB={8}              {/* schema validate: maxMB: 8 */}
+          accept="image/*"
+          maxSizeMB={8}
           imageOnly
           capture="environment"
           previewAlt="Medical card preview"
