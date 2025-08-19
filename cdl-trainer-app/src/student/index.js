@@ -5,13 +5,8 @@
 // ======================================================================
 
 // ---- Pages -------------------------------------------------------------
-export { default as StudentDashboard } from './StudentDashboard.jsx'
-
-// Profile module via its barrel (lets you expose sections/ui later)
-export { Profile } from './profile'          // named re-export from profile barrel
-// If you prefer the original style instead, keep this instead of the line above:
-// export { default as Profile } from './profile/Profile.jsx'
-
+export { DashboardPage as StudentDashboard } from './dashboard'
+export { Profile } from './profile'
 export { default as Checklists }    from './Checklists.jsx'
 export { default as PracticeTests } from './PracticeTests.jsx'
 export { default as Walkthrough }   from './walkthrough/Walkthrough.jsx'

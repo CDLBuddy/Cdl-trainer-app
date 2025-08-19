@@ -1,0 +1,133 @@
+/* ============================================================================
+   Path: src/admin/billing/components/StatusPill/StatusPill.module.css
+   StatusPill • A11y-first, themeable status badge
+   - Works with CSS Modules
+   - Reads global tokens if present; ships safe fallbacks
+   - Friendly to forced-colors (Windows HC), dark mode, and keyboard users
+   ========================================================================== */
+
+/* Global tokens (optional). If your app already defines theme vars (e.g. aw-*),
+   these serve as a dedicated, pill-scoped layer with safe fallbacks below. */
+:global(:root) {
+  --pill-radius: 999px;
+  --pill-font: 12px;
+  --pill-pad-y: 2px;
+  --pill-pad-x: 8px;
+
+  /* Semantic color tokens (with fallbacks set in classes) */
+  --pill-paid-bg: #dcfce7;
+  --pill-paid-fg: #166534;
+
+  --pill-partial-bg: #fffbeb;
+  --pill-partial-fg: #92400e;
+
+  --pill-unpaid-bg: #fee2e2;
+  --pill-unpaid-fg: #991b1b;
+
+  --pill-pending-bg: #fee2e2;
+  --pill-pending-fg: #991b1b;
+
+  --pill-waived-bg: #e0e7ff;
+  --pill-waived-fg: #3730a3;
+
+  --pill-unknown-bg: #e5e7eb;
+  --pill-unknown-fg: #374151;
+}
+
+/* Base */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--pill-radius);
+  font-size: var(--pill-font);
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+  line-height: 1.25;
+  padding: var(--pill-pad-y) var(--pill-pad-x);
+  /* Help readability in dark themes where parent color might be too low contrast */
+  color-scheme: light dark;
+}
+
+/* Keyboard focus (visible only when tabbing) */
+.pill:focus-visible {
+  outline: 2px solid color-mix(in oklab, CanvasText 20%, transparent);
+  outline-offset: 2px;
+}
+
+/* Size variants */
+.sm { padding: 2px 8px; font-size: 12px; }
+.md { padding: 4px 10px; font-size: 13px; }
+
+/* Optional status dot (used when `showDot` is true) */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Ensure text never shrinks to unreadable sizes in nested small elements */
+.text {
+  font-size: 0.95em;
+}
+
+/* Status colors (each has a token fallback) */
+.paid {
+  background: var(--pill-paid-bg, #dcfce7);
+  color: var(--pill-paid-fg, #166534);
+}
+.paid .dot { background: currentColor; }
+
+.partial {
+  background: var(--pill-partial-bg, #fffbeb);
+  color: var(--pill-partial-fg, #92400e);
+}
+.partial .dot { background: currentColor; }
+
+.unpaid {
+  background: var(--pill-unpaid-bg, #fee2e2);
+  color: var(--pill-unpaid-fg, #991b1b);
+}
+.unpaid .dot { background: currentColor; }
+
+.pending {
+  background: var(--pill-pending-bg, #fee2e2);
+  color: var(--pill-pending-fg, #991b1b);
+}
+.pending .dot { background: currentColor; }
+
+.waived {
+  background: var(--pill-waived-bg, #e0e7ff);
+  color: var(--pill-waived-fg, #3730a3);
+}
+.waived .dot { background: currentColor; }
+
+/* Unknown / fallback */
+.unknown {
+  background: var(--pill-unknown-bg, #e5e7eb);
+  color: var(--pill-unknown-fg, #374151);
+}
+.unknown .dot { background: currentColor; }
+
+/* High-contrast / forced colors (Windows HC): rely on system colors for max legibility */
+@media (forced-colors: active) {
+  .pill {
+    forced-color-adjust: none;
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+  .dot {
+    background: CanvasText !important;
+  }
+}
+
+/* Prefer reduced motion: nothing to animate right now, but future-proof */
+@media (prefers-reduced-motion: reduce) {
+  .pill,
+  .dot {
+    transition: none !important;
+  }
+}
