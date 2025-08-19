@@ -1,12 +1,10 @@
 // src/components/NavBar.jsx
 // ======================================================================
-// NavBar
-// - Brand (logo + schoolName) from prop or branding bus
-// - Role-aware links from central navigation config
-// - Route preloading on hover/focus (uses central helper if available,
-//   else role-specific route-level preloader, else shell warmer)
-// - Accessible menus, keyboard toggles, outside-click & ESC handling
-// - Active link styling works for nested routes
+// NavBar (mobile-polished)
+// - Locks page scroll when mobile menu is open
+// - Focus management for burger/profile dropdown
+// - ESC + resize close guards
+// - Touchstart prefetch for iOS
 // ======================================================================
 
 import React, {
@@ -27,38 +25,40 @@ import preloadInstructorCore, {
   warmInstructorOnIdle,
   preloadRoute as preloadInstructorRoute,
 } from '@instructor/preload.js'
+
 import {
   getDashboardRoute,
-  getTopNavForRole, // (renamed from getNavLinksForRole)
+  getTopNavForRole,
 } from '@navigation/navConfig.js'
+
 import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,
 } from '@utils/school-branding.js'
 
-// If present, this wrapper will route to the correct role preloader.
-// We call it best-effort and also keep robust fallbacks below.
 import { preloadRoutesForRole } from '@/utils/route-preload.js'
-
 import { useSession } from '../session/useSession.js'
-
 import styles from './NavBar.module.css'
 
-/** Infer role from a path target like "/student", "/instructor", etc. */
 function roleFromPath(path = '') {
   const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(String(path))
-  return m?.[1] || null
+  return m ? m[1].toLowerCase() : null
 }
 
 function NavBar({ brand: brandProp }) {
-  const { role, user, logout, notifications: notifCount } = useSession() || {}
+  const session = useSession() || {}
+  const { role, user, logout, notifications: notifCount } = session
+
   const navigate = useNavigate()
   const { pathname } = useLocation()
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+
   const profileRef = useRef(null)
+  const burgerRef = useRef(null)
+  const dropdownFirstItemRef = useRef(null)
 
   // Close the mobile menu on route change
   useEffect(() => {
@@ -129,6 +129,8 @@ function NavBar({ brand: brandProp }) {
       if (e.key === 'Escape') {
         setProfileOpen(false)
         setMenuOpen(false)
+        // Return focus to burger for accessibility
+        burgerRef.current?.focus?.()
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -139,18 +141,43 @@ function NavBar({ brand: brandProp }) {
     }
   }, [profileOpen])
 
+  // Lock page scroll when the mobile menu is open
+  useEffect(() => {
+    const body = document.body
+    const prevOverflow = body.style.overflow
+    const prevPaddingRight = body.style.paddingRight
+
+    if (menuOpen) {
+      // compensate for scrollbar to prevent layout shift
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+      body.style.overflow = 'hidden'
+      if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`
+    } else {
+      body.style.overflow = prevOverflow
+      body.style.paddingRight = prevPaddingRight
+    }
+    return () => {
+      body.style.overflow = prevOverflow
+      body.style.paddingRight = prevPaddingRight
+    }
+  }, [menuOpen])
+
+  // Close mobile menu when resizing to desktop widths
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 1024 && menuOpen) setMenuOpen(false)
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [menuOpen])
+
   // Idle warm-up for role routers (gentle, idempotent)
   useEffect(() => {
-    // We warm admin & instructor shells lightly; they self-guard for reduced motion.
     const cancelAdmin = warmAdminOnIdle?.() || (() => {})
     const cancelInstr = warmInstructorOnIdle?.() || (() => {})
     return () => {
-      try { cancelAdmin() } catch (_e) {
-        // ignore cleanup errors
-      }
-      try { cancelInstr() } catch (_e) {
-        // ignore cleanup errors
-      }
+      try { cancelAdmin() } catch {}
+      try { cancelInstr() } catch {}
     }
   }, [])
 
@@ -158,7 +185,7 @@ function NavBar({ brand: brandProp }) {
   const links = useMemo(() => {
     const base = [{ to: '/', label: 'Home', icon: '🏠', exact: true, prefetchRole: null }]
     const roleLinks = (getTopNavForRole(role || 'student') || []).map(l => ({
-      exact: false,              // nested routes remain active
+      exact: false, // nested routes remain active
       prefetchRole: roleFromPath(l.to),
       ...l,
     }))
@@ -178,7 +205,14 @@ function NavBar({ brand: brandProp }) {
     ]
   }, [navigate, role, logout])
 
-  // Handlers
+  // Focus first dropdown item on open
+  useEffect(() => {
+    if (profileOpen) {
+      const t = setTimeout(() => dropdownFirstItemRef.current?.focus?.(), 0)
+      return () => clearTimeout(t)
+    }
+  }, [profileOpen])
+
   const handleMenuToggle = useCallback(() => setMenuOpen(v => !v), [])
   const handleAvatarKey = useCallback(e => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -193,38 +227,27 @@ function NavBar({ brand: brandProp }) {
     navigate(role ? getDashboardRoute(role) : '/')
   }, [navigate, role])
 
-  // Preload role router on nav intent (hover/focus) — best-effort wrapper
+  // Preload role router on nav intent (hover/focus/touch) — best-effort
   const handleLinkPrefetch = useCallback((to) => {
     const r = roleFromPath(to)
     if (!r) return
-
     try {
-      // Prefer central helper if present. If it accepts (role, path), pass both.
       if (typeof preloadRoutesForRole === 'function') {
         const res = preloadRoutesForRole.length >= 2
           ? preloadRoutesForRole(r, to)
           : preloadRoutesForRole(r)
-        void res // ignore promise
+        void res
         return
       }
-
-      // Fallbacks: prefer route-level preloader, else warm the shell.
       if (r === 'admin') {
-        if (typeof preloadAdminRoute === 'function') {
-          void preloadAdminRoute(to)
-        } else {
-          void preloadAdminCore?.()
-        }
+        if (typeof preloadAdminRoute === 'function') void preloadAdminRoute(to)
+        else void preloadAdminCore?.()
       } else if (r === 'instructor') {
-        if (typeof preloadInstructorRoute === 'function') {
-          void preloadInstructorRoute(to)
-        } else {
-          void preloadInstructorCore?.()
-        }
+        if (typeof preloadInstructorRoute === 'function') void preloadInstructorRoute(to)
+        else void preloadInstructorCore?.()
       }
-      // (student has no dedicated preloader)
     } catch {
-      // swallow prefetch errors; navigation remains unaffected
+      // ignore prefetch errors
     }
   }, [])
 
@@ -237,6 +260,7 @@ function NavBar({ brand: brandProp }) {
       className={styles.navbar}
       aria-label="Main Navigation"
       data-scrolled={scrolled ? 'true' : 'false'}
+      style={{ paddingTop: 'max(0px, env(safe-area-inset-top))' }}
     >
       {/* Branding */}
       <button
@@ -260,6 +284,7 @@ function NavBar({ brand: brandProp }) {
         className={`${styles.links} ${menuOpen ? styles.linksOpen : ''}`}
         id="main-navigation"
         role="menubar"
+        aria-hidden={menuOpen ? undefined : undefined /* keep readable by SRs */}
       >
         {links.map(link => (
           <NavLink
@@ -271,6 +296,7 @@ function NavBar({ brand: brandProp }) {
             onClick={() => setMenuOpen(false)}
             onMouseEnter={() => handleLinkPrefetch(link.to)}
             onFocus={() => handleLinkPrefetch(link.to)}
+            onTouchStart={() => handleLinkPrefetch(link.to)}
             end={!!link.exact}
             role="menuitem"
           >
@@ -323,14 +349,16 @@ function NavBar({ brand: brandProp }) {
                 </span>
                 <span className={styles.dropdownRole}>{role}</span>
               </div>
-              {userMenu.map(item => (
+              {userMenu.map((item, i) => (
                 <button
                   key={item.label}
                   className={styles.dropdownItem}
                   role="menuitem"
+                  ref={i === 0 ? dropdownFirstItemRef : undefined}
                   onClick={() => {
                     item.action()
                     setProfileOpen(false)
+                    burgerRef.current?.focus?.()
                   }}
                   type="button"
                 >
@@ -344,6 +372,7 @@ function NavBar({ brand: brandProp }) {
 
       {/* Hamburger (mobile) */}
       <button
+        ref={burgerRef}
         className={`${styles.burger} ${menuOpen ? styles.burgerOpen : ''}`}
         onClick={handleMenuToggle}
         aria-label="Toggle navigation menu"

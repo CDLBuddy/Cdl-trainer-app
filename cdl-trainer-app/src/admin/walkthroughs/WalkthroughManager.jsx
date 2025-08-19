@@ -1,21 +1,25 @@
 // src/admin/walkthroughs/WalkthroughManager.jsx
 // -----------------------------------------------------------------------------
 // Admin • Walkthrough Manager (hub)
-// - Loads + lists school walkthroughs (defaults + custom)
-// - Create: blank, paste/convert (MD/CSV/XLSX via Upload view)
-// - Edit: WYSIWYG / structured form (delegated to WalkthroughEditor/Form)
-// - Preview: student-facing preview using shared renderer (stubbed)
-// - Submit for review → flags item `in-review` for superadmin
-// - Minimal in-file "store" with optimistic updates; replace with real API.
+// - Lists defaults + school/custom walkthroughs
+// - Create blank by class; Import (MD/CSV/XLSX) via Upload view
+// - Edit via WalkthroughEditor (visual/form hybrid)
+// - Preview via shared renderer (admin preview component)
+// - Submit for review → marks 'in-review' (replace with real API later)
+// - Local, optimistic store (replace with Firestore/API as needed)
 // -----------------------------------------------------------------------------
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 
+// XLSX (exceljs) parser helper you mentioned you’re using
 import { parseXlsxFile } from '@walkthrough-data/utils/parseXlsx.js'
 
- // XLSX (exceljs) parser helper
+// Local editor/uploader/preview + helpers
 import WalkthroughEditor from './WalkthroughEditor.jsx'
-// Local helpers (UI-centric helpers)
+import WalkthroughList from './WalkthroughList.jsx'
+import WalkthroughPreview from './WalkthroughPreview.jsx'
+import WalkthroughUpload from './WalkthroughUpload.jsx'
+
 import {
   toToken,
   nextId,
@@ -23,12 +27,8 @@ import {
   cloneDeep,
   inferLabelFromToken,
 } from './walkthroughHelpers.js'
-// Child admin screens
-import WalkthroughList from './WalkthroughList.jsx'
-import WalkthroughPreview from './WalkthroughPreview.jsx'
-import WalkthroughUpload from './WalkthroughUpload.jsx'
 
-// Optional: light styles (kept inline for portability)
+// ---- tiny UI styles --------------------------------------------------------
 const toolbarBtn = {
   padding: '8px 12px',
   borderRadius: 8,
@@ -39,11 +39,9 @@ const toolbarBtn = {
 const primaryBtn = { ...toolbarBtn, background: '#111827', color: '#fff', borderColor: '#111827' }
 const subtle = { color: '#6b7280' }
 
-/**
- * @typedef {'list'|'editor'|'upload'|'preview'} ViewMode
- */
+/** @typedef {'list'|'editor'|'upload'|'preview'} ViewMode */
 
-/** Seed rows (replace with real fetch for your school’s data) */
+// ---- seed (replace with real fetch) ----------------------------------------
 function seedRows() {
   return [
     {
@@ -56,6 +54,7 @@ function seedRows() {
       source: 'default',
       isDefault: true,
       updatedAt: '2025-08-10T12:00:00Z',
+      script: [], // defaults live in @walkthrough-data; keep empty for display row
     },
     {
       id: 'my-school-class-b-v1',
@@ -67,6 +66,9 @@ function seedRows() {
       source: 'school',
       isDefault: false,
       updatedAt: '2025-08-13T16:22:00Z',
+      script: [
+        { section: 'Cab Safety', steps: [{ script: 'Seat belt…', required: true }] },
+      ],
     },
   ]
 }
@@ -77,40 +79,26 @@ export default function WalkthroughManager() {
   const [activeId, setActiveId] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const active = useMemo(() => rows.find((r) => r.id === activeId) || null, [rows, activeId])
+  const active = useMemo(
+    () => rows.find((r) => r.id === activeId) || null,
+    [rows, activeId]
+  )
 
-  // Simulated fetch
+  // Simulated initial fetch “loading”
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    const t = setTimeout(() => {
-      if (!cancelled) setLoading(false)
-    }, 250)
-    return () => {
-      cancelled = true
-      clearTimeout(t)
-    }
+    const t = setTimeout(() => { if (!cancelled) setLoading(false) }, 250)
+    return () => { cancelled = true; clearTimeout(t) }
   }, [])
 
-  // Navigation
-  const toList = () => {
-    setActiveId(null)
-    setView('list')
-  }
-  const toEditor = (id) => {
-    setActiveId(id)
-    setView('editor')
-  }
-  const toUpload = () => {
-    setActiveId(null)
-    setView('upload')
-  }
-  const toPreview = (id) => {
-    setActiveId(id)
-    setView('preview')
-  }
+  // ---- navigation helpers ---------------------------------------------------
+  const toList = useCallback(() => { setActiveId(null); setView('list') }, [])
+  const toEditor = useCallback((id) => { setActiveId(id); setView('editor') }, [])
+  const toUpload = useCallback(() => { setActiveId(null); setView('upload') }, [])
+  const toPreview = useCallback((id) => { setActiveId(id); setView('preview') }, [])
 
-  // Create blank draft
+  // ---- create blank draft ---------------------------------------------------
   const handleCreateBlank = (classCode = 'A') => {
     const token = toToken(classCode)
     const label = inferLabelFromToken(token) || `Custom ${classCode}`
@@ -139,30 +127,51 @@ export default function WalkthroughManager() {
     toEditor(id)
   }
 
-  // Import (MD/CSV/XLSX → dataset)
-  const handleImport = (dataset /* {id?, label, classCode, script, version?} */) => {
-    const id = dataset.id || nextId('wt')
-    const token = toToken(dataset.classCode)
+  // ---- import from Upload (dataset may be {sections} or {script}) ----------
+  const handleImport = (dataset) => {
+    // Accept either shape and normalize
+    const script = Array.isArray(dataset?.sections)
+      ? cloneDeep(dataset.sections)
+      : Array.isArray(dataset?.script)
+      ? cloneDeep(dataset.script)
+      : []
+
+    const classCode = (dataset?.classCode || 'A').toUpperCase()
+    const token = toToken(classCode)
+    const id = dataset?.id || nextId('wt')
+
     const row = {
       id,
-      label: dataset.label || inferLabelFromToken(token) || 'Imported Walkthrough',
-      classCode: dataset.classCode || 'A',
+      label: dataset?.label || inferLabelFromToken(token) || 'Imported Walkthrough',
+      classCode,
       token,
-      version: Number(dataset.version || 1),
+      version: Number(dataset?.version || 1),
       status: 'draft',
       source: 'school',
       isDefault: false,
       updatedAt: nowIso(),
-      script: cloneDeep(dataset.script || []),
+      script,
     }
+
     setRows((prev) => [row, ...prev])
     toEditor(id)
   }
 
-  // Save from Editor
-  const handleSave = (id, patch /* {label?, script?, version?, status?} */) => {
+  // ---- save from editor (only script changes here) -------------------------
+  const handleSave = (id, patch /* { script, label?, version?, status? } */) => {
     setRows((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, ...cloneDeep(patch), updatedAt: nowIso() } : r))
+      prev.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              ...(patch?.label ? { label: patch.label } : null),
+              ...(patch?.version != null ? { version: Number(patch.version) } : null),
+              ...(patch?.status ? { status: patch.status } : null),
+              ...(Array.isArray(patch?.script) ? { script: cloneDeep(patch.script) } : null),
+              updatedAt: nowIso(),
+            }
+          : r
+      )
     )
     toList()
   }
@@ -192,6 +201,7 @@ export default function WalkthroughManager() {
       prev.map((r) => (r.id === id ? { ...r, status: 'in-review', updatedAt: nowIso() } : r))
     )
     alert('Submitted for superadmin review ✅')
+    // TODO: replace with API call that creates/updates a submission doc for superadmin.
   }
 
   const handleExport = (id) => {
@@ -217,13 +227,13 @@ export default function WalkthroughManager() {
     URL.revokeObjectURL(url)
   }
 
-  // Wrapper using exceljs helper — returns rows as objects (header → value)
+  // ---- wire your exceljs helper into the Upload screen ---------------------
   const parseXlsx = async (file) => {
-    // coerce to strings & map by header row
+    // Returns row objects keyed by header; WalkthroughUpload will convert to {sections}
     return await parseXlsxFile(file, { hasHeader: true, coerceStrings: true })
   }
 
-  // Render
+  // ---- render --------------------------------------------------------------
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: 16 }}>
       {/* Header / toolbar */}
@@ -236,7 +246,7 @@ export default function WalkthroughManager() {
             ← Back
           </button>
         ) : (
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button type="button" onClick={() => handleCreateBlank('A')} style={primaryBtn}>
               + New (Class A)
             </button>
@@ -269,8 +279,9 @@ export default function WalkthroughManager() {
 
       {view === 'editor' && active && (
         <WalkthroughEditor
-          item={active}
-          onSave={(patch) => handleSave(active.id, patch)}
+          // 🔧 Editor contract: initialScript in, {script, source} out
+          initialScript={active.script || []}
+          onSave={({ script /*, source */ }) => handleSave(active.id, { script })}
           onCancel={toList}
         />
       )}

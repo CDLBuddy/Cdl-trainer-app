@@ -1,22 +1,49 @@
-// src/admin/companies/CompanyDetail.jsx
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
+// Path: /src/admin/companies/CompanyDetail.jsx
+// ======================================================================
+// Admin • Company Detail
+// - Loads company meta + roster (students attached to companyId)
+// - Local search, simple readiness bars, and verify links
+// - Uses AddStudentDrawer (from companies barrel) for quick adds
+// - No breaking changes to props/exports/imports
+// ======================================================================
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
 
-import { AddStudentDrawer } from '@admin/companies' // <- from the companies barrel
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/ToastContext.js'
 import { db } from '@utils/firebase.js'
+import { AddStudentDrawer } from '@admin/companies'
 
 import { getEnrollmentReadiness, getBTWReadiness } from '@student/profile/schema/calculators.js'
 
-/* Helpers */
-const pct = n => Math.max(0, Math.min(100, Math.round(Number.isFinite(n) ? n : 0)))
-const fmtBilling = mode => {
+/* ------------------------------------------------------------------ */
+/* Local helpers (stable, tiny)                                       */
+/* ------------------------------------------------------------------ */
+const pct = (n) => Math.max(0, Math.min(100, Math.round(Number.isFinite(n) ? n : 0)))
+const fmtBilling = (mode) => {
   const m = String(mode || '').toLowerCase()
   return m === 'employer' ? 'Employer' : m === 'individual' ? 'Individual' : '—'
 }
 
+/** Map Firestore user doc -> roster row */
+function mapUserDoc(ds) {
+  const u = ds.data() || {}
+  return {
+    email: u.email || ds.id,
+    name: u.name || '(no name)',
+    course: u.course || '—',
+    cdlClass: u.cdlClass || '—',
+    billing: u.billing || { mode: '—' },
+    assignedInstructor: u.assignedInstructor || '—',
+    profile: u,
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Page                                                               */
+/* ------------------------------------------------------------------ */
 export default function CompanyDetail() {
   const { companyId } = useParams()
   const navigate = useNavigate()
@@ -28,11 +55,10 @@ export default function CompanyDetail() {
   const [search, setSearch] = useState('')
   const [showAdd, setShowAdd] = useState(false)
 
-  // loader split so we can re-run after saving a new student
+  // loaders are separate so we can selectively refresh roster after save
   const loadCompany = useCallback(async () => {
     if (!companyId) return null
-    const cRef = doc(db, 'companies', companyId)
-    const cSnap = await getDoc(cRef)
+    const cSnap = await getDoc(doc(db, 'companies', companyId))
     return cSnap.exists() ? { id: cSnap.id, ...cSnap.data() } : null
   }, [companyId])
 
@@ -45,22 +71,12 @@ export default function CompanyDetail() {
     )
     const uSnap = await getDocs(qy)
     const rows = []
-    uSnap.forEach(ds => {
-      const u = ds.data() || {}
-      rows.push({
-        email: u.email || ds.id,
-        name: u.name || '(no name)',
-        course: u.course || '—',
-        cdlClass: u.cdlClass || '—',
-        billing: u.billing || { mode: '—' },
-        assignedInstructor: u.assignedInstructor || '—',
-        profile: u,
-      })
-    })
+    uSnap.forEach((ds) => rows.push(mapUserDoc(ds)))
     rows.sort((a, b) => a.name.localeCompare(b.name))
     return rows
   }, [companyId])
 
+  // initial load
   useEffect(() => {
     let alive = true
     ;(async () => {
@@ -70,8 +86,9 @@ export default function CompanyDetail() {
         if (!alive) return
         setCompany(c)
         setRoster(r)
-      } catch (_e) {
-        showToast('Failed to load company roster.', 'error')
+      } catch {
+        // keep it quiet for end users but still inform
+        showToast('Failed to load company roster.', 3000, 'error')
       } finally {
         if (alive) setLoading(false)
       }
@@ -79,10 +96,11 @@ export default function CompanyDetail() {
     return () => { alive = false }
   }, [loadCompany, loadRoster, showToast])
 
+  // derived list filtered by search
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase()
     if (!term) return roster
-    return roster.filter(r =>
+    return roster.filter((r) =>
       (r.name || '').toLowerCase().includes(term) ||
       (r.email || '').toLowerCase().includes(term) ||
       (r.course || '').toLowerCase().includes(term) ||
@@ -95,36 +113,22 @@ export default function CompanyDetail() {
     [navigate]
   )
 
-  const title = company?.name ? `Company • ${company.name}` : `Company • ${companyId || ''}`
+  const title = useMemo(
+    () => (company?.name ? `Company • ${company.name}` : `Company • ${companyId || ''}`),
+    [company?.name, companyId]
+  )
 
   return (
     <Shell title={title}>
       {/* Header */}
-      <header
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: 12, marginBottom: 12, flexWrap: 'wrap',
-        }}
-      >
-        <div style={{ display: 'grid', gap: 4 }}>
-          <div style={{ fontSize: 18, fontWeight: 600 }}>{company?.name || '(No name)'}</div>
-          <div style={{ fontSize: 13, color: '#6b7280' }}>{companyId}</div>
-        </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search roster…"
-            aria-label="Search roster"
-            style={{
-              padding: '6px 10px', border: '1px solid #dcdde2', borderRadius: 8, minWidth: 200,
-            }}
-          />
-          <button className="btn" onClick={() => setShowAdd(true)}>+ Add Student</button>
-          <button className="btn outline" onClick={() => navigate('/admin/companies')}>⬅ Back</button>
-        </div>
-      </header>
+      <Header
+        companyId={companyId}
+        name={company?.name}
+        search={search}
+        onSearch={setSearch}
+        onBack={() => navigate('/admin/companies')}
+        onAdd={() => setShowAdd(true)}
+      />
 
       {/* Roster */}
       <div className="dashboard-card" style={{ padding: 0 }}>
@@ -152,7 +156,7 @@ export default function CompanyDetail() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(r => {
+                {filtered.map((r) => {
                   const enroll = pct(getEnrollmentReadiness(r.profile))
                   const btw = pct(getBTWReadiness(r.profile))
                   return (
@@ -197,7 +201,7 @@ export default function CompanyDetail() {
                 const r = await loadRoster()
                 setRoster(r)
               } catch {
-                showToast('Saved, but failed to refresh roster.', 'warning')
+                showToast('Saved, but failed to refresh roster.', 3000, 'warning')
               } finally {
                 setLoading(false)
               }
@@ -209,10 +213,52 @@ export default function CompanyDetail() {
   )
 }
 
-/* Tiny row progress with label */
+/* ------------------------------------------------------------------ */
+/* Tiny Presentational Bits                                           */
+/* ------------------------------------------------------------------ */
+
+function Header({ companyId, name, search, onSearch, onBack, onAdd }) {
+  return (
+    <header
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        marginBottom: 12,
+        flexWrap: 'wrap',
+      }}
+    >
+      <div style={{ display: 'grid', gap: 4, minWidth: 240 }}>
+        <div style={{ fontSize: 18, fontWeight: 600 }}>{name || '(No name)'}</div>
+        <div style={{ fontSize: 13, color: '#6b7280' }}>{companyId}</div>
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => onSearch(e.target.value)}
+          placeholder="Search roster…"
+          aria-label="Search roster"
+          style={{
+            padding: '6px 10px',
+            border: '1px solid #dcdde2',
+            borderRadius: 8,
+            minWidth: 200,
+          }}
+        />
+        <button className="btn" onClick={onAdd}>+ Add Student</button>
+        <button className="btn outline" onClick={onBack}>⬅ Back</button>
+      </div>
+    </header>
+  )
+}
+
+/** Tiny row progress with label */
 function RowBar({ label, value, alt }) {
   const bg = alt ? '#e0f2fe' : '#eef2ff'
   const fg = alt ? '#0ea5e9' : '#6366f1'
+  const clamped = Math.max(0, Math.min(100, value))
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <small style={{ width: 60, color: '#667085' }}>{label}</small>
@@ -220,12 +266,20 @@ function RowBar({ label, value, alt }) {
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-valuenow={value}
-        style={{ position: 'relative', height: 8, flex: 1, background: bg, borderRadius: 999, overflow: 'hidden' }}
+        aria-valuenow={clamped}
+        aria-label={`${label} readiness ${clamped}%`}
+        style={{
+          position: 'relative',
+          height: 8,
+          flex: 1,
+          background: bg,
+          borderRadius: 999,
+          overflow: 'hidden',
+        }}
       >
-        <div style={{ position: 'absolute', inset: 0, width: `${Math.max(0, Math.min(100, value))}%`, background: fg }} />
+        <div style={{ position: 'absolute', inset: 0, width: `${clamped}%`, background: fg }} />
       </div>
-      <small style={{ width: 32, textAlign: 'right' }}>{value}%</small>
+      <small style={{ width: 32, textAlign: 'right' }}>{clamped}%</small>
     </div>
   )
 }

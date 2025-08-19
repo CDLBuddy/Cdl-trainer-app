@@ -8,8 +8,8 @@
 //
 // Props:
 //   initialScript?: WalkthroughScript
-//   onChange?: (script) => void
-//   onSubmit?: (script) => void
+//   onChange?: (script: WalkthroughScript) => void
+//   onSubmit?: (script: WalkthroughScript) => void
 //   onCancel?: () => void
 //
 // Design notes:
@@ -18,20 +18,20 @@
 //   • Validation is lightweight (ensures titles + non-empty script text).
 // -----------------------------------------------------------------------------
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 // ----- helpers ---------------------------------------------------------------
 
-const dc = (v) =>
+export const dc = (v) =>
   typeof structuredClone === 'function' ? structuredClone(v) : JSON.parse(JSON.stringify(v))
 
 const emptyScript = () => [{ section: 'Untitled', steps: [{ script: '' }] }]
 
-function normalizeScript(maybe) {
+export function normalizeScript(maybe) {
   const arr = Array.isArray(maybe) ? maybe : []
   if (!arr.length) return emptyScript()
-  return arr.map((sec) => ({
-    section: String(sec?.section ?? 'Untitled'),
+  return arr.map((sec, si) => ({
+    section: String(sec?.section ?? `Section ${si + 1}`),
     critical: !!sec?.critical,
     passFail: !!sec?.passFail,
     steps: Array.isArray(sec?.steps) && sec.steps.length
@@ -48,7 +48,7 @@ function normalizeScript(maybe) {
   }))
 }
 
-function validate(script) {
+export function validate(script) {
   const problems = []
   if (!Array.isArray(script) || !script.length) {
     problems.push('Add at least one section.')
@@ -80,17 +80,38 @@ export default function WalkthroughForm({
 }) {
   const [script, setScript] = useState(() => normalizeScript(initialScript))
   const [touched, setTouched] = useState(false)
-
   const v = useMemo(() => validate(script), [script])
 
+  // counts + top ref for smooth scroll to errors after parsing/imports
+  const counts = useMemo(() => {
+    const sections = Array.isArray(script) ? script.length : 0
+    const steps = sections ? script.reduce((a, s) => a + (Array.isArray(s?.steps) ? s.steps.length : 0), 0) : 0
+    return { sections, steps }
+  }, [script])
+  const topRef = useRef(null)
+
+  // bubble normalized script up when it changes (after first touch)
   useEffect(() => {
     if (touched) onChange?.(script)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [script])
 
+  // keyboard: Cmd/Ctrl+S submits
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key?.toLowerCase() === 's') {
+        e.preventDefault()
+        doSubmit()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [script, v])
+
   // -- section ops
   const addSection = () =>
-    setScript((s) => [...s, { section: 'New Section', steps: [{ script: '' }] }])
+    setScript((s) => [...s, { section: `Section ${s.length + 1}`, steps: [{ script: '' }] }])
 
   const removeSection = (i) =>
     setScript((s) => (s.length <= 1 ? s : s.filter((_, idx) => idx !== i)))
@@ -163,11 +184,19 @@ export default function WalkthroughForm({
     })
 
   // submit
+  const doSubmit = () => {
+    setTouched(true)
+    if (!v.ok) {
+      // scroll to top errors if any
+      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+    onSubmit?.(dc(script))
+  }
+
   const handleSubmit = (e) => {
     e?.preventDefault?.()
-    setTouched(true)
-    if (!v.ok) return
-    onSubmit?.(dc(script))
+    doSubmit()
   }
 
   // ui bits
@@ -185,8 +214,16 @@ export default function WalkthroughForm({
   )
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 1100, margin: '0 auto', padding: 16 }}>
-      <h2 style={{ marginBottom: 8 }}>Walkthrough Form</h2>
+    <form
+      ref={topRef}
+      onSubmit={handleSubmit}
+      style={{ maxWidth: 1100, margin: '0 auto', padding: 16 }}
+      aria-labelledby="wt-form-title"
+    >
+      <h2 id="wt-form-title" style={{ marginBottom: 4 }}>Walkthrough Form</h2>
+      <div style={{ color: '#555', marginBottom: 8, fontSize: 14 }}>
+        {counts.sections} sections • {counts.steps} steps
+      </div>
 
       {!v.ok && touched && (
         <Card style={{ background: '#fff3f3', borderColor: '#f0c2c2' }}>
@@ -286,7 +323,7 @@ export default function WalkthroughForm({
                       borderRadius: 6,
                       border: '1px solid #ccc',
                       marginTop: 8,
-                      fontFamily: 'inherit',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
                     }}
                   />
 

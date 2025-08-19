@@ -1,57 +1,133 @@
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
-import {
-  doc,
-  setDoc,
-  serverTimestamp,
-  collection,
-  getDocs,
-} from 'firebase/firestore'
-import React, { useState, useEffect } from 'react'
+// src/pages/Signup.jsx
+// ======================================================================
+// Signup
+// - Supports invite links (?invite=ID) that lock school + prefill fields
+// - Enforces dynamic "required fields" from invite or school settings
+// - Creates users/{email} + userRoles/{email}
+// - Light branding from school or local cache
+// ======================================================================
+
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { doc, setDoc, getDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore'
 
-import { auth, db } from '@utils/firebase.js' // Adjust your import paths!
-import {
-  getCurrentSchoolBranding,
-  setCurrentSchool,
-} from '@utils/school-branding.js'
+import { auth, db } from '@utils/firebase.js'
+import { getCurrentSchoolBranding, setCurrentSchool } from '@utils/school-branding.js'
 import { getBlankUserProfile } from '@utils/userProfile.js'
+import { getInvite, consumeInvite, isValidInvite } from '@utils/invites.js'
 
-import '@components/Shell.module.css' // Or your preferred CSS file
+// Dynamic “required fields” supported on signup via invite/settings
+const FIELD_DEFS = /** @type const */ ({
+  phone:        { label: 'Phone',          type: 'tel',  placeholder: '(555) 555-5555' },
+  address:      { label: 'Address',        type: 'text', placeholder: 'Street, City, ST' },
+  dob:          { label: 'Date of Birth',  type: 'date' },
+  permitNumber: { label: 'Permit Number',  type: 'text', placeholder: 'If applicable' },
+})
 
-function Signup() {
+const isEmail = (v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v || ''))
+
+export default function Signup() {
   const navigate = useNavigate()
 
-  // State
+  // -------- invite id from query string --------------------------------
+  const inviteId = useMemo(() => {
+    try { return new URLSearchParams(window.location.search).get('invite') || '' }
+    catch { return '' }
+  }, [])
+
+  // -------- form state --------------------------------------------------
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+
   const [pwd, setPwd] = useState('')
   const [confirm, setConfirm] = useState('')
-  const [schoolId, setSchoolId] = useState(
-    localStorage.getItem('schoolId') || ''
-  )
-  const [schools, setSchools] = useState([])
-  const [showSchoolSelect, setShowSchoolSelect] = useState(
-    !localStorage.getItem('schoolId')
-  )
   const [showPwd, setShowPwd] = useState(false)
   const [showConfirmPwd, setShowConfirmPwd] = useState(false)
+
+  const [schoolId, setSchoolId] = useState(localStorage.getItem('schoolId') || '')
+  const [schools, setSchools] = useState([])
+  const [showSchoolSelect, setShowSchoolSelect] = useState(!localStorage.getItem('schoolId'))
+
+  // Dynamic required fields + their values
+  const [requiredFields, setRequiredFields] = useState/** @type {string[]} */([])
+  const [extra, setExtra] = useState({ phone: '', address: '', dob: '', permitNumber: '' })
+
+  // Branding
+  const [brandTitle, setBrandTitle] = useState('CDL Trainer')
+  const [brandLogo, setBrandLogo] = useState('/default-logo.svg')
+
+  // UI
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Branding
-  const schoolBrand = getCurrentSchoolBranding() || {}
-  const brandLogo = schoolBrand.logoUrl || '/default-logo.svg'
-  const brandTitle = schoolBrand.schoolName || 'CDL Trainer'
+  // -------- local branding fallback ------------------------------------
+  useEffect(() => {
+    const localBrand = getCurrentSchoolBranding() || {}
+    if (!inviteId && !schoolId) {
+      setBrandTitle(localBrand.schoolName || 'CDL Trainer')
+      setBrandLogo(localBrand.logoUrl || '/default-logo.svg')
+    }
+  }, [inviteId, schoolId])
 
-  // Fetch schools if needed
+  // -------- load invite (locks school + provides requirements) ---------
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      if (!inviteId) return
+
+      // Fast validity check (swallows internal errors)
+      const valid = await isValidInvite(inviteId).catch(() => false)
+      if (!alive) return
+      if (!valid) {
+        setError('This invite link is invalid or has expired.')
+        return
+      }
+
+      try {
+        const { data: inv } = await getInvite(inviteId)
+        if (!alive || !inv) return
+
+        if (inv.consumed) {
+          setError('This invite link has already been used.')
+          return
+        }
+
+        // Lock to invited school + prefill branding
+        const sid = inv.schoolId || ''
+        if (sid) {
+          setSchoolId(sid)
+          setShowSchoolSelect(false)
+          setCurrentSchool(sid) // ensure local selection is set
+          const sSnap = await getDoc(doc(db, 'schools', sid)).catch(() => null)
+          if (sSnap?.exists()) {
+            const s = sSnap.data() || {}
+            setBrandTitle(s.name || 'CDL Trainer')
+            setBrandLogo(s.logoUrl || '/default-logo.svg')
+          }
+        }
+
+        if (inv.email) setEmail(String(inv.email).toLowerCase())
+        if (inv.name)  setName(String(inv.name))
+
+        // Invite-specified required fields win
+        if (Array.isArray(inv.requiredFields) && inv.requiredFields.length) {
+          setRequiredFields(inv.requiredFields)
+        }
+      } catch {
+        if (alive) setError('Unable to load invite. Please request a new link.')
+      }
+    })()
+    return () => { alive = false }
+  }, [inviteId])
+
+  // -------- load schools when user must choose one ----------------------
   useEffect(() => {
     const fetchSchools = async () => {
       try {
         const snap = await getDocs(collection(db, 'schools'))
-        const schoolList = snap.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }))
-          .filter(s => !s.disabled)
-        setSchools(schoolList)
+        const list = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(s => !s.disabled)
+        setSchools(list)
       } catch {
         setSchools([])
       }
@@ -59,109 +135,144 @@ function Signup() {
     if (showSchoolSelect) fetchSchools()
   }, [showSchoolSelect])
 
-  // Handle password visibility toggle
-  const togglePwd = () => setShowPwd(p => !p)
-  const toggleConfirmPwd = () => setShowConfirmPwd(p => !p)
+  // -------- if no invite but we have schoolId → school branding --------
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      if (inviteId || !schoolId) return
+      const sSnap = await getDoc(doc(db, 'schools', schoolId)).catch(() => null)
+      if (!alive) return
+      if (sSnap?.exists()) {
+        const s = sSnap.data() || {}
+        setBrandTitle(s.name || 'CDL Trainer')
+        setBrandLogo(s.logoUrl || '/default-logo.svg')
+      }
+    })()
+    return () => { alive = false }
+  }, [inviteId, schoolId])
 
-  // Handle signup
-  const handleSignup = async e => {
+  // -------- fallback required fields from school settings ---------------
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      if (inviteId || !schoolId) return
+      try {
+        // Keep in sync with your settingsApi storage path if that changes.
+        const sSnap = await getDoc(doc(db, 'settings', schoolId)).catch(() => null)
+        if (!alive) return
+        const prefs = sSnap?.data()?.prefs || {}
+        const req = prefs?.users?.requiredFields
+        if (Array.isArray(req) && req.length) setRequiredFields(req)
+      } catch { /* ignore */ }
+    })()
+    return () => { alive = false }
+  }, [inviteId, schoolId])
+
+  // -------- handlers ----------------------------------------------------
+  const onExtraChange = useCallback((e) => {
+    const { name, value } = e.target
+    setExtra(prev => ({ ...prev, [name]: value }))
+  }, [])
+
+  const handleSignup = async (e) => {
     e.preventDefault()
     setError('')
-    if (!name || !email || !pwd || !confirm) {
-      setError('Please fill out all fields.')
-      return
-    }
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-      setError('Please enter a valid email address.')
-      return
-    }
-    if (pwd !== confirm) {
-      setError('Passwords do not match.')
-      return
-    }
-    if (pwd.length < 6) {
-      setError('Password must be at least 6 characters.')
-      return
-    }
+
+    // Basic checks
+    if (!name || !email || !pwd || !confirm) return setError('Please fill out all fields.')
+    if (!isEmail(email)) return setError('Please enter a valid email address.')
+    if (pwd !== confirm) return setError('Passwords do not match.')
+    if (pwd.length < 6) return setError('Password must be at least 6 characters.')
+
+    // Choose the school
     const selectedSchoolId = schoolId
     if (showSchoolSelect) {
-      if (!selectedSchoolId) {
-        setError('Please select a school.')
-        return
-      }
+      if (!selectedSchoolId) return setError('Please select a school.')
       setCurrentSchool(selectedSchoolId)
     }
+
+    // Enforce required fields
+    for (const key of requiredFields) {
+      const v = key in extra ? extra[key] : null
+      if (!v || String(v).trim().length === 0) {
+        const label = FIELD_DEFS[key]?.label || key
+        return setError(`Please provide ${label}.`)
+      }
+    }
+
     setLoading(true)
     try {
-      // Create user
-      const { user } = await createUserWithEmailAndPassword(
-        auth,
-        email.trim(),
-        pwd
-      )
-      // Set displayName
-      if (user) {
-        await updateProfile(user, { displayName: name })
-      }
-      // Create blank profile
-      const blankProfile = {
-        ...getBlankUserProfile({
-          user,
-          userRole: 'student',
-          schoolIdVal: selectedSchoolId,
-        }),
+      // 1) Auth
+      const { user } = await createUserWithEmailAndPassword(auth, email.trim(), pwd)
+      if (user) await updateProfile(user, { displayName: name })
+
+      // 2) Profile document
+      const blank = getBlankUserProfile({ user, userRole: 'student', schoolIdVal: selectedSchoolId })
+      const profile = {
+        ...blank,
+        name,
+        email: user.email,
         schoolId: selectedSchoolId,
         assignedSchools: [selectedSchoolId],
+        ...Object.fromEntries(requiredFields.map(k => [k, extra[k]])),
       }
-      await setDoc(doc(db, 'users', user.email), blankProfile)
-      // Create userRoles
-      const roleDoc = {
+
+      // 3) Simple profile progress: name + required fields present
+      const total = (requiredFields?.length || 0) + 1
+      const filled = requiredFields.filter(k => String(extra[k]||'').trim()).length + (name ? 1 : 0)
+      profile.profileProgress = Math.round((filled / Math.max(1, total)) * 100)
+
+      await setDoc(doc(db, 'users', user.email), profile)
+
+      // 4) Role document
+      await setDoc(doc(db, 'userRoles', user.email), {
         role: 'student',
         assignedAt: serverTimestamp(),
         schoolId: selectedSchoolId || undefined,
         assignedSchools: [selectedSchoolId],
-      }
-      await setDoc(doc(db, 'userRoles', user.email), roleDoc)
+      })
 
-      // Store locally
+      // 5) Mark invite consumed (if any)
+      if (inviteId) {
+        try { await consumeInvite(inviteId) } catch { /* idempotent / best effort */ }
+      }
+
+      // 6) Local cache
       localStorage.setItem('fullName', name)
       localStorage.setItem('userRole', 'student')
       if (selectedSchoolId) localStorage.setItem('schoolId', selectedSchoolId)
 
       setLoading(false)
-      // Redirect will happen via onAuthStateChanged in App
+      navigate('/student/dashboard', { replace: true })
     } catch (err) {
       setLoading(false)
-      if (err.code === 'auth/email-already-in-use')
-        setError('Email already in use. Try logging in.')
-      else if (err.code === 'auth/invalid-email')
-        setError('Invalid email address.')
-      else setError('Signup failed: ' + (err.message || err))
+      const code = err?.code || ''
+      if (code === 'auth/email-already-in-use') setError('Email already in use. Try logging in.')
+      else if (code === 'auth/invalid-email')   setError('Invalid email address.')
+      else setError('Signup failed: ' + (err?.message || err))
     }
   }
 
-  // Render
+  // -------- render ------------------------------------------------------
   return (
-    <div
-      className="signup-card fade-in"
-      style={{ maxWidth: 480, margin: '34px auto' }}
-    >
+    <div className="signup-card fade-in" style={{ maxWidth: 520, margin: '34px auto' }}>
       <h2 style={{ textAlign: 'center' }}>
         {brandLogo && (
           <img
             src={brandLogo}
-            style={{
-              height: 38,
-              maxWidth: 96,
-              verticalAlign: 'middle',
-              marginBottom: '0.15em',
-              borderRadius: 8,
-            }}
             alt="School Logo"
+            style={{ height: 38, maxWidth: 96, verticalAlign: 'middle', marginBottom: '0.15em', borderRadius: 8 }}
           />
         )}
         Sign Up for {brandTitle}
       </h2>
+
+      {inviteId && (
+        <p style={{ textAlign:'center', margin:'6px 0 14px', color:'#7aa', fontSize:13 }}>
+          This account will be created under your invited school.
+        </p>
+      )}
+
       <form autoComplete="off" onSubmit={handleSignup}>
         <div className="form-group">
           <label htmlFor="signup-name">Name</label>
@@ -172,9 +283,10 @@ function Signup() {
             required
             autoComplete="name"
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
           />
         </div>
+
         <div className="form-group">
           <label htmlFor="signup-email">Email</label>
           <input
@@ -184,9 +296,32 @@ function Signup() {
             required
             autoComplete="username"
             value={email}
-            onChange={e => setEmail(e.target.value.toLowerCase())}
+            onChange={(e) => setEmail(e.target.value.toLowerCase())}
+            readOnly={Boolean(inviteId)}
           />
         </div>
+
+        {/* Dynamic required fields */}
+        {requiredFields.map((key) => {
+          const def = FIELD_DEFS[key] || { label: key, type: 'text' }
+          const id  = `signup-extra-${key}`
+          return (
+            <div className="form-group" key={key}>
+              <label htmlFor={id}>{def.label}</label>
+              <input
+                id={id}
+                name={key}
+                type={def.type || 'text'}
+                required
+                placeholder={def.placeholder || ''}
+                value={extra[key] || ''}
+                onChange={onExtraChange}
+              />
+            </div>
+          )
+        })}
+
+        {/* Passwords */}
         <div className="form-group password-group">
           <label htmlFor="signup-password">Password</label>
           <div style={{ position: 'relative' }}>
@@ -199,28 +334,20 @@ function Signup() {
               autoComplete="new-password"
               style={{ paddingRight: '2.3rem' }}
               value={pwd}
-              onChange={e => setPwd(e.target.value)}
+              onChange={(e) => setPwd(e.target.value)}
             />
             <button
               type="button"
-              style={{
-                position: 'absolute',
-                right: 7,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                color: 'var(--accent)',
-                fontSize: '1.14em',
-                cursor: 'pointer',
-              }}
-              onClick={togglePwd}
-              tabIndex={0}
+              onClick={() => setShowPwd((p) => !p)}
+              aria-pressed={showPwd}
+              aria-label={showPwd ? 'Hide password' : 'Show password'}
+              style={{ position:'absolute', right:7, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer' }}
             >
               {showPwd ? '🙈' : '👁'}
             </button>
           </div>
         </div>
+
         <div className="form-group password-group">
           <label htmlFor="signup-confirm">Confirm Password</label>
           <div style={{ position: 'relative' }}>
@@ -233,28 +360,21 @@ function Signup() {
               autoComplete="new-password"
               style={{ paddingRight: '2.3rem' }}
               value={confirm}
-              onChange={e => setConfirm(e.target.value)}
+              onChange={(e) => setConfirm(e.target.value)}
             />
             <button
               type="button"
-              style={{
-                position: 'absolute',
-                right: 7,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                color: 'var(--accent)',
-                fontSize: '1.14em',
-                cursor: 'pointer',
-              }}
-              onClick={toggleConfirmPwd}
-              tabIndex={0}
+              onClick={() => setShowConfirmPwd((p) => !p)}
+              aria-pressed={showConfirmPwd}
+              aria-label={showConfirmPwd ? 'Hide confirmation password' : 'Show confirmation password'}
+              style={{ position:'absolute', right:7, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer' }}
             >
               {showConfirmPwd ? '🙈' : '👁'}
             </button>
           </div>
         </div>
+
+        {/* School selection only when not locked by invite */}
         {showSchoolSelect && (
           <div className="form-group">
             <label htmlFor="signup-school">School/Brand</label>
@@ -263,60 +383,37 @@ function Signup() {
               name="school"
               required
               value={schoolId}
-              onChange={e => setSchoolId(e.target.value)}
+              onChange={(e) => setSchoolId(e.target.value)}
             >
               <option value="">Select a School</option>
-              {schools.map(s => (
-                <option value={s.id} key={s.id}>
-                  {s.name}
-                </option>
+              {schools.map((s) => (
+                <option value={s.id} key={s.id}>{s.name}</option>
               ))}
             </select>
           </div>
         )}
+
         {error && (
-          <div
-            role="alert"
-            style={{
-              color: 'var(--error,#ff6b6b)',
-              marginBottom: 10,
-              fontWeight: 500,
-              textAlign: 'center',
-            }}
-          >
+          <div role="alert" style={{ color:'var(--error,#ff6b6b)', marginBottom:10, fontWeight:500, textAlign:'center' }}>
             {error}
           </div>
         )}
-        <button
-          className="btn primary"
-          type="submit"
-          style={{ marginTop: '0.7em' }}
-          disabled={loading}
-        >
+
+        <button className="btn primary" type="submit" style={{ marginTop:'0.7em' }} disabled={loading}>
           {loading ? 'Creating Account…' : 'Create Account'}
         </button>
-        <div className="signup-footer" style={{ marginTop: '1.1rem' }}>
+
+        <div className="signup-footer" style={{ marginTop:'1.1rem' }}>
           Already have an account?
-          <button
-            className="btn outline"
-            type="button"
-            onClick={() => navigate('/login')}
-            style={{ marginLeft: 6 }}
-          >
+          <button className="btn outline" type="button" onClick={() => navigate('/login')} style={{ marginLeft:6 }}>
             Log In
           </button>
         </div>
-        <button
-          className="btn outline"
-          type="button"
-          style={{ marginTop: '0.8rem', width: '100%' }}
-          onClick={() => navigate('/')}
-        >
+
+        <button className="btn outline" type="button" style={{ marginTop:'0.8rem', width:'100%' }} onClick={() => navigate('/')}>
           ⬅ Back
         </button>
       </form>
     </div>
   )
 }
-
-export default Signup

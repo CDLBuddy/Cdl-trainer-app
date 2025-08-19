@@ -1,6 +1,6 @@
+// src/admin/ExportCompaniesControls.jsx
 import PropTypes from 'prop-types'
 import React, { useCallback, useMemo, useState } from 'react'
-
 import { useToast } from '@/components/ToastContext.js'
 
 let _jsPDF = null
@@ -32,6 +32,7 @@ function downloadBlob(content, filename, mime = 'text/plain;charset=utf-8') {
   a.remove()
   setTimeout(() => URL.revokeObjectURL(url), 800)
 }
+const todayTag = () => new Date().toISOString().slice(0, 10)
 
 export default function ExportCompaniesControls({
   companies,
@@ -43,73 +44,113 @@ export default function ExportCompaniesControls({
 
   const headers = useMemo(() => ['Name', 'Contact', 'Address', 'Active'], [])
 
-  const rowsFromCompanies = useCallback(
-    list =>
-      (Array.isArray(list) ? list : []).map(c => [
+  // Normalize incoming rows (support .status or .active)
+  const rowsFromCompanies = useCallback((list) => {
+    const arr = Array.isArray(list) ? list : []
+    return arr.map((c) => {
+      const isActive = typeof c.active === 'boolean' ? c.active
+        : (typeof c.status === 'boolean' ? c.status : true) // default true to match prior behavior
+      return [
         c.name || '',
         c.contact || '',
         c.address || '',
-        c.active ? 'Yes' : 'No',
-      ]),
-    []
-  )
+        isActive ? 'Yes' : 'No',
+      ]
+    })
+  }, [])
+
+  const hasData = Array.isArray(companies) && companies.length > 0
 
   const exportCSV = useCallback(
-    list => {
-      if (!Array.isArray(list) || list.length === 0) {
-        showToast('No companies to export.')
-        return
+    (list) => {
+      try {
+        if (!Array.isArray(list) || list.length === 0) {
+          showToast('No companies to export.', 'warning')
+          return
+        }
+        const csv = toCSV(headers, rowsFromCompanies(list))
+        const fname = `companies-export-${todayTag()}.csv`
+        downloadBlob(csv, fname, 'text/csv;charset=utf-8;')
+        showToast('CSV export downloaded.', 'success')
+      } catch {
+        showToast('Failed to export CSV.', 'error')
       }
-      const csv = toCSV(headers, rowsFromCompanies(list))
-      downloadBlob(csv, 'cdl-companies-export.csv', 'text/csv;charset=utf-8;')
     },
     [headers, rowsFromCompanies, showToast]
   )
 
   const exportPDF = useCallback(
-    async list => {
-      if (!Array.isArray(list) || list.length === 0) {
-        showToast('No companies to export.')
-        return
-      }
-      const jsPDF = await ensureJsPDF()
-      const doc = new jsPDF({ unit: 'pt', compress: true })
-
-      doc.setFontSize(16)
-      doc.text('CDL Company Export', 32, 32)
-      doc.setFontSize(10)
-
-      const colW = 180,
-        marginX = 32,
-        startY = 56,
-        lineH = 18
-
-      headers.forEach((h, i) => doc.text(h, marginX + i * colW, startY))
-
-      let y = startY + lineH
-      const pageH = doc.internal.pageSize.getHeight()
-
-      ;(Array.isArray(list) ? list : []).forEach(c => {
-        const row = [
-          c.name || '',
-          c.contact || '',
-          c.address || '',
-          c.active ? 'Yes' : 'No',
-        ]
-        row.forEach((cell, i) =>
-          doc.text(String(cell), marginX + i * colW, y, { maxWidth: colW - 10 })
-        )
-        y += lineH
-        if (y > pageH - 48) {
-          doc.addPage()
-          doc.setFontSize(10)
-          y = 48
+    async (list) => {
+      try {
+        if (!Array.isArray(list) || list.length === 0) {
+          showToast('No companies to export.', 'warning')
+          return
         }
-      })
+        const jsPDF = await ensureJsPDF()
+        const doc = new jsPDF({ unit: 'pt', compress: true })
 
-      doc.save('cdl-companies-export.pdf')
+        // Layout constants
+        const margin = 36
+        const pageW = doc.internal.pageSize.getWidth()
+        const pageH = doc.internal.pageSize.getHeight()
+        const startY = margin + 18
+        const lineH = 18
+
+        // Columns: Name, Contact, Address, Active
+        // Flexible widths that fit letter size nicely
+        const colWidths = [180, 160, pageW - margin * 2 - (180 + 160 + 70), 70]
+        const colX = [
+          margin,
+          margin + colWidths[0],
+          margin + colWidths[0] + colWidths[1],
+          margin + colWidths[0] + colWidths[1] + colWidths[2],
+        ]
+
+        const drawHeader = (y) => {
+          doc.setFontSize(12)
+          headers.forEach((h, i) => {
+            doc.text(h, colX[i], y)
+          })
+        }
+
+        // Title
+        doc.setFontSize(16)
+        doc.text('Companies Export', margin, margin)
+        doc.setFontSize(10)
+
+        // Header row
+        drawHeader(startY)
+
+        let y = startY + lineH
+        const rows = rowsFromCompanies(list)
+
+        rows.forEach((row, idx) => {
+          // Add page if needed (reserve room for footer margin)
+          if (y > pageH - margin) {
+            doc.addPage()
+            doc.setFontSize(16)
+            doc.text('Companies Export (cont.)', margin, margin)
+            doc.setFontSize(10)
+            drawHeader(startY)
+            y = startY + lineH
+          }
+
+          // Draw row
+          row.forEach((cell, i) => {
+            doc.text(String(cell), colX[i], y, {
+              maxWidth: colWidths[i] - 8,
+            })
+          })
+          y += lineH
+        })
+
+        doc.save(`companies-export-${todayTag()}.pdf`)
+        showToast('PDF export generated.', 'success')
+      } catch {
+        showToast('Failed to export PDF.', 'error')
+      }
     },
-    [headers, showToast]
+    [headers, rowsFromCompanies, showToast]
   )
 
   const handleDownload = useCallback(() => {
@@ -119,15 +160,14 @@ export default function ExportCompaniesControls({
 
   return (
     <div className={className} style={{ minWidth: 280 }}>
-      <label htmlFor="export-companies-type">
-        <b>Export Companies:</b>
-      </label>
+      <label htmlFor="export-companies-type"><b>Export Companies:</b></label>
       <select
         id="export-companies-type"
         className="glass-select"
         style={{ marginLeft: 7 }}
         value={type}
-        onChange={e => setType(e.target.value)}
+        onChange={(e) => setType(e.target.value)}
+        aria-label="Select companies export format"
       >
         <option value="csv">CSV</option>
         <option value="pdf">PDF</option>
@@ -136,6 +176,9 @@ export default function ExportCompaniesControls({
         className="btn"
         style={{ marginLeft: 7 }}
         onClick={handleDownload}
+        disabled={!hasData}
+        aria-disabled={!hasData}
+        title={!hasData ? 'No companies available' : 'Download export'}
       >
         Download
       </button>

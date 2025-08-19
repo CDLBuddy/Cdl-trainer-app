@@ -1,14 +1,48 @@
 {
+  "id": "/",
   "name": "CDL Trainer",
   "short_name": "CDL Trainer",
-  "start_url": "/",
+  "description": "Modern CDL training platform for students, instructors, and school admins: ELDT, practice, walkthroughs, compliance, and more.",
+  "lang": "en",
+  "dir": "ltr",
+
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "any",
+
   "background_color": "#0e1b1b",
   "theme_color": "#004d66",
+
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-192.png",          "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png",          "sizes": "512x512", "type": "image/png" },
     { "src": "/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable any" },
     { "src": "/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any" }
-  ]
+  ],
+
+  "shortcuts": [
+    {
+      "name": "Student Dashboard",
+      "short_name": "Students",
+      "url": "/student/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Instructor Dashboard",
+      "short_name": "Instructors",
+      "url": "/instructor/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Admin Dashboard",
+      "short_name": "Admin",
+      "url": "/admin/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
+
+  "categories": ["education", "productivity", "business"],
+  "prefer_related_applications": false
 }

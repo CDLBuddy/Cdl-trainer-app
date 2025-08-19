@@ -1,37 +1,15 @@
 // Path: /src/admin/walkthroughs/WalkthroughList.jsx
 // -----------------------------------------------------------------------------
 // WalkthroughList (admin)
-// - Displays default + custom walkthroughs with quick filters and search
-// - Shows metadata: class, token/label, version, status, last updated
-// - Row actions: preview, edit, submit for review, duplicate, export, delete
-// - Stateless data table: parent owns data + actions; this handles UI only
-//
-// Props:
-//   items: Array<{
-//     id: string
-//     label: string
-//     classCode: string           // e.g. 'A', 'B', 'PASSENGER-BUS'
-//     token?: string              // normalized token (e.g. 'class-a')
-//     version?: number
-//     status?: 'draft'|'in-review'|'published'|'archived'
-//     updatedAt?: string|number|Date
-//     source?: 'default'|'custom'|'school'
-//     isDefault?: boolean
-//   }>
-//   loading?: boolean
-//   onPreview?: (id) => void
-//   onEdit?: (id) => void
-//   onSubmit?: (id) => void
-//   onDuplicate?: (id) => void
-//   onExport?: (id) => void
-//   onDelete?: (id) => void
-//
-// Notes:
-// - Minimal, dependency-free table; accessible and keyboard friendly.
-// - Includes client-side search + filters (status/class/source).
+// - Stateless UI table for default + custom walkthroughs
+// - Client-side search, filters, stable sort
+// - Row actions via callbacks from parent
 // -----------------------------------------------------------------------------
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
+import { getWalkthroughLabel } from '@walkthrough-data'
+
+// ---- small utils ------------------------------------------------------------
 
 const fmtDate = (v) => {
   if (!v) return '—'
@@ -40,7 +18,7 @@ const fmtDate = (v) => {
   return d.toLocaleString()
 }
 
-const chip = (text, tone = 'neutral') => (
+const Chip = ({ text, tone = 'neutral' }) => (
   <span
     style={{
       display: 'inline-block',
@@ -64,11 +42,19 @@ const chip = (text, tone = 'neutral') => (
           : tone === 'err'
           ? '#7f1d1d'
           : '#1f2937',
+      whiteSpace: 'nowrap',
     }}
   >
     {text}
   </span>
 )
+
+const statusTone = (s) =>
+  s === 'published' ? 'ok' : s === 'in-review' ? 'warn' : s === 'archived' ? 'err' : 'neutral'
+
+const sourceFrom = (it) => it.source || (it.isDefault ? 'default' : 'custom')
+
+// ---- component --------------------------------------------------------------
 
 export default function WalkthroughList({
   items = [],
@@ -85,52 +71,70 @@ export default function WalkthroughList({
   const [klass, setKlass] = useState('all')
   const [source, setSource] = useState('all')
   const [sortKey, setSortKey] = useState('updatedAt')
-  const [sortDir, setSortDir] = useState('desc')
+  const [sortDir, setSortDir] = useState('desc') // 'asc' | 'desc'
 
   const classes = useMemo(() => {
     const s = new Set(items.map((i) => (i.classCode || '').toUpperCase()).filter(Boolean))
     return ['all', ...Array.from(s)]
   }, [items])
 
+  const setSort = useCallback((key) => {
+    setSortDir((d) => (key === sortKey ? (d === 'asc' ? 'desc' : 'asc') : 'asc'))
+    setSortKey(key)
+  }, [sortKey])
+
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase()
-    const list = items.filter((it) => {
-      if (status !== 'all' && (it.status || 'draft') !== status) return false
-      if (klass !== 'all' && (it.classCode || '').toUpperCase() !== klass) return false
-      if (source !== 'all' && (it.source || (it.isDefault ? 'default' : 'custom')) !== source)
-        return false
+
+    // never mutate props.items
+    const base = (items || []).filter((it) => {
+      const st = (it.status || 'draft')
+      if (status !== 'all' && st !== status) return false
+      const cc = (it.classCode || '').toUpperCase()
+      if (klass !== 'all' && cc !== klass) return false
+      const src = sourceFrom(it)
+      if (source !== 'all' && src !== source) return false
       if (!needle) return true
-      const blob = `${it.label} ${it.classCode} ${it.token || ''} ${it.id}`.toLowerCase()
+      const blob = [
+        it.label,
+        it.classCode,
+        it.token,
+        it.id,
+        src,
+      ].filter(Boolean).join(' ').toLowerCase()
       return blob.includes(needle)
     })
 
     const dir = sortDir === 'asc' ? 1 : -1
-    return list.sort((a, b) => {
-      const av =
-        sortKey === 'updatedAt'
-          ? +new Date(a.updatedAt || 0)
-          : sortKey === 'label'
-          ? String(a.label || '')
-          : String(a.classCode || '')
-      const bv =
-        sortKey === 'updatedAt'
-          ? +new Date(b.updatedAt || 0)
-          : sortKey === 'label'
-          ? String(b.label || '')
-          : String(b.classCode || '')
-      if (av < bv) return -1 * dir
-      if (av > bv) return 1 * dir
+    const getVal = (row) => {
+      if (sortKey === 'updatedAt') return +new Date(row.updatedAt || 0)
+      if (sortKey === 'label') return String(row.label || '').toLowerCase()
+      if (sortKey === 'classCode') return String(row.classCode || '').toUpperCase()
+      if (sortKey === 'version') return Number(row.version ?? -1)
       return 0
-    })
+    }
+
+    // stable sort
+    return base
+      .map((v, i) => ({ v, i }))
+      .sort((a, b) => {
+        const av = getVal(a.v)
+        const bv = getVal(b.v)
+        if (av < bv) return -1 * dir
+        if (av > bv) return 1 * dir
+        return a.i - b.i // stabilize
+      })
+      .map((x) => x.v)
   }, [items, q, status, klass, source, sortKey, sortDir])
 
-  const setSort = (key) => {
-    if (key === sortKey) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
-    else {
-      setSortKey(key)
-      setSortDir('asc')
+  const onRowKey = useCallback((e, id) => {
+    // Enter → Preview, E → Edit
+    if (e.key === 'Enter') {
+      onPreview?.(id)
+    } else if (e.key?.toLowerCase() === 'e') {
+      onEdit?.(id)
     }
-  }
+  }, [onPreview, onEdit])
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: 16 }}>
@@ -149,10 +153,11 @@ export default function WalkthroughList({
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by label, class, or id…"
+          placeholder="Search by label, class, token, or id…"
           aria-label="Search walkthroughs"
           style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }}
         />
+
         <select
           aria-label="Filter by status"
           value={status}
@@ -165,6 +170,7 @@ export default function WalkthroughList({
           <option value="published">Published</option>
           <option value="archived">Archived</option>
         </select>
+
         <select
           aria-label="Filter by class"
           value={klass}
@@ -177,6 +183,7 @@ export default function WalkthroughList({
             </option>
           ))}
         </select>
+
         <select
           aria-label="Filter by source"
           value={source}
@@ -205,17 +212,19 @@ export default function WalkthroughList({
           role="row"
           style={{
             display: 'grid',
-            gridTemplateColumns: '240px 110px 90px 120px 1fr 260px',
+            gridTemplateColumns: 'minmax(200px, 1fr) 120px 90px 180px 160px minmax(220px, 320px)',
             padding: '10px 12px',
             background: '#f9fafb',
             borderBottom: '1px solid #e5e7eb',
             fontWeight: 600,
+            columnGap: 8,
           }}
         >
           <button
             type="button"
             onClick={() => setSort('label')}
             style={{ textAlign: 'left', background: 'transparent', border: 0, cursor: 'pointer' }}
+            title="Sort by label"
           >
             Label {sortKey === 'label' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
           </button>
@@ -223,15 +232,24 @@ export default function WalkthroughList({
             type="button"
             onClick={() => setSort('classCode')}
             style={{ textAlign: 'left', background: 'transparent', border: 0, cursor: 'pointer' }}
+            title="Sort by class"
           >
             Class {sortKey === 'classCode' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
           </button>
-          <span>Version</span>
-          <span>Status</span>
+          <button
+            type="button"
+            onClick={() => setSort('version')}
+            style={{ textAlign: 'left', background: 'transparent', border: 0, cursor: 'pointer' }}
+            title="Sort by version"
+          >
+            Version {sortKey === 'version' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+          </button>
+          <span>Status / Source</span>
           <button
             type="button"
             onClick={() => setSort('updatedAt')}
             style={{ textAlign: 'left', background: 'transparent', border: 0, cursor: 'pointer' }}
+            title="Sort by last update"
           >
             Updated {sortKey === 'updatedAt' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
           </button>
@@ -243,62 +261,83 @@ export default function WalkthroughList({
         ) : filtered.length === 0 ? (
           <div style={{ padding: 16 }}>No walkthroughs match your filters.</div>
         ) : (
-          filtered.map((it) => (
-            <div
-              role="row"
-              key={it.id}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '240px 110px 90px 120px 1fr 260px',
-                padding: '10px 12px',
-                borderBottom: '1px solid #f3f4f6',
-                alignItems: 'center',
-              }}
-            >
-              <div title={it.id} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                <div style={{ fontWeight: 600 }}>{it.label || '—'}</div>
-                <div style={{ fontSize: 12, color: '#6b7280' }}>{it.token || it.id}</div>
+          filtered.map((it) => {
+            const classCode = (it.classCode || '').toUpperCase()
+            const classLabel = getWalkthroughLabel?.(classCode) || classCode || '—'
+            const st = (it.status || 'draft')
+            const src = sourceFrom(it)
+
+            return (
+              <div
+                role="row"
+                key={it.id}
+                tabIndex={0}
+                onKeyDown={(e) => onRowKey(e, it.id)}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'minmax(200px, 1fr) 120px 90px 180px 160px minmax(220px, 320px)',
+                  padding: '10px 12px',
+                  borderBottom: '1px solid #f3f4f6',
+                  alignItems: 'center',
+                  columnGap: 8,
+                  outline: 'none',
+                }}
+                onDoubleClick={() => onPreview?.(it.id)}
+                title="Double-click to preview. Press Enter to preview or E to edit."
+              >
+                {/* Label + token */}
+                <div title={it.id} style={{ overflow: 'hidden' }}>
+                  <div style={{ fontWeight: 600, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                    {it.label || '—'}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#6b7280', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                    {it.token || it.id}
+                  </div>
+                </div>
+
+                {/* Class */}
+                <div title={classCode}>{classLabel}</div>
+
+                {/* Version */}
+                <div>{it.version ?? '—'}</div>
+
+                {/* Status + Source */}
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <Chip text={st.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())} tone={statusTone(st)} />
+                  <Chip text={(src || '').replace(/\b\w/g, (c) => c.toUpperCase())} />
+                  {it.isDefault ? <Chip text="Default" /> : null}
+                </div>
+
+                {/* Updated */}
+                <div style={{ color: '#6b7280' }}>{fmtDate(it.updatedAt)}</div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-start' }}>
+                  <button type="button" onClick={() => onPreview?.(it.id)} title="Preview walkthrough">Preview</button>
+                  <button type="button" onClick={() => onEdit?.(it.id)} title="Edit walkthrough">Edit</button>
+                  {st !== 'published' && (
+                    <button type="button" onClick={() => onSubmit?.(it.id)} title="Submit for review">Submit</button>
+                  )}
+                  <button type="button" onClick={() => onDuplicate?.(it.id)} title="Duplicate">Duplicate</button>
+                  <button type="button" onClick={() => onExport?.(it.id)} title="Export data">Export</button>
+                  {!it.isDefault && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm('Delete this walkthrough? This cannot be undone.')) {
+                          onDelete?.(it.id)
+                        }
+                      }}
+                      style={{ color: '#b91c1c' }}
+                      title="Delete walkthrough"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
               </div>
-
-              <div>{(it.classCode || '').toUpperCase() || '—'}</div>
-              <div>{it.version ?? '—'}</div>
-
-              <div>
-                {chip(
-                  (it.status || 'draft')
-                    .replace('-', ' ')
-                    .replace(/\b\w/g, (c) => c.toUpperCase()),
-                  it.status === 'published' ? 'ok' : it.status === 'in-review' ? 'warn' : 'neutral'
-                )}{' '}
-                {it.isDefault ? chip('Default', 'neutral') : null}
-              </div>
-
-              <div style={{ color: '#6b7280' }}>{fmtDate(it.updatedAt)}</div>
-
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                <button type="button" onClick={() => onPreview?.(it.id)}>Preview</button>
-                <button type="button" onClick={() => onEdit?.(it.id)}>Edit</button>
-                {it.status !== 'published' && (
-                  <button type="button" onClick={() => onSubmit?.(it.id)}>Submit</button>
-                )}
-                <button type="button" onClick={() => onDuplicate?.(it.id)}>Duplicate</button>
-                <button type="button" onClick={() => onExport?.(it.id)}>Export</button>
-                {!it.isDefault && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (confirm('Delete this walkthrough? This cannot be undone.')) {
-                        onDelete?.(it.id)
-                      }
-                    }}
-                    style={{ color: '#b91c1c' }}
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
     </div>

@@ -6,43 +6,40 @@
 // - Optional XLSX upload hook (pluggable)
 // - Validates shape before save
 //
-// Dependencies kept light (React only). Parsing/validation are imported from
-// your public data utils so it stays in-sync with the student app schema.
-//
 // Props:
 //   - initialScript?: WalkthroughScript
-//   - onSave?: ({ script, source }: {script:any, source:'visual'|'markdown'|'csv'|'xlsx'|'json'}) => void
+//   - onSave?: ({ script, source }:
+//               { script: WalkthroughScript, source:'visual'|'markdown'|'csv'|'xlsx'|'json' }) => void
 //   - onCancel?: () => void
-//   - parseXlsx?: (file: File) => Promise<{ sections: any[] } | null>   // optional adapter
+//   - parseXlsx?: (file: File|Blob|ArrayBuffer) => Promise<{ sections:any[] } | null>   // optional
 //
 // Notes:
-//   • XLSX parsing is pluggable; pass a `parseXlsx` prop wired to SheetJS if desired.
-//   • Markdown/CSV parsers expect raw text and return { sections: [...] }.
-//   • We store the script locally as a POJO compatible with WalkthroughScript.
-//   • This component is intentionally framework-agnostic (no design system).
+//   • XLSX parsing is pluggable; pass a `parseXlsx` prop wired to your exceljs adapter.
+//   • Markdown/CSV parsers come from @walkthrough-data/utils and return { sections: [...] }.
+//   • This component edits a POJO WalkthroughScript only; Class/Overlays live above this.
 // -----------------------------------------------------------------------------
 
-import React, { useMemo, useState } from 'react'
-
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { parseCsv, parseMarkdown } from '@walkthrough-data/utils'
 
 // ----- Small helpers ---------------------------------------------------------
 
-function deepClone(v) {
+export function deepClone(v) {
   return typeof structuredClone === 'function' ? structuredClone(v) : JSON.parse(JSON.stringify(v))
 }
-function emptyScript() {
+export function emptyScript() {
   return [{ section: 'Untitled', steps: [{ script: '' }] }]
 }
-function ensureScriptShape(maybe) {
+export function ensureScriptShape(maybe) {
   const arr = Array.isArray(maybe) ? maybe : []
   if (!arr.length) return emptyScript()
-  return arr.map(sec => ({
-    section: String(sec?.section ?? 'Untitled'),
+  return arr.map((sec, si) => ({
+    section: String(sec?.section ?? `Section ${si + 1}`),
+    // optional section flags
     critical: !!sec?.critical,
     passFail: !!sec?.passFail,
-    steps: Array.isArray(sec?.steps)
-      ? sec.steps.map(st => ({
+    steps: Array.isArray(sec?.steps) && sec.steps.length
+      ? sec.steps.map((st) => ({
           label: st?.label ? String(st.label) : undefined,
           script: String(st?.script ?? ''),
           mustSay: !!st?.mustSay,
@@ -56,14 +53,14 @@ function ensureScriptShape(maybe) {
 }
 
 // Minimal, local validator for a plain WalkthroughScript
-function validateScript(script) {
+export function validateScript(script) {
   const problems = []
   if (!Array.isArray(script) || !script.length) {
     problems.push('Script must contain at least one section.')
     return { ok: false, problems }
   }
   script.forEach((sec, si) => {
-    if (!sec?.section) problems.push(`Section ${si + 1} is missing a title.`)
+    if (!sec?.section?.trim()) problems.push(`Section ${si + 1} is missing a title.`)
     if (!Array.isArray(sec?.steps) || !sec.steps.length) problems.push(`Section "${sec?.section || si + 1}" must have at least one step.`)
     sec.steps?.forEach((st, ti) => {
       if (!st?.script?.trim()) problems.push(`Section "${sec?.section}": step ${ti + 1} is missing script text.`)
@@ -92,24 +89,44 @@ export default function WalkthroughEditor({
   const [errors, setErrors] = useState([])
 
   const validation = useMemo(() => validateScript(script), [script])
+  const counts = useMemo(() => {
+    const sections = Array.isArray(script) ? script.length : 0
+    const steps = sections ? script.reduce((a, s) => a + (Array.isArray(s?.steps) ? s.steps.length : 0), 0) : 0
+    return { sections, steps }
+  }, [script])
+
+  const topRef = useRef(null)
+
+  // Keyboard save (⌘/Ctrl + S) – convenience in editor
+  useEffect(() => {
+    const handler = (e) => {
+      const key = e.key?.toLowerCase()
+      if ((e.metaKey || e.ctrlKey) && key === 's') {
+        e.preventDefault()
+        handleSave(activeTab)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [activeTab, script])
 
   // ---- Visual editor operations --------------------------------------------
 
   const addSection = () => {
-    setScript(s => [...s, { section: 'New Section', steps: [{ script: '' }] }])
+    setScript((s) => [...s, { section: `Section ${s.length + 1}`, steps: [{ script: '' }] }])
   }
   const removeSection = (i) => {
-    setScript(s => (s.length <= 1 ? s : s.filter((_, idx) => idx !== i)))
+    setScript((s) => (s.length <= 1 ? s : s.filter((_, idx) => idx !== i)))
   }
   const updateSectionTitle = (i, title) => {
-    setScript(s => {
+    setScript((s) => {
       const next = deepClone(s)
       next[i].section = title
       return next
     })
   }
   const toggleSecFlag = (i, key) => {
-    setScript(s => {
+    setScript((s) => {
       const next = deepClone(s)
       next[i][key] = !next[i][key]
       return next
@@ -117,14 +134,14 @@ export default function WalkthroughEditor({
   }
 
   const addStep = (si) => {
-    setScript(s => {
+    setScript((s) => {
       const next = deepClone(s)
       next[si].steps.push({ script: '' })
       return next
     })
   }
   const removeStep = (si, ti) => {
-    setScript(s => {
+    setScript((s) => {
       const next = deepClone(s)
       if (next[si].steps.length <= 1) return next
       next[si].steps.splice(ti, 1)
@@ -132,14 +149,14 @@ export default function WalkthroughEditor({
     })
   }
   const updateStepField = (si, ti, key, value) => {
-    setScript(s => {
+    setScript((s) => {
       const next = deepClone(s)
       next[si].steps[ti][key] = value
       return next
     })
   }
   const toggleStepFlag = (si, ti, key) => {
-    setScript(s => {
+    setScript((s) => {
       const next = deepClone(s)
       next[si].steps[ti][key] = !next[si].steps[ti][key]
       // nudge: passFail implies required true
@@ -157,6 +174,7 @@ export default function WalkthroughEditor({
       setScript(sections)
       setErrors([])
       setActiveTab('visual')
+      topRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
     } catch (e) {
       setErrors([`Markdown parse error: ${e?.message || e}`])
     }
@@ -169,6 +187,7 @@ export default function WalkthroughEditor({
       setScript(sections)
       setErrors([])
       setActiveTab('visual')
+      topRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
     } catch (e) {
       setErrors([`CSV parse error: ${e?.message || e}`])
     }
@@ -181,6 +200,7 @@ export default function WalkthroughEditor({
       setScript(sections)
       setErrors([])
       setActiveTab('visual')
+      topRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
     } catch (e) {
       setErrors([`JSON parse error: ${e?.message || e}`])
     }
@@ -188,7 +208,7 @@ export default function WalkthroughEditor({
 
   const handleXlsxFile = async (file) => {
     if (!parseXlsx) {
-      setErrors(['XLSX parsing is not enabled in this build. (Wire a parseXlsx prop using SheetJS.)'])
+      setErrors(['XLSX parsing is not enabled in this build. (Wire a parseXlsx prop using your exceljs adapter.)'])
       return
     }
     try {
@@ -197,6 +217,7 @@ export default function WalkthroughEditor({
       setScript(sections)
       setErrors([])
       setActiveTab('visual')
+      topRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
     } catch (e) {
       setErrors([`XLSX parse error: ${e?.message || e}`])
     }
@@ -205,7 +226,7 @@ export default function WalkthroughEditor({
   // ---- Save/Cancel ----------------------------------------------------------
 
   const handleSave = (source = 'visual') => {
-    const problems = validateScript(script).problems
+    const { problems } = validateScript(script)
     if (problems.length) {
       setErrors(problems)
       return
@@ -216,14 +237,19 @@ export default function WalkthroughEditor({
   // ---- Render ---------------------------------------------------------------
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '1rem' }}>
-      <h2>Walkthrough Editor</h2>
+    <div ref={topRef} style={{ maxWidth: 1100, margin: '0 auto', padding: '1rem' }}>
+      <h2 style={{ marginBottom: 8 }}>Walkthrough Editor</h2>
+      <div style={{ color: '#555', marginBottom: 8, fontSize: 14 }}>
+        {counts.sections} sections • {counts.steps} steps
+      </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 8, margin: '12px 0' }}>
-        {['visual', 'markdown', 'csv', 'upload', 'json'].map(tab => (
+      <div role="tablist" aria-label="Editor modes" style={{ display: 'flex', gap: 8, margin: '12px 0' }}>
+        {['visual', 'markdown', 'csv', 'upload', 'json'].map((tab) => (
           <button
             key={tab}
+            role="tab"
+            aria-selected={activeTab === tab}
             onClick={() => setActiveTab(tab)}
             style={{
               padding: '6px 10px',
@@ -244,7 +270,10 @@ export default function WalkthroughEditor({
 
       {/* Validation / errors */}
       {!validation.ok && activeTab === 'visual' && (
-        <div style={{ background: '#fff3f3', border: '1px solid #e8b4b4', padding: 12, borderRadius: 6, marginBottom: 12 }}>
+        <div
+          role="alert"
+          style={{ background: '#fff3f3', border: '1px solid #e8b4b4', padding: 12, borderRadius: 6, marginBottom: 12 }}
+        >
           <strong>Fix before saving:</strong>
           <ul style={{ marginTop: 8 }}>
             {validation.problems.map((p, i) => <li key={i}>{p}</li>)}
@@ -252,7 +281,10 @@ export default function WalkthroughEditor({
         </div>
       )}
       {errors.length > 0 && (
-        <div style={{ background: '#fff7e6', border: '1px solid #f0c36d', padding: 12, borderRadius: 6, marginBottom: 12 }}>
+        <div
+          role="status"
+          style={{ background: '#fff7e6', border: '1px solid #f0c36d', padding: 12, borderRadius: 6, marginBottom: 12 }}
+        >
           <strong>Parser / Editor messages:</strong>
           <ul style={{ marginTop: 8 }}>
             {errors.map((p, i) => <li key={i}>{p}</li>)}
@@ -268,8 +300,9 @@ export default function WalkthroughEditor({
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
                 <input
                   value={sec.section}
-                  onChange={e => updateSectionTitle(si, e.target.value)}
+                  onChange={(e) => updateSectionTitle(si, e.target.value)}
                   placeholder="Section title"
+                  aria-label={`Section ${si + 1} title`}
                   style={{ flex: 1, padding: 8, borderRadius: 6, border: '1px solid #ccc' }}
                 />
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -284,22 +317,27 @@ export default function WalkthroughEditor({
               </div>
 
               {sec.steps.map((st, ti) => (
-                <div key={ti} style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr', padding: 8, border: '1px dashed #ddd', borderRadius: 6, marginBottom: 8 }}>
+                <div
+                  key={ti}
+                  style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr', padding: 8, border: '1px dashed #ddd', borderRadius: 6, marginBottom: 8 }}
+                >
                   <div style={{ display: 'flex', gap: 8 }}>
                     <input
                       value={st.label || ''}
-                      onChange={e => updateStepField(si, ti, 'label', e.target.value)}
+                      onChange={(e) => updateStepField(si, ti, 'label', e.target.value)}
                       placeholder="Step label (optional)"
+                      aria-label={`Section ${si + 1} step ${ti + 1} label`}
                       style={{ flex: 1, padding: 8, borderRadius: 6, border: '1px solid #ccc' }}
                     />
                     <button onClick={() => removeStep(si, ti)} disabled={sec.steps.length <= 1}>Remove</button>
                   </div>
                   <textarea
                     value={st.script}
-                    onChange={e => updateStepField(si, ti, 'script', e.target.value)}
+                    onChange={(e) => updateStepField(si, ti, 'script', e.target.value)}
                     placeholder="Script text…"
                     rows={3}
-                    style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ccc', fontFamily: 'inherit' }}
+                    aria-label={`Section ${si + 1} step ${ti + 1} script`}
+                    style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ccc', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}
                   />
                   <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     <label><input type="checkbox" checked={!!st.mustSay}  onChange={() => toggleStepFlag(si, ti, 'mustSay')}  /> mustSay</label>
@@ -331,7 +369,7 @@ export default function WalkthroughEditor({
           </p>
           <textarea
             value={rawMd}
-            onChange={e => setRawMd(e.target.value)}
+            onChange={(e) => setRawMd(e.target.value)}
             rows={16}
             placeholder="## Engine Compartment&#10;- **Oil Level:** Check dipstick... [must] [required] [pf]"
             style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #ccc', fontFamily: 'monospace' }}
@@ -350,7 +388,7 @@ export default function WalkthroughEditor({
           </p>
           <textarea
             value={rawCsv}
-            onChange={e => setRawCsv(e.target.value)}
+            onChange={(e) => setRawCsv(e.target.value)}
             rows={16}
             placeholder="section,stepLabel,script,mustSay,required,passFail&#10;Engine Compartment,Oil Level,Check dipstick...,true,true,true"
             style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #ccc', fontFamily: 'monospace' }}
@@ -370,7 +408,7 @@ export default function WalkthroughEditor({
           <input
             type="file"
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            onChange={async e => {
+            onChange={async (e) => {
               const file = e.target.files?.[0]
               if (file) await handleXlsxFile(file)
             }}
@@ -388,7 +426,7 @@ export default function WalkthroughEditor({
           </p>
           <textarea
             value={rawJson}
-            onChange={e => setRawJson(e.target.value)}
+            onChange={(e) => setRawJson(e.target.value)}
             rows={16}
             placeholder='[{"section":"Engine Compartment","steps":[{"label":"Oil Level","script":"..."}]}]'
             style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #ccc', fontFamily: 'monospace' }}

@@ -3,65 +3,144 @@
 // WalkthroughUpload (admin import flow)
 // - Accepts Markdown / CSV / XLSX / JSON
 // - Parses → normalizes → validates → previews basic stats
-// - Emits a dataset object on success: { label, classCode, version, script }
-// - XLSX parsing is pluggable via the `parseXlsx` prop (wire SheetJS, etc.)
-//
-// Props:
-//   onImported: (dataset: {
-//     id?: string
-//     label: string
-//     classCode: 'A'|'B'|'PASSENGER-BUS'|string
-//     version?: number
-//     script: Array<{ section: string, steps: Array<{...}> }>
-//   }) => void
-//   onCancel?: () => void
-//   parseXlsx?: (file: File) => Promise<{ sections: any[] } | { sections: any[], label?: string } | null>
-//
-// Notes:
-// - We try both `parseMarkdownToWalkthrough`/`parseMarkdown` and
-//   `parseCsvToWalkthrough`/`parseCsv` to stay compatible with your utils barrel.
-// - JSON accepts either a dataset-ish object or a bare WalkthroughScript array.
+// - Emits dataset: { label, classCode, version, script }
+// - XLSX parser may return {sections} **or** rows[]; both are supported.
 // -----------------------------------------------------------------------------
 
 import React, { useMemo, useRef, useState } from 'react'
-
 import * as WTUtils from '@walkthrough-data/utils'
 
+// -------- utils (robust to different barrels) --------------------------------
 const parseMarkdownAny =
   WTUtils.parseMarkdownToWalkthrough ||
   WTUtils.parseMarkdown ||
-  (() => {
-    throw new Error('parseMarkdown not available from @walkthrough-data/utils')
-  })
+  (() => { throw new Error('parseMarkdown not available from @walkthrough-data/utils') })
 
 const parseCsvAny =
   WTUtils.parseCsvToWalkthrough ||
   WTUtils.parseCsv ||
-  (() => {
-    throw new Error('parseCsv not available from @walkthrough-data/utils')
-  })
+  (() => { throw new Error('parseCsv not available from @walkthrough-data/utils') })
 
 const validateShape =
   WTUtils.validateWalkthroughShape ||
   (() => ({ ok: true, errors: [] }))
 
+// Normalize tokens/labels that might come from parser metadata
+function normalizeClassCode(v) {
+  if (!v) return 'A'
+  const s = String(v).trim().toUpperCase()
+  if (s === 'A' || s === 'CLASS A' || s === 'CLASS-A' || s === 'CLASS_A') return 'A'
+  if (s === 'B' || s === 'CLASS B' || s === 'CLASS-B' || s === 'CLASS_B') return 'B'
+  if (s.includes('PASSENGER') || s.includes('BUS') || s === 'P' || s === 'CLASS P') return 'PASSENGER-BUS'
+  if (s === 'CLASS-A') return 'A'
+  if (s === 'CLASS-B') return 'B'
+  if (s === 'PASSENGER-BUS') return 'PASSENGER-BUS'
+  // Map known tokens to codes
+  const token = s.toLowerCase()
+  if (token === 'class-a') return 'A'
+  if (token === 'class-b') return 'B'
+  if (token === 'passenger-bus') return 'PASSENGER-BUS'
+  return 'A'
+}
+
+// Convert a flat rows[] (CSV/XLSX) to { sections: [...] }
+function rowsToSections(rows) {
+  if (!Array.isArray(rows)) return []
+  // Try common header variants
+  const SEC = ['section', 'Section', 'SECTION']
+  const LABEL = ['stepLabel', 'label', 'Label']
+  const SCRIPT = ['script', 'Script', 'text', 'Text']
+  const BOOL = (v) => {
+    if (typeof v === 'boolean') return v
+    if (v == null) return false
+    const s = String(v).trim().toLowerCase()
+    return s === '1' || s === 'true' || s === 'yes' || s === 'y'
+  }
+
+  const groups = new Map()
+  for (const r of rows) {
+    const secName = String(
+      r[SEC.find(k => k in r) ?? 'section'] ?? ''
+    ).trim() || 'Untitled'
+    const label = r[LABEL.find(k => k in r) ?? 'stepLabel']
+    const script = r[SCRIPT.find(k => k in r) ?? 'script']
+    if (!script || !String(script).trim()) continue
+
+    const mustSay  = BOOL(r.mustSay ?? r['must say'] ?? r['Must Say'])
+    const required = BOOL(r.required)
+    const passFail = BOOL(r.passFail ?? r['pass/fail'] ?? r['Pass/Fail'])
+    const skip     = BOOL(r.skip)
+
+    if (!groups.has(secName)) groups.set(secName, [])
+    groups.get(secName).push({
+      label: label ? String(label) : undefined,
+      script: String(script),
+      mustSay,
+      required,
+      passFail,
+      skip,
+    })
+  }
+
+  return Array.from(groups.entries()).map(([section, steps]) => ({
+    section,
+    steps,
+  }))
+}
+
+function ensureScriptShape(maybe) {
+  if (!Array.isArray(maybe)) return []
+  return maybe.map((sec) => ({
+    section: String(sec?.section ?? 'Untitled'),
+    critical: !!sec?.critical,
+    passFail: !!sec?.passFail,
+    steps: Array.isArray(sec?.steps)
+      ? sec.steps
+          .map((st) => {
+            const script = String(st?.script ?? '').trim()
+            if (!script) return null
+            return {
+              label: st?.label ? String(st.label) : undefined,
+              script,
+              mustSay: !!st?.mustSay,
+              required: !!st?.required,
+              passFail: !!st?.passFail,
+              skip: !!st?.skip,
+              tags: Array.isArray(st?.tags) ? st.tags.map(String) : undefined,
+            }
+          })
+          .filter(Boolean)
+      : [],
+  }))
+}
+
+function validateScript(script) {
+  const problems = []
+  if (!Array.isArray(script) || script.length === 0) problems.push('No sections found.')
+  script.forEach((sec, si) => {
+    if (!sec?.section) problems.push(`Section ${si + 1} is missing a title.`)
+    if (!Array.isArray(sec?.steps) || sec.steps.length === 0) {
+      problems.push(`Section "${sec?.section || si + 1}" has no steps.`)
+    } else {
+      sec.steps.forEach((st, ti) => {
+        if (!st?.script?.trim()) problems.push(`Section "${sec?.section}": step ${ti + 1} is missing script text.`)
+        if (st?.passFail && st?.required !== true) {
+          problems.push(`Section "${sec?.section}": step ${ti + 1} is pass/fail but not marked required.`)
+        }
+      })
+    }
+  })
+  return { ok: problems.length === 0, problems }
+}
+
+// -------- styles -------------------------------------------------------------
 const wrap = { maxWidth: 980, margin: '0 auto', padding: 16 }
 const row = { display: 'grid', gap: 10 }
-const card = {
-  border: '1px solid #e5e7eb',
-  borderRadius: 12,
-  padding: 16,
-  background: '#fff',
-}
-const btn = {
-  padding: '8px 12px',
-  borderRadius: 8,
-  border: '1px solid #d1d5db',
-  background: '#fff',
-  cursor: 'pointer',
-}
+const card = { border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, background: '#fff' }
+const btn = { padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer' }
 const primary = { ...btn, background: '#111827', color: '#fff', borderColor: '#111827' }
 
+// -------- component ----------------------------------------------------------
 export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
   const [tab, setTab] = useState('markdown') // markdown | csv | xlsx | json
   const [label, setLabel] = useState('')
@@ -78,74 +157,23 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
   const [busy, setBusy] = useState(false)
   const fileInputRef = useRef(null)
 
-  // quick stats
   const stats = useMemo(() => {
     const s = Array.isArray(sections) ? sections : []
-    let steps = 0
-    let required = 0
-    let passFail = 0
-    s.forEach((sec) => {
-      steps += Array.isArray(sec?.steps) ? sec.steps.length : 0
-      sec?.steps?.forEach((st) => {
+    let steps = 0, required = 0, passFail = 0
+    for (const sec of s) {
+      const arr = Array.isArray(sec?.steps) ? sec.steps : []
+      steps += arr.length
+      for (const st of arr) {
         if (st?.required) required++
         if (st?.passFail) passFail++
-      })
-    })
+      }
+    }
     return { sections: s.length, steps, required, passFail }
   }, [sections])
 
-  function resetFeedback() {
-    setErrors([])
-  }
-
-  function ensureScriptShape(maybe) {
-    if (!Array.isArray(maybe)) return []
-    return maybe.map((sec) => ({
-      section: String(sec?.section ?? 'Untitled'),
-      critical: !!sec?.critical,
-      passFail: !!sec?.passFail,
-      steps: Array.isArray(sec?.steps)
-        ? sec.steps
-            .map((st) => {
-              const script = String(st?.script ?? '').trim()
-              if (!script) return null
-              return {
-                label: st?.label ? String(st.label) : undefined,
-                script,
-                mustSay: !!st?.mustSay,
-                required: !!st?.required,
-                passFail: !!st?.passFail,
-                skip: !!st?.skip,
-                tags: Array.isArray(st?.tags) ? st.tags.map(String) : undefined,
-              }
-            })
-            .filter(Boolean)
-        : [],
-    }))
-  }
-
-  function validateScript(script) {
-    /** @type {string[]} */
-    const problems = []
-    if (!Array.isArray(script) || script.length === 0) problems.push('No sections found.')
-    script.forEach((sec, si) => {
-      if (!sec?.section) problems.push(`Section ${si + 1} is missing a title.`)
-      if (!Array.isArray(sec?.steps) || sec.steps.length === 0) {
-        problems.push(`Section "${sec?.section || si + 1}" has no steps.`)
-      } else {
-        sec.steps.forEach((st, ti) => {
-          if (!st?.script?.trim()) problems.push(`Section "${sec?.section}": step ${ti + 1} is missing script text.`)
-          if (st?.passFail && st?.required !== true) {
-            problems.push(`Section "${sec?.section}": step ${ti + 1} is pass/fail but not marked required.`)
-          }
-        })
-      }
-    })
-    return { ok: problems.length === 0, problems }
-  }
+  function resetFeedback() { setErrors([]) }
 
   // ---------- parsers ----------
-
   function handleParseMarkdown() {
     resetFeedback()
     try {
@@ -153,7 +181,7 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
       const secs = ensureScriptShape(out?.sections || out)
       setSections(secs)
       if (!label && out?.label) setLabel(String(out.label))
-      if (out?.classCode) setClassCode(String(out.classCode))
+      if (out?.classCode) setClassCode(normalizeClassCode(out.classCode))
       if (out?.version) setVersion(Number(out.version) || 1)
     } catch (e) {
       setErrors([`Markdown parse error: ${e?.message || e}`])
@@ -167,7 +195,7 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
       const secs = ensureScriptShape(out?.sections || out)
       setSections(secs)
       if (!label && out?.label) setLabel(String(out.label))
-      if (out?.classCode) setClassCode(String(out.classCode))
+      if (out?.classCode) setClassCode(normalizeClassCode(out.classCode))
       if (out?.version) setVersion(Number(out.version) || 1)
     } catch (e) {
       setErrors([`CSV parse error: ${e?.message || e}`])
@@ -179,10 +207,11 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
     try {
       const obj = JSON.parse(rawJson || 'null')
       let secs = []
-      if (Array.isArray(obj)) secs = ensureScriptShape(obj)
-      else if (obj && typeof obj === 'object') {
+      if (Array.isArray(obj)) {
+        secs = ensureScriptShape(obj)
+      } else if (obj && typeof obj === 'object') {
         if (!label && obj.label) setLabel(String(obj.label))
-        if (obj.classCode) setClassCode(String(obj.classCode))
+        if (obj.classCode) setClassCode(normalizeClassCode(obj.classCode))
         if (obj.version) setVersion(Number(obj.version) || 1)
         secs = ensureScriptShape(obj.sections || [])
       }
@@ -197,42 +226,47 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
     if (!file) return
     setXlsxName(file.name)
     if (!parseXlsx) {
-      setErrors([
-        'XLSX parsing not wired yet. Provide a parseXlsx prop that returns { sections } (e.g., using SheetJS).',
-      ])
+      setErrors(['XLSX parsing not wired yet. Provide a parseXlsx prop that returns rows[] or { sections }.'])
       return
     }
     setBusy(true)
     try {
-      const out = await parseXlsx(file) // expected { sections, label? }
-      const secs = ensureScriptShape(out?.sections || [])
+      const out = await parseXlsx(file)
+      let secs = []
+      if (out?.sections) {
+        secs = ensureScriptShape(out.sections)
+      } else if (Array.isArray(out)) {
+        // exceljs helper returned rows[]; convert
+        secs = ensureScriptShape(rowsToSections(out))
+      } else {
+        throw new Error('Unexpected XLSX parse result (expected rows[] or {sections}).')
+      }
       setSections(secs)
+      // Optional: if parser gives label/class metadata
       if (!label && out?.label) setLabel(String(out.label))
     } catch (e) {
       setErrors([`XLSX parse error: ${e?.message || e}`])
     } finally {
       setBusy(false)
+      // reset file input to allow same file re-select if needed
+      try { if (fileInputRef.current) fileInputRef.current.value = '' } catch {}
     }
   }
 
   // ---------- submit ----------
-
   function handleImport() {
     const v = validateScript(sections)
     if (!v.ok) return setErrors(v.problems)
 
-    // dataset-level validation (optional, conservative)
     const ds = {
-      id: undefined,
       label: label || `(Untitled) ${classCode}`,
-      classCode,
+      classCode: normalizeClassCode(classCode),
       version: Number(version || 1) || 1,
       sections,
     }
     const shape = validateShape(ds)
-    if (!shape.ok) {
-      return setErrors(shape.errors || ['Dataset failed validation.'])
-    }
+    if (!shape.ok) return setErrors(shape.errors || ['Dataset failed validation.'])
+
     onImported?.({
       label: ds.label,
       classCode: ds.classCode,
@@ -242,7 +276,6 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
   }
 
   // ---------- render ----------
-
   return (
     <div style={wrap}>
       <h2 style={{ marginBottom: 12 }}>Import Walkthrough</h2>
@@ -265,7 +298,7 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
             <select
               id="walkthrough-class"
               value={classCode}
-              onChange={(e) => setClassCode(e.target.value)}
+              onChange={(e) => setClassCode(normalizeClassCode(e.target.value))}
               style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #d1d5db' }}
             >
               <option value="A">Class A</option>
@@ -299,6 +332,7 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
               background: tab === t ? '#eef2ff' : '#fff',
               borderColor: tab === t ? '#c7d2fe' : '#d1d5db',
             }}
+            aria-pressed={tab === t}
           >
             {t.toUpperCase()}
           </button>
@@ -317,18 +351,10 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
             value={rawMd}
             onChange={(e) => setRawMd(e.target.value)}
             placeholder={`## Engine Compartment\n- **Oil Level:** Check dipstick… [must] [required] [pf]`}
-            style={{
-              width: '100%',
-              padding: 10,
-              borderRadius: 8,
-              border: '1px solid #d1d5db',
-              fontFamily: 'monospace',
-            }}
+            style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #d1d5db', fontFamily: 'monospace' }}
           />
           <div style={{ display: 'flex', gap: 8 }}>
-            <button type="button" onClick={handleParseMarkdown} style={btn}>
-              Parse Markdown
-            </button>
+            <button type="button" onClick={handleParseMarkdown} style={btn}>Parse Markdown</button>
           </div>
         </div>
       )}
@@ -336,26 +362,17 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
       {tab === 'csv' && (
         <div style={{ ...card, ...row }}>
           <p style={{ margin: 0, color: '#374151' }}>
-            Paste <strong>CSV</strong> with headers like{' '}
-            <code>section, stepLabel, script, mustSay, required, passFail, skip</code>.
+            Paste <strong>CSV</strong> with headers like <code>section, stepLabel, script, mustSay, required, passFail, skip</code>.
           </p>
           <textarea
             rows={14}
             value={rawCsv}
             onChange={(e) => setRawCsv(e.target.value)}
             placeholder={`section,stepLabel,script,mustSay,required,passFail,skip\nEngine Compartment,Oil Level,Check dipstick…,true,true,true,false`}
-            style={{
-              width: '100%',
-              padding: 10,
-              borderRadius: 8,
-              border: '1px solid #d1d5db',
-              fontFamily: 'monospace',
-            }}
+            style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #d1d5db', fontFamily: 'monospace' }}
           />
           <div style={{ display: 'flex', gap: 8 }}>
-            <button type="button" onClick={handleParseCsv} style={btn}>
-              Parse CSV
-            </button>
+            <button type="button" onClick={handleParseCsv} style={btn}>Parse CSV</button>
           </div>
         </div>
       )}
@@ -363,8 +380,8 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
       {tab === 'xlsx' && (
         <div style={{ ...card, ...row }}>
           <p style={{ margin: 0, color: '#374151' }}>
-            Upload an <strong>.xlsx</strong> file. The first sheet should contain columns compatible
-            with the CSV headers above. (Requires wiring a <code>parseXlsx</code> prop.)
+            Upload an <strong>.xlsx</strong> file. The first sheet should contain columns compatible with the CSV headers above.
+            (Works with either a <code>rows[]</code> result or <code>{'{'}sections{'}'}</code>.)
           </p>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <input
@@ -383,26 +400,17 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
         <div style={{ ...card, ...row }}>
           <p style={{ margin: 0, color: '#374151' }}>
             Paste <strong>JSON</strong>. Accepts either a dataset object (
-            <code>{`{label, classCode, version, sections[]}`}</code>) or a bare{' '}
-            <code>sections[]</code> array.
+            <code>{`{label, classCode, version, sections[]}`}</code>) or a bare <code>sections[]</code> array.
           </p>
           <textarea
             rows={14}
             value={rawJson}
             onChange={(e) => setRawJson(e.target.value)}
             placeholder={`{"label":"Class A – School","classCode":"A","version":1,"sections":[{"section":"Engine Compartment","steps":[{"label":"Oil Level","script":"Check dipstick…"}]}]}`}
-            style={{
-              width: '100%',
-              padding: 10,
-              borderRadius: 8,
-              border: '1px solid #d1d5db',
-              fontFamily: 'monospace',
-            }}
+            style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #d1d5db', fontFamily: 'monospace' }}
           />
           <div style={{ display: 'flex', gap: 8 }}>
-            <button type="button" onClick={handleParseJson} style={btn}>
-              Parse JSON
-            </button>
+            <button type="button" onClick={handleParseJson} style={btn}>Parse JSON</button>
           </div>
         </div>
       )}
@@ -412,9 +420,7 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
         <div style={{ ...card, borderColor: '#fecaca', background: '#fff7ed' }}>
           <strong>Issues:</strong>
           <ul style={{ margin: '6px 0 0 18px' }}>
-            {errors.map((e, i) => (
-              <li key={i}>{e}</li>
-            ))}
+            {errors.map((e, i) => <li key={i}>{e}</li>)}
           </ul>
         </div>
       )}
@@ -439,9 +445,7 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
       {/* actions */}
       <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
         {onCancel && (
-          <button type="button" onClick={onCancel} style={btn}>
-            Cancel
-          </button>
+          <button type="button" onClick={onCancel} style={btn}>Cancel</button>
         )}
         <button
           type="button"
