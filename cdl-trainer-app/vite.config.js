@@ -1,4 +1,4 @@
-// Path: /vite.config.js
+// Path: vite.config.js
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
@@ -69,10 +69,9 @@ export default defineConfig(async ({ mode }) => {
         '@walkthrough-loaders': r('src/walkthrough-data/loaders'),
         '@walkthrough-utils': r('src/walkthrough-data/utils'),
         '@walkthrough-overlays': r('src/walkthrough-data/overlays'),
-        // If you want fewer single-file aliases, you can import from this folder:
-        // import auto from '@walkthrough-restrictions/automatic.js'
+        // Folder alias for restrictions (use file imports inside if preferred)
         '@walkthrough-restrictions': r('src/walkthrough-data/overlays/restrictions'),
-        // (Keep the original single-file aliases if you’re using them already)
+        // Single-file convenience aliases (kept for compatibility)
         '@walkthrough-restriction-automatic': r('src/walkthrough-data/overlays/restrictions/automatic.js'),
         '@walkthrough-restriction-no-air': r('src/walkthrough-data/overlays/restrictions/no-air.js'),
         '@walkthrough-restriction-no-fifth-wheel': r('src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'),
@@ -87,7 +86,7 @@ export default defineConfig(async ({ mode }) => {
 
         '@instructor': r('src/instructor'),
 
-        // Includes Admin Dashboard, Companies suite, Billing, Walkthroughs, Settings, and Users (if present)
+        // Admin: Dashboard, Companies suite, Billing, Walkthroughs, Settings, etc.
         '@admin': r('src/admin'),
         '@admin-walkthroughs': r('src/admin/walkthroughs'),
 
@@ -102,7 +101,7 @@ export default defineConfig(async ({ mode }) => {
       port: 5173,
       strictPort: true,
       open: true,
-      // headers: { 'Cache-Control': 'no-store' },
+      // proxy: { ... } // add Firebase emulators here if needed
     },
 
     preview: {
@@ -120,8 +119,7 @@ export default defineConfig(async ({ mode }) => {
         'firebase/auth',
         'firebase/firestore',
         'firebase/storage',
-        // If you later need to parse XLSX during dev:
-        // 'xlsx',
+        // 'xlsx', // enable if you add CSV/XLSX parsing in dev
       ],
       esbuildOptions: { target: 'es2020' },
     },
@@ -130,9 +128,9 @@ export default defineConfig(async ({ mode }) => {
       target: 'es2020',
       sourcemap: !isProd,
       cssCodeSplit: true,
-      cssMinify: true,              // explicit (Vite defaults to true)
-      reportCompressedSize: false,  // faster builds; use visualizer when needed
-      chunkSizeWarningLimit: 1024,  // Firebase & router chunks can be large
+      cssMinify: true,
+      reportCompressedSize: false,   // faster builds; use visualizer when needed
+      chunkSizeWarningLimit: 1024,   // Firebase & router chunks can be large
       rollupOptions: {
         output: {
           manualChunks: {
@@ -144,7 +142,7 @@ export default defineConfig(async ({ mode }) => {
               'firebase/firestore',
               'firebase/storage',
             ],
-            // You can add feature bundles later if desired:
+            // Add feature bundles later if desired:
             // 'feature-admin': ['@admin/preload.js', '@admin/companies/...'],
           },
         },

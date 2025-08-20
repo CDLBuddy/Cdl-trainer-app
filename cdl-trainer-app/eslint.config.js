@@ -1,5 +1,11 @@
-// Path: /eslint.config.js
-// eslint.config.js — Flat config w/ compat + Vite alias resolver
+// Path: eslint.config.js
+// ============================================================================
+// ESLint Flat Config (React + Vite + Aliases)
+// - Includes React, Hooks, Refresh, A11y, Import hygiene
+// - Resolves Vite aliases for eslint-plugin-import
+// - DX rules for consistency and safety
+// ============================================================================
+
 import js from '@eslint/js'
 import globals from 'globals'
 import react from 'eslint-plugin-react'
@@ -11,7 +17,9 @@ import { FlatCompat } from '@eslint/eslintrc'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import { fileURLToPath } from 'node:url'
 
-// NOTE: compute a safe baseDirectory for FlatCompat (no import.meta.dirname)
+// ----------------------------------------------------------------------------
+// Compat shim (for legacy shareable configs)
+// ----------------------------------------------------------------------------
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const compat = new FlatCompat({ baseDirectory: __dirname })
 
@@ -27,6 +35,9 @@ const legacy = compat
     ignores: ['vite.config.*', 'eslint.config.*', 'dev-utils/**'],
   }))
 
+// ----------------------------------------------------------------------------
+// Main export
+// ----------------------------------------------------------------------------
 export default defineConfig([
   // Global ignores
   globalIgnores([
@@ -37,22 +48,22 @@ export default defineConfig([
     '.vite',
     '.vercel',
     'stats.html',
-    '**/*.d.ts', // don’t lint ambient TS type files
+    '**/*.d.ts', // ignore ambient TS declarations
   ]),
 
-  // Report stray /* eslint-disable */ that no longer suppress anything
+  // Report useless /* eslint-disable */
   { linterOptions: { reportUnusedDisableDirectives: 'error' } },
 
   // Converted legacy layers
   ...legacy,
 
-  // ---- App sources --------------------------------------------------------
+  // ---- App source rules -----------------------------------------------------
   {
     files: ['**/*.{js,jsx}'],
     ignores: ['vite.config.*', 'eslint.config.*', 'dev-utils/**'],
 
     languageOptions: {
-      ecmaVersion: 2022, // TLA in ESM
+      ecmaVersion: 2022,
       globals: { ...globals.browser, ...globals.node },
       parserOptions: { ecmaFeatures: { jsx: true }, sourceType: 'module' },
     },
@@ -67,7 +78,7 @@ export default defineConfig([
     extends: [js.configs.recommended, reactRefresh.configs.vite],
 
     rules: {
-      // Bridge mode helper
+      // Vars / args hygiene
       'no-unused-vars': [
         'warn',
         {
@@ -78,7 +89,7 @@ export default defineConfig([
         },
       ],
 
-      // Prefer ToastContext over the old helper
+      // ✅ Transition to ToastContext instead of legacy helpers
       'no-restricted-imports': [
         'warn',
         {
@@ -93,9 +104,21 @@ export default defineConfig([
               importNames: ['showToast'],
               message: 'Use ToastContext: const { showToast } = useToast().',
             },
-            { name: '../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
-            { name: '../../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
-            { name: '../../../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+            {
+              name: '../utils/ui-helpers',
+              importNames: ['showToast'],
+              message: 'Use ToastContext: const { showToast } = useToast().',
+            },
+            {
+              name: '../../utils/ui-helpers',
+              importNames: ['showToast'],
+              message: 'Use ToastContext: const { showToast } = useToast().',
+            },
+            {
+              name: '../../../utils/ui-helpers',
+              importNames: ['showToast'],
+              message: 'Use ToastContext: const { showToast } = useToast().',
+            },
           ],
           patterns: [
             {
@@ -109,11 +132,19 @@ export default defineConfig([
       'no-restricted-globals': ['warn', 'showToast'],
       'no-restricted-properties': [
         'warn',
-        { object: 'window', property: 'showToast', message: 'Use ToastContext: const { showToast } = useToast().' },
-        { object: 'globalThis', property: 'showToast', message: 'Use ToastContext: const { showToast } = useToast().' },
+        {
+          object: 'window',
+          property: 'showToast',
+          message: 'Use ToastContext: const { showToast } = useToast().',
+        },
+        {
+          object: 'globalThis',
+          property: 'showToast',
+          message: 'Use ToastContext: const { showToast } = useToast().',
+        },
       ],
 
-      // React tweaks
+      // React
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       'react-hooks/exhaustive-deps': 'warn',
@@ -122,18 +153,24 @@ export default defineConfig([
       'import/no-unresolved': ['error', { commonjs: true, caseSensitive: true }],
       'import/no-duplicates': 'warn',
       'import/newline-after-import': 'warn',
-      // We allow explicit .jsx in imports
-      'import/extensions': 'off',
+      'import/extensions': 'off', // allow explicit .jsx
       'import/order': [
         'warn',
         {
-          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'type'],
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+            'object',
+            'type',
+          ],
           pathGroups: [
-            // Keep React first in the external group
             { pattern: 'react', group: 'external', position: 'before' },
 
             { pattern: '@{,**/*}', group: 'internal', position: 'before' },
-
             { pattern: '@utils/**', group: 'internal', position: 'before' },
             { pattern: '@components/**', group: 'internal', position: 'before' },
             { pattern: '@styles/**', group: 'internal', position: 'before' },
@@ -159,14 +196,10 @@ export default defineConfig([
             { pattern: '@student-walkthrough{,/**}', group: 'internal', position: 'before' },
 
             { pattern: '@instructor{,/**}', group: 'internal', position: 'before' },
-
-            // ✅ Added admin-walkthroughs alias (and admin root)
             { pattern: '@admin-walkthroughs{,/**}', group: 'internal', position: 'before' },
             { pattern: '@admin{,/**}', group: 'internal', position: 'before' },
-
             { pattern: '@superadmin{,/**}', group: 'internal', position: 'before' },
           ],
-          // Exclude react/builtin/external from auto-repositioning (keeps React pinned)
           pathGroupsExcludedImportTypes: ['react', 'builtin', 'external'],
           'newlines-between': 'always',
           alphabetize: { order: 'asc', caseInsensitive: true },
@@ -179,14 +212,14 @@ export default defineConfig([
       'jsx-a11y/aria-role': 'error',
       'jsx-a11y/label-has-associated-control': 'error',
 
-      // DX niceties
+      // DX
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-debugger': 'warn',
       eqeqeq: ['warn', 'smart'],
       'prefer-const': 'warn',
     },
 
-    // Resolve Vite aliases for eslint-plugin-import
+    // Alias resolver for eslint-plugin-import
     settings: {
       react: { version: 'detect' },
       'import/resolver': {
@@ -209,11 +242,13 @@ export default defineConfig([
             ['@walkthrough-loaders', './src/walkthrough-data/loaders'],
             ['@walkthrough-utils', './src/walkthrough-data/utils'],
             ['@walkthrough-overlays', './src/walkthrough-data/overlays'],
-            // single-file overlay conveniences (keep in sync with Vite)
+
+            // Single overlay shortcuts
             ['@walkthrough-restriction-automatic', './src/walkthrough-data/overlays/restrictions/automatic.js'],
             ['@walkthrough-restriction-no-air', './src/walkthrough-data/overlays/restrictions/no-air.js'],
             ['@walkthrough-restriction-no-fifth-wheel', './src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'],
 
+            // Roles
             ['@student', './src/student'],
             ['@student-components', './src/student/components'],
             ['@student-profile', './src/student/profile'],
@@ -223,16 +258,16 @@ export default defineConfig([
 
             ['@instructor', './src/instructor'],
             ['@admin', './src/admin'],
-            ['@admin-walkthroughs', './src/admin/walkthroughs'], // ✅ keep in sync with Vite
+            ['@admin-walkthroughs', './src/admin/walkthroughs'],
             ['@superadmin', './src/superadmin'],
           ],
-          extensions: ['.js', '.jsx', '.json', '.css'], // keep this in sync with Vite
+          extensions: ['.js', '.jsx', '.json', '.css'],
         },
       },
     },
   },
 
-  // Allow the compat shim to touch the global without warnings
+  // One-off overrides
   {
     files: ['src/components/toast-compat.js'],
     rules: {
@@ -240,22 +275,18 @@ export default defineConfig([
       'no-restricted-properties': 'off',
     },
   },
-
-  // Router override (only needed if any router re-exports non-components)
   {
     files: ['src/**/*Router.jsx'],
     rules: {
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
-
-  // One-off override: mixes helpers + components; relax fast-refresh guard
   {
     files: ['src/utils/RequireRole.jsx'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
 
-  // Node/config/utility scripts (non-React)
+  // Node/config/dev-utils
   {
     files: ['vite.config.*', 'eslint.config.*', 'dev-utils/**'],
     languageOptions: {
