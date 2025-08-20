@@ -1,4 +1,3 @@
-// ============================================================================
 // Path: src/admin/index.js
 // Admin Barrel
 // - Centralized exports for all admin-facing modules
