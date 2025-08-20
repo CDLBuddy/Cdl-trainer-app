@@ -7,25 +7,28 @@
 // - Supports deep-link from “Add Company → Create & Add First Student”
 // ============================================================================
 
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
+import PropTypes from 'prop-types'
 import React, {
   lazy, Suspense, useCallback, useEffect, useMemo, useState, memo,
 } from 'react'
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
-import PropTypes from 'prop-types'
 
+import { BillingSummaryCard } from '@admin/billing'
+import { preloadRoute } from '@admin/preload.js' // warm the drawer chunk just-in-time
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/ToastContext.js'
 import { db } from '@utils/firebase.js'
-import { BillingSummaryCard } from '@admin/billing'
-import { CompanyOverviewCard } from './components/detail'
-import useDebounced from './hooks/useDebounced.js'
-import { preloadRoute } from '@admin/preload.js' // warm the drawer chunk just-in-time
 
 import {
   getEnrollmentReadiness,
   getBTWReadiness,
 } from '@student/profile/schema/calculators.js'
+
+import { CompanyOverviewCard } from './components/detail'
+import useDebounced from './hooks/useDebounced.js'
+
+
 
 // Lazy-load the drawer as its own chunk (avoid importing from barrels here)
 const AddStudentDrawer = lazy(() =>
@@ -129,7 +132,7 @@ export default function CompanyDetail() {
         setCompany(c)
         setRoster(r)
       } catch (e) {
-        // eslint-disable-next-line no-console
+         
         console.error('[CompanyDetail] load failed', e)
         showToast('Failed to load company roster.', 3000, 'error')
       } finally {

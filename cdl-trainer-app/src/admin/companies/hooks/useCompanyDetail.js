@@ -6,8 +6,9 @@
 // - Designed to be composable with roster / assignments hooks
 // ======================================================================
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
 import { db } from '@utils/firebase.js'
 
 /**

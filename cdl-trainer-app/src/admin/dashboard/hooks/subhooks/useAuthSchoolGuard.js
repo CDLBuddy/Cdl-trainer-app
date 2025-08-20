@@ -13,11 +13,12 @@
 //     * skipFirestore: boolean — trust cache only (default false)
 // ============================================================================
 
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { collection, getDocs, query, where } from 'firebase/firestore'
-import { db } from '@utils/firebase.js'
+
 import { useToast } from '@components/ToastContext.js'
+import { db } from '@utils/firebase.js'
 
 /** @typedef {'student'|'instructor'|'admin'|'superadmin'} Role */
 

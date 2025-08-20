@@ -7,8 +7,9 @@
 // - Non-breaking: onAdd remains the only required interaction
 // ============================================================================
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+
 import styles from './CompanyCards.module.css'
 
 /**

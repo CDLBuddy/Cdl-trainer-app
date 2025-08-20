@@ -24,8 +24,9 @@
 // ============================================================================
 
 import { useMemo } from 'react'
-import useEmployerBilling from '../internal/useEmployerBilling.js'
+
 import { toCurrencyShort } from '../../utils/formatters.js'
+import useEmployerBilling from '../internal/useEmployerBilling.js'
 
 /**
  * @typedef {'employer'|'student'} BillingMode
@@ -80,7 +81,7 @@ export default function useBillingSummary({ schoolId, companyId, mode = 'employe
     // Balance = unpaid + partial amounts. (Assumes amountCents is the open amount in mocks/MVP.)
     let openInvoices = 0
     let balanceCents = 0
-    let lastPaymentLabel = '—' // Unknown in MVP; can wire from payments later.
+    const lastPaymentLabel = '—' // Unknown in MVP; can wire from payments later.
 
     for (const inv of employerInvoices) {
       const status = inv.status || 'unpaid'

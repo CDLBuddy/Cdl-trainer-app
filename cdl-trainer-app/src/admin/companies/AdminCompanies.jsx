@@ -7,6 +7,7 @@
 // - Polished UX: loading/error states, selected counts, bulk ops, a11y
 // ============================================================================
 
+import PropTypes from 'prop-types'
 import React, {
   memo,
   lazy,
@@ -17,14 +18,14 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
+
 import { useToast } from '@components/ToastContext.js'
 import { auth } from '@utils/firebase.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
-import { useCompanies } from './hooks'
 import { CompaniesTable, CompanyFilters, CompanyHeader } from './components'
+import { useCompanies } from './hooks'
 import { exportCompaniesToCSV } from './services' // bulk-export of selected set
 
 // ---- Lazy, non-route overlay ---------------------------------------------

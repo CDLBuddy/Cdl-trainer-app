@@ -12,6 +12,7 @@
 
 import React, { memo, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+
 import styles from './CompaniesMiniTable.module.css'
 
 function StatusPill({ status = 'active' }) {

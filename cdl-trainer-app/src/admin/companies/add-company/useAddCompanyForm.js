@@ -8,9 +8,10 @@
 // ============================================================================
 
 import { useCallback, useMemo, useState } from 'react'
-import { validateCompany } from './utils/validations.js'
-import { toCompanyPayload } from './utils/transforms.js'
+
 import { saveCompany, existsByNameInSchool as _existsByNameInSchool } from './services'
+import { toCompanyPayload } from './utils/transforms.js'
+import { validateCompany } from './utils/validations.js'
 
 /**
  * @typedef {{ name: string, billingMode: 'employer'|'individual', contactEmail: string }} CompanyFormValues
@@ -78,7 +79,7 @@ export default function useAddCompanyForm({ onSaved, onError, schoolId, actorEma
     try {
       if (schoolId && typeof _existsByNameInSchool === 'function') {
         // If the function is present, use it; otherwise skip silently.
-        // eslint-disable-next-line no-unused-vars
+         
         const already = await _existsByNameInSchool(schoolId, cleaned.name)
         if (already) {
           setErrors((e) => ({ ...e, name: 'A company with this name already exists.' }))

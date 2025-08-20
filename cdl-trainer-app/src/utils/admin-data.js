@@ -17,6 +17,7 @@ import {
   limit,
   startAfter,
 } from 'firebase/firestore'
+
 import { db } from '@/utils/firebase.js' // initialized Firestore instance
 
 /* ------------------------------------------------------------------ */

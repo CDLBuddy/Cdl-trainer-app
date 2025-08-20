@@ -1,9 +1,11 @@
 // src/admin/AdminProfile.jsx
-import React, { useEffect, useState } from 'react'
 import { collection, getDocs, query, where } from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+
+import Shell from '@components/Shell.jsx'
 import { db, auth } from '@utils/firebase.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
-import Shell from '@components/Shell.jsx'
+
 import { useToast } from '@/components/ToastContext.js'
 
 export default function AdminProfile() {

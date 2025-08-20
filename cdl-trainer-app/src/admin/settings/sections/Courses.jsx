@@ -7,7 +7,9 @@
 // ======================================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
+
 import { useCoursesSettings } from '../hooks/subhooks/useCoursesSettings.js'
+
 import styles from './Section.module.css'
 
 export default function Courses({ vm }) {

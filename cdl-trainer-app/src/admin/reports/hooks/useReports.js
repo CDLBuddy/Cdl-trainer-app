@@ -1,5 +1,6 @@
 //src/admin/reports/hooks/useReports.js
 import { useCallback, useEffect, useMemo, useState } from 'react'
+
 import { loadReportsBundle } from '../services'
 
 export default function useReports(schoolId) {

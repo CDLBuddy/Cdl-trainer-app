@@ -12,7 +12,7 @@ const _preloadCache = new Set();
 
 /** Debug gate (silent in prod) */
 function _debug(...args) {
-  // eslint-disable-next-line no-undef
+   
   if (typeof import.meta !== 'undefined' && import.meta?.env?.DEV) {
     // eslint-disable-next-line no-console
     console.debug('[route-preload]', ...args);
@@ -29,7 +29,7 @@ async function _once(key, loader) {
     _debug('done', key);
   } catch (err) {
     // Non-fatal: preloading is best-effort
-    // eslint-disable-next-line no-console
+     
     if (typeof import.meta !== 'undefined' && import.meta?.env?.DEV) {
       console.warn(`[route-preload] Failed to preload "${key}":`, err);
     }

@@ -11,9 +11,12 @@
 // ======================================================================
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { getSettings, updateSettings } from '../services/settingsApi.js'
-import { useToast } from '@/components/ToastContext.js'
+
 import { auth } from '@utils/firebase.js'
+
+import { useToast } from '@/components/ToastContext.js'
+
+import { getSettings, updateSettings } from '../services/settingsApi.js'
 
 /**
  * @typedef {Object} AdminSettingsVM

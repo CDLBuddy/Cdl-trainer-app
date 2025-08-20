@@ -8,8 +8,10 @@
 // ======================================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { useAdminSettings } from '../hooks/useAdminSettings.js'
+
 import { useBillingSettings } from '../hooks/subhooks/useBillingSettings.js'
+import { useAdminSettings } from '../hooks/useAdminSettings.js'
+
 import styles from './Section.module.css'
 
 export default function Billing() {

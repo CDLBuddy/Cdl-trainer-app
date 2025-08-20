@@ -40,7 +40,7 @@ export default function useCompanyNotes(companyId) {
       if (!aliveRef.current) return
       setNotes([]) // placeholder: return [] until Firestore implemented
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanyNotes] load failed', err)
       if (!aliveRef.current) return
       setError('Failed to load notes.')
@@ -70,7 +70,7 @@ export default function useCompanyNotes(companyId) {
       // TODO: Firestore write
       await new Promise(r => setTimeout(r, 180))
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanyNotes] add failed', err)
       setError('Failed to add note.')
       // Rollback: remove optimistic note

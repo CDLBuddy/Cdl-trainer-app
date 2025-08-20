@@ -7,8 +7,8 @@
 // - Memoized for perf
 // ============================================================================
 
-import React, { memo } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo } from 'react'
 
 /**
  * @typedef {{ schoolName?: string, logoUrl?: string, primaryColor?: string }} Brand

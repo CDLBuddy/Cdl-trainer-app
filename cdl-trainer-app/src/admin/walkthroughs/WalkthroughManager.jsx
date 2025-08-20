@@ -16,10 +16,6 @@ import { parseXlsxFile } from '@walkthrough-data/utils/parseXlsx.js'
 
 // Local editor/uploader/preview + helpers
 import WalkthroughEditor from './WalkthroughEditor.jsx'
-import WalkthroughList from './WalkthroughList.jsx'
-import WalkthroughPreview from './WalkthroughPreview.jsx'
-import WalkthroughUpload from './WalkthroughUpload.jsx'
-
 import {
   toToken,
   nextId,
@@ -27,6 +23,10 @@ import {
   cloneDeep,
   inferLabelFromToken,
 } from './walkthroughHelpers.js'
+import WalkthroughList from './WalkthroughList.jsx'
+import WalkthroughPreview from './WalkthroughPreview.jsx'
+import WalkthroughUpload from './WalkthroughUpload.jsx'
+
 
 // ---- tiny UI styles --------------------------------------------------------
 const toolbarBtn = {

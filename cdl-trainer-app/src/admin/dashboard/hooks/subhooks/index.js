@@ -16,6 +16,6 @@ export * from './useUsersQuery.js'
 // (This keeps treeshaking intact for modern bundlers.)
 export const AdminSubhooks = {
   // Keep keys in sync with the named exports above
-  // eslint-disable-next-line import/no-named-as-default-member
+   
   ...await (async () => ({}))(), // no-op to ensure pure module semantics
 }

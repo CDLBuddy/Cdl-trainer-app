@@ -7,8 +7,9 @@
 // - Non-breaking: onUpload is optional; item actions are opt-in
 // ============================================================================
 
-import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
+import React, { useMemo } from 'react'
+
 import styles from './CompanyCards.module.css'
 
 /**

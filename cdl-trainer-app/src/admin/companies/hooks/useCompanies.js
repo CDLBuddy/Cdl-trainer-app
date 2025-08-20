@@ -8,6 +8,7 @@
 // ======================================================================
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import {
   listCompaniesBySchool,
   addCompany,
@@ -101,7 +102,7 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
     } catch (err) {
       if (!aliveRef.current) return
       const e = err instanceof Error ? err : new Error('Failed to load companies')
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanies] list error:', err)
       setError(e)
       toast('Failed to load companies.', 3000, 'error')
@@ -153,7 +154,7 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
       await refresh()
       setSelected(new Set()) // clear selection to avoid accidental bulk ops
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanies] addOne error:', err)
       toast('Failed to add company.', 3000, 'error')
     } finally {
@@ -171,7 +172,7 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
       toast('Company updated.', 2000, 'success')
       await refresh()
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanies] saveOne error:', err)
       toast('Failed to update company.', 3000, 'error')
     }
@@ -187,7 +188,7 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
         const n = new Set(prev); n.delete(id); return n
       })
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanies] removeOne error:', err)
       toast('Failed to remove company.', 3000, 'error')
     }
@@ -202,7 +203,7 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
       await refresh()
       setSelected(new Set())
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanies] bulkDelete error:', err)
       toast('Failed to delete selected companies.', 3000, 'error')
     }
@@ -213,7 +214,7 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
     try {
       exportCompaniesToCSV(filtered, toast)
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanies] exportCSV error:', err)
       toast('Failed to export CSV.', 3000, 'error')
     }
@@ -223,7 +224,7 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
     try {
       exportCompaniesToPDF(filtered, toast)
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanies] exportPDF error:', err)
       toast('Failed to export PDF.', 3000, 'error')
     }
@@ -234,7 +235,7 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
       downloadCompanyTemplateCSV()
       toast?.('Template downloaded.', 1500, 'success')
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanies] downloadTemplate error:', err)
       toast('Failed to download template.', 3000, 'error')
     }

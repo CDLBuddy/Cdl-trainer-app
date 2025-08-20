@@ -7,11 +7,13 @@
 // - Deep workflows live in /admin/billing (linked with optional filters)
 // ============================================================================
 
-import React, { memo, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import styles from './BillingSummary.module.css'
+
 import { useBillingSummary } from '@admin/billing' // public surface
+
+import styles from './BillingSummary.module.css'
 
 // --- local helpers -----------------------------------------------------------
 function formatCurrencyCents(cents = 0, opts = {}) {

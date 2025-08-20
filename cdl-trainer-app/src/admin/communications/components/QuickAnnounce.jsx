@@ -1,5 +1,6 @@
 // Path: src/admin/communications/components/QuickAnnounce.jsx
 import React from 'react'
+
 import styles from './QuickAnnounce.module.css'
 
 export default function QuickAnnounce() {

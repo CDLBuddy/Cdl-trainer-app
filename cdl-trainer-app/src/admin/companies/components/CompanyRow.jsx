@@ -9,8 +9,8 @@
 // - Defensive parsing for Firestore Timestamps & ISO strings
 // ============================================================================
 
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const inputStyle = { width: '97%', padding: '2px 7px' }
 const NAME_RE = /^[\w\s\-'.&]+$/
@@ -106,7 +106,7 @@ function CompanyRow({
       await onSave?.(c.id, payload, rowRef)
       showToast('Company saved.', 2000, 'success')
     } catch (e) {
-      // eslint-disable-next-line no-console
+       
       console.error('[CompanyRow] save failed', e)
       showToast('Failed to save company.', 3000, 'error')
     } finally {
@@ -124,7 +124,7 @@ function CompanyRow({
       await onRemove?.(c?.id)
       showToast('Company removed.', 2000, 'success')
     } catch (e) {
-      // eslint-disable-next-line no-console
+       
       console.error('[CompanyRow] remove failed', e)
       showToast('Failed to remove company.', 3000, 'error')
     } finally {

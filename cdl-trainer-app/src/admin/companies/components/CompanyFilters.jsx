@@ -7,8 +7,8 @@
 // - Stateless; all behavior is delegated via callbacks
 // ============================================================================
 
-import React, { memo, useCallback, useId } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useCallback, useId } from 'react'
 
 const noop = () => {}
 

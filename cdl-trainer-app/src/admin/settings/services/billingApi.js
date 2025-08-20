@@ -5,8 +5,9 @@
 // - Non-destructive merge of adminPrefs
 // ---------------------------------------------------------------------
 
-import { db } from '@utils/firebase.js'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+
+import { db } from '@utils/firebase.js'
 
 const PATH = (schoolId) => doc(db, 'schools', schoolId)
 

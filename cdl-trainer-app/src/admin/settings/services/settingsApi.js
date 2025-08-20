@@ -8,13 +8,14 @@
 //   * prefs are shallow-merged into adminPrefs
 // ======================================================================
 
-import { db } from '@utils/firebase.js'
 import {
   doc,
   getDoc,
   setDoc,
   serverTimestamp,
 } from 'firebase/firestore'
+
+import { db } from '@utils/firebase.js'
 
 /**
  * Normalize a schools/{id} snapshot into our app shape.

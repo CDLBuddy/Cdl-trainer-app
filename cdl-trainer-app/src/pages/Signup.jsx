@@ -7,15 +7,15 @@
 // - Light branding from school or local cache
 // ======================================================================
 
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, setDoc, getDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { auth, db } from '@utils/firebase.js'
+import { getInvite, consumeInvite, isValidInvite } from '@utils/invites.js'
 import { getCurrentSchoolBranding, setCurrentSchool } from '@utils/school-branding.js'
 import { getBlankUserProfile } from '@utils/userProfile.js'
-import { getInvite, consumeInvite, isValidInvite } from '@utils/invites.js'
 
 // Dynamic “required fields” supported on signup via invite/settings
 const FIELD_DEFS = /** @type const */ ({

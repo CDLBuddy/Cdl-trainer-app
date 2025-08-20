@@ -1,9 +1,12 @@
 // Path: src/admin/billing/components/Employer/EmployerTab.jsx
 import React, { useMemo, useState, useCallback } from 'react'
+
+import { useBillingDashboard } from '@/admin/dashboard/hooks'
+
+import { downloadCsv, formatCurrency, fmtDate } from '../../utils'
+
 import EmployerFilters from './EmployerFilters.jsx'
 import EmployerTable from './EmployerTable.jsx'
-import { useBillingDashboard } from '@/admin/dashboard/hooks'
-import { downloadCsv, formatCurrency, fmtDate } from '../../utils'
 
 export default function EmployerTab() {
   // Read once (avoids re-reading localStorage every render)

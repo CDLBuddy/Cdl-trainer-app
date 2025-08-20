@@ -7,8 +7,9 @@
 // - Non-breaking: accepts a loose `company` + `stats` object
 // ============================================================================
 
-import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
+import React, { useMemo } from 'react'
+
 import styles from './CompanyCards.module.css'
 
 function Pill({ tone = 'default', children, title }) {

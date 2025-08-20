@@ -7,7 +7,9 @@
 // ======================================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
+
 import { useBrandingSettings } from '../hooks/subhooks/useBrandingSettings.js'
+
 import styles from './Section.module.css'
 
 // simple hex color guard (#RGB / #RRGGBB)

@@ -6,10 +6,12 @@
 // - Accessible, resilient, and safe to embed anywhere in admin
 // ============================================================================
 
-import React, { memo } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
+
 import { useBillingSummary } from '../../bridges'
+
 import styles from './BillingSummaryCard.module.css'
 
 const MODE_OPTIONS = [

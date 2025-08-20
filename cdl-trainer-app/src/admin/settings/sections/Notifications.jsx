@@ -7,7 +7,9 @@
 // ======================================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
+
 import { useNotificationsSettings } from '../hooks/subhooks/useNotificationsSettings.js'
+
 import styles from './Section.module.css'
 
 export default function Notifications({ vm }) {

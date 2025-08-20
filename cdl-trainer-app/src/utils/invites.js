@@ -7,8 +7,9 @@
 // - Helpers: isInviteExpired, getInvitePrefill, getInviteRequiredFields
 // ======================================================================
 
-import { db } from '@utils/firebase.js'
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
+
+import { db } from '@utils/firebase.js'
 
 /**
  * @typedef {{

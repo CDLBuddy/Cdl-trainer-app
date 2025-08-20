@@ -7,7 +7,9 @@
 // ======================================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
+
 import { useComplianceSettings } from '../hooks/subhooks/useComplianceSettings.js'
+
 import styles from './Section.module.css'
 
 // A small set of sensible defaults to offer as quick toggles

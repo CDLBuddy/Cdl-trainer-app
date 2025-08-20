@@ -1,6 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+
 import { StudentRoutes } from '@navigation/navigation.js'
+
 import styles from '../dashboard.module.css'
 
 export default function BannerNextSteps({ allSet, nextActions, onOpenProfile }) {

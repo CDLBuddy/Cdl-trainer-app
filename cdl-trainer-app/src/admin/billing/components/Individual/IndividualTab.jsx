@@ -1,9 +1,12 @@
 // Path: src/admin/billing/components/Individual/IndividualTab.jsx
 import React, { useMemo, useState, useCallback } from 'react'
+
+import { useBillingDashboard } from '@/admin/dashboard/hooks'
+
+import { downloadCsv } from '../../utils'
+
 import IndividualFilters from './IndividualFilters.jsx'
 import IndividualTable from './IndividualTable.jsx'
-import { useBillingDashboard } from '@/admin/dashboard/hooks'
-import { downloadCsv } from '../../utils'
 
 export default function IndividualTab() {
   // Read once (avoid re-reading LS each render)

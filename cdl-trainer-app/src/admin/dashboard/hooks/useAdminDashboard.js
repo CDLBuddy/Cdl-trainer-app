@@ -10,13 +10,14 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { clampPct, expirySoon } from '../utils'
+
 import {
   useAuthSchoolGuard,
   useUsersQuery,     // re-use your existing users fetch (students/instructors/admins)
   useUserMetrics,   // studentCount, instructorCount, adminCount, permitSoon, medSoon, incomplete
 } from './subhooks'
 
-import { clampPct, expirySoon } from '../utils'
 
 // ---------- helpers -----------------------------------------------------
 

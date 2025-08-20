@@ -16,6 +16,7 @@ import {
   serverTimestamp,
   onSnapshot,
 } from 'firebase/firestore'
+
 import { db } from './firebase.js'
 
 /** Keys that count toward profile completion (keep in sync with UI) */

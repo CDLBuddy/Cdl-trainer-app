@@ -29,8 +29,11 @@ import {
   subscribeBrandingUpdated,
 } from '@utils/school-branding.js'
 import { registerToastHandler } from '@utils/ui-helpers.js'
+
 import { preloadRoutesForRole } from '@/utils/route-preload.js'
+
 import { useSession } from '../session/useSession.js'
+
 import styles from './Shell.module.css'
 
 /** Infer a role slug from a path like "/student/..." */

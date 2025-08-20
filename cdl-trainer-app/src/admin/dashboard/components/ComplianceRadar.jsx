@@ -13,6 +13,7 @@
 // ============================================================================
 
 import React, { memo, useMemo } from 'react'
+
 import styles from './ComplianceRadar.module.css'
 
 function clamp01(n) {

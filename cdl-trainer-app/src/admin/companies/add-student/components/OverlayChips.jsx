@@ -1,6 +1,7 @@
 // Path: src/admin/companies/add-student/OverlayChips.jsx
-import React, { memo, useMemo } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useMemo } from 'react'
+
 import styles from './OverlayChips.module.css'
 
 /**

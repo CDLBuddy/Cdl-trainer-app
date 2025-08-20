@@ -23,6 +23,7 @@
 // ============================================================================
 
 import React, { memo, useMemo, useCallback } from 'react'
+
 import styles from './ActivityFeed.module.css'
 
 function toDate(value) {

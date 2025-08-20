@@ -1,15 +1,16 @@
 // src/admin/AdminReports.jsx
 // Admin Reports — split, polished, no messaging (handled in /communications)
-import React from 'react'
 import PropTypes from 'prop-types'
-import styles from './AdminReports.module.css'
+import React from 'react'
 
-import { useReports, useChecklistPdf } from './hooks'
-import { ChecklistCard, FiltersBar, UsersTable } from './components'
-
-// Keep your existing export controls (standalone atoms)
 import ExportCompaniesControls from '@admin/ExportCompaniesControls.jsx'
 import ExportUsersControls     from '@admin/ExportUsersControls.jsx'
+
+import styles from './AdminReports.module.css'
+import { ChecklistCard, FiltersBar, UsersTable } from './components'
+import { useReports, useChecklistPdf } from './hooks'
+
+// Keep your existing export controls (standalone atoms)
 
 export default function AdminReports({ currentSchoolId, currentRole }) {
   const {

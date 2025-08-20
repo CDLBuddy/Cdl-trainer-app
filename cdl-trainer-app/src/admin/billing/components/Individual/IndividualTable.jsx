@@ -1,5 +1,6 @@
 // Path: src/admin/billing/components/Individual/IndividualTable.jsx
 import React, { useCallback, memo } from 'react'
+
 import { StatusPill } from '..'
 
 function IndividualTableBase({

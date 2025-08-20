@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+
 import { getLatestUpdate } from '../services/updatesApi.js'
 
 export function useDashboardData() {

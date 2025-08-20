@@ -61,7 +61,7 @@ export default function useCompanyDocuments(companyId) {
       if (!aliveRef.current) return
       setDocs(MOCK_DOCS)
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanyDocuments] load failed', err)
       if (!aliveRef.current) return
       setError('Failed to load documents.')
@@ -85,7 +85,7 @@ export default function useCompanyDocuments(companyId) {
       // TODO: storage upload → get downloadURL → write doc record in Firestore
       await refresh()
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanyDocuments] upload failed', err)
       setError('Failed to upload document.')
     } finally {
@@ -112,7 +112,7 @@ export default function useCompanyDocuments(companyId) {
       await new Promise(r => setTimeout(r, 200))
       setDocs(prev => prev.filter(d => d.id !== doc.id))
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useCompanyDocuments] delete failed', err)
       setError('Failed to delete document.')
     } finally {

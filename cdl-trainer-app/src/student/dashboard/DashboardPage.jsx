@@ -12,13 +12,9 @@ import {
   getNextActions,
 } from '@student/profile/schema/calculators.js'
 
+import { KpiCard , BannerNextSteps , QuickLinks , UpdatesCard , TipsRow } from './components'
 import styles from './dashboard.module.css'
 import { useDashboardData } from './hooks/useDashboardData.js'
-import { KpiCard } from './components'
-import { BannerNextSteps } from './components'
-import { QuickLinks } from './components'
-import { UpdatesCard } from './components'
-import { TipsRow } from './components'
 
 function clampPct(n) {
   const x = Number.isFinite(n) ? n : 0

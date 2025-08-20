@@ -7,10 +7,11 @@
 // - Non-breaking return: { users, setUsers, loading, error, reload }
 // ============================================================================
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import { collection, getDocs, query, where } from 'firebase/firestore'
-import { db } from '@utils/firebase.js'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
 import { useToast } from '@components/ToastContext.js'
+import { db } from '@utils/firebase.js'
 
 // roles we care about for the dashboard
 const ROLES = ['student', 'instructor', 'admin']
@@ -99,7 +100,7 @@ export function useUsersQuery({ schoolId }) {
       )
       setUsers(rows)
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[useUsersQuery] fetch error:', err)
       const msg = 'Error fetching users.'
       setError(msg)

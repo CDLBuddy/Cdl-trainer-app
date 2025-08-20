@@ -1,7 +1,8 @@
 //src/admin/reports/components/ChecklistCard.jsx
 // Displays the DOT/ELDT checklist + download button
-import React from 'react'
 import PropTypes from 'prop-types'
+import React from 'react'
+
 import { DOT_CHECKLIST } from '../hooks/useChecklistPdf.js'
 
 export default function ChecklistCard({ onDownload }) {

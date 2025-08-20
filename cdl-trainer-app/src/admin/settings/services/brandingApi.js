@@ -5,9 +5,10 @@
 // - Upload logo to Firebase Storage
 // ---------------------------------------------------------------------
 
-import { db, storage } from '@utils/firebase.js'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
+
+import { db, storage } from '@utils/firebase.js'
 
 /** Get current branding (normalized to your app shape) */
 export async function getBranding(schoolId) {

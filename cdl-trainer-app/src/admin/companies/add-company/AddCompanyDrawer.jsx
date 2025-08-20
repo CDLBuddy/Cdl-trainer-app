@@ -10,12 +10,13 @@
 // - No external deps; pairs with AddCompanyDrawer.module.css
 // ============================================================================
 
+import PropTypes from 'prop-types'
 import React, {
   memo, useCallback, useEffect, useId, useRef, useState,
 } from 'react'
-import PropTypes from 'prop-types'
-import useAddCompanyForm from './useAddCompanyForm.js'
+
 import styles from './AddCompanyDrawer.module.css'
+import useAddCompanyForm from './useAddCompanyForm.js'
 
 const MODE_OPTIONS = [
   { value: 'employer',   label: 'Employer-billed' },

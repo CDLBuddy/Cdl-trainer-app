@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 // with a shape like: dashboardApi.companies.getSnapshot({ schoolId, limit })
 let dashboardApi = null
 try {
-  // eslint-disable-next-line import/no-unresolved
+   
   dashboardApi = await import('../services/dashboardApi.js')
 } catch {
   // no-op: fallback mocks used below
@@ -103,7 +103,7 @@ export function useCompaniesSnapshot({ schoolId, limit = 5, sortBy = 'name' } = 
       setLastUpdated(new Date().toISOString())
     } catch (err) {
       if (!ac.signal.aborted) {
-        // eslint-disable-next-line no-console
+         
         console.error('[useCompaniesSnapshot] fetch error:', err)
         setRows([])
         setError('Failed to load companies.')

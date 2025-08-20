@@ -17,6 +17,7 @@ import {
   where,
   writeBatch,
 } from 'firebase/firestore'
+
 import { db } from '@utils/firebase.js'
 
 /**
@@ -166,7 +167,7 @@ export async function removeCompaniesBulk(ids = []) {
     for (const group of chunk(ids, FIRESTORE_BATCH_LIMIT)) {
       const batch = writeBatch(db)
       group.forEach((id) => batch.delete(doc(db, 'companies', id)))
-      // eslint-disable-next-line no-await-in-loop
+       
       await batch.commit()
     }
     return
@@ -174,7 +175,7 @@ export async function removeCompaniesBulk(ids = []) {
     // Fallback to sequential to be safe with quotas/limits
   }
   for (const id of ids) {
-    // eslint-disable-next-line no-await-in-loop
+     
     await removeCompany(id)
   }
 }

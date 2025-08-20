@@ -7,14 +7,13 @@
 // - Non-breaking API: ({ open=true, companyId, onClose(result: boolean) })
 // ============================================================================
 
-import React, { memo, useCallback, useEffect, useId } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useCallback, useEffect, useId } from 'react'
 
 // Keep all UI atoms/molecules coming from the local components barrel
-import { DrawerShell, FormActions, FormFields, OverlayChips } from './components'
-
-import useAddStudentForm from './useAddStudentForm.js'
 import styles from './AddStudentDrawer.module.css'
+import { DrawerShell, FormActions, FormFields, OverlayChips } from './components'
+import useAddStudentForm from './useAddStudentForm.js'
 
 function AddStudentDrawer({ open = true, companyId, onClose }) {
   const {

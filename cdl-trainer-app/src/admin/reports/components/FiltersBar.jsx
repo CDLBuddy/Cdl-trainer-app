@@ -1,6 +1,7 @@
 //src/admin/reports/components/FiltersBar.jsx
-import React from 'react'
 import PropTypes from 'prop-types'
+import React from 'react'
+
 import styles from '../AdminReports.module.css'
 
 export default function FiltersBar({ roleFilter, setRoleFilter, search, setSearch, UsersExport, CompaniesExport }) {

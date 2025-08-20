@@ -1,5 +1,6 @@
 // Path: src/admin/communications/components/MessageHistoryTable.jsx
 import React from 'react'
+
 import styles from './MessageHistoryTable.module.css'
 
 export default function MessageHistoryTable() {

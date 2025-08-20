@@ -1,6 +1,7 @@
 //src/admin/companies/add-company/components/FormFields.jsx
-import React, { forwardRef } from 'react'
 import PropTypes from 'prop-types'
+import React, { forwardRef } from 'react'
+
 import styles from '../AddCompanyDrawer.module.css'
 
 const MODE_OPTIONS = [

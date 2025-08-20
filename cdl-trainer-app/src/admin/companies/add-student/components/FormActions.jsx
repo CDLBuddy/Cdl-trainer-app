@@ -1,6 +1,7 @@
 // Path: src/admin/companies/add-student/components/FormActions.jsx
-import React from 'react'
 import PropTypes from 'prop-types'
+import React from 'react'
+
 import styles from './FormActions.module.css'
 
 /**

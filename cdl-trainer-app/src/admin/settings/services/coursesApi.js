@@ -4,8 +4,9 @@
 // - ELDT/practice/walkthrough feature toggles per school
 // ---------------------------------------------------------------------
 
-import { db } from '@utils/firebase.js'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+
+import { db } from '@utils/firebase.js'
 
 const PATH = (schoolId) => doc(db, 'schools', schoolId)
 

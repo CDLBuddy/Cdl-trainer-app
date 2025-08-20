@@ -1,8 +1,9 @@
 // Path: src/admin/billing/components/StatusPill.jsx
-import React, { forwardRef, memo } from 'react'
 import PropTypes from 'prop-types'
-import styles from './StatusPill.module.css'
+import React, { forwardRef, memo } from 'react'
+
 import { getAllowedStatuses } from './statusMap.js'
+import styles from './StatusPill.module.css'
 
 /** Normalize incoming value -> canonical token (tolerates common aliases). */
 function normalize(value) {

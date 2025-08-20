@@ -1,5 +1,6 @@
 // Path: src/admin/communications/components/TemplateList.jsx
 import React from 'react'
+
 import styles from './TemplateList.module.css'
 
 export default function TemplateList() {

@@ -10,6 +10,7 @@
 
 import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
+
 import styles from './QuickActions.module.css'
 
 function QuickActions({

@@ -27,19 +27,19 @@ import {
   // prefetchInstructorByPath,
   preloadRoute as preloadInstructorRoute, // fallback if path helper not available
 } from '@instructor/preload.js'
-
 import {
   getDashboardRoute,
   getTopNavForRole,
 } from '@navigation/navConfig.js'
-
 import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,
 } from '@utils/school-branding.js'
 
 import { preloadRoutesForRole } from '@/utils/route-preload.js'
+
 import { useSession } from '../session/useSession.js'
+
 import styles from './NavBar.module.css'
 
 // Infer role segment from a URL path
