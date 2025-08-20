@@ -7,7 +7,9 @@
 // ============================================================================
 
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
+
 import { db } from '@utils/firebase.js'
+
 // Optional preflight duplicate check (exported by main companies services barrel)
 import { existsByNameInSchool } from '@admin/companies/services'
 
@@ -96,4 +98,3 @@ export default async function saveCompany(input = {}) {
 
 // Named export (optional) for consistency with other services.
 export { saveCompany as saveCompanyDefault }
-function saveCompany(args) { return saveCompanyDefault(args) }

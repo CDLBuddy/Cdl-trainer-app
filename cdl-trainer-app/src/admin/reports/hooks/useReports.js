@@ -23,7 +23,7 @@ export default function useReports(schoolId) {
     try {
       const { brand, users, companies } = await loadReportsBundle(schoolId)
       setBrand(brand); setUsers(users); setCompanies(companies)
-    } catch (e) {
+    } catch (_) {
       setError('Failed to load reports data. Please try again.')
     } finally {
       setLoading(false)

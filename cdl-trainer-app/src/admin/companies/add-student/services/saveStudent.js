@@ -8,8 +8,9 @@
 // ============================================================================
 
 import { updateUserProfileFields } from '@utils/userProfile.js'
-import { validate } from '../utils/validations.js'
+
 import { toPayload, normalizeEmail } from '../utils/transforms.js'
+import { validate } from '../utils/validations.js'
 
 /**
  * Persist (create/update) a student profile seed.
@@ -55,7 +56,6 @@ export default async function saveStudent({
     return { ok: true }
   } catch (e) {
     // Add context for logs while returning a clean message to UI
-    // eslint-disable-next-line no-console
     console.error('[saveStudent] failed:', e)
     return {
       ok: false,
@@ -65,4 +65,4 @@ export default async function saveStudent({
 }
 
 // Optional named re-export for flexibility in imports
-export { saveStudent as default } // keeps compatibility if you prefer named import style
+// export { saveStudent as default } // keeps compatibility if you prefer named import style

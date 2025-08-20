@@ -134,13 +134,14 @@ export function useDashboardKpis({ schoolId } = {}) {
 
   useEffect(() => {
     let cancelled = false
+    const reqIdAtMount = reqIdRef.current
     ;(async () => {
       await fetchOnce()
       if (cancelled) return
     })()
     return () => {
       cancelled = true
-      reqIdRef.current++ // invalidate in-flight responses
+      reqIdRef.current = reqIdAtMount + 1 // invalidate in-flight responses
     }
   }, [fetchOnce])
 

@@ -13,8 +13,8 @@ import { auth } from '@utils/firebase.js'
 import { deriveOverlays } from '@admin/utils/enrollmentAssignments.js'
 
 // Barrels (stable, swappable)
-import { saveStudent } from './services'
-import { validate as validateForm, canSave as canSaveGuard } from './utils'
+import { saveStudent } from '../services'
+import { validate as validateForm, canSave as canSaveGuard } from '../utils'
 
 /**
  * @typedef {{ email:string, name:string, course:string, cdlClass:string, billing:'employer'|'individual', assignedInstructor:string }} AddStudentForm

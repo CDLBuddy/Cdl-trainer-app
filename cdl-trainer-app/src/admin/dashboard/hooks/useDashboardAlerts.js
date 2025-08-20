@@ -89,6 +89,7 @@ export function useDashboardAlerts({ schoolId, take = 8 } = {}) {
 
   useEffect(() => {
     let cancelled = false
+    const currentReqId = reqIdRef.current
     const run = async () => {
       await fetchOnce()
       if (cancelled) return
@@ -97,7 +98,7 @@ export function useDashboardAlerts({ schoolId, take = 8 } = {}) {
     return () => {
       cancelled = true
       // bump reqId to invalidate any in-flight response
-      reqIdRef.current++
+      reqIdRef.current = currentReqId + 1
     }
   }, [fetchOnce])
 

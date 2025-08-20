@@ -33,7 +33,7 @@ function AlertsCard({
   }, [alerts, maxVisible])
 
   return (
-    <section className={styles.card} role="region" aria-label="Alerts">
+    <section className={styles.card} aria-label="Alerts">
       <header className={styles.header}>
         <h3 className={styles.title}>{title}</h3>
       </header>
@@ -41,7 +41,7 @@ function AlertsCard({
       {visible.length === 0 ? (
         <p className={styles.empty}>{emptyText}</p>
       ) : (
-        <ul className={styles.list} role="list">
+        <ul className={styles.list}>
           {visible.map((alert, i) => {
             const key = alert.id ?? `alert-${i}`
             const d = toDate(alert.timestamp)

@@ -23,7 +23,6 @@ function QuickActions({
     <section
       className={styles.card}
       aria-label="Quick actions"
-      role="region"
       data-widget="quick-actions"
     >
       <header className={styles.header}>

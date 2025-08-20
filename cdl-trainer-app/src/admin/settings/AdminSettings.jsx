@@ -131,6 +131,7 @@ export default function AdminSettings() {
         role="tablist"
         aria-label="Admin settings sections"
         aria-orientation="horizontal"
+        tabIndex="0"
         onKeyDown={onKeyTabs}
         className="u-toolbar"
         style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}

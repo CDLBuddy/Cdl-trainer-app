@@ -41,7 +41,7 @@ export function useNotificationsSettings({ vm } = {}) {
   const reset = useCallback(() => setDraft(initial), [initial])
 
   // Derived
-  const errors = useMemo(() => ({}), [draft]) // add validation later if needed
+  const errors = useMemo(() => ({}), []) // add validation later if needed
   const valid = true
   const dirty = useMemo(() => !shallowEq(draft, initial), [draft, initial])
 

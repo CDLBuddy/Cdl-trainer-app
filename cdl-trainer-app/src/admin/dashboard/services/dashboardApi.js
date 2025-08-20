@@ -9,8 +9,8 @@
 /* -------------------------------- Flags ---------------------------------- */
 /** Toggle to use baked-in mocks (handy during dev / offline) */
 export const USE_DASHBOARD_MOCKS =
-  (typeof window !== 'undefined' && window.__DASHBOARD_MOCKS__) ??
-  (import.meta?.env?.VITE_DASHBOARD_MOCKS === 'true') ??
+  (typeof window !== 'undefined' && window.__DASHBOARD_MOCKS__) ||
+  (import.meta?.env?.VITE_DASHBOARD_MOCKS === 'true') ||
   true // default true until your real endpoints are wired
 
 /** Optional base URL for HTTP API (if you’re not using Firestore/callables) */

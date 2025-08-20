@@ -129,7 +129,7 @@ function mapPaymentDoc(d) {
  * @param {{schoolId:string, signal?:AbortSignal}} params
  * @returns {Promise<EmployerInvoice[]>}
  */
-export async function fetchEmployerInvoices({ schoolId, signal } = {}) {
+export async function fetchEmployerInvoices({ schoolId, _signal } = {}) {
   const ck = _key('billing:invoices', { schoolId })
   const hit = _getCached(ck)
   if (hit) return hit
@@ -174,7 +174,7 @@ export async function markEmployerInvoicePaid({ invoiceId /*, schoolId, signal*/
  * @param {{schoolId:string, signal?:AbortSignal}} params
  * @returns {Promise<IndividualPayment[]>}
  */
-export async function fetchIndividualPayments({ schoolId, signal } = {}) {
+export async function fetchIndividualPayments({ schoolId, _signal } = {}) {
   const ck = _key('billing:payments', { schoolId })
   const hit = _getCached(ck)
   if (hit) return hit

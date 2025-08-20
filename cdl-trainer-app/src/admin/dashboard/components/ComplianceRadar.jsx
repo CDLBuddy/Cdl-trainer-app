@@ -106,7 +106,6 @@ function ComplianceRadar({
     <section
       className={styles.card}
       aria-label="Compliance snapshot"
-      role="region"
       data-widget="compliance-radar"
     >
       <header className={styles.header}>

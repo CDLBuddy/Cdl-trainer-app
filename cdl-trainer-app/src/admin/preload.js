@@ -17,7 +17,6 @@
 
 // ---------- tiny SSR guards -------------------------------------------
 const hasWindow   = () => typeof window !== 'undefined'
-const hasDocument = () => typeof document !== 'undefined' // (kept for parity)
 
 // ---------- one-shot helper (prevents duplicate loads) ----------------
 const _onceKeys = new Set()

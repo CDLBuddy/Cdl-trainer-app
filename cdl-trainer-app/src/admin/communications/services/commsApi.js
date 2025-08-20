@@ -2,7 +2,7 @@
 // API client for communications (placeholder)
 export async function sendMessage(payload) {
   // TODO: integrate with Firestore, Cloud Function, or email service
-  console.log('Sending message:', payload)
+  console.warn('Sending message:', payload)
 }
 
 export async function fetchHistory() {

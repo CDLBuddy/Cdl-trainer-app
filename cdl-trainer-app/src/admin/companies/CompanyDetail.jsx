@@ -179,7 +179,7 @@ export default function CompanyDetail() {
     activeStudents: roster.length,
     openEnrollments: roster.filter(r => (r.profile?.enrollmentStatus || '').toLowerCase() === 'open').length,
     lastActivityLabel: company?.updatedAt ? new Date(company.updatedAt).toLocaleString() : '',
-  }), [roster.length, company?.updatedAt])
+  }), [roster, company?.updatedAt])
 
   const handleOpenAdd = useCallback(() => {
     // Warm the chunk so it feels instant when the drawer mounts

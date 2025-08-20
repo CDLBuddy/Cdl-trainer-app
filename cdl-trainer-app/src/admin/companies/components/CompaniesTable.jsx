@@ -7,8 +7,9 @@
 // - Non-breaking: matches existing CompanyRow API
 // ============================================================================
 
-import React, { memo, useEffect, useMemo, useRef } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useEffect, useMemo, useRef } from 'react'
+
 import CompanyRow from './CompanyRow.jsx'
 
 /**
@@ -99,7 +100,8 @@ function CompaniesTable({
                 key={c.id}
                 company={c}
                 isSelected={selectedSet.has(c.id)}
-                toggleSelect={() => onToggleRow?.(c.id)}      {/* ✅ aligned to CompanyRow API */}
+                // ✅ aligned to CompanyRow API
+                toggleSelect={() => onToggleRow?.(c.id)}
                 onSave={onSaveRow}
                 onRemove={() => onRemoveRow?.(c.id)}
                 onOpenDetail={onOpenDetail}

@@ -159,7 +159,7 @@ async function _fallbackCorePages(role) {
         _once('admin:dashboard',   () => import('@admin/dashboard/AdminDashboard.jsx')),
         _once('admin:companies',   () => import('@admin/companies/AdminCompanies.jsx')),
         _once('admin:companyShow', () => import('@admin/companies/CompanyDetail.jsx')),
-        _once('admin:reports',     () => import('@admin/AdminReports.jsx')),
+        _once('admin:reports',     () => import('@/admin/reports/AdminReports.jsx')),
         _once('admin:billing',     () => import('@admin/billing/Billing.jsx')),
         _once('admin:settings',    () => import('@admin/settings/AdminSettings.jsx')),
         _once('admin:walkthroughs',() => import('@admin/walkthroughs/WalkthroughManager.jsx')),

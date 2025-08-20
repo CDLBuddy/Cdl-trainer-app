@@ -106,7 +106,7 @@ function ActivityFeed({
   )
 
   return (
-    <section className={styles.feed} aria-label="Recent activity" role="region">
+    <section className={styles.feed} aria-label="Recent activity">
       <header className={styles.header}>
         <h3 className={styles.title}>Activity Feed</h3>
       </header>
@@ -114,7 +114,7 @@ function ActivityFeed({
       {list.length === 0 ? (
         <p className={styles.empty}>{emptyText}</p>
       ) : (
-        <ul className={styles.list} role="list">
+        <ul className={styles.list}>
           {list.map((item) => {
             const isValidDate = Number.isFinite(item.date.getTime())
             const absolute = isValidDate ? formatTimeAbsolute(item.date) : ''

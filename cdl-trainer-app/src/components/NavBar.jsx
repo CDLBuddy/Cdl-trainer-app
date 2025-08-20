@@ -178,8 +178,8 @@ function NavBar({ brand: brandProp }) {
     const cancelAdmin = warmAdminOnIdle?.() || (() => {})
     const cancelInstr = warmInstructorOnIdle?.() || (() => {})
     return () => {
-      try { cancelAdmin() } catch {}
-      try { cancelInstr() } catch {}
+      try { cancelAdmin() } catch { /* ignore errors */ }
+      try { cancelInstr() } catch { /* ignore errors */ }
     }
   }, [])
 

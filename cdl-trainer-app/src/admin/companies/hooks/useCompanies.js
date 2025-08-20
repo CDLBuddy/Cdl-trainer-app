@@ -298,6 +298,7 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
     selected, allChecked,
     refresh, addOne, saveOne, removeOne, bulkDelete,
     exportCSV, exportPDF, downloadTemplate, toggleRow, toggleAll,
+    resetImportInput,
   ])
 }
 

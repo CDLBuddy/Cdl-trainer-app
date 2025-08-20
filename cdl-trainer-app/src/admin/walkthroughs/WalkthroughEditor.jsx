@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // Path: /src/admin/walkthroughs/WalkthroughEditor.jsx
 // -----------------------------------------------------------------------------
 // Admin Walkthrough Editor (hybrid)
@@ -98,6 +99,8 @@ export default function WalkthroughEditor({
 
   const topRef = useRef(null)
 
+  // ---- Save/Cancel ----------------------------------------------------------
+
   // Keyboard save (⌘/Ctrl + S) – convenience in editor
   useEffect(() => {
     const handler = (e) => {
@@ -109,7 +112,7 @@ export default function WalkthroughEditor({
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [activeTab, script])
+  }, [activeTab, script, handleSave])
 
   // ---- Visual editor operations --------------------------------------------
 
@@ -226,14 +229,17 @@ export default function WalkthroughEditor({
 
   // ---- Save/Cancel ----------------------------------------------------------
 
-  const handleSave = (source = 'visual') => {
-    const { problems } = validateScript(script)
-    if (problems.length) {
-      setErrors(problems)
-      return
-    }
-    onSave?.({ script: deepClone(script), source })
-  }
+  const handleSave = React.useCallback(
+    (source = 'visual') => {
+      const { problems } = validateScript(script)
+      if (problems.length) {
+        setErrors(problems)
+        return
+      }
+      onSave?.({ script: deepClone(script), source })
+    },
+    [script, onSave]
+  )
 
   // ---- Render ---------------------------------------------------------------
 

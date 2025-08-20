@@ -2,7 +2,7 @@
 // - Safe, limited row-level data for Dashboard only
 // - Wraps internal services; exposes tiny shape + guarded actions
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   fetchEmployerInvoices,
@@ -15,7 +15,7 @@ import {
 } from '../../services'
 
 export default function useBillingDashboard({ schoolId, onToast } = {}) {
-  const toast = (msg, tone = 'info') => onToast?.(msg, tone)
+  const toast = useCallback((msg, tone = 'info') => onToast?.(msg, tone), [onToast])
 
   const [loadingInv, setLoadingInv] = useState(false)
   const [loadingPay, setLoadingPay] = useState(false)
@@ -44,7 +44,7 @@ export default function useBillingDashboard({ schoolId, onToast } = {}) {
     } finally {
       if (aliveRef.current) setLoadingInv(false)
     }
-  }, [schoolId])
+  }, [schoolId, toast])
 
   const refreshIndividualPayments = useCallback(async () => {
     if (!schoolId && !USE_BILLING_MOCKS) return
@@ -62,7 +62,7 @@ export default function useBillingDashboard({ schoolId, onToast } = {}) {
     } finally {
       if (aliveRef.current) setLoadingPay(false)
     }
-  }, [schoolId])
+  }, [schoolId, toast])
 
   useEffect(() => {
     refreshEmployerInvoices()
@@ -81,7 +81,7 @@ export default function useBillingDashboard({ schoolId, onToast } = {}) {
       console.error('[useBillingDashboard] mark paid failed', e)
       toast?.('Error marking invoice paid.', 'error')
     }
-  }, [schoolId, refreshEmployerInvoices])
+  }, [schoolId, refreshEmployerInvoices, toast])
 
   const handleToggleReconciled = useCallback(async (paymentId, next) => {
     if (!paymentId) return
@@ -95,7 +95,7 @@ export default function useBillingDashboard({ schoolId, onToast } = {}) {
       console.error('[useBillingDashboard] reconcile failed', e)
       toast?.('Error updating reconciliation.', 'error')
     }
-  }, [schoolId, refreshIndividualPayments])
+  }, [schoolId, refreshIndividualPayments, toast])
 
   return {
     loading: loadingInv || loadingPay,

@@ -128,7 +128,6 @@ function KpiRow({
 
         const delta = Number.isFinite(Number(deltas[key])) ? Number(deltas[key]) : null
         const isUp = typeof delta === 'number' && delta > 0
-        const isDown = typeof delta === 'number' && delta < 0
 
         return (
           <Tag

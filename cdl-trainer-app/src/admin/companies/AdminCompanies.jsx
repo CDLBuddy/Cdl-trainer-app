@@ -61,7 +61,7 @@ function AdminCompanies() {
     importRef,
 
     // actions
-    addOne, saveOne, removeOne, bulkDelete,
+    saveOne, removeOne, bulkDelete,
     exportCSV, exportPDF, downloadTemplate,
     toggleRow, toggleAll,
   } = useCompanies({ schoolId, userEmail, showToast })

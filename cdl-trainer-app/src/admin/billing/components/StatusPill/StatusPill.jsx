@@ -106,4 +106,4 @@ StatusPill.propTypes = {
 export default memo(StatusPill)
 
 /** Optional named export if you want to reuse the canonicalizer elsewhere. */
-export const normalizeStatus = normalize
+// Moved normalizeStatus export to normalizeStatus.js for Fast Refresh compatibility.

@@ -129,8 +129,13 @@ export default function Billing() {
 
       {/* Accepted Methods / Terms (if you want to surface them) */}
       <div className={styles.fieldGroup}>
-        <label className={styles.label}>Accepted Payment Methods</label>
-        <div className={styles.row}>
+        <label className={styles.label} htmlFor="accepted-methods-group">Accepted Payment Methods</label>
+        <div
+          className={styles.row}
+          role="group"
+          id="accepted-methods-group"
+          aria-labelledby="accepted-methods-label"
+        >
           <label className={styles.check}>
             <input
               type="checkbox"

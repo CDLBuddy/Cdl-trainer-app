@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // Path: /src/admin/walkthroughs/WalkthroughForm.jsx
 // -----------------------------------------------------------------------------
 // WalkthroughForm (structured form editor)

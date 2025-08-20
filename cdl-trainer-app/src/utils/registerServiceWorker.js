@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // src/utils/registerServiceWorker.js
 // ======================================================================
 // Service Worker Registration Helper

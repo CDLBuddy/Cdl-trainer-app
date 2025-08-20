@@ -63,7 +63,6 @@ function CompaniesMiniTable({
   return (
     <section
       className={styles.card}
-      role="region"
       aria-label="Companies overview"
       data-widget="companies-mini-table"
     >

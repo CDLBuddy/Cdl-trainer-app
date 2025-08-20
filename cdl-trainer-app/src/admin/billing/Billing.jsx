@@ -107,6 +107,7 @@ export default function Billing() {
         aria-label="Billing views"
         aria-orientation="horizontal"
         onKeyDown={onKeyTabs}
+        tabIndex={0}
         style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}
       >
         <TabButton

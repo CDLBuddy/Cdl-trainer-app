@@ -250,7 +250,7 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
     } finally {
       setBusy(false)
       // reset file input to allow same file re-select if needed
-      try { if (fileInputRef.current) fileInputRef.current.value = '' } catch {}
+      try { if (fileInputRef.current) fileInputRef.current.value = '' } catch { /* ignore error resetting file input */ }
     }
   }
 

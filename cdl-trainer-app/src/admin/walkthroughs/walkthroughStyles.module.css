@@ -84,18 +84,29 @@ Styles for Admin Walkthrough UI (CSS Module)
 }
 
 .cardMuted {
-  composes: card;
+  background: var(--aw-surface);
+  border: 1px solid var(--aw-border);
+  border-radius: var(--aw-radius);
+  box-shadow: var(--aw-shadow-1);
+  padding: 16px;
   background: #fafafa;
 }
 
 .cardWarn {
-  composes: card;
+  background: var(--aw-surface);
+  border: 1px solid var(--aw-border);
+  border-radius: var(--aw-radius);
+  box-shadow: var(--aw-shadow-1);
+  padding: 16px;
   border-color: #fecaca;
   background: #fff7ed;
 }
 
 .cardInset {
-  composes: card;
+  background: var(--aw-surface);
+  border: 1px solid var(--aw-border);
+  border-radius: var(--aw-radius);
+  box-shadow: var(--aw-shadow-1);
   padding: 12px;
   border-radius: var(--aw-radius-sm);
 }
@@ -116,87 +127,117 @@ Styles for Admin Walkthrough UI (CSS Module)
   cursor: pointer;
   transition: transform .02s ease-in-out, box-shadow .12s ease-in-out;
 }
-.btn:hover { box-shadow: var(--aw-shadow-1); }
-.btn:active { transform: translateY(1px); }
-.btn:disabled { opacity: .6; cursor: not-allowed; }
 
 .btnPrimary {
-  composes: btn;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--aw-border);
   background: var(--aw-primary);
   color: var(--aw-primary-contrast);
   border-color: var(--aw-primary);
 }
 
 .btnAccent {
-  composes: btn;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--aw-border);
   background: var(--aw-accent);
   color: var(--aw-accent-contrast);
-  border-color: var(--aw-accent);
+  cursor: pointer;
+  transition: transform .02s ease-in-out, box-shadow .12s ease-in-out;
 }
 
-.btnWarn {
-  composes: btn;
-  background: var(--aw-warn);
-  color: var(--aw-warn-contrast);
-  border-color: var(--aw-warn);
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--aw-border);
+  background: #ffffff;
+  color: var(--aw-text);
+  cursor: pointer;
+  transition: transform .02s ease-in-out, box-shadow .12s ease-in-out;
+  width: 32px;
+  height: 32px;
 }
 
 .btnDanger {
-  composes: btn;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--aw-border);
+  background: #ffffff;
+  color: var(--aw-text);
+  cursor: pointer;
+  transition: transform .02s ease-in-out, box-shadow .12s ease-in-out;
   background: var(--aw-danger);
   color: var(--aw-danger-contrast);
   border-color: var(--aw-danger);
 }
 
 .btnGhost {
-  composes: btn;
-  background: transparent;
-}
-
-/* Icon-only button */
-.iconBtn {
-  composes: btn;
-  padding: 6px 8px;
-  width: 32px;
-  height: 32px;
-}
-
-/* Toolbar group */
-.toolbar {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
-  flex-wrap: wrap;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Inputs                                                                     */
-/* -------------------------------------------------------------------------- */
-.input, .select, .textarea {
-  width: 100%;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid var(--aw-border);
-  background: #fff;
+  background: transparent;
   color: var(--aw-text);
-  outline: none;
-}
-.textarea {
-  resize: vertical;
-  min-height: 96px;
-  font-family: inherit;
-}
-.input:focus, .select:focus, .textarea:focus {
-  border-color: #c7d2fe;
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, .25);
+  cursor: pointer;
+  transition: transform .02s ease-in-out, box-shadow .12s ease-in-out;
+  border-color: #d1d5db;
 }
 
-/* Field label + hint */
-.label {
-  display: block;
-  font-size: 12px;
-  color: var(--aw-muted);
-  margin-bottom: 4px;
+.tabActive {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--aw-border);
+  background: #eef2ff;
+.tabActive {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+.tabActive {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--aw-border);
+  background: #eef2ff;
+  color: var(--aw-text);
+  cursor: pointer;
+  transition: transform .02s ease-in-out, box-shadow .12s ease-in-out;
+  border-color: #c7d2fe;
+  outline: none;
 }
+  border-radius: var(--aw-radius);
+  box-shadow: var(--aw-shadow-1);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
 
 .help {
   font-size: 12px;
@@ -219,15 +260,23 @@ Styles for Admin Walkthrough UI (CSS Module)
   gap: 8px;
   flex-wrap: wrap;
 }
-.tab {
-  composes: btn;
-  border-color: #d1d5db;
-  background: #fff;
+.alert {
+  background: var(--aw-surface);
+  border: 1px solid var(--aw-border);
+  border-radius: var(--aw-radius);
+  box-shadow: var(--aw-shadow-1);
+  padding: 16px;
+  background: #fff7ed;
+  border-color: #fecaca;
 }
-.tabActive {
-  composes: tab;
-  background: #eef2ff;
-  border-color: #c7d2fe;
+.alertOk {
+  background: var(--aw-surface);
+  border: 1px solid var(--aw-border);
+  border-radius: var(--aw-radius);
+  box-shadow: var(--aw-shadow-1);
+  padding: 16px;
+  background: #ecfdf5;
+  border-color: #bbf7d0;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -247,44 +296,44 @@ Styles for Admin Walkthrough UI (CSS Module)
   background: #f9fafb;
   border-bottom: 1px solid var(--aw-border);
   font-weight: 600;
-}
-
-.trow {
+.btnOutline {
+  display: inline-flex;
+  align-items: center;
+.thead {
   display: grid;
   grid-template-columns: 240px 110px 90px 120px 1fr 260px;
   padding: 10px 12px;
-  border-bottom: 1px solid var(--aw-border-subtle);
+  background: #f9fafb;
+  border-bottom: 1px solid var(--aw-border);
+  font-weight: 600;
+}
+  color: var(--aw-text);
+  transition: transform .02s ease-in-out, box-shadow .12s ease-in-out;
+}
+
+.btnLink {
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+.thead {
+  display: grid;
+  grid-template-columns: 240px 110px 90px 120px 1fr 260px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-bottom: 1px solid var(--aw-border);
+  font-weight: 600;
+  color: var(--aw-text);
+  transition: transform .02s ease-in-out, box-shadow .12s ease-in-out;
 }
-
-@media (max-width: 840px) {
-  .thead, .trow {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/* Chips                                                                      */
-/* -------------------------------------------------------------------------- */
-.chip {
-  display: inline-block;
   padding: 2px 8px;
   border-radius: 999px;
   font-size: 12px;
   line-height: 18px;
-  background: rgba(107,114,128,.12);
-  color: #1f2937;
+  background: rgba(37, 99, 235, .12);
+  color: #1e3a8a;
 }
-.chipOk   { background: rgba(16,185,129,.12); color: #065f46; }
-.chipWarn { background: rgba(245,158,11,.12); color: #92400e; }
-.chipErr  { background: rgba(239,68,68,.12); color: #7f1d1d; }
-.chipInfo { background: #e0e7ff; color: #3730a3; }
-
-/* -------------------------------------------------------------------------- */
-/* Section / Step blocks                                                      */
 /* -------------------------------------------------------------------------- */
 .section {
-  composes: card;
   margin-bottom: 16px;
 }
 .sectionHeader {
@@ -306,38 +355,33 @@ Styles for Admin Walkthrough UI (CSS Module)
   gap: 8px;
 }
 .stepFlags {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 6px;
+.btnIconRight { display: inline-flex; gap: 6px; align-items: center; flex-direction: row-reverse; color: #1f2937; }
+.chipOk   { background: rgba(16,185,129,.12); color: #065f46; }
+.chipNeutral { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; line-height: 18px; background: rgba(107,114,128,.12); color: #1f2937; }
+.chipPrimary {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 18px;
+  background: rgba(37, 99, 235, .12);
+  color: #1e3a8a;
 }
-
-/* -------------------------------------------------------------------------- */
-/* Alerts                                                                     */
-/* -------------------------------------------------------------------------- */
+.alertOk {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+}
+/* === Accessibility & motion ================================================= */
+:global(:root) {
+  --aw-focus-ring: 0 0 0 3px rgba(37, 99, 235, .35);
 .alert {
-  composes: card;
   background: #fff7ed;
   border-color: #fecaca;
 }
 .alertOk {
-  composes: card;
   background: #ecfdf5;
   border-color: #bbf7d0;
 }
-
-/* === Accessibility & motion ================================================= */
-:global(:root) {
-  --aw-focus-ring: 0 0 0 3px rgba(37, 99, 235, .35);
-}
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .btn { transition: none; }
-}
-
-/* High-visibility focus ring for all focusable elements inside this module */
-:global(.aw-scope) :is(button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])):focus {
   outline: none;
   box-shadow: var(--aw-focus-ring);
 }
@@ -345,92 +389,59 @@ Styles for Admin Walkthrough UI (CSS Module)
 /* Screen-reader only text */
 .srOnly {
   position: absolute !important;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+.alert {
+  background: #fff7ed;
+  border-color: #fecaca;
 }
-
-/* === Buttons (extras) ====================================================== */
-.btnOutline {
-  composes: btn;
-  background: transparent;
+.alertOk {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+}
   border-color: var(--aw-border);
+/* -------------------------------------------------------------------------- */
+/* Alerts                                                                     */
+/* -------------------------------------------------------------------------- */
+.alert {
+  background: #fff7ed;
+  border-color: #fecaca;
 }
-
-.btnIconLeft { display: inline-flex; gap: 6px; align-items: center; }
-.btnIconRight { display: inline-flex; gap: 6px; align-items: center; flex-direction: row-reverse; }
-
-/* Subtle "link-like" button */
-.btnLink {
-  composes: btn;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--aw-accent);
+.alertOk {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
 }
-
-/* === Inputs (addons) ======================================================= */
-.inputSm { composes: input; padding: 6px 8px; font-size: 14px; }
-.inputLg { composes: input; padding: 12px 14px; font-size: 16px; }
-
-/* Inline help/error */
-.helpErr { composes: help; color: #991b1b; }
-
-/* === Table polish ========================================================== */
-.tableWrap {
-  overflow: auto;
-  border-radius: var(--aw-radius);
-  background: #fff;
-  border: 1px solid var(--aw-border);
-}
-
-/* Clickable sortable header button look */
-.thBtn {
   background: transparent;
   border: 0;
-  padding: 0;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
+:global(:root) {
+  --aw-focus-ring: 0 0 0 3px rgba(37, 99, 235, .35);
 }
-
-/* Zebra rows on wide view */
-@media (min-width: 840px) {
-  .trow:nth-child(even) { background: #fcfcfc; }
 }
-
-/* === Chips (extras) ======================================================== */
-.chipNeutral { composes: chip; }
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 18px;
+  background: rgba(107,114,128,.12);
+  color: #1f2937;
+}
 .chipPrimary {
-  composes: chip;
-  background: rgba(37, 99, 235, .12);
-  color: #1e3a8a;
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+.srOnly {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
 }
-
-/* === Tabs (kbd navigation hint) =========================================== */
-.tab[aria-pressed="true"]::after {
-  content: '';
-  display: block;
-  height: 2px;
-  background: var(--aw-accent);
-  margin-top: 2px;
-  border-radius: 2px;
+:focus {
+  outline: none;
+  box-shadow: var(--aw-focus-ring);
 }
-
-/* === Dark mode hook (optional; if your /styles/theme.css sets a .dark) ===== */
-:global(.dark) :global(:root) {
-  --aw-bg: #0b0f19;
-  --aw-surface: #0f1422;
-  --aw-text: #e5e7eb;
-  --aw-muted: #9ca3af;
-  --aw-border: #1f2937;
-  --aw-border-subtle: #111827;
-  --aw-primary: #2563eb;
-  --aw-primary-contrast: #ffffff;
-}
-:global(.dark) .card,
-:global(.dark) .table,
-:global(.dark) .textarea,
+.helpErr { color: #991b1b; }
 :global(.dark) .input,
 :global(.dark) .select {
   background: var(--aw-surface);
@@ -438,22 +449,12 @@ Styles for Admin Walkthrough UI (CSS Module)
   border-color: var(--aw-border);
 }
 :global(.dark) .thead { background: #111827; }
-/* -------------------------------------------------------------------------- */
-/* Misc                                                                       */
-/* -------------------------------------------------------------------------- */
-.placeholder {
-  border: 1px dashed #ccc;
-  padding: 1rem;
-  background: #f9f9f9;
-  border-radius: var(--aw-radius-sm);
-}
-
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-.muted { color: var(--aw-muted); }
-
 .hr {
   height: 1px;
   background: var(--aw-border);
   border: 0;
   margin: 12px 0;
+}.btnOutline {
+  background: transparent;
+  border-color: var(--aw-border);
 }

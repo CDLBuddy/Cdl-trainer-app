@@ -7,15 +7,11 @@
 // ============================================================================
 
 // ---- Alphabetized re-exports -----------------------------------------------
-export * from './useAuthSchoolGuard.js'
-export * from './useUserMetrics.js'
-export * from './useUsersQuery.js'
+export * from './useAuthSchoolGuard.js';
+export * from './useUserMetrics.js';
+export { default as useUsersQuery } from './useUsersQuery.jsx';
 
-// ---- Optional: namespaced bundle -------------------------------------------
-// If you prefer: `import * as AdminSubhooks from './subhooks'`
-// (This keeps treeshaking intact for modern bundlers.)
-export const AdminSubhooks = {
-  // Keep keys in sync with the named exports above
-   
-  ...await (async () => ({}))(), // no-op to ensure pure module semantics
-}
+// Note:
+// You can `import * as AdminSubhooks from './subhooks'` directly — no need to
+// build a manual namespace object. ES modules already provide that shape from
+// the named exports above.

@@ -6,18 +6,18 @@
 // - Lazy-loads heavier widgets; resilient empty states
 // ======================================================================
 
+import React, { Suspense, lazy, useMemo } from 'react'
+
+import Shell from '@components/Shell.jsx'
+
+import styles from './AdminDashboard.module.css'
 import {
   useAuthSchoolGuard,
   useDashboardKpis,         // totals / expiring / incomplete
   useCompaniesSnapshot,    // top companies
   useDashboardAlerts,      // expiring docs, overdue, etc.
   useRecentActivity,       // activity feed items
-} from '@admin/hooks'
-import React, { Suspense, lazy, useMemo } from 'react'
-
-import Shell from '@components/Shell.jsx'
-
-import styles from './AdminDashboard.module.css'
+} from './hooks/useDashboardKpis.js'
 
 // ---- Hooks (from admin hooks barrel) ---------------------------------
 

@@ -36,7 +36,6 @@ function ReportsTiles({
     <section
       className={styles.card}
       aria-label="Reports navigation"
-      role="region"
       data-widget="reports-tiles"
     >
       <header className={styles.header}>

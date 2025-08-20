@@ -10,7 +10,7 @@ import PropTypes from 'prop-types'
 import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
 
-import { useBillingSummary } from '../../bridges'
+import { useBillingSummary } from '../../utils'
 
 import styles from './BillingSummaryCard.module.css'
 

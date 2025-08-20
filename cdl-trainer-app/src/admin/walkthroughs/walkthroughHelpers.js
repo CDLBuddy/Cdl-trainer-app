@@ -13,7 +13,6 @@ import {
   parseXlsx as coreParseXlsx,
   validateWalkthroughShape as coreValidateShape,
 } from '@walkthrough-data/utils'
-
 // ---- Base defaults (no overlays applied) -----------------------------------
 import defaultA from '@walkthrough-defaults/walkthrough-class-a.js'
 import defaultB from '@walkthrough-defaults/walkthrough-class-b.js'

@@ -48,7 +48,7 @@ import useEmployerBilling from '../internal/useEmployerBilling.js'
  *   lastPaymentLabel: string,
  * } | null, loading: boolean }}
  */
-export default function useBillingSummary({ schoolId, companyId, mode = 'employer' } = {}) {
+export default function useBillingSummary({ schoolId, mode = 'employer' } = {}) {
   // For MVP we aggregate employer invoices to produce a compact summary.
   // When student mode is ready, branch on `mode` and compute from student payments.
   const {
@@ -99,7 +99,7 @@ export default function useBillingSummary({ schoolId, companyId, mode = 'employe
       openInvoices,
       lastPaymentLabel,
     }
-  }, [employerInvoices, mode, companyId])
+  }, [employerInvoices, mode])
 
   return {
     summary,

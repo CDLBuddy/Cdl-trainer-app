@@ -12,9 +12,9 @@ function CardLink({ emoji, title, description, to, cta = 'Open', badge, disabled
   }, [disabled, navigate, to])
 
   return (
-    <article
+    <button
+      type="button"
       className="dashboard-card"
-      role="button"
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled ? 'true' : 'false'}
       onClick={go}
@@ -30,7 +30,12 @@ function CardLink({ emoji, title, description, to, cta = 'Open', badge, disabled
         outline: 'none',
         display: 'grid',
         gap: 8,
+        background: 'none',
+        border: 'none',
+        padding: 0,
+        textAlign: 'left',
       }}
+      disabled={disabled}
     >
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
         <h3 style={{ margin: 0 }}>
@@ -65,12 +70,11 @@ function CardLink({ emoji, title, description, to, cta = 'Open', badge, disabled
             go()
           }}
           disabled={disabled}
-          aria-label={`${cta}: ${title}`}
         >
           {cta}
         </button>
       </div>
-    </article>
+    </button>
   )
 }
 

@@ -102,7 +102,7 @@
 .cardActions { display: inline-flex; gap: 8px; }
 
 /* ---------- Alerts / Deadlines ---------- */
-.alertsCard { /* marker for scripting if needed */ }
+/* .alertsCard marker for scripting if needed */
 .alertItem {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -122,7 +122,7 @@
 }
 
 /* ---------- Companies mini-table ---------- */
-.companiesCard { /* inherits .card */ }
+/* .companiesCard inherits .card */
 .miniTable {
   width: 100%;
   border-collapse: collapse;
@@ -145,7 +145,7 @@
 .trendDown { color: var(--error, #e53e3e); font-weight: 700; }
 
 /* ---------- Activity feed ---------- */
-.activityCard { /* inherits .card */ }
+/* .activityCard inherits .card */
 .feed { display: grid; gap: 8px; }
 .feedItem {
   display: grid;
@@ -165,7 +165,7 @@
 .feedMeta { font-size: .8rem; opacity: .8; }
 
 /* ---------- Quick actions ---------- */
-.quickActions { /* inherits .card */ }
+/* .quickActions inherits .card */
 .actionsGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0,1fr));
@@ -225,7 +225,7 @@
 .reportDesc  { font-size: .9rem; opacity: .9; }
 
 /* ---------- Compliance snapshot ---------- */
-.complianceCard { /* inherits .card */ }
+/* .complianceCard inherits .card */
 .complianceChart {
   min-height: 220px;
   display: grid;

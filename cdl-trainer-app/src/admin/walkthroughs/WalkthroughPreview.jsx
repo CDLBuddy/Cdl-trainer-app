@@ -58,7 +58,7 @@ export default function WalkthroughPreview({ item, onClose, onSubmit }) {
   const script = useMemo(() => (Array.isArray(item?.script) ? item.script : []), [item?.script])
 
   const stats = useMemo(() => {
-    let sections = script.length, steps = 0, required = 0, passFail = 0
+    const sections = script.length; let steps = 0, required = 0, passFail = 0
     script.forEach((s) => {
       const n = Array.isArray(s.steps) ? s.steps.length : 0
       steps += n

@@ -114,7 +114,16 @@ export default function Compliance({ vm }) {
 
       {/* Required documents */}
       <div className={styles.fieldGroup}>
-        <label className={styles.label}>Required Documents</label>
+        <label
+          className={styles.label}
+          htmlFor={
+            allDocOptions.length > 0
+              ? `doc-${allDocOptions[0].replace(/\s+/g, '-').toLowerCase()}`
+              : 'custom-doc-input'
+          }
+        >
+          Required Documents
+        </label>
         <div className={styles.listGrid}>
           {allDocOptions.map((doc) => {
             const id = `doc-${doc.replace(/\s+/g, '-').toLowerCase()}`

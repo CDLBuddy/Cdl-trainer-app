@@ -125,7 +125,7 @@ export default function ExportCompaniesControls({
         let y = startY + lineH
         const rows = rowsFromCompanies(list)
 
-        rows.forEach((row, idx) => {
+        rows.forEach((row, _) => {
           // Add page if needed (reserve room for footer margin)
           if (y > pageH - margin) {
             doc.addPage()

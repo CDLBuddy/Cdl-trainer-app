@@ -108,13 +108,14 @@ export function useRecentActivity({ schoolId, limit = 20 } = {}) {
 
   useEffect(() => {
     let cancelled = false
+    const currentReqId = reqIdRef.current
     ;(async () => {
       await fetchOnce()
       if (cancelled) return
     })()
     return () => {
       cancelled = true
-      reqIdRef.current++ // invalidate in-flight responses
+      reqIdRef.current = currentReqId + 1 // invalidate in-flight responses
     }
   }, [fetchOnce])
 

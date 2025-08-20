@@ -99,7 +99,9 @@ function Shell({
     if (typeof logout === 'function') {
       logout()
     } else {
-      try { localStorage.clear() } catch {}
+      try { localStorage.clear() } catch {
+        // intentionally ignore errors when clearing localStorage
+      }
       navigate('/login', { replace: true })
     }
   }, [logout, navigate])

@@ -80,7 +80,7 @@ export function useAuthSchoolGuard(opts = {}) {
         if (!redirectedRef.current) {
           redirectedRef.current = true
           showToast('No user found. Please log in again.', 'error')
-          try { hasWindow && (/** @type any */(window)).handleLogout?.() } catch {}
+          try { hasWindow && (/** @type any */(window)).handleLogout?.() } catch { /* ignore logout errors */ }
           navigate(redirectTo, { replace: true })
           onDenied?.('no-user')
         }
@@ -104,8 +104,8 @@ export function useAuthSchoolGuard(opts = {}) {
             const fromArray = Array.isArray(profile.assignedSchools) && profile.assignedSchools[0]
             sid = String(profile.schoolId || fromArray || sid || '')
             // keep cache warm
-            if (role) { try { localStorage.setItem('userRole', role) } catch {} }
-            if (sid)  { try { localStorage.setItem('schoolId', sid) } catch {} }
+            if (role) { try { localStorage.setItem('userRole', role) } catch { /* ignore localStorage errors */ } }
+            if (sid)  { try { localStorage.setItem('schoolId', sid) } catch { /* ignore localStorage errors */ } }
           }
         } catch (err) {
           // Non-fatal: proceed with cache
@@ -126,7 +126,7 @@ export function useAuthSchoolGuard(opts = {}) {
         if (!redirectedRef.current) {
           redirectedRef.current = true
           showToast('Access denied. Please log in with the correct role.', 'error')
-          try { hasWindow && (/** @type any */(window)).handleLogout?.() } catch {}
+          try { hasWindow && (/** @type any */(window)).handleLogout?.() } catch { /* ignore logout errors */ }
           navigate(redirectTo, { replace: true })
           onDenied?.('denied')
         }
@@ -146,7 +146,7 @@ export function useAuthSchoolGuard(opts = {}) {
       if (!redirectedRef.current) {
         redirectedRef.current = true
         showToast('Unexpected error. Please log in again.', 'error')
-        try { (/** @type any */(window)).handleLogout?.() } catch {}
+        try { (/** @type any */(window)).handleLogout?.() } catch { /* ignore logout errors */ }
         navigate(redirectTo, { replace: true })
         onDenied?.('error')
       }

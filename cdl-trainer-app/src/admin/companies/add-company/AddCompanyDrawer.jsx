@@ -118,10 +118,7 @@ function AddCompanyDrawer({ open = false, onClose }) {
     }
   }, [open, onClose, saving])
 
-  // Stop overlay clicks that originate inside the panel
-  const stopOverlayFromPanel = useCallback((e) => {
-    e.stopPropagation()
-  }, [])
+  // (Removed unused stopOverlayFromPanel)
 
   // Close on background click (disabled while saving)
   const onOverlayMouseDown = useCallback((e) => {
@@ -157,19 +154,20 @@ function AddCompanyDrawer({ open = false, onClose }) {
   return (
     <div
       className={styles.overlay}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={titleId}
-      aria-describedby={descId}
-      onMouseDown={onOverlayMouseDown}
+      role="presentation"
+      aria-label="Add company drawer overlay"
       data-testid="add-company-drawer"
+      onMouseDown={onOverlayMouseDown}
     >
       <aside
         ref={panelRef}
         className={styles.drawer}
         tabIndex={-1}
         aria-live="polite"
-        onMouseDown={stopOverlayFromPanel}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descId}
       >
         {/* Header */}
         <header className={styles.header}>
