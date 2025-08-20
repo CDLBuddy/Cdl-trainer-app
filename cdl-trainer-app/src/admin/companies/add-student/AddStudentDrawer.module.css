@@ -1,161 +1,94 @@
-/* ============================================================
-   src/admin/companies/add-student/AddStudentDrawer.module.css
-   Drawer Shell Layout (portal, scrim, panel, etc.)
-   ============================================================ */
-.portalWrap {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  display: grid;                   /* two columns: scrim + drawer panel */
-  grid-template-columns: 1fr auto;
-}
+/* src/admin/companies/add-student/AddStudentDrawer.module.css */
+/* ============================================================================
+   Add Student • Drawer Form
+   - Theme-aware (uses tokens from src/styles/theme.css)
+   - Clean spacing, readable labels, accessible focus/error states
+   ========================================================================== */
 
-.scrim {
-  width: 100%;
-  height: 100%;
-  background: rgba(15, 23, 42, 0.5); /* dark backdrop */
-  border: 0;
-  padding: 0;
-  margin: 0;
-  display: block;
-  cursor: default;
-  transition: opacity 240ms ease;   /* fade in/out */
-}
-
-.panel {
-  width: min(92vw, 520px);          /* responsive: 92% of viewport max 520px */
-  height: 100dvh;                   /* full viewport height (supports iOS dynamic units) */
-  background: #fff;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  border-radius: 0;                 /* flat edges; could round for mobile sheet */
-  transition: transform 240ms ease; /* slide animation */
-}
-
-/* ============================================================
-   Drawer Header
-   ============================================================ */
-.header {
-  padding: 16px 16px 10px;
-  border-bottom: 1px solid #eef0f4;
-}
-
-.title {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-/* ============================================================
-   Drawer Body
-   ============================================================ */
-.body {
-  padding: 16px;
-  overflow-y: auto;                 /* scroll if form grows tall */
-  flex: 1;                          /* fills space between header + footer */
-  -webkit-overflow-scrolling: touch;/* smooth scroll on iOS */
-}
-
-/* ============================================================
-   Drawer Footer
-   ============================================================ */
-.footerBar {
-  padding: 12px;
-  border-top: 1px solid #eef0f4;
-  background: #fafafa;              /* subtle background for separation */
-}
-
-.footer {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;        /* align Cancel/Save to the right */
-}
-
-/* ============================================================
-   Form Layout
-   ============================================================ */
+/* Form layout */
 .form {
   display: grid;
-  gap: 12px;                        /* spacing between form blocks */
+  gap: 14px;
 }
 
+/* Grouped block (for derived overlays, etc.) */
 .block {
   display: grid;
-  gap: 6px;                         /* label + input gap */
+  gap: 8px;
+  background:
+    color-mix(in oklab, var(--card-bg, #fff), transparent 0%);
+  border: 1px solid
+    color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 70%);
+  border-radius: var(--radius-md, 10px);
+  padding: 12px;
 }
 
-/* ============================================================
-   Labels & Text
-   ============================================================ */
-.label {
-  font-size: 12px;
-  color: #6b7280;                   /* muted gray */
-}
-
-.labelStrong {
-  font-weight: 600;
-  font-size: 13px;
-  color: #374151;
-}
-
-.req {
-  color: #b91c1c;                   /* red asterisk for required */
-}
-
-.hint {
-  font-size: 12px;
-  color: #6b7280;
-}
-
-/* ============================================================
-   Inputs & Selects
-   ============================================================ */
-.input,
-.select {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
-}
-
-.input:focus,
-.select:focus {
-  border-color: #6366f1;            /* indigo border */
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); /* accessible glow */
-}
-
-/* ============================================================
-   Error States
-   ============================================================ */
-.error {
-  color: #b91c1c;
-  font-size: 0.95rem;
-  font-weight: 500;
-  margin-top: 4px;
-}
-
-/* ============================================================
-   Overlay Chips
-   ============================================================ */
-.chips {
+/* Row for block header + actions */
+.labelRow {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;                  /* wrap to new line if too many */
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
 }
 
-.chip {
-  padding: 2px 8px;
-  border-radius: 999px;             /* pill shape */
-  background: #eef2ff;              /* indigo background */
-  color: #3730a3;                   /* indigo text */
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.4;
-  white-space: nowrap;              /* keep chip text single line */
+/* Emphasized label */
+.labelStrong {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-light, #e0e0e0);
+}
+
+/* Small helper text */
+.hint {
+  color: var(--text-dark, #9aa8b2);
+  font-size: 0.9rem;
+}
+
+/* Inline error region (alert) */
+.error {
+  color: var(--error, #e53e3e);
+  background:
+    color-mix(in oklab, var(--error, #e53e3e), #ffffff 92%);
+  border: 1px solid
+    color-mix(in oklab, var(--error, #e53e3e), #ffffff 55%);
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 10px);
+}
+
+/* Footer action row (buttons live in DrawerShell via FormActions) */
+.footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* -------------------- Nice-to-haves -------------------- */
+
+/* Make any inputs inside the form feel consistent, but defer to local styles */
+.form :where(input, select, textarea) {
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 75%);
+  background: var(--card-bg, #ffffff0f);
+  color: var(--text-light, #e0e0e0);
+}
+
+.form :where(input:focus, select:focus, textarea:focus) {
+  outline: none;
+  box-shadow: var(--ring, 0 0 0 3px rgba(78,145,173,.25));
+  border-color: var(--brand-light, #4e91ad);
+}
+
+/* Respect reduced motion users (no future animations here, but safe default) */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Narrow screens: tighten vertical rhythm a bit */
+@media (max-width: 480px) {
+  .form { gap: 12px; }
+  .block { padding: 10px; }
 }

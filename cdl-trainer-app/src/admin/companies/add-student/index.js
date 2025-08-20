@@ -1,31 +1,19 @@
 // Path: src/admin/companies/add-student/index.js
-// ======================================================================
-// ADMIN • Companies • Add Student (barrel)
-// - Canonical re-exports for the add-student drawer and submodules
-// - Keep this file JSX/CSS free so Fast Refresh and tree-shaking stay snappy
-// ======================================================================
+// ============================================================================
+// Admin • Companies • Add-Student (feature barrel)
+// - Single entry point for the add-student drawer + internals
+// - Side-effect free; safe for tree-shaking
+// - Consumers can import either the high-level drawer or the parts
+// ============================================================================
 
-// Main entry (UI)
+// Primary component
 export { default as AddStudentDrawer } from './AddStudentDrawer.jsx'
 
-// Core parts (UI atoms specific to this drawer)
-export { default as DrawerShell }  from './DrawerShell.jsx'
-export { default as FormFields }   from './FormFields.jsx'
-export { default as OverlayChips } from './OverlayChips.jsx'
-
-// Hook (state & submit orchestration for the drawer)
-export { default as useAddStudentForm } from './useAddStudentForm.js'
-
-// Submodule barrels (pure functions only; safe to star-export)
-export * from './utils'     // trapFocus, EMAIL_RE, validate, canSave, toPayload, etc.
-export * from './services'  // saveStudent (and future service calls)
-
-// Optional: CSS module
-// ⚠️ Exporting styles from a barrel can make bundling slightly less optimal.
-// If you want convenient imports, leave this on. If you prefer stricter
-// code-splitting, import the CSS where it’s used instead.
-// export { default as styles } from './AddStudentDrawer.module.css'
-
+// Submodule barrels
+export * from './components'   // DrawerShell, FormActions, FormFields, OverlayChips
+export * from './hooks'        // useAddStudentForm
+export * from './services'     // any network/storage helpers used by the form
+export * from './utils'        // validations, transforms, trapFocus, etc.
 // ----------------------------------------------------------------------
 // Usage examples:
 //

@@ -1,11 +1,17 @@
 // Path: src/admin/companies/components/CompaniesTable.jsx
-import React from 'react'
+// ============================================================================
+// CompaniesTable
+// - A11y-first, stateless table wrapper for rendering CompanyRow items
+// - Indeterminate “Select all” when partially selected
+// - Graceful empty state; memoized for perf
+// - Non-breaking: matches existing CompanyRow API
+// ============================================================================
+
+import React, { memo, useEffect, useMemo, useRef } from 'react'
+import PropTypes from 'prop-types'
 import CompanyRow from './CompanyRow.jsx'
 
 /**
- * CompaniesTable
- * A11y-friendly, stateless table wrapper for rendering CompanyRow items.
- *
  * Props:
  *  - rows: Array<Company>
  *  - allChecked: boolean
@@ -16,7 +22,7 @@ import CompanyRow from './CompanyRow.jsx'
  *  - onRemoveRow: (id:string) => Promise<void> | void
  *  - onOpenDetail: (id:string) => void
  *  - showToast: (msg:string, ms?:number, tone?:'info'|'error'|'success') => void
- *  - className?: string  // optional wrapper class
+ *  - className?: string
  */
 function CompaniesTable({
   rows = [],
@@ -31,14 +37,40 @@ function CompaniesTable({
   className = '',
 }) {
   const hasRows = Array.isArray(rows) && rows.length > 0
+  const selCount = selectedSet?.size ?? 0
+  const headerCbRef = useRef(null)
+
+  // Set the header checkbox "indeterminate" state for partial selection
+  useEffect(() => {
+    if (!headerCbRef.current) return
+    headerCbRef.current.indeterminate = !allChecked && selCount > 0
+  }, [allChecked, selCount])
+
+  const colSpan = 7
+
+  const captionText = useMemo(() => {
+    if (!hasRows) return 'Companies table: no results.'
+    return `Companies table: ${rows.length} companies, ${selCount} selected.`
+  }, [hasRows, rows.length, selCount])
 
   return (
-    <div style={{ overflowX: 'auto' }} className={className} role="region" aria-label="Companies table">
-      <table className="companies-table" style={{ width: '100%', minWidth: 760 }} role="table">
+    <div
+      style={{ overflowX: 'auto' }}
+      className={className}
+      role="region"
+      aria-label="Companies table region"
+      data-testid="companies-table-region"
+    >
+      <table className="companies-table" style={{ width: '100%', minWidth: 760 }}>
+        <caption style={{ position: 'absolute', left: -9999, top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>
+          {captionText}
+        </caption>
+
         <thead>
           <tr>
             <th scope="col" style={{ width: 40 }}>
               <input
+                ref={headerCbRef}
                 aria-label="Select all companies"
                 type="checkbox"
                 checked={allChecked}
@@ -57,7 +89,7 @@ function CompaniesTable({
         <tbody>
           {!hasRows ? (
             <tr>
-              <td colSpan={7} style={{ textAlign: 'center', color: '#799', padding: '12px 8px' }}>
+              <td colSpan={colSpan} style={{ textAlign: 'center', color: '#6b7280', padding: '12px 8px' }}>
                 No companies found for this school.
               </td>
             </tr>
@@ -67,7 +99,7 @@ function CompaniesTable({
                 key={c.id}
                 company={c}
                 isSelected={selectedSet.has(c.id)}
-                toggleSelect={() => onToggleRow?.(c.id)}       {/* ✅ aligned to CompanyRow API */}
+                toggleSelect={() => onToggleRow?.(c.id)}      {/* ✅ aligned to CompanyRow API */}
                 onSave={onSaveRow}
                 onRemove={() => onRemoveRow?.(c.id)}
                 onOpenDetail={onOpenDetail}
@@ -81,4 +113,17 @@ function CompaniesTable({
   )
 }
 
-export default React.memo(CompaniesTable)
+CompaniesTable.propTypes = {
+  rows: PropTypes.arrayOf(PropTypes.shape({ id: PropTypes.string.isRequired })).isRequired,
+  allChecked: PropTypes.bool,
+  onToggleAll: PropTypes.func,
+  selectedSet: PropTypes.instanceOf(Set),
+  onToggleRow: PropTypes.func,
+  onSaveRow: PropTypes.func,
+  onRemoveRow: PropTypes.func,
+  onOpenDetail: PropTypes.func,
+  showToast: PropTypes.func,
+  className: PropTypes.string,
+}
+
+export default memo(CompaniesTable)

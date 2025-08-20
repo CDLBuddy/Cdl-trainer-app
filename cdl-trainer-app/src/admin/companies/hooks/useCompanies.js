@@ -2,8 +2,9 @@
 // ======================================================================
 // useCompanies (admin)
 // - Loads/filters companies for a school and exposes CRUD + export actions
-// - Guards against race conditions + offers loading/error states
-// - Keeps side effects isolated in services layer
+// - Race-condition safe (unmount guards), resilient errors, tiny UX niceties
+// - Services encapsulate all I/O; hook remains pure React state/derivations
+// - Back-compat: stable API surface for existing callers
 // ======================================================================
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -59,6 +60,7 @@ const NAME_RE = /^[\w\s\-'.&]+$/
  * @returns {UseCompaniesReturn}
  */
 export function useCompanies({ schoolId, userEmail, showToast }) {
+  // --------------------------- state ----------------------------------
   const [brand, setBrand] = useState({})
   const [companies, setCompanies] = useState([])
   const [search, setSearch] = useState('')
@@ -70,7 +72,7 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
   const importRef = useRef(/** @type {HTMLInputElement|null} */(null))
   const aliveRef = useRef(true)
 
-  // ----- helpers -------------------------------------------------------
+  // --------------------------- helpers --------------------------------
   const toast = useCallback(
     (msg, timeout, type) => showToast?.(msg, timeout, type),
     [showToast]
@@ -82,10 +84,11 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
     } catch { /* noop */ }
   }, [])
 
-  // ----- load list -----------------------------------------------------
+  // --------------------------- load list -------------------------------
   const refresh = useCallback(async () => {
     if (!schoolId) {
       setCompanies([])
+      setError(null)
       return
     }
     setLoading(true)
@@ -93,11 +96,13 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
     try {
       const rows = await listCompaniesBySchool(schoolId)
       if (!aliveRef.current) return
-      setCompanies(rows)
-      // Do not reset selection here automatically; callers might rely on it.
+      setCompanies(Array.isArray(rows) ? rows : [])
+      // Keep selection as-is; callers might rely on it.
     } catch (err) {
       if (!aliveRef.current) return
       const e = err instanceof Error ? err : new Error('Failed to load companies')
+      // eslint-disable-next-line no-console
+      console.error('[useCompanies] list error:', err)
       setError(e)
       toast('Failed to load companies.', 3000, 'error')
     } finally {
@@ -111,12 +116,12 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
     return () => { aliveRef.current = false }
   }, [refresh])
 
-  // ----- local filter --------------------------------------------------
+  // --------------------------- local filter ----------------------------
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase()
     if (!term) return companies
     return companies.filter((c) =>
-      `${c.name} ${c.contact} ${c.address}`.toLowerCase().includes(term)
+      `${c.name ?? ''} ${c.contact ?? ''} ${c.address ?? ''}`.toLowerCase().includes(term)
     )
   }, [companies, search])
 
@@ -125,7 +130,7 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
     [filtered.length, selected.size]
   )
 
-  // ----- actions -------------------------------------------------------
+  // --------------------------- actions --------------------------------
   const addOne = useCallback(async ({ name, contact, address }) => {
     const safeName = (name || '').trim()
     if (!safeName) return toast('Enter a company name.')
@@ -137,11 +142,19 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
         toast('Company already exists.', 3000, 'error')
         return
       }
-      await addCompany({ schoolId, userEmail, name: safeName, contact: contact?.trim() || '', address: address?.trim() || '' })
+      await addCompany({
+        schoolId,
+        userEmail,
+        name: safeName,
+        contact: contact?.trim() || '',
+        address: address?.trim() || '',
+      })
       toast('Company added!', 2000, 'success')
       await refresh()
-      setSelected(new Set()) // clear selection after add to avoid accidental bulk ops
-    } catch {
+      setSelected(new Set()) // clear selection to avoid accidental bulk ops
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[useCompanies] addOne error:', err)
       toast('Failed to add company.', 3000, 'error')
     } finally {
       setAdding(false)
@@ -157,7 +170,9 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
       await updateCompany(id, { ...values, name, updatedBy: userEmail })
       toast('Company updated.', 2000, 'success')
       await refresh()
-    } catch {
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[useCompanies] saveOne error:', err)
       toast('Failed to update company.', 3000, 'error')
     }
   }, [refresh, userEmail, toast])
@@ -171,7 +186,9 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
       setSelected((prev) => {
         const n = new Set(prev); n.delete(id); return n
       })
-    } catch {
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[useCompanies] removeOne error:', err)
       toast('Failed to remove company.', 3000, 'error')
     }
   }, [refresh, toast])
@@ -184,25 +201,46 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
       toast('Deleted selected companies.', 2400, 'success')
       await refresh()
       setSelected(new Set())
-    } catch {
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[useCompanies] bulkDelete error:', err)
       toast('Failed to delete selected companies.', 3000, 'error')
     }
   }, [selected, refresh, toast])
 
-  // ----- exports -------------------------------------------------------
+  // --------------------------- exports --------------------------------
   const exportCSV = useCallback(() => {
-    exportCompaniesToCSV(filtered, toast)
+    try {
+      exportCompaniesToCSV(filtered, toast)
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[useCompanies] exportCSV error:', err)
+      toast('Failed to export CSV.', 3000, 'error')
+    }
   }, [filtered, toast])
 
   const exportPDF = useCallback(() => {
-    exportCompaniesToPDF(filtered, toast)
+    try {
+      exportCompaniesToPDF(filtered, toast)
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[useCompanies] exportPDF error:', err)
+      toast('Failed to export PDF.', 3000, 'error')
+    }
   }, [filtered, toast])
 
   const downloadTemplate = useCallback(() => {
-    downloadCompanyTemplateCSV()
-  }, [])
+    try {
+      downloadCompanyTemplateCSV()
+      toast?.('Template downloaded.', 1500, 'success')
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[useCompanies] downloadTemplate error:', err)
+      toast('Failed to download template.', 3000, 'error')
+    }
+  }, [toast])
 
-  // ----- selection helpers --------------------------------------------
+  // --------------------------- selection -------------------------------
   const toggleRow = useCallback((id) => {
     setSelected((prev) => {
       const n = new Set(prev)
@@ -215,7 +253,8 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
     setSelected(checked ? new Set(filtered.map((c) => c.id)) : new Set())
   }, [filtered])
 
-  return {
+  // Keep a stable reference shape (minor perf nicety for consumers)
+  return useMemo(() => ({
     // status
     loading,
     error,
@@ -250,7 +289,15 @@ export function useCompanies({ schoolId, userEmail, showToast }) {
     toggleRow,
     toggleAll,
     resetImportInput,
-  }
+  }), [
+    loading, error,
+    brand, setBrand,
+    search, setSearch,
+    adding, companies, filtered,
+    selected, allChecked,
+    refresh, addOne, saveOne, removeOne, bulkDelete,
+    exportCSV, exportPDF, downloadTemplate, toggleRow, toggleAll,
+  ])
 }
 
 export default useCompanies

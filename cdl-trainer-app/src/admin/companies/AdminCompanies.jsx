@@ -1,5 +1,23 @@
 // Path: /src/admin/companies/AdminCompanies.jsx
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+// ============================================================================
+// Admin • Companies
+// - End-to-end page to manage companies for a school
+// - Drawer-based “Add Company” (lazy-loaded non-route chunk)
+// - Uses useCompanies() for data/actions, composable UI components
+// - Polished UX: loading/error states, selected counts, bulk ops, a11y
+// ============================================================================
+
+import React, {
+  memo,
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+} from 'react'
+import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@components/ToastContext.js'
 import { auth } from '@utils/firebase.js'
@@ -7,12 +25,16 @@ import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
 import { useCompanies } from './hooks'
 import { CompaniesTable, CompanyFilters, CompanyHeader } from './components'
-import { exportCompaniesToCSV } from './services' // for bulk-export of selected set
+import { exportCompaniesToCSV } from './services' // bulk-export of selected set
 
-export default function AdminCompanies() {
+// ---- Lazy, non-route overlay ---------------------------------------------
+const AddCompanyDrawer = lazy(() => import('./add-company/AddCompanyDrawer.jsx'))
+
+function AdminCompanies() {
   const navigate = useNavigate()
   const { showToast } = useToast()
 
+  // Stable identity (avoid re-reads mid-session)
   const [schoolId] = useState(localStorage.getItem('schoolId') || '')
   const [userEmail] = useState(
     auth?.currentUser?.email ||
@@ -20,31 +42,46 @@ export default function AdminCompanies() {
       localStorage.getItem('currentUserEmail') ||
       ''
   )
+
+  // Page-scoped brand header
   const [brand, setBrand] = useState({})
 
   const {
+    // status
+    loading, error,
+
+    // search/filter
     search, setSearch,
-    adding,
+
+    // list
     filtered, selected, allChecked,
+
+    // misc refs
     importRef,
+
+    // actions
     addOne, saveOne, removeOne, bulkDelete,
     exportCSV, exportPDF, downloadTemplate,
     toggleRow, toggleAll,
   } = useCompanies({ schoolId, userEmail, showToast })
 
-  // Title
+  // Title (SSR-safe)
   useEffect(() => {
-    const prev = document.title
-    document.title = 'Admin • Companies'
-    return () => { document.title = prev }
+    const prev = typeof document !== 'undefined' ? document.title : ''
+    if (typeof document !== 'undefined') document.title = 'Admin • Companies'
+    return () => { if (typeof document !== 'undefined') document.title = prev }
   }, [])
 
-  // Load branding
+  // Branding
   useEffect(() => {
     let alive = true
     ;(async () => {
-      const b = (await getCurrentSchoolBranding()) || {}
-      if (alive) setBrand(b)
+      try {
+        const b = (await getCurrentSchoolBranding()) || {}
+        if (alive) setBrand(b)
+      } catch {
+        // non-fatal; silently ignore
+      }
     })()
     return () => { alive = false }
   }, [])
@@ -54,7 +91,7 @@ export default function AdminCompanies() {
     [navigate]
   )
 
-  // Selected rows (for exporting only those in the selection)
+  // Selected rows (for exporting only those selected)
   const selectedRows = useMemo(
     () => filtered.filter((c) => selected.has(c.id)),
     [filtered, selected]
@@ -65,29 +102,26 @@ export default function AdminCompanies() {
     [selectedRows, showToast]
   )
 
-  const handleAddSubmit = useCallback((e) => {
-    e.preventDefault()
-    const f = e.currentTarget
-    addOne({
-      name: f.companyName.value.trim(),
-      contact: f.companyContact.value.trim(),
-      address: f.companyAddress.value.trim(),
-    })
-    f.reset()
-  }, [addOne])
+  // -------- Add Company drawer state & polite preloading -------------------
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const openAddCompany = useCallback(() => setDrawerOpen(true), [])
+  const closeAddCompany = useCallback(() => setDrawerOpen(false), [])
 
-  const handleImportCSV = useCallback(
-    () => showToast('Bulk import is not yet implemented in this demo.', 3000, 'info'),
-    [showToast]
-  )
-
-  // Changed: SPA navigation instead of full reload
-  const handleBack = useCallback(
-    () => navigate('/admin-dashboard'),
-    [navigate]
-  )
+  // Optional: warm the drawer chunk shortly after page mount
+  useEffect(() => {
+    const t = setTimeout(() => {
+      import('./add-company/AddCompanyDrawer.jsx').catch(() => {})
+    }, 600)
+    return () => clearTimeout(t)
+  }, [])
 
   const brandPrimary = brand?.primaryColor || '#6c5ce7'
+  const totalCount = filtered.length
+  const selectedCount = selected.size
+
+  // Stable, collision-free IDs for a11y
+  const addIds = useId()
+  const errorId = error ? `${addIds}-error` : undefined
 
   return (
     <div
@@ -96,52 +130,56 @@ export default function AdminCompanies() {
     >
       <CompanyHeader brand={brand} />
 
-      <h2 style={{ marginTop: 0 }}>🏢 Manage Companies</h2>
-
-      {/* Add company */}
-      <form
-        onSubmit={handleAddSubmit}
-        style={{ display: 'flex', gap: '.7em', marginBottom: '1.1em', flexWrap: 'wrap' }}
-        aria-labelledby="add-company-title"
+      <div
+        style={{
+          marginTop: 0,
+          marginBottom: 8,
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: 8,
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+        }}
       >
-        <span id="add-company-title" className="visually-hidden">Add a company</span>
-        <input
-          id="companyName"
-          name="companyName"
-          type="text"
-          maxLength={60}
-          placeholder="New Company Name"
-          required
-          style={{ flex: 1, minWidth: 180 }}
-          aria-label="New company name"
-        />
-        <input
-          id="companyContact"
-          name="companyContact"
-          type="text"
-          maxLength={60}
-          placeholder="Contact (optional)"
-          style={{ minWidth: 160 }}
-          aria-label="Company contact"
-        />
-        <input
-          id="companyAddress"
-          name="companyAddress"
-          type="text"
-          maxLength={100}
-          placeholder="Address (optional)"
-          style={{ minWidth: 160 }}
-          aria-label="Company address"
-        />
+        <h2 style={{ margin: 0, display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <span>🏢 Manage Companies</span>
+          <small style={{ color: '#6b7280', fontWeight: 500 }}>
+            {loading ? 'Loading…' : `${totalCount} result${totalCount === 1 ? '' : 's'}`}
+            {selectedCount ? ` • ${selectedCount} selected` : ''}
+          </small>
+        </h2>
+
+        {/* Primary action: open drawer */}
         <button
           className="btn"
-          type="submit"
-          disabled={adding}
+          onClick={openAddCompany}
+          onMouseEnter={() => import('./add-company/AddCompanyDrawer.jsx').catch(() => {})}
           style={{ background: brandPrimary, border: 'none' }}
+          aria-haspopup="dialog"
+          aria-expanded={drawerOpen ? 'true' : 'false'}
         >
-          {adding ? 'Adding…' : '+ Add Company'}
+          + Add Company
         </button>
-      </form>
+      </div>
+
+      {/* Error banner (non-blocking) */}
+      {error ? (
+        <div
+          id={errorId}
+          role="status"
+          aria-live="polite"
+          style={{
+            border: '1px solid #fecaca',
+            background: '#fef2f2',
+            color: '#991b1b',
+            padding: '10px 12px',
+            borderRadius: 10,
+            marginBottom: 12,
+          }}
+        >
+          {error}
+        </div>
+      ) : null}
 
       {/* Toolbar */}
       <CompanyFilters
@@ -151,38 +189,81 @@ export default function AdminCompanies() {
         onExportPDF={exportPDF}
         onDownloadTemplate={downloadTemplate}
         importInputRef={importRef}
-        onImportCSV={handleImportCSV}
-        canBulkDelete={selected.size > 0}
+        onImportCSV={() => showToast('Bulk import is not yet implemented in this demo.', 3000, 'info')}
+        canBulkDelete={selectedCount > 0}
         onBulkDelete={bulkDelete}
-        canBulkExport={selected.size > 0}
+        canBulkExport={selectedCount > 0}
         onBulkExport={bulkExportSelected}
       />
 
-      {/* Table */}
-      <CompaniesTable
-        rows={filtered}
-        allChecked={allChecked}
-        onToggleAll={toggleAll}
-        selectedSet={selected}
-        onToggleRow={toggleRow}
-        onSaveRow={saveOne}
-        onRemoveRow={removeOne}
-        onOpenDetail={openDetail}
-        showToast={showToast}
-      />
+      {/* Table / Loading state */}
+      <div role="region" aria-label="Companies table region" aria-busy={loading}>
+        {loading ? (
+          <div style={{ padding: '1rem', color: '#6b7280' }} aria-live="polite">
+            <span className="spinner" aria-hidden="true" style={{ marginRight: 8 }} />
+            Loading companies…
+          </div>
+        ) : (
+          <CompaniesTable
+            rows={filtered}
+            allChecked={allChecked}
+            onToggleAll={toggleAll}
+            selectedSet={selected}
+            onToggleRow={toggleRow}
+            onSaveRow={saveOne}
+            onRemoveRow={removeOne}
+            onOpenDetail={openDetail}
+            showToast={showToast}
+          />
+        )}
+      </div>
 
       <div style={{ fontSize: '0.96em', color: '#888', marginTop: 7 }}>
-        Bulk import supports columns: <b>name</b>, <b>contact</b>, <b>address</b>,{' '}
-        <b>status</b> (first row is a header).
+        Bulk import supports columns: <b>name</b>, <b>contact</b>, <b>address</b>, <b>status</b> (first row is a header).
       </div>
 
       <button
         className="btn outline wide"
         style={{ marginTop: '1.3rem' }}
-        onClick={handleBack}
+        onClick={() => navigate('/admin-dashboard')}
       >
         ⬅ Back to Dashboard
       </button>
+
+      {/* Drawer mount (lazy + isolated) */}
+      <Suspense fallback={null}>
+        {drawerOpen && (
+          <AddCompanyDrawer
+            open={drawerOpen}
+            onClose={(result) => {
+              // result: false (cancel) OR { id, name, billingMode, contactEmail?, openAddStudent? }
+              closeAddCompany()
+              if (!result || typeof result !== 'object') return
+
+              // Toast success
+              showToast(`Company “${result.name || 'New Company'}” added.`, 2200, 'success')
+
+              // Optional: navigate to detail + auto-open Add Student
+              if (result.id) {
+                if (result.openAddStudent) {
+                  navigate(`/admin/companies/${encodeURIComponent(result.id)}`, {
+                    state: { openAddStudent: true }, // CompanyDetail can read and open AddStudentDrawer
+                  })
+                } else {
+                  // Or just open the new company’s detail
+                  navigate(`/admin/companies/${encodeURIComponent(result.id)}`)
+                }
+              }
+            }}
+          />
+        )}
+      </Suspense>
     </div>
   )
 }
+
+AdminCompanies.propTypes = {
+  // no props today; keeping block for future-proofing if you pass brand/schoolId in
+}
+
+export default memo(AdminCompanies)

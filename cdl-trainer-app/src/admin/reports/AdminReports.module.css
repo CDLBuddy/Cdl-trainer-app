@@ -1,0 +1,9 @@
+/*src/admin/reports/AdminReports.module.css*/
+
+.wrap { max-width: 1000px; margin: 0 auto; }
+.head { margin-bottom: 1rem; }
+.scope { color: #6b8a99; font-weight: 600; }
+.card { background: #fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; box-shadow:0 1px 2px rgba(0,0,0,.06); }
+.controls { display:flex; gap:1.2em; flex-wrap:wrap; margin-bottom:1em; }
+.tableScroll { background: rgba(10,40,60,.07); border-radius:13px; overflow:auto; }
+.srOnly { position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0; clip:rect(0 0 0 0); overflow:hidden; }

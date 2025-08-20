@@ -1,0 +1,77 @@
+/* Path: src/admin/dashboard/components/QuickActions.module.css */
+/* ==========================================================================
+   QuickActions
+   - Compact card with a grid of shortcut buttons
+   ========================================================================== */
+
+.card {
+  background: var(--card-bg, rgba(255, 255, 255, 0.06));
+  border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
+  padding: 12px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.header {
+  margin-bottom: 4px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--brand-light, #4e91ad);
+  color: #fff;
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid color-mix(in oklab, var(--brand-light, #4e91ad), #000 30%);
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.actionBtn:hover {
+  background: var(--brand-mid, #006380);
+  transform: translateY(-1px);
+}
+
+.actionBtn:active {
+  background: var(--brand-dark, #004055);
+  transform: translateY(0);
+}
+
+.actionBtn:focus {
+  outline: 2px solid var(--accent, #c4dbe8);
+  outline-offset: 2px;
+}
+
+.icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .actionBtn {
+    transition: none;
+  }
+}

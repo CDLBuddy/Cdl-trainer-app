@@ -1,0 +1,217 @@
+/* ============================================================================
+   AddCompanyDrawer.module.css
+   Admin • Companies • Add Company Drawer
+   - Right-side slide-in drawer with modal overlay
+   - Fully aligned with theme.css tokens
+   - A11y: focus-visible rings, reduced-motion, safe-area padding
+   ========================================================================== */
+
+/* Overlay (full screen) */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  z-index: var(--z-modal);
+  background: color-mix(in oklab, #000 55%, transparent);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Drawer panel */
+.drawer {
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg, #1b2430);
+  box-shadow: var(--shadow-2);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  animation: slideIn 0.25s ease-out;
+  /* Prevent subpixel gaps on some mobile browsers */
+  will-change: transform;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: calc(0.9rem + var(--safe-area-inset-top)) 1.25rem 0.9rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--brand-light), #fff 8%);
+  background: var(--card-bg-dark, rgba(10, 15, 20, 0.6));
+  border-top-left-radius: var(--radius-md);
+}
+
+.headerText {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.title {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-light, #fff);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-dark, #cbd5e1);
+}
+
+/* Header actions (close + toggle) */
+.headerActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.toggleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-dark, #cbd5e1);
+  user-select: none;
+}
+
+.toggleRow input {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+/* Body */
+.body {
+  flex: 1 1 auto;
+  padding: 1rem 1.25rem;
+  overflow-y: auto;
+  background: var(--app-bg, #0e1b1b);
+  /* Smooth scrolling within panel without jank on iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 1rem;
+}
+
+.label {
+  margin: 0 0 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-light, #fff);
+}
+
+.req {
+  color: var(--error, #e53e3e);
+  margin-left: 0.25rem;
+}
+
+input,
+select {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--brand-light), #fff 6%);
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  color: var(--text-light, #fff);
+  background: color-mix(in oklab, var(--card-bg), #000 6%);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+input::placeholder {
+  color: color-mix(in oklab, var(--text-dark, #cbd5e1), #000 20%);
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--brand-light, #4e91ad);
+  box-shadow: var(--ring);
+}
+
+input:focus-visible,
+select:focus-visible {
+  outline: none; /* ring is handled via box-shadow */
+}
+
+.error {
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--error, #e53e3e);
+}
+
+/* Helpful tip text */
+.tip {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-dark, #cbd5e1);
+  line-height: 1.35;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem calc(0.75rem + var(--safe-area-inset-bottom));
+  border-top: 1px solid color-mix(in oklab, var(--brand-light), #fff 8%);
+  background: var(--card-bg-dark, rgba(10, 15, 20, 0.6));
+}
+
+.footerActions {
+  display: inline-flex;
+  gap: 0.6rem;
+}
+
+/* Button affordances inside a dark panel */
+.footer :where(.btn) {
+  /* ensure text meets contrast inside dark surfaces */
+  color: var(--text-light, #fff);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { background: rgba(0, 0, 0, 0); }
+  to   { background: rgba(0, 0, 0, 0.55); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .overlay { animation: none; }
+  .drawer  { animation: none; }
+}
+
+/* Responsive: full screen on very narrow */
+@media (max-width: 480px) {
+  .drawer {
+    max-width: 100%;
+    border-radius: 0;
+  }
+}
+
+/* Scrollbar polish (WebKit) */
+.body::-webkit-scrollbar {
+  width: 10px;
+}
+.body::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--brand-light), #000 35%);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.body::-webkit-scrollbar-track {
+  background: transparent;
+}

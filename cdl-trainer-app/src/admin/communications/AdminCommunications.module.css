@@ -1,0 +1,14 @@
+/* Path: src/admin/communications/AdminCommunications.module.css */
+.wrapper {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+.heading {
+  font-size: 1.7rem;
+  margin-bottom: .3em;
+}
+.subhead {
+  color: #667;
+  margin-bottom: 1.4em;
+}

@@ -1,0 +1,125 @@
+/* Path: src/admin/dashboard/components/ComplianceRadar.module.css */
+/* ==========================================================================
+   ComplianceRadar -- pure-SVG radar chart widget
+   Uses global theme tokens; stays readable in dark/light.
+   ========================================================================== */
+
+.card {
+  background: var(--card-bg, rgba(255, 255, 255, 0.06));
+  color: var(--text-light, #ffffff);
+  border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 50%);
+  border-radius: var(--radius-md, 10px);
+  padding: var(--space-4, 1rem);
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .5rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.badge {
+  font-weight: 800;
+  font-size: .95rem;
+  background: color-mix(in oklab, var(--brand-light, #4e91ad), #000 10%);
+  color: #fff;
+  padding: .25rem .5rem;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid color-mix(in oklab, var(--brand-light, #4e91ad), #000 30%);
+}
+
+.chart {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  margin-top: .25rem;
+}
+
+/* SVG theming */
+.svg { overflow: visible; }
+
+.ring {
+  fill: none;
+  stroke: color-mix(in oklab, var(--accent, #c4dbe8), #000 70%);
+  stroke-width: 1;
+}
+
+.target {
+  fill: none;
+  stroke: color-mix(in oklab, var(--warning, #f6ad55), #000 10%);
+  stroke-dasharray: 4 4;
+  stroke-width: 2;
+}
+
+.axis {
+  stroke: color-mix(in oklab, var(--accent, #c4dbe8), #000 60%);
+  opacity: .6;
+  stroke-width: 1;
+}
+
+.area {
+  fill: color-mix(in oklab, var(--brand-light, #4e91ad), #000 65%);
+  stroke: color-mix(in oklab, var(--brand-light, #4e91ad), #000 10%);
+  stroke-width: 2;
+}
+
+.dot {
+  fill: var(--accent, #c4dbe8);
+  stroke: #0006;
+  stroke-width: 1;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem .75rem;
+  margin-top: .5rem;
+  font-size: .85rem;
+  opacity: .95;
+  list-style: none;
+  padding: 0;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  background: color-mix(in oklab, var(--brand-dark, #0e1b1b), #000 50%);
+  border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 60%);
+  padding: .25rem .5rem;
+  border-radius: var(--radius-sm, 8px);
+}
+
+.legendSwatch {
+  width: .65rem;
+  height: .65rem;
+  border-radius: 2px;
+  background: var(--brand-light, #4e91ad);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, #000, #fff 10%);
+}
+
+.legendLabel { opacity: .95; }
+.legendValue {
+  font-weight: 700;
+  margin-left: .1rem;
+}
+
+/* Empty state */
+.empty {
+  opacity: .8;
+  font-size: .9rem;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .area { transition: none; }
+}

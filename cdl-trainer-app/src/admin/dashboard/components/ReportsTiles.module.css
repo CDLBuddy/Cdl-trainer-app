@@ -1,0 +1,89 @@
+/* Path: src/admin/dashboard/components/ReportsTiles.module.css */
+/* ==========================================================================
+   ReportsTiles
+   - Grid of clickable tiles for key reports
+   ========================================================================== */
+
+.card {
+  background: var(--card-bg, rgba(255, 255, 255, 0.06));
+  border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
+  padding: 14px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.header {
+  margin-bottom: 6px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 6px;
+  background: var(--brand-light, #4e91ad);
+  color: #fff;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid color-mix(in oklab, var(--brand-light, #4e91ad), #000 30%);
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.tile:hover {
+  background: var(--brand-mid, #006380);
+  transform: translateY(-1px);
+}
+
+.tile:active {
+  background: var(--brand-dark, #004055);
+  transform: translateY(0);
+}
+
+.tile:focus {
+  outline: 2px solid var(--accent, #c4dbe8);
+  outline-offset: 2px;
+}
+
+.icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+}
+
+.tileTitle {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.tileDesc {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .tile {
+    transition: none;
+  }
+}

@@ -5,6 +5,7 @@
 // - Create/get/update helpers (merge-safe)
 // - Live subscription (optional)
 // - Light normalization + write coalescing
+// - Admin-compatible: preserves companyId + billing object
 // ======================================================================
 
 import {
@@ -15,7 +16,6 @@ import {
   serverTimestamp,
   onSnapshot,
 } from 'firebase/firestore'
-
 import { db } from './firebase.js'
 
 /** Keys that count toward profile completion (keep in sync with UI) */
@@ -41,31 +41,47 @@ export const PROFILE_PROGRESS_KEYS = [
 const FIELD_WHITELIST = new Set([
   // basic
   'name', 'dob', 'profilePicUrl',
+
   // cdl
   'cdlClass', 'endorsements', 'restrictions', 'experience',
-  // assignments
+
+  // assignments + org
   'assignedCompany', 'assignedInstructor',
+  'companyId',                // ✅ required by Admin: CompanyDetail + queries
+
   // permit
   'cdlPermit', 'permitPhotoUrl', 'permitExpiry',
+
   // license
   'driverLicenseUrl', 'licenseExpiry',
+
   // medical
   'medicalCardUrl', 'medCardExpiry',
+
   // vehicle
   'vehicleQualified', 'truckPlateUrl', 'trailerPlateUrl',
+
   // emergency
   'emergencyName', 'emergencyPhone', 'emergencyRelation',
+
   // waiver
   'waiverSigned', 'waiverSignature',
+
   // course/schedule
   'course', 'schedulePref', 'scheduleNotes',
+
   // payment
   'paymentStatus', 'paymentProofUrl',
-  // accessibility
+
+  // billing snapshot (object; e.g., { mode: 'employer' | 'individual', ... })
+  'billing',                  // ✅ used by CompanyDetail: r.billing?.mode
+
+  // accessibility + notes
   'accommodation', 'studentNotes',
+
   // system/meta
   'status', 'role', 'schoolId', 'email', 'uid',
-  // progress meta (computed here but we include to allow merging)
+  'createdAt',               // first write safeguard
   'profileProgress', 'profileUpdatedAt', 'lastUpdatedBy',
 ])
 
@@ -101,8 +117,15 @@ function normalizeProfile(profile = {}) {
     'name', 'assignedCompany', 'assignedInstructor',
     'emergencyName', 'emergencyRelation', 'course', 'schedulePref',
     'scheduleNotes', 'paymentStatus', 'accommodation', 'studentNotes',
+    'status',
   ]) {
     if (typeof p[key] === 'string') p[key] = p[key].trim()
+  }
+
+  // Keep billing as is (object) — consumers expect nested props like billing.mode
+  // If billing was sent as a string accidentally, coerce to object shape
+  if (p.billing && typeof p.billing !== 'object') {
+    p.billing = { mode: String(p.billing || '').trim() || '—' }
   }
 
   // Status default
@@ -132,7 +155,7 @@ export function getBlankUserProfile({
   userRole = 'student',
   schoolIdVal = '',
 }) {
-  const safeDate = new Date().toISOString()
+  const iso = new Date().toISOString()
   return {
     // Basic info
     name: user.displayName || '',
@@ -148,6 +171,7 @@ export function getBlankUserProfile({
     // Assignments
     assignedCompany: '',
     assignedInstructor: '',
+    companyId: '', // ✅ include shape early
 
     // CDL Permit
     cdlPermit: '',
@@ -185,6 +209,9 @@ export function getBlankUserProfile({
     paymentStatus: '',
     paymentProofUrl: '',
 
+    // Billing snapshot (optional)
+    billing: undefined,
+
     // Accessibility / accommodations
     accommodation: '',
     studentNotes: '',
@@ -198,7 +225,7 @@ export function getBlankUserProfile({
     email: user.email || '',
     role: userRole,
     schoolId: schoolIdVal,
-    createdAt: safeDate,
+    createdAt: iso, // client hint; first server write will set serverTimestamp
     uid: user.uid || '',
     status: 'active',
   }
@@ -285,6 +312,35 @@ export function subscribeUserProfile(email, cb) {
    Writes
    ──────────────────────────────────────────────────────────────────── */
 
+/** Keep only whitelisted fields + strip undefined; normalize arrays/booleans. */
+function sanitizeFields(fields = {}) {
+  const out = {}
+  for (const [k, vRaw] of Object.entries(fields)) {
+    if (!FIELD_WHITELIST.has(k)) continue
+    if (vRaw === undefined) continue
+
+    // normalize common shapes on partial updates too
+    if (k === 'endorsements' || k === 'restrictions') {
+      out[k] = Array.isArray(vRaw) ? vRaw : vRaw ? [vRaw] : []
+      continue
+    }
+    if (k === 'waiverSigned') {
+      out[k] = !!vRaw
+      continue
+    }
+    if (k === 'billing') {
+      // accept object as-is; if string slipped through, coerce into { mode }
+      out[k] = typeof vRaw === 'object' && vRaw !== null
+        ? vRaw
+        : { mode: String(vRaw || '').trim() || '—' }
+      continue
+    }
+
+    out[k] = typeof vRaw === 'string' ? vRaw.trim() : vRaw
+  }
+  return out
+}
+
 /** Create or merge-save a full profile, auto-updating progress */
 export async function saveUserProfileToFirestore(
   profile = {},
@@ -299,12 +355,18 @@ export async function saveUserProfileToFirestore(
   // Merge with existing before computing progress to avoid regressions
   const current = snap.exists() ? snap.data() : {}
   const sanitizedIncoming = sanitizeFields(profile)
-  const merged = { ...current, ...sanitizedIncoming }
-  const withProgress = updateProfileProgress(merged, updatedBy)
+
+  // ensure createdAt on first write
+  if (!current.createdAt && !sanitizedIncoming.createdAt) {
+    sanitizedIncoming.createdAt = serverTimestamp()
+  }
+
+  const merged = { ...current, ...sanitizedIncoming, email }
+  const next = updateProfileProgress(merged, updatedBy)
 
   try {
-    await setDoc(ref, withProgress, { merge: true })
-    return { success: true, data: withProgress }
+    await setDoc(ref, next, { merge: true })
+    return { success: true, data: next }
   } catch (error) {
     console.error('Error saving user profile:', error)
     return { success: false, error }
@@ -317,7 +379,7 @@ export async function saveUserProfileToFirestore(
  * - Sanitize + merge
  * - Recompute progress
  * - Skip write if no effective change (saves quota)
- * - updateDoc
+ * - updateDoc (or setDoc if doc doesn't exist yet)
  */
 export async function updateUserProfileFields(
   email,
@@ -328,7 +390,8 @@ export async function updateUserProfileFields(
 
   const ref = doc(db, 'users', email)
   const snap = await getDoc(ref)
-  const current = snap.exists() ? snap.data() : {}
+  const exists = snap.exists()
+  const current = exists ? snap.data() : {}
 
   // Only allow known fields + drop undefined
   const cleanFields = sanitizeFields(fields)
@@ -338,14 +401,20 @@ export async function updateUserProfileFields(
     return { success: true, data: current, skipped: true }
   }
 
+  // ensure createdAt on first write
+  if (!exists && !cleanFields.createdAt) {
+    cleanFields.createdAt = serverTimestamp()
+  }
+
   // Merge then recompute progress
   const merged = { ...current, ...cleanFields, email }
-  const withProgress = updateProfileProgress(merged, updatedBy)
+  const next = updateProfileProgress(merged, updatedBy)
 
   // Avoid write if it wouldn't change the document (shallow compare)
   const comparableCurrent = { ...current }
-  delete comparableCurrent.profileUpdatedAt // timestamp will always differ
-  const comparableNext = { ...withProgress }
+  delete comparableCurrent.profileUpdatedAt // timestamp differs every write
+
+  const comparableNext = { ...next }
   delete comparableNext.profileUpdatedAt
 
   if (shallowEqual(comparableCurrent, comparableNext)) {
@@ -353,39 +422,14 @@ export async function updateUserProfileFields(
   }
 
   try {
-    await updateDoc(ref, withProgress)
-    return { success: true, data: withProgress }
+    if (exists) {
+      await updateDoc(ref, next)
+    } else {
+      await setDoc(ref, next, { merge: true })
+    }
+    return { success: true, data: next, created: !exists }
   } catch (error) {
     console.error('Error updating profile fields:', error)
     return { success: false, error }
   }
-}
-
-/* ──────────────────────────────────────────────────────────────────────
-   Internal: field sanitization
-   ──────────────────────────────────────────────────────────────────── */
-
-/** Keep only whitelisted fields + strip undefined; normalize arrays/booleans. */
-function sanitizeFields(fields = {}) {
-  const out = {}
-  for (const [k, vRaw] of Object.entries(fields)) {
-    if (!FIELD_WHITELIST.has(k)) continue
-    const v = vRaw === undefined ? undefined : vRaw
-
-    if (v === undefined) continue
-
-    // normalize common shapes on partial updates too
-    if (k === 'endorsements' || k === 'restrictions') {
-      out[k] = Array.isArray(v) ? v : v ? [v] : []
-      continue
-    }
-    if (k === 'waiverSigned') {
-      out[k] = !!v
-      continue
-    }
-
-    if (typeof v === 'string') out[k] = v.trim()
-    else out[k] = v
-  }
-  return out
 }

@@ -1,79 +1,120 @@
 // src/admin/preload.js
 // ======================================================================
 // Admin — route preloader (pure; no JSX)
-// - Standard API:
-//     * preloadAboveTheFold()  → light, high-use screens
-//     * preloadAll()           → everything in Admin area
-//     * preloadRoute(key)      → targeted warm by key
-// - Back-compat aliases: preloadAdminCore/preloadAdminAll/preloadAdminRoutes
-// - Convenience: warmAdminOnIdle, preloadAdminOnHover, prefetchAdminByPath
+//   Standard API:
+//     • preloadAboveTheFold()  → light, high-use screens
+//     • preloadAll()           → everything in Admin area
+//     • preloadRoute(key)      → targeted warm by key (routes + overlays)
+//   Back-compat aliases:
+//     • preloadAdminCore / preloadAdminAll / preloadAdminRoutes
+//   Convenience:
+//     • warmAdminOnIdle, preloadAdminOnHover, prefetchAdminByPath,
+//       warmAdminAfterShell, preloadIfIdle, preloadOverlays
+//   Notes:
+//     • Idempotent: repeated calls don’t re-import the same chunk
+//     • Safe on SSR: guards whenever touching window/document/navigator
 // ======================================================================
 
-// ---- one-shot guard so we don't import the same chunk repeatedly -------
+// ---------- tiny SSR guards -------------------------------------------
+const hasWindow   = () => typeof window !== 'undefined'
+const hasDocument = () => typeof document !== 'undefined' // (kept for parity)
+
+// ---------- one-shot helper (prevents duplicate loads) ----------------
 const _onceKeys = new Set()
 async function _once(key, loader) {
   if (_onceKeys.has(key)) return
   _onceKeys.add(key)
-  try { await loader() } catch { /* non-fatal: best-effort */ }
+  try {
+    await loader()
+  } catch {
+    // Best-effort only: ignore preload failures; lazy routes will still work.
+  }
 }
 
-// Respect reduced-motion users (be polite with aggressive preloads)
-function prefersReducedMotion() {
-  try { return !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches } catch { return false }
+// ---------- polite environment checks ---------------------------------
+export function prefersReducedMotion() {
+  if (!hasWindow()) return false
+  try {
+    return !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+  } catch {
+    return false
+  }
 }
 export const isReducedMotion = prefersReducedMotion
 
-// Skip aggressive warms on slow/Data Saver connections
-function isConstrainedNetwork() {
+export function isConstrainedNetwork() {
+  if (!hasWindow()) return false
   try {
-    const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection
+    const c =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection
     if (!c) return false
     if (c.saveData === true) return true
-    return /(^| )(slow-2g|2g|3g)( |$)/.test(c.effectiveType || '')
-  } catch { return false }
+    const type = String(c.effectiveType || '')
+    // Covers slow-2g, 2g, 3g
+    return /\b(slow-2g|2g|3g)\b/i.test(type)
+  } catch {
+    return false
+  }
 }
 
-// ---- Lazy entries (alias-safe; mirrors vite/eslint config) --------------
+// ---------- lazy entries (single source of truth) ---------------------
+// Keep keys stable; other helpers rely on these names.
+/** @type {Record<string, () => Promise<any>>} */
 const entries = {
-  dashboard:      () => import('@admin/AdminDashboard.jsx'),
-  profile:        () => import('@admin/AdminProfile.jsx'),
-  users:          () => import('@admin/AdminUsers.jsx'),
-  companies:      () => import('@/admin/companies/AdminCompanies.jsx'),
-  companyDetail:  () => import('@/admin/companies/CompanyDetail.jsx'),     // NEW
-  addStudent:     () => import('@/admin/companies/AddStudentDrawer.jsx'),  // NEW (non-route, used by detail)
-  reports:        () => import('@admin/AdminReports.jsx'),
-  billing:        () => import('@admin/billing/Billing.jsx'),              // NEW
-  walkthroughs:   () => import('@admin/walkthroughs/WalkthroughManager.jsx'), // optional
+  // Routes
+  dashboard:     () => import('@admin/dashboard/AdminDashboard.jsx'),
+  profile:       () => import('@admin/AdminProfile.jsx'),
+  companies:     () => import('@admin/companies/AdminCompanies.jsx'),
+  companyDetail: () => import('@admin/companies/CompanyDetail.jsx'),   // /companies/:id
+  reports:       () => import('@admin/reports/AdminReports.jsx'),
+  billing:       () => import('@admin/billing/Billing.jsx'),
+  walkthroughs:  () => import('@admin/walkthroughs/WalkthroughManager.jsx'),
+  settings:      () => import('@admin/settings/AdminSettings.jsx'),
+  communications:() => import('@admin/communications/AdminCommunications.jsx'),
+
+  // Non-route overlays/drawers (still useful to warm)
+  addStudent:    () => import('@admin/companies/add-student/AddStudentDrawer.jsx'),
+  addCompany:    () => import('@admin/companies/add-company/AddCompanyDrawer.jsx'),
 }
 
-// ---- Public API: above-the-fold (light set) -----------------------------
+// Expose keys for type-safety in callers (JSDoc users get intellisense)
+export const ADMIN_ENTRY_KEYS = /** @type {const} */ (Object.freeze(Object.keys(entries)))
+
+// ---------- public API: above-the-fold (light/core) --------------------
 export async function preloadAboveTheFold() {
-  if (typeof window === 'undefined') return
+  if (!hasWindow()) return
   await Promise.allSettled([
     _once('admin:dashboard', entries.dashboard),
-    _once('admin:users',     entries.users),
-    _once('admin:companies', entries.companies), // commonly visited
+    _once('admin:companies', entries.companies), // commonly visited after dashboard
+    // Tip: if Communications is a high-traffic screen, add it here:
+    // _once('admin:communications', entries.communications),
   ])
 }
 
-// ---- Public API: full warm (everything admin) --------------------------
+// ---------- public API: full warm (all admin screens) ------------------
 export async function preloadAll() {
-  if (typeof window === 'undefined') return
-  await Promise.allSettled(Object.entries(entries).map(([k, loader]) =>
-    _once(`admin:${k}`, loader)
-  ))
+  if (!hasWindow()) return
+  await Promise.allSettled(
+    Object.entries(entries).map(([k, loader]) => _once(`admin:${k}`, loader))
+  )
 }
 
-// ---- Public API: targeted warm by logical key --------------------------
-/** @param {'dashboard'|'profile'|'users'|'companies'|'companyDetail'|'addStudent'|'reports'|'billing'|'walkthroughs'|string} name */
+// ---------- public API: targeted warm by key ---------------------------
+/**
+ * @param {'dashboard'|'profile'|'companies'|'companyDetail'|'addStudent'|'addCompany'|'reports'|'billing'|'walkthroughs'|'settings'|'communications'|string} name
+ */
 export async function preloadRoute(name) {
-  if (typeof window === 'undefined') return
+  if (!hasWindow()) return
   const key = String(name)
   const loader = entries[key]
-  if (loader) await _once(`admin:${key}`, loader)
+  if (typeof loader === 'function') {
+    await _once(`admin:${key}`, loader)
+  }
 }
 
-// ---- Back-compat exports (keep old call sites working) -----------------
+// ---------- back-compat aliases ---------------------------------------
 export const preloadAdminCore   = preloadAboveTheFold
 export const preloadAdminAll    = preloadAll
 export async function preloadAdminRoutes() { return preloadAll() }
@@ -83,22 +124,39 @@ export default preloadAboveTheFold
 // Convenience helpers (idle / hover / path-based) — idempotent, safe
 // ======================================================================
 
-/** Warm the core screens at browser idle time (returns cancel fn). */
+/**
+ * Warm the core screens at browser idle time (returns a cancel fn).
+ * Uses requestIdleCallback where available; falls back to setTimeout.
+ */
 export function warmAdminOnIdle(timeout = 1200) {
-  if (typeof window === 'undefined' || prefersReducedMotion()) return () => {}
+  if (!hasWindow() || prefersReducedMotion()) return () => {}
+
   const run = () => { preloadAboveTheFold().catch(() => {}) }
-  if ('requestIdleCallback' in window) {
+
+  // Prefer a true idle tick if available
+  // @ts-ignore - not all TS DOM libs include requestIdleCallback
+  if (typeof window.requestIdleCallback === 'function') {
     // @ts-ignore
     const id = window.requestIdleCallback(run, { timeout })
-    return () => window.cancelIdleCallback?.(id)
+    return () => {
+      // @ts-ignore
+      if (typeof window.cancelIdleCallback === 'function') {
+        // @ts-ignore
+        window.cancelIdleCallback(id)
+      }
+    }
   }
+
   const t = setTimeout(run, 200)
   return () => clearTimeout(t)
 }
 
-/** Attach one-shot hover/focus preloading to a link (returns cleanup). */
+/**
+ * Attach one-shot hover/focus preloading to a link or button (returns cleanup).
+ * @param {HTMLElement|(() => HTMLElement|null)|null} elOrGetter
+ */
 export function preloadAdminOnHover(elOrGetter) {
-  if (typeof window === 'undefined') return () => {}
+  if (!hasWindow()) return () => {}
 
   const el = typeof elOrGetter === 'function' ? elOrGetter() : elOrGetter
   if (!el || typeof el.addEventListener !== 'function') return () => {}
@@ -113,29 +171,71 @@ export function preloadAdminOnHover(elOrGetter) {
 
   function cleanup() {
     try {
-      el.removeEventListener('pointerenter', handler, { capture: false })
+      el.removeEventListener('pointerenter', handler)
       el.removeEventListener('focus', handler, { capture: true })
     } catch { /* noop */ }
   }
   return cleanup
 }
 
-/** Preload a specific screen by path (useful inside guards/redirects). */
+/**
+ * Preload a specific screen by path (useful inside guards/redirects).
+ * Best-effort pattern-matching — resolves the *most likely* chunk.
+ */
 export function prefetchAdminByPath(path = '') {
   const p = String(path || '').toLowerCase()
-  if (p.includes('/admin/companies/')) {      // detail route
+  // Detail route must warm list + detail
+  if (p.includes('/admin/companies/')) {
     entries.companies()
     return entries.companyDetail()
   }
-  if (p.includes('/admin/companies'))  return entries.companies()
-  if (p.includes('/admin/billing'))    return entries.billing?.()
-  if (p.includes('/admin/reports'))    return entries.reports()
-  if (p.includes('/admin/profile'))    return entries.profile()
+  if (p.includes('/admin/companies'))      return entries.companies()
+  if (p.includes('/admin/communications')) return entries.communications()
+  if (p.includes('/admin/billing'))        return entries.billing()
+  if (p.includes('/admin/reports'))        return entries.reports()
+  if (p.includes('/admin/profile'))        return entries.profile()
+  if (p.includes('/admin/settings'))       return entries.settings()
+  if (p.includes('/admin/walkthroughs'))   return entries.walkthroughs()
   return entries.dashboard()
 }
 
-// Optional: eager warm after router shell loads (skip on slow networks)
+/**
+ * Optionally warm core screens shortly after the Admin shell mounts.
+ * Skips on constrained networks (Data Saver / 2g/3g) and respects
+ * reduced motion preference (be polite with background work).
+ */
 export async function warmAdminAfterShell() {
-  if (isConstrainedNetwork()) return
+  if (isConstrainedNetwork() || prefersReducedMotion()) return
   await preloadAboveTheFold()
+}
+
+/**
+ * One-off idle preloader for any entry key.
+ * Example: preloadIfIdle('addCompany', 800)
+ */
+export function preloadIfIdle(key, timeout = 800) {
+  if (!hasWindow()) return
+  const loader = entries?.[key]
+  if (typeof loader !== 'function') return
+
+  // @ts-ignore
+  if (typeof window.requestIdleCallback === 'function') {
+    // @ts-ignore
+    const id = window.requestIdleCallback(() => _once(`admin:${key}`, loader), { timeout })
+    return () => window.cancelIdleCallback?.(id)
+  }
+  const t = setTimeout(() => _once(`admin:${key}`, loader), Math.min(timeout, 1200))
+  return () => clearTimeout(t)
+}
+
+/**
+ * Warm commonly-used non-route overlays/drawers.
+ * Useful when you know a user is likely to open them (e.g., on Companies mount).
+ */
+export async function preloadOverlays() {
+  if (!hasWindow()) return
+  await Promise.allSettled([
+    _once('admin:addStudent', entries.addStudent),
+    _once('admin:addCompany', entries.addCompany),
+  ])
 }

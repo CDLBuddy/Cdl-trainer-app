@@ -1,40 +1,45 @@
 // Path: src/admin/billing/index.js
 // ======================================================================
-// Admin • Billing (barrel)
-// - Pure re-exports (no JSX executed here) so Fast Refresh stays quick
-// - Tree-shakable: consumers can cherry-pick from submodules
-// - Intentional surface: default screen + tab components + hooks + utils
+// Admin • Billing (public barrel)
+// - Intentional PUBLIC surface for other admin areas (Dashboard, Companies)
+// - Pure re-exports; no runtime side effects (keeps Fast Refresh snappy)
+// - Tree-shakable: consumers import only what they need
+// - IMPORTANT: Internal hooks/services are NOT exported here
+//   (do not leak low-level APIs outside billing/)
 // ======================================================================
 
-// Screen
+// Screen (full Billing page)
 export { default as Billing } from './Billing.jsx'
 
-// Components (tables, filters, shared UI like StatusPill)
-export * from './components'
+// Shared, reusable UI (safe for embedding in other admin pages)
+export * from './components/shared/index.js'
 
-// Hooks (data + state for tabs)
-export * from './hooks'
+// Public hooks (small, stable shapes for outside consumers)
+export * from './hooks/public/index.js'
 
-// Services (mock data or Firestore adapters; safe to tree-shake)
-export * from './services'
+// Public utilities (formatters, CSV helpers, etc.)
+export * from './utils/index.js'
 
-// Utils (formatters, csv helpers, etc.)
-export * from './utils'
+// ─────────────────────────────────────────────────────────────────────────────
+// ❌ NOT EXPORTED (internal only):
+//   - ./hooks/internal/*
+//   - ./services/*  (billingApi + Firestore adapters)
+// These remain private so you can refactor Billing without breaking Dashboard/
+// Companies. If you need new data/actions, add a PUBLIC hook under hooks/public.
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ----------------------------------------------------------------------
 // Usage examples:
 //
+//   // Full screen
 //   import { Billing } from '@admin/billing'
 //
-//   // Cherry-pick tab UIs if you need to embed only one:
-//   import { EmployerTab, IndividualTab } from '@admin/billing'
+//   // Embed a compact snapshot in a Company panel
+//   import { BillingSummaryCard } from '@admin/billing'
 //
-//   // Hooks for custom shells:
-//   import { useEmployerBilling, useIndividualBilling } from '@admin/billing'
+//   // Read-only KPIs for the Dashboard
+//   import { useBillingSummary } from '@admin/billing'
 //
-//   // UI primitives:
-//   import { StatusPill } from '@admin/billing'
-//
-//   // Utils:
+//   // Utilities (if needed in other pages/components)
 //   import { formatCurrency, fmtDate, downloadCsv } from '@admin/billing'
 // ----------------------------------------------------------------------

@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const r = (p) => path.resolve(__dirname, p)
 
-// Optional bundle analyzer: run with VISUALIZE=1 (or VITE_VISUALIZE=1) vite build
+// Optional bundle analyzer — run with VISUALIZE=1 (or VITE_VISUALIZE=1)
 async function maybeVisualizer(enabled) {
   if (!enabled) return null
   const { visualizer } = await import('rollup-plugin-visualizer')
@@ -21,7 +21,7 @@ async function maybeVisualizer(enabled) {
   })
 }
 
-// Optional: vite-plugin-inspect — run with INSPECT=1 (or VITE_INSPECT=1) vite dev
+// Optional: vite-plugin-inspect — run with INSPECT=1 (or VITE_INSPECT=1)
 async function maybeInspect(enabled) {
   if (!enabled) return null
   const Inspect = (await import('vite-plugin-inspect')).default
@@ -29,13 +29,14 @@ async function maybeInspect(enabled) {
 }
 
 export default defineConfig(async ({ mode }) => {
-  // Load both VITE_* and bare envs so your existing VISUALIZE/INSPECT keep working
+  // Load both VITE_* and bare envs so VISUALIZE/INSPECT keep working
   const envVite = loadEnv(mode, process.cwd(), 'VITE_')
-  const envAll  = loadEnv(mode, process.cwd(), '') // includes non-VITE_ (e.g., VISUALIZE)
+  const envAll  = loadEnv(mode, process.cwd(), '')
 
   const isProd  = mode === 'production'
   const analyze = (envVite.VITE_VISUALIZE ?? envAll.VISUALIZE) ? true : false
   const inspect = (envVite.VITE_INSPECT   ?? envAll.INSPECT)   ? true : false
+  const lanHost = (envVite.VITE_LAN ?? envAll.VITE_LAN) === '1'
 
   const visualizerPlugin = await maybeVisualizer(analyze)
   const inspectPlugin    = await maybeInspect(inspect)
@@ -52,15 +53,15 @@ export default defineConfig(async ({ mode }) => {
         // ===== Base =====
         '@': r('src'),
 
-        // ===== Shared/global =====
+        // ===== Shared / Global =====
+        '@assets': r('src/assets'),
         '@components': r('src/components'),
-        '@utils': r('src/utils'),
         '@navigation': r('src/navigation'),
         '@pages': r('src/pages'),
-        '@styles': r('src/styles'),
-        '@assets': r('src/assets'),
-        '@shared': r('src/shared'),
         '@session': r('src/session'),
+        '@shared': r('src/shared'),
+        '@styles': r('src/styles'),
+        '@utils': r('src/utils'),
 
         // ===== Walkthrough system (global) =====
         '@walkthrough-data': r('src/walkthrough-data'),
@@ -68,7 +69,10 @@ export default defineConfig(async ({ mode }) => {
         '@walkthrough-loaders': r('src/walkthrough-data/loaders'),
         '@walkthrough-utils': r('src/walkthrough-data/utils'),
         '@walkthrough-overlays': r('src/walkthrough-data/overlays'),
-        // Restriction single-file aliases
+        // If you want fewer single-file aliases, you can import from this folder:
+        // import auto from '@walkthrough-restrictions/automatic.js'
+        '@walkthrough-restrictions': r('src/walkthrough-data/overlays/restrictions'),
+        // (Keep the original single-file aliases if you’re using them already)
         '@walkthrough-restriction-automatic': r('src/walkthrough-data/overlays/restrictions/automatic.js'),
         '@walkthrough-restriction-no-air': r('src/walkthrough-data/overlays/restrictions/no-air.js'),
         '@walkthrough-restriction-no-fifth-wheel': r('src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'),
@@ -82,17 +86,21 @@ export default defineConfig(async ({ mode }) => {
         '@student-walkthrough': r('src/student/walkthrough'),
 
         '@instructor': r('src/instructor'),
+
+        // Includes Admin Dashboard, Companies suite, Billing, Walkthroughs, Settings, and Users (if present)
         '@admin': r('src/admin'),
-        '@admin-walkthroughs': r('src/admin/walkthroughs'), // ✅ added for clean imports
+        '@admin-walkthroughs': r('src/admin/walkthroughs'),
+
         '@superadmin': r('src/superadmin'),
       },
       dedupe: ['react', 'react-dom'],
     },
 
     server: {
-      host: true,        // allow LAN access (useful for device testing)
+      // Toggle LAN device testing with: VITE_LAN=1 vite
+      host: lanHost ? true : 'localhost',
       port: 5173,
-      strictPort: true,  // fail fast if port is taken
+      strictPort: true,
       open: true,
       // headers: { 'Cache-Control': 'no-store' },
     },
@@ -107,25 +115,24 @@ export default defineConfig(async ({ mode }) => {
         'react',
         'react-dom',
         'react-router-dom',
-        // Firebase modular SDK tends to benefit from explicit prebundle
+        // Firebase modular SDK: explicit prebundle helps HMR/startup
         'firebase/app',
         'firebase/auth',
         'firebase/firestore',
         'firebase/storage',
-        // If you later want to parse XLSX during dev (NOT required because we dynamically import it):
+        // If you later need to parse XLSX during dev:
         // 'xlsx',
       ],
-      // exclude: ['firebase'],
-      esbuildOptions: {
-        target: 'es2020',
-      },
+      esbuildOptions: { target: 'es2020' },
     },
 
     build: {
       target: 'es2020',
       sourcemap: !isProd,
       cssCodeSplit: true,
-      chunkSizeWarningLimit: 900,
+      cssMinify: true,              // explicit (Vite defaults to true)
+      reportCompressedSize: false,  // faster builds; use visualizer when needed
+      chunkSizeWarningLimit: 1024,  // Firebase & router chunks can be large
       rollupOptions: {
         output: {
           manualChunks: {
@@ -137,6 +144,8 @@ export default defineConfig(async ({ mode }) => {
               'firebase/firestore',
               'firebase/storage',
             ],
+            // You can add feature bundles later if desired:
+            // 'feature-admin': ['@admin/preload.js', '@admin/companies/...'],
           },
         },
       },
@@ -146,7 +155,5 @@ export default defineConfig(async ({ mode }) => {
     define: {
       __DEV__: !isProd, // Back-compat; prefer import.meta.env.DEV in new code
     },
-
-    // logLevel: 'info',
   }
 })

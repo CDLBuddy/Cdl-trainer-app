@@ -1,0 +1,39 @@
+/* FormFields.module.css */
+/* Input grid + labels + compact helpers */
+
+.group {
+  display: grid;
+  gap: 8px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.label {
+  font-size: .92rem;
+  color: var(--text-2, #6b7280);
+}
+
+.input, .select {
+  padding: 8px 10px;
+  border: 1px solid var(--border-1, #e5e7eb);
+  border-radius: 10px;
+  background: var(--surface-1, #fff);
+}
+
+.help {
+  font-size: .85rem;
+  color: var(--text-3, #9aa3af);
+}

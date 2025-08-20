@@ -1,0 +1,21 @@
+/* FormActions.module.css */
+
+.footer {
+  padding: 12px;
+  border-top: 1px solid #eef0f4;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+  background: var(--surface-2, #fafafa);
+}
+
+.alert {
+  margin-right: auto;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: .95rem;
+}

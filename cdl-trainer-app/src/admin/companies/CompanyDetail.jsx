@@ -1,25 +1,39 @@
 // Path: /src/admin/companies/CompanyDetail.jsx
-// ======================================================================
+// ============================================================================
 // Admin • Company Detail
-// - Loads company meta + roster (students attached to companyId)
-// - Local search, simple readiness bars, and verify links
-// - Uses AddStudentDrawer (from companies barrel) for quick adds
-// - No breaking changes to props/exports/imports
-// ======================================================================
+// - Roster-first view with lightweight Overview + Billing snapshot
+// - Local search (debounced), CSV export, verify links
+// - Lazily mounts AddStudentDrawer; safe refresh on close
+// - Supports deep-link from “Add Company → Create & Add First Student”
+// ============================================================================
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import React, {
+  lazy, Suspense, useCallback, useEffect, useMemo, useState, memo,
+} from 'react'
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
+import PropTypes from 'prop-types'
 
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/ToastContext.js'
 import { db } from '@utils/firebase.js'
-import { AddStudentDrawer } from '@admin/companies'
+import { BillingSummaryCard } from '@admin/billing'
+import { CompanyOverviewCard } from './components/detail'
+import useDebounced from './hooks/useDebounced.js'
+import { preloadRoute } from '@admin/preload.js' // warm the drawer chunk just-in-time
 
-import { getEnrollmentReadiness, getBTWReadiness } from '@student/profile/schema/calculators.js'
+import {
+  getEnrollmentReadiness,
+  getBTWReadiness,
+} from '@student/profile/schema/calculators.js'
+
+// Lazy-load the drawer as its own chunk (avoid importing from barrels here)
+const AddStudentDrawer = lazy(() =>
+  import('@admin/companies/add-student/AddStudentDrawer.jsx')
+)
 
 /* ------------------------------------------------------------------ */
-/* Local helpers (stable, tiny)                                       */
+/* Local helpers                                                      */
 /* ------------------------------------------------------------------ */
 const pct = (n) => Math.max(0, Math.min(100, Math.round(Number.isFinite(n) ? n : 0)))
 const fmtBilling = (mode) => {
@@ -41,25 +55,53 @@ function mapUserDoc(ds) {
   }
 }
 
+/** Small CSV helper (no deps) */
+function exportRosterCsv(companyId, rows) {
+  const headers = ['Name', 'Email', 'Course', 'Class', 'Billing Mode', 'Instructor', 'Enroll %', 'BTW %']
+  const lines = rows.map(r => [
+    r.name,
+    r.email,
+    r.course,
+    r.cdlClass,
+    r.billing?.mode || '—',
+    r.assignedInstructor || '—',
+    pct(getEnrollmentReadiness(r.profile)),
+    pct(getBTWReadiness(r.profile)),
+  ])
+  const csv = [headers, ...lines]
+    .map(cols => cols.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `company-${companyId}-roster.csv`
+  a.click()
+  // Revoke on next tick (Safari sometimes needs a delay)
+  setTimeout(() => URL.revokeObjectURL(url), 0)
+}
+
 /* ------------------------------------------------------------------ */
 /* Page                                                               */
 /* ------------------------------------------------------------------ */
 export default function CompanyDetail() {
   const { companyId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { showToast } = useToast()
 
   const [loading, setLoading] = useState(true)
   const [company, setCompany] = useState(null)
   const [roster, setRoster] = useState([])
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounced(search, 250)
   const [showAdd, setShowAdd] = useState(false)
 
   // loaders are separate so we can selectively refresh roster after save
   const loadCompany = useCallback(async () => {
     if (!companyId) return null
-    const cSnap = await getDoc(doc(db, 'companies', companyId))
-    return cSnap.exists() ? { id: cSnap.id, ...cSnap.data() } : null
+    const snap = await getDoc(doc(db, 'companies', companyId))
+    return snap.exists() ? { id: snap.id, ...snap.data() } : null
   }, [companyId])
 
   const loadRoster = useCallback(async () => {
@@ -86,8 +128,9 @@ export default function CompanyDetail() {
         if (!alive) return
         setCompany(c)
         setRoster(r)
-      } catch {
-        // keep it quiet for end users but still inform
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('[CompanyDetail] load failed', e)
         showToast('Failed to load company roster.', 3000, 'error')
       } finally {
         if (alive) setLoading(false)
@@ -96,9 +139,19 @@ export default function CompanyDetail() {
     return () => { alive = false }
   }, [loadCompany, loadRoster, showToast])
 
-  // derived list filtered by search
+  // If navigated here with { state: { openAddStudent: true } }, auto-open the drawer once.
+  useEffect(() => {
+    if (location?.state?.openAddStudent) {
+      preloadRoute('addStudent').catch(() => {})
+      setShowAdd(true)
+      // clear the flag so going back/forward won’t auto-open again
+      navigate('.', { replace: true, state: {} })
+    }
+  }, [location?.state, navigate])
+
+  // derived list filtered by (debounced) search
   const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase()
+    const term = debouncedSearch.trim().toLowerCase()
     if (!term) return roster
     return roster.filter((r) =>
       (r.name || '').toLowerCase().includes(term) ||
@@ -106,7 +159,7 @@ export default function CompanyDetail() {
       (r.course || '').toLowerCase().includes(term) ||
       (r.cdlClass || '').toLowerCase().includes(term)
     )
-  }, [roster, search])
+  }, [roster, debouncedSearch])
 
   const openVerify = useCallback(
     (email) => navigate(`/instructor/verify/${encodeURIComponent(email)}`),
@@ -118,6 +171,19 @@ export default function CompanyDetail() {
     [company?.name, companyId]
   )
 
+  // lightweight overview stats (client-side; can be server-backed later)
+  const overviewStats = useMemo(() => ({
+    activeStudents: roster.length,
+    openEnrollments: roster.filter(r => (r.profile?.enrollmentStatus || '').toLowerCase() === 'open').length,
+    lastActivityLabel: company?.updatedAt ? new Date(company.updatedAt).toLocaleString() : '',
+  }), [roster.length, company?.updatedAt])
+
+  const handleOpenAdd = useCallback(() => {
+    // Warm the chunk so it feels instant when the drawer mounts
+    preloadRoute('addStudent').catch(() => {})
+    setShowAdd(true)
+  }, [])
+
   return (
     <Shell title={title}>
       {/* Header */}
@@ -126,9 +192,22 @@ export default function CompanyDetail() {
         name={company?.name}
         search={search}
         onSearch={setSearch}
+        onExport={() => exportRosterCsv(companyId, filtered)}
         onBack={() => navigate('/admin/companies')}
-        onAdd={() => setShowAdd(true)}
+        onAdd={handleOpenAdd}
       />
+
+      {/* Overview + Billing snapshot */}
+      <div style={{ display: 'grid', gap: 12, marginBottom: 12 }}>
+        <CompanyOverviewCard company={company} stats={overviewStats} loading={loading} />
+        <BillingSummaryCard
+          schoolId={company?.schoolId}
+          companyId={companyId}
+          onOpenBilling={({ schoolId, companyId }) =>
+            navigate(`/admin/billing?${new URLSearchParams({ schoolId, companyId })}`)
+          }
+        />
+      </div>
 
       {/* Roster */}
       <div className="dashboard-card" style={{ padding: 0 }}>
@@ -188,26 +267,28 @@ export default function CompanyDetail() {
         )}
       </div>
 
-      {/* Slide-over: Add Student */}
+      {/* Slide-over: Add Student (lazy + Suspense) */}
       {showAdd && (
-        <AddStudentDrawer
-          open={showAdd}
-          companyId={companyId}
-          onClose={async (didSave) => {
-            setShowAdd(false)
-            if (didSave) {
-              try {
-                setLoading(true)
-                const r = await loadRoster()
-                setRoster(r)
-              } catch {
-                showToast('Saved, but failed to refresh roster.', 3000, 'warning')
-              } finally {
-                setLoading(false)
+        <Suspense fallback={null /* tiny drawer mount; no spinner needed */}>
+          <AddStudentDrawer
+            open={showAdd}
+            companyId={companyId}
+            onClose={async (didSave) => {
+              setShowAdd(false)
+              if (didSave) {
+                try {
+                  setLoading(true)
+                  const r = await loadRoster()
+                  setRoster(r)
+                } catch {
+                  showToast('Saved, but failed to refresh roster.', 3000, 'warning')
+                } finally {
+                  setLoading(false)
+                }
               }
-            }
-          }}
-        />
+            }}
+          />
+        </Suspense>
       )}
     </Shell>
   )
@@ -217,7 +298,7 @@ export default function CompanyDetail() {
 /* Tiny Presentational Bits                                           */
 /* ------------------------------------------------------------------ */
 
-function Header({ companyId, name, search, onSearch, onBack, onAdd }) {
+const Header = memo(function Header({ companyId, name, search, onSearch, onBack, onAdd, onExport }) {
   return (
     <header
       style={{
@@ -234,12 +315,15 @@ function Header({ companyId, name, search, onSearch, onBack, onAdd }) {
         <div style={{ fontSize: 13, color: '#6b7280' }}>{companyId}</div>
       </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <label htmlFor="company-roster-search" className="visually-hidden">Search roster</label>
         <input
+          id="company-roster-search"
           type="search"
           value={search}
           onChange={(e) => onSearch(e.target.value)}
           placeholder="Search roster…"
           aria-label="Search roster"
+          onMouseEnter={() => preloadRoute('addStudent').catch(() => {})}
           style={{
             padding: '6px 10px',
             border: '1px solid #dcdde2',
@@ -247,11 +331,22 @@ function Header({ companyId, name, search, onSearch, onBack, onAdd }) {
             minWidth: 200,
           }}
         />
-        <button className="btn" onClick={onAdd}>+ Add Student</button>
+        <button className="btn outline" onClick={() => onExport?.()}>Export CSV</button>
+        <button className="btn" onClick={onAdd} aria-haspopup="dialog">+ Add Student</button>
         <button className="btn outline" onClick={onBack}>⬅ Back</button>
       </div>
     </header>
   )
+})
+
+Header.propTypes = {
+  companyId: PropTypes.string,
+  name: PropTypes.string,
+  search: PropTypes.string.isRequired,
+  onSearch: PropTypes.func.isRequired,
+  onBack: PropTypes.func.isRequired,
+  onAdd: PropTypes.func.isRequired,
+  onExport: PropTypes.func.isRequired,
 }
 
 /** Tiny row progress with label */
@@ -282,4 +377,10 @@ function RowBar({ label, value, alt }) {
       <small style={{ width: 32, textAlign: 'right' }}>{clamped}%</small>
     </div>
   )
+}
+
+RowBar.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.number.isRequired,
+  alt: PropTypes.bool,
 }

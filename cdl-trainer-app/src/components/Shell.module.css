@@ -1,10 +1,35 @@
 /* src/components/Shell.module.css
-   Uses global theme tokens:
-   --brand-dark, --brand-mid, --brand-light, --accent, --text-light, --card-bg, --card-bg-dark
-   --error, --safe-area-inset-top
+   Uses global theme tokens (see theme.css):
+   --brand-dark, --brand-mid, --brand-light, --accent, --text-light, --text-dark
+   --card-bg, --card-bg-dark, --app-bg, --error, --ring, --ring-strong
+   --radius-sm, --radius-md, --radius-lg, --shadow-1, --shadow-2, --shadow-3
+   --safe-area-inset-top, --z-modal
 */
 
-/* ---------- Page wrapper ---------- */
+/* ---------- Utilities --------------------------------------------------- */
+
+/* Reusable "glass" surface */
+.glasslike {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
+  border-radius: var(--radius-lg, 14px);
+  box-shadow: var(--shadow-2, 0 20px 60px #0008), inset 0 1px 0 #ffffff12;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+/* Clear, consistent focus ring */
+:where(.railBtn, .logoutBtn, .fab, .brandBtn, .rail a, button):focus-visible {
+  outline: none;
+  box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 10%));
+}
+
+/* If blur unsupported, keep it readable */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glasslike { background: color-mix(in oklab, var(--card-bg), #000 8%); }
+}
+
+/* ---------- Page wrapper ------------------------------------------------ */
 .root {
   min-height: 100vh;
   color: var(--text-light);
@@ -14,19 +39,7 @@
   padding-top: calc(12px + var(--safe-area-inset-top, 0px));
 }
 
-/* ---------- Generic glass card ---------- */
-.glass {
-  background: var(--card-bg);
-  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
-  border-radius: 14px;
-  box-shadow:
-    0 20px 60px #0008,
-    inset 0 1px 0 #ffffff12;
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-}
-
-/* ---------- Header ---------- */
+/* ---------- Header ------------------------------------------------------ */
 .header {
   display: flex;
   align-items: center;
@@ -38,19 +51,24 @@
 }
 
 .brandBtn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 12px;
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 0;
+  border-radius: var(--radius-md, 10px);
+}
+
+.brandBtn:focus-visible {
+  box-shadow: var(--ring-strong, 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 20%));
 }
 
 .logo {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-md, 10px);
   object-fit: contain;
   background: var(--card-bg-dark);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
@@ -65,10 +83,10 @@
 
 .schoolSub {
   font-size: 0.9rem;
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
-/* ---------- Grid layout ---------- */
+/* ---------- Grid layout ------------------------------------------------- */
 .layout {
   display: grid;
   grid-template-columns: 250px 1fr;
@@ -78,21 +96,13 @@
   align-items: start;
 }
 
-/* ---------- Rail ---------- */
+/* ---------- Rail -------------------------------------------------------- */
 .rail {
-  background: var(--card-bg);
-  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
-  border-radius: 14px;
-  box-shadow:
-    0 20px 60px #0008,
-    inset 0 1px 0 #ffffff12;
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  composes: glasslike;
   position: sticky;
   top: calc(12px + var(--safe-area-inset-top, 0px));
   align-self: start;
   padding: 10px;
-  border-radius: 14px;
 }
 
 .railNav {
@@ -106,7 +116,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md, 12px);
   text-decoration: none;
   background: var(--card-bg);
   border: 1px solid color-mix(in oklab, var(--accent), #000 25%);
@@ -122,48 +132,37 @@
 .railBtn:hover,
 .railBtn:focus-visible {
   transform: translateY(-1px);
-  background: linear-gradient(
-    120deg,
-    var(--brand-light) 30%,
-    var(--brand-mid) 100%
-  );
+  background: linear-gradient(120deg, var(--brand-light) 30%, var(--brand-mid) 100%);
   box-shadow: 0 6px 16px #0005;
-  outline: none;
 }
 
 .railActive {
-  background: linear-gradient(
-    120deg,
-    var(--brand-light) 30%,
-    var(--brand-mid) 100%
-  );
+  background: linear-gradient(120deg, var(--brand-light) 30%, var(--brand-mid) 100%);
   color: var(--text-light);
 }
 
-/* Logout button variant */
+/* Logout button */
 .logoutBtn {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md, 12px);
   background: linear-gradient(120deg, #ff808022, #ff808008 70%);
   border: 1px solid #ff808055;
   color: #ffd8d8;
   font-weight: 700;
   cursor: pointer;
-  transition:
-    transform 0.14s ease,
-    background 0.14s ease;
+  transition: transform 0.14s ease, background 0.14s ease;
 }
+
 .logoutBtn:hover,
 .logoutBtn:focus-visible {
   transform: translateY(-1px);
   background: linear-gradient(120deg, #ff8c8c33, #ff8c8c10 70%);
-  outline: none;
 }
 
-/* ---------- Main content ---------- */
+/* ---------- Main content ------------------------------------------------ */
 .content {
   display: grid;
   gap: 16px;
@@ -177,18 +176,12 @@
 }
 
 .card {
-  background: var(--card-bg);
-  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
-  box-shadow:
-    0 20px 60px #0008,
-    inset 0 1px 0 #ffffff12;
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border-radius: 16px;
+  composes: glasslike;
+  border-radius: var(--radius-lg, 16px);
   padding: 16px;
 }
 
-/* ---------- FAB ---------- */
+/* ---------- FAB --------------------------------------------------------- */
 .fab {
   position: fixed;
   right: clamp(12px, 4vw, 24px);
@@ -199,43 +192,24 @@
   place-items: center;
   border-radius: 50%;
   border: 1px solid color-mix(in oklab, var(--accent), #000 25%);
-  background: radial-gradient(
-    120% 120% at 50% 10%,
-    var(--brand-light),
-    var(--brand-mid)
-  );
+  background: radial-gradient(120% 120% at 50% 10%, var(--brand-light), var(--brand-mid));
   color: #fff;
-  box-shadow:
-    0 10px 30px #0007,
-    0 0 0 3px #ffffff10 inset;
+  box-shadow: 0 10px 30px #0007, 0 0 0 3px #ffffff10 inset;
   cursor: pointer;
-  transition:
-    transform 0.14s ease,
-    box-shadow 0.14s ease,
-    filter 0.14s ease;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+  z-index: var(--z-modal, 1400);
 }
+
 .fab:hover,
 .fab:focus-visible {
   transform: translateY(-2px);
   filter: brightness(1.03);
-  box-shadow:
-    0 14px 36px #0008,
-    0 0 0 3px #ffffff18 inset;
-  outline: none;
+  box-shadow: 0 14px 36px #0008, 0 0 0 3px #ffffff18 inset;
 }
 
-/* ---------- Footer ---------- */
+/* ---------- Footer ------------------------------------------------------ */
 .footer {
-  /* Inlined former `glass` styles (removed unsupported `composes: glass;`) */
-  background: var(--card-bg);
-  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
-  box-shadow:
-    0 20px 60px #0008,
-    inset 0 1px 0 #ffffff12;
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border-radius: 14px;
-
+  composes: glasslike;
   margin: 24px auto 16px;
   max-width: 1200px;
   padding: 14px 16px;
@@ -244,7 +218,7 @@
   gap: 6px;
 }
 
-/* ---------- Mobile ---------- */
+/* ---------- Mobile ------------------------------------------------------ */
 @media (max-width: 940px) {
   .layout {
     grid-template-columns: 1fr;
@@ -255,7 +229,7 @@
   }
 }
 
-/* ---------- Reduced motion ---------- */
+/* ---------- Reduced motion -------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   .railBtn,
   .logoutBtn,

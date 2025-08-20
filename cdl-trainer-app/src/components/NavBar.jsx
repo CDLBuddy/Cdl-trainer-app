@@ -4,7 +4,7 @@
 // - Locks page scroll when mobile menu is open
 // - Focus management for burger/profile dropdown
 // - ESC + resize close guards
-// - Touchstart prefetch for iOS
+// - Intent prefetch for role routers (hover/focus/touchstart)
 // ======================================================================
 
 import React, {
@@ -17,13 +17,15 @@ import React, {
 } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 
-import preloadAdminCore, {
+import {
   warmAdminOnIdle,
-  preloadRoute as preloadAdminRoute,
+  prefetchAdminByPath,            // ✅ path-based admin prefetch
 } from '@admin/preload.js'
-import preloadInstructorCore, {
+import {
   warmInstructorOnIdle,
-  preloadRoute as preloadInstructorRoute,
+  // If your instructor preloader exposes a similar helper, import it:
+  // prefetchInstructorByPath,
+  preloadRoute as preloadInstructorRoute, // fallback if path helper not available
 } from '@instructor/preload.js'
 
 import {
@@ -40,6 +42,7 @@ import { preloadRoutesForRole } from '@/utils/route-preload.js'
 import { useSession } from '../session/useSession.js'
 import styles from './NavBar.module.css'
 
+// Infer role segment from a URL path
 function roleFromPath(path = '') {
   const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(String(path))
   return m ? m[1].toLowerCase() : null
@@ -66,7 +69,7 @@ function NavBar({ brand: brandProp }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
 
-  // Scroll elevation (rAF + prefers-reduced-motion)
+  // Scroll elevation (rAF + respects reduced motion)
   useEffect(() => {
     let ticking = false
     const prefersReduced =
@@ -141,14 +144,13 @@ function NavBar({ brand: brandProp }) {
     }
   }, [profileOpen])
 
-  // Lock page scroll when the mobile menu is open
+  // Lock page scroll when the mobile menu is open (avoid layout shift)
   useEffect(() => {
     const body = document.body
     const prevOverflow = body.style.overflow
     const prevPaddingRight = body.style.paddingRight
 
     if (menuOpen) {
-      // compensate for scrollbar to prevent layout shift
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
       body.style.overflow = 'hidden'
       if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`
@@ -183,10 +185,9 @@ function NavBar({ brand: brandProp }) {
 
   // Build visible nav from central config
   const links = useMemo(() => {
-    const base = [{ to: '/', label: 'Home', icon: '🏠', exact: true, prefetchRole: null }]
+    const base = [{ to: '/', label: 'Home', icon: '🏠', exact: true }]
     const roleLinks = (getTopNavForRole(role || 'student') || []).map(l => ({
       exact: false, // nested routes remain active
-      prefetchRole: roleFromPath(l.to),
       ...l,
     }))
     return [...base, ...roleLinks]
@@ -232,22 +233,31 @@ function NavBar({ brand: brandProp }) {
     const r = roleFromPath(to)
     if (!r) return
     try {
+      // If you have a central role preloader, let it decide:
       if (typeof preloadRoutesForRole === 'function') {
+        // Some apps accept (role, path), others only (role)
         const res = preloadRoutesForRole.length >= 2
           ? preloadRoutesForRole(r, to)
           : preloadRoutesForRole(r)
         void res
         return
       }
+
+      // Direct path-based helpers (Admin ✅)
       if (r === 'admin') {
-        if (typeof preloadAdminRoute === 'function') void preloadAdminRoute(to)
-        else void preloadAdminCore?.()
-      } else if (r === 'instructor') {
-        if (typeof preloadInstructorRoute === 'function') void preloadInstructorRoute(to)
-        else void preloadInstructorCore?.()
+        void prefetchAdminByPath?.(to)
+        return
+      }
+
+      // Instructor: path helper if present; else fallback to route preloader
+      if (r === 'instructor') {
+        // If your instructor module exposes prefetchInstructorByPath, prefer it:
+        // void prefetchInstructorByPath?.(to)
+        // Fallback: some instructor preloaders accept a path for preloadRoute
+        void preloadInstructorRoute?.(to)
       }
     } catch {
-      // ignore prefetch errors
+      /* ignore prefetch errors */
     }
   }, [])
 
@@ -284,7 +294,6 @@ function NavBar({ brand: brandProp }) {
         className={`${styles.links} ${menuOpen ? styles.linksOpen : ''}`}
         id="main-navigation"
         role="menubar"
-        aria-hidden={menuOpen ? undefined : undefined /* keep readable by SRs */}
       >
         {links.map(link => (
           <NavLink
@@ -301,7 +310,9 @@ function NavBar({ brand: brandProp }) {
             role="menuitem"
           >
             {link.icon ? (
-              <span className={styles.linkIcon} aria-hidden>{link.icon}</span>
+              <span className={styles.linkIcon} aria-hidden>
+                {link.icon}
+              </span>
             ) : null}
             <span className={styles.linkLabel}>{link.label}</span>
           </NavLink>

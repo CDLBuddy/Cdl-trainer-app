@@ -1,0 +1,39 @@
+/* Path: src/admin/dashboard/components/BillingSummary.module.css */
+.card {
+  background: var(--card-bg, rgba(255,255,255,.06));
+  color: var(--text-light, #fff);
+  border: 1px solid color-mix(in oklab, var(--card-bg, #12161c), #fff 8%);
+  border-radius: var(--radius-md, 10px);
+  padding: 1rem;
+}
+.header { display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+.title { font-size: 1rem; font-weight: 700; }
+.actions { display:flex; gap:.5rem; }
+
+.kpis {
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap:.75rem;
+  margin-top:.75rem;
+}
+.kpi { background: rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius: 8px; padding:.6rem .7rem; }
+.kpiLabel { font-size:.8rem; opacity:.85; }
+.kpiValue { font-weight:800; font-size:1.15rem; }
+.kpiValue.warn { color: var(--warning, #f6ad55); }
+
+.block { margin-top: .9rem; }
+.blockHeader { display:flex; align-items:center; justify-content:space-between; margin-bottom:.35rem; }
+.empty { opacity:.8; margin:.25rem 0 .5rem; }
+
+.list { display:flex; flex-direction:column; gap:.5rem; }
+.row { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.5rem .6rem; background: rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:8px; }
+.rowMain { display:flex; flex-direction:column; gap:.15rem; }
+.rowSide { display:flex; align-items:center; gap:.5rem; }
+.company { font-weight:600; }
+.meta { font-size:.8rem; opacity:.8; }
+.amount { font-weight:700; letter-spacing:.01em; }
+.toggle { display:flex; align-items:center; gap:.4rem; font-size:.9rem; }
+
+@media (max-width: 760px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}

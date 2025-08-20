@@ -1,10 +1,9 @@
 // Path: src/admin/companies/index.js
 // ======================================================================
 // ADMIN • Companies (barrel)
-// - Re-export screens and all submodules (tree-shakable)
-// - Keep JSX/CSS out of here so Fast Refresh stays quick
-// - NOTE: Star-exports below assume submodule barrels export only
-//   functions/components (no side effects).
+// - Canonical re-exports for screens + components + hooks + services
+// - Side-effect free & tree-shakable (keep JSX/CSS out of here)
+// - Star-exports assume each submodule exposes only values (no side effects)
 // ======================================================================
 
 // -- Screens -------------------------------------------------------------
@@ -12,18 +11,17 @@ export { default as AdminCompanies } from './AdminCompanies.jsx'
 export { default as CompanyDetail }  from './CompanyDetail.jsx'
 
 // -- Submodule barrels ---------------------------------------------------
-// Components: CompaniesTable, CompanyRow, CompanyHeader, CompanyFilters, ...
+// Components: CompaniesTable, CompanyRow, CompanyHeader, CompanyFilters, detail cards, …
 export * from './components'
 
-// Hooks: useCompanies, ...
+// Hooks: useCompanies, useCompanyDetail, useCompanyDocuments, useCompanyNotes, useDebounced, …
 export * from './hooks'
 
-// Services: listCompaniesBySchool, addCompany, updateCompany, ...
+// Services: listCompaniesBySchool, addCompany, updateCompany, removeCompany, exports, …
 export * from './services'
 
 // Add-Student drawer suite:
-// AddStudentDrawer, DrawerShell, FormFields, OverlayChips,
-// plus ./add-student/utils (trapFocus, validate, etc.) and services
+// AddStudentDrawer, DrawerShell, FormFields, OverlayChips, utils (trapFocus, validate, …), services
 export * from './add-student'
 
 // ----------------------------------------------------------------------

@@ -1,0 +1,171 @@
+/* Path: src/admin/companies/components/detail/CompanyCards.module.css */
+/* ============================================================================
+   Company Detail Cards -- theme-aligned (uses src/styles/theme.css tokens)
+   - Works in your dark-first theme; inherits brand + surface tokens
+   - Minimal layout shift (skeletons), subtle focus/hover affordances
+   ============================================================================ */
+
+/* Local aliases mapped to your global tokens */
+:root {
+  --cd-bg: var(--card-bg);
+  --cd-fg: var(--text-light);
+  --cd-muted: var(--text-dark);
+  --cd-border: color-mix(in oklab, var(--brand-light), #fff 12%);
+  --cd-accent: var(--brand-light);
+  --cd-accent-weak: color-mix(in oklab, var(--brand-light), #fff 82%);
+  --cd-ok: var(--success);
+  --cd-warn: var(--warning);
+  --cd-error: var(--error);
+  --cd-radius: var(--radius-md);
+  --cd-gap: 14px;
+  --cd-pad: 16px;
+  --cd-shadow: var(--shadow-1);
+}
+
+/* Card shell */
+.card {
+  background: var(--cd-bg);
+  color: var(--cd-fg);
+  border: 1px solid var(--cd-border);
+  border-radius: var(--cd-radius);
+  box-shadow: var(--cd-shadow);
+  padding: calc(var(--cd-pad) + 2px);
+  display: grid;
+  gap: var(--cd-gap);
+  backdrop-filter: saturate(1.2) blur(0.5px);
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--cd-gap);
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--text-light);
+}
+
+/* KPI grid */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.kpi {
+  border: 1px dashed var(--cd-border);
+  border-radius: calc(var(--radius-sm) + 2px);
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+  min-height: 54px;
+  background: color-mix(in oklab, var(--card-bg), #000 4%);
+}
+
+.kpiLabel { font-size: .8rem; color: var(--cd-muted); }
+.kpiValue { font-weight: 700; letter-spacing: .01em; color: var(--text-light); }
+
+/* Lists */
+.list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--cd-border);
+  border-radius: var(--radius-sm);
+  background: color-mix(in oklab, var(--card-bg), #000 2%);
+  transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.row:hover {
+  background: color-mix(in oklab, var(--card-bg), #000 6%);
+  border-color: color-mix(in oklab, var(--brand-light), #fff 22%);
+}
+
+.row:focus-within {
+  outline: none;
+  border-color: var(--cd-accent);
+  /* match your ring token */
+  box-shadow: var(--ring);
+}
+
+/* Meta / actions */
+.meta { font-size: .85rem; color: var(--cd-muted); }
+.actions { display: flex; gap: 8px; align-items: center; }
+
+/* Empty state */
+.empty { color: var(--cd-muted); font-size: .95rem; }
+
+/* Skeletons (minimal layout shift) */
+.skeleton {
+  display: inline-block;
+  height: 1em;
+  border-radius: 6px;
+  min-width: 3ch;
+  background:
+    linear-gradient(90deg,
+      color-mix(in oklab, var(--cd-border), transparent 35%) 25%,
+      color-mix(in oklab, var(--brand-light), #fff 85%) 45%,
+      color-mix(in oklab, var(--cd-border), transparent 35%) 65%);
+  background-size: 240% 100%;
+  animation: cd-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes cd-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -140% 0; }
+}
+
+/* Utility: subtle pill (can be used from JSX inline) */
+.pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cd-border);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+  color: var(--text-light);
+  background: color-mix(in oklab, var(--card-bg), #000 4%);
+}
+
+/* Density helpers (optional) */
+.compact .card { padding: var(--cd-pad); }
+.compact .kpi { padding: 8px 10px; }
+
+/* Responsive */
+@media (max-width: 880px) {
+  .kpis { grid-template-columns: 1fr; }
+  .header { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+  .row { transition: none; }
+}
+
+/* Light-mode support (if you later toggle :root.light) */
+:root.light {
+  --cd-bg: var(--card-bg, #fff);
+  --cd-fg: #111;
+  --cd-muted: #475569;
+  --cd-border: color-mix(in oklab, var(--brand-light), #000 12%);
+  --cd-accent: var(--brand-light);
+  --cd-accent-weak: color-mix(in oklab, var(--brand-light), #000 82%);
+}

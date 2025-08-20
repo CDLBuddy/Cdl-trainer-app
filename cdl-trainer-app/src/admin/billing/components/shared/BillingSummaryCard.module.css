@@ -1,0 +1,184 @@
+/* Path: src/admin/billing/components/shared/BillingSummaryCard.module.css */
+/* ============================================================================
+   BillingSummaryCard -- compact, reusable summary block
+   - Neutral by default; adapts to light/dark
+   - Minimal layout shift with skeletons
+   - Keyboard & a11y friendly focus rings
+   ============================================================================ */
+
+:root {
+  --bsc-bg: var(--surface-1, #fff);
+  --bsc-fg: var(--text-1, #111);
+  --bsc-muted: var(--text-2, #6b7280);
+  --bsc-border: var(--border-1, #e5e7eb);
+  --bsc-accent: var(--accent-5, #2563eb);
+  --bsc-accent-weak: color-mix(in srgb, var(--bsc-accent), transparent 82%);
+  --bsc-shadow: 0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.04);
+  --bsc-radius: 12px;
+  --bsc-gap: 14px;
+  --bsc-pad: 16px;
+  --bsc-pad-lg: 18px;
+  --bsc-kpi-gap: 12px;
+}
+
+.card {
+  background: var(--bsc-bg);
+  color: var(--bsc-fg);
+  border: 1px solid var(--bsc-border);
+  border-radius: var(--bsc-radius);
+  padding: var(--bsc-pad-lg) var(--bsc-pad);
+  box-shadow: var(--elevation-1, var(--bsc-shadow));
+  display: flex;
+  flex-direction: column;
+  gap: var(--bsc-gap);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bsc-gap);
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+/* Mode selector */
+.mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modeLabel {
+  font-size: 0.825rem;
+  color: var(--bsc-muted);
+}
+
+.modeSelect {
+  appearance: none;
+  font: inherit;
+  padding: 6px 10px;
+  border: 1px solid var(--bsc-border);
+  border-radius: 8px;
+  background: inherit;
+  color: inherit;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.modeSelect:focus-visible {
+  outline: none;
+  border-color: var(--bsc-accent);
+  box-shadow: 0 0 0 3px var(--bsc-accent-weak);
+}
+
+/* KPI row */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bsc-kpi-gap);
+}
+
+.kpis li {
+  list-style: none;
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px dashed var(--bsc-border);
+  border-radius: 10px;
+  min-height: 54px;
+}
+
+.kpis li span {
+  font-size: 0.775rem;
+  color: var(--bsc-muted);
+}
+
+.kpis li strong {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.secondaryLink {
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--bsc-border);
+  line-height: 1;
+}
+
+.secondaryLink:focus-visible {
+  outline: none;
+  border-color: var(--bsc-accent);
+  box-shadow: 0 0 0 3px var(--bsc-accent-weak);
+}
+
+/* Empty state */
+.empty {
+  margin: 6px 2px 2px;
+  font-size: 0.9rem;
+  color: var(--bsc-muted);
+}
+
+.muted {
+  color: var(--bsc-muted);
+}
+
+/* Skeletons (minimal layout shift) */
+.skeleton {
+  display: inline-block;
+  border-radius: 6px;
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--bsc-border), transparent 35%) 25%,
+      color-mix(in srgb, var(--bsc-border), transparent 5%) 45%,
+      color-mix(in srgb, var(--bsc-border), transparent 35%) 65%);
+  background-size: 240% 100%;
+  animation: bsc-shimmer 1.2s ease-in-out infinite;
+  height: 1em;
+  min-width: 3ch;
+}
+
+@keyframes bsc-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -140% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+  .modeSelect { transition: none; }
+}
+
+/* Compact widths */
+@media (max-width: 720px) {
+  .kpis { grid-template-columns: 1fr; }
+  .header { align-items: start; flex-direction: column; }
+}
+
+/* Dark mode hints (if no global tokens present) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bsc-bg: var(--surface-1, #111418);
+    --bsc-fg: var(--text-1, #f3f4f6);
+    --bsc-muted: var(--text-2, #9ca3af);
+    --bsc-border: var(--border-1, #263041);
+    --bsc-accent: var(--accent-5, #7aa2ff);
+    --bsc-accent-weak: color-mix(in srgb, var(--bsc-accent), transparent 82%);
+  }
+}

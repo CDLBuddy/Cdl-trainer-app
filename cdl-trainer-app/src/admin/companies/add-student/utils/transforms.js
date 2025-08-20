@@ -1,43 +1,59 @@
+// Path: src/admin/companies/add-student/transforms.js
+// ============================================================================
 // ADD-STUDENT • transforms (pure mappers / normalizers)
+// - Side-effect free utilities
+// - Keep UI dumb; centralize all stamping + normalization here
+// ============================================================================
 
-/** Normalize email for writes. */
+/**
+ * Normalize email for storage (trim + lowercase).
+ * @param {string} s
+ * @returns {string}
+ */
 export function normalizeEmail(s) {
-  return (s || '').trim().toLowerCase();
+  return (s || '').trim().toLowerCase()
 }
 
 /**
  * Build the canonical payload your backend expects.
- * Keeps all date/actor stamping here so UI stays dumb.
+ * - Adds audit stamps (created/updated).
+ * - Keeps billing structured for future expansion.
+ * - Caller provides overlays + actor (admin email).
  *
- * @param {object} form
+ * @param {object} form - Local form state
  * @param {object} opts
- * @param {string} opts.companyId
- * @param {string} [opts.actor='admin'] - who is performing the change
- * @param {string[]} [opts.overlays=[]] - derived from course/class by caller
+ * @param {string} opts.companyId - Company ID
+ * @param {string} [opts.actor='admin'] - Who is performing the change
+ * @param {string[]} [opts.overlays=[]] - Derived overlays from course/class
+ * @returns {object} payload ready for Firestore write
  */
-export function toPayload(form, { companyId, actor = 'admin', overlays = [] } = {}) {
-  const nowIso = new Date().toISOString();
-  const mode = String(form?.billing || 'employer').toLowerCase();
+export function toPayload(
+  form,
+  { companyId, actor = 'admin', overlays = [] } = {}
+) {
+  const nowIso = new Date().toISOString()
+  const mode = String(form?.billing || 'employer').toLowerCase()
 
   return {
+    // Primary fields
     email: normalizeEmail(form?.email),
     name: (form?.name || '').trim(),
     course: (form?.course || '').trim(),
-    cdlClass: form?.cdlClass || '',
-    overlays: overlays?.length ? overlays : null,
-    billing: { mode }, // keep structure to allow future fields
+    cdlClass: (form?.cdlClass || '').trim() || '',
+    overlays: overlays?.length ? [...new Set(overlays)] : null,
+    billing: { mode }, // expandable in the future
     assignedInstructor: (form?.assignedInstructor || '').trim() || null,
     companyId: companyId || null,
 
-    // system fields
+    // System / identity
     role: 'student',
     status: 'active',
-    verified: {},
+    verified: {}, // instructor/admin verified fields (initially empty)
 
-    // audit
-    updatedAt: nowIso,
-    updatedBy: actor,
+    // Audit trail
     createdAt: nowIso,
     createdBy: actor,
-  };
+    updatedAt: nowIso,
+    updatedBy: actor,
+  }
 }

@@ -2,25 +2,29 @@
 // ======================================================================
 // Admin • Billing (shell)
 // - Two tabs: Employer / Individual
-// - Keyboard & a11y friendly tablist (no extra deps)
+// - A11y-first: proper tab roles, focus mgmt, keyboard nav
 // - Remembers last-selected tab per session
-// - Optional hash-sync (#employer | #individual) for deep links
+// - Hash sync for deep-links (#employer | #individual) with hashchange support
+// - SSR-safe (guards window/sessionStorage)
 // ======================================================================
 
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import Shell from '@components/Shell.jsx'
 import EmployerTab from './components/Employer/EmployerTab.jsx'
 import IndividualTab from './components/Individual/IndividualTab.jsx'
 
 const TABS = /** @type const */ (['employer', 'individual'])
 const isValidTab = (t) => TABS.includes(String(t))
+const STORAGE_KEY = 'admin.billing.tab'
 
-// Read initial tab from URL hash or sessionStorage; fallback to 'employer'
+// ---- initial tab resolver ---------------------------------------------------
 function getInitialTab() {
-  const fromHash = (typeof window !== 'undefined' && window.location.hash || '').replace('#', '')
-  if (isValidTab(fromHash)) return fromHash
+  if (typeof window !== 'undefined') {
+    const fromHash = (window.location.hash || '').slice(1)
+    if (isValidTab(fromHash)) return fromHash
+  }
   try {
-    const saved = sessionStorage.getItem('admin.billing.tab') || ''
+    const saved = sessionStorage.getItem(STORAGE_KEY) || ''
     if (isValidTab(saved)) return saved
   } catch { /* ignore */ }
   return 'employer'
@@ -28,50 +32,83 @@ function getInitialTab() {
 
 export default function Billing() {
   const [tab, setTab] = useState(getInitialTab)
+  const tablistId = useId()
+  const employerBtnRef = useRef(null)
+  const individualBtnRef = useRef(null)
 
-  // Persist selection per-session (so a refresh stays on the same tab)
+  // Persist per-session
   useEffect(() => {
-    try { sessionStorage.setItem('admin.billing.tab', tab) } catch { /* ignore */ }
+    try { sessionStorage.setItem(STORAGE_KEY, tab) } catch { /* ignore */ }
   }, [tab])
 
-  // Keep URL hash in sync for deep-links / refresh
+  // Sync URL hash (but don’t cause history spam)
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const current = (window.location.hash || '').replace('#', '')
-    if (current !== tab) window.history.replaceState(null, '', `#${tab}`)
-  }, [tab])
-
-  // Keyboard support on the tablist (ArrowLeft/Right and Home/End)
-  const onKeyTabs = useCallback((e) => {
-    const idx = TABS.indexOf(tab)
-    if (idx < 0) return
-    if (e.key === 'ArrowRight') {
-      e.preventDefault()
-      setTab(TABS[(idx + 1) % TABS.length])
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault()
-      setTab(TABS[(idx - 1 + TABS.length) % TABS.length])
-    } else if (e.key === 'Home') {
-      e.preventDefault()
-      setTab(TABS[0])
-    } else if (e.key === 'End') {
-      e.preventDefault()
-      setTab(TABS[TABS.length - 1])
+    const desired = `#${tab}`
+    if (window.location.hash !== desired) {
+      // replaceState avoids back-button noise
+      window.history.replaceState(null, '', desired)
     }
   }, [tab])
 
+  // React to external hash changes (e.g., deep link or manual edit)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const onHash = () => {
+      const h = (window.location.hash || '').slice(1)
+      if (isValidTab(h)) setTab(h)
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  // Keyboard nav on tablist
+  const onKeyTabs = useCallback((e) => {
+    const idx = TABS.indexOf(tab)
+    if (idx < 0) return
+    const prev = () => setTab(TABS[(idx - 1 + TABS.length) % TABS.length])
+    const next = () => setTab(TABS[(idx + 1) % TABS.length])
+
+    switch (e.key) {
+      case 'ArrowRight':
+      case 'ArrowDown':
+        e.preventDefault(); next(); break
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        e.preventDefault(); prev(); break
+      case 'Home':
+        e.preventDefault(); setTab(TABS[0]); break
+      case 'End':
+        e.preventDefault(); setTab(TABS[TABS.length - 1]); break
+      default:
+        break
+    }
+  }, [tab])
+
+  // Move focus to active tab when tab changes via keyboard
+  useEffect(() => {
+    const el = tab === 'employer' ? employerBtnRef.current : individualBtnRef.current
+    // Only shift focus if keyboard likely used (heuristic: last event was a keydown)
+    // Keeping it simple—safe to always focus for accessibility.
+    el?.focus?.()
+  }, [tab])
+
   const panelId = useMemo(() => `billing-panel-${tab}`, [tab])
+  const activeTabId = tab === 'employer' ? 'billing-tab-employer' : 'billing-tab-individual'
 
   return (
     <Shell title="Billing">
-      {/* Tabs */}
+      {/* Tablist */}
       <div
+        id={tablistId}
         role="tablist"
         aria-label="Billing views"
+        aria-orientation="horizontal"
         onKeyDown={onKeyTabs}
-        style={{ display: 'flex', gap: 8, marginBottom: 12 }}
+        style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}
       >
         <TabButton
+          ref={employerBtnRef}
           id="billing-tab-employer"
           isActive={tab === 'employer'}
           controls="billing-panel-employer"
@@ -81,6 +118,7 @@ export default function Billing() {
         </TabButton>
 
         <TabButton
+          ref={individualBtnRef}
           id="billing-tab-individual"
           isActive={tab === 'individual'}
           controls="billing-panel-individual"
@@ -90,11 +128,12 @@ export default function Billing() {
         </TabButton>
       </div>
 
-      {/* Panels */}
+      {/* Active panel */}
       <section
         id={panelId}
         role="tabpanel"
-        aria-labelledby={tab === 'employer' ? 'billing-tab-employer' : 'billing-tab-individual'}
+        aria-labelledby={activeTabId}
+        tabIndex={0}
       >
         {tab === 'employer' ? <EmployerTab /> : <IndividualTab />}
       </section>
@@ -103,10 +142,14 @@ export default function Billing() {
 }
 
 /** Small, reusable tab button—kept local to avoid extra files */
-function TabButton({ id, isActive, controls, onSelect, children }) {
+const TabButton = React.forwardRef(function TabButton(
+  { id, isActive, controls, onSelect, children },
+  ref
+) {
   return (
     <button
       id={id}
+      ref={ref}
       role="tab"
       aria-selected={isActive}
       aria-controls={controls}
@@ -114,8 +157,9 @@ function TabButton({ id, isActive, controls, onSelect, children }) {
       className={`btn ${isActive ? '' : 'outline'}`}
       onClick={onSelect}
       type="button"
+      data-testid={id}
     >
       {children}
     </button>
   )
-}
+})

@@ -29,16 +29,13 @@ import {
   subscribeBrandingUpdated,
 } from '@utils/school-branding.js'
 import { registerToastHandler } from '@utils/ui-helpers.js'
-
 import { preloadRoutesForRole } from '@/utils/route-preload.js'
-
 import { useSession } from '../session/useSession.js'
-
 import styles from './Shell.module.css'
 
 /** Infer a role slug from a path like "/student/..." */
 function roleFromPath(path = '') {
-  const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(path)
+  const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(String(path))
   return (m && m[1].toLowerCase()) || null
 }
 
@@ -60,6 +57,8 @@ function Shell({
   const [brand, setBrand] = useState(() => getCachedBrandingSummary())
 
   useEffect(() => {
+    // SSR guard
+    if (typeof window === 'undefined') return
     const unsub = subscribeBrandingUpdated(detail => {
       setBrand(prev => ({
         logoUrl: detail?.logoUrl ?? prev.logoUrl ?? '/default-logo.svg',
@@ -68,7 +67,9 @@ function Shell({
         subHeadline: detail?.subHeadline ?? prev.subHeadline ?? '',
       }))
       if (detail?.primaryColor) {
-        document.documentElement.style.setProperty('--brand-primary', detail.primaryColor)
+        try {
+          document.documentElement.style.setProperty('--brand-primary', detail.primaryColor)
+        } catch { /* noop */ }
       }
     })
     return unsub
@@ -76,13 +77,12 @@ function Shell({
 
   const logo = brand?.logoUrl || '/default-logo.svg'
   const name = brand?.schoolName || 'CDL Trainer'
-  const sub = brand?.subHeadline || ''
+  const sub  = brand?.subHeadline || ''
 
   /* -------------------------- Role-Aware Navigation ------------------------- */
   const rail = useMemo(() => {
     if (Array.isArray(railOverride)) return railOverride
     const links = getTopNavForRole(navRole)
-    // normalize: ensure each item has { to, label, icon?, exact? }
     return Array.isArray(links)
       ? links.map(l => ({ exact: false, icon: '•', ...l }))
       : []
@@ -96,13 +96,14 @@ function Shell({
     if (typeof logout === 'function') {
       logout()
     } else {
-      localStorage.clear()
+      try { localStorage.clear() } catch {}
       navigate('/login', { replace: true })
     }
   }, [logout, navigate])
 
   /* ----------------------- Accessibility: Live Announcer --------------------- */
   useEffect(() => {
+    if (typeof document === 'undefined') return
     const el = document.getElementById('route-change-live')
     if (el) el.textContent = `Navigated to ${pathname}`
   }, [pathname])
@@ -110,14 +111,19 @@ function Shell({
   /* --------------------- Accessibility: Focus to <main> on nav --------------- */
   const mainRef = useRef(null)
   useEffect(() => {
-    // Shift focus to main after nav; helps screen reader users
-    const id = requestAnimationFrame(() => {
-      if (mainRef.current) {
-        mainRef.current.setAttribute('tabIndex', '-1')
-        mainRef.current.focus()
-      }
+    if (typeof window === 'undefined') return
+    const id = window.requestAnimationFrame(() => {
+      const el = mainRef.current
+      if (!el) return
+      // Make programmatically focusable without lingering tab stop
+      const prevTabIndex = el.getAttribute('tabIndex')
+      el.setAttribute('tabIndex', '-1')
+      el.focus({ preventScroll: true })
+      // Restore to avoid trapping in tab order
+      if (prevTabIndex == null) el.removeAttribute('tabIndex')
+      else el.setAttribute('tabIndex', prevTabIndex)
     })
-    return () => cancelAnimationFrame(id)
+    return () => window.cancelAnimationFrame?.(id)
   }, [pathname])
 
   /* ------------------------ Toast Bridge (React → Utils) --------------------- */
@@ -133,7 +139,6 @@ function Shell({
           toastApi.show(msg, duration, type)
         }
       })
-
     registerToastHandler(handler || null)
     return () => registerToastHandler(null)
   }, [toastApi])
@@ -161,6 +166,7 @@ function Shell({
   const closeCoach = useCallback(() => setAiOpen(false), [])
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const onOpen = e => openCoach(e?.detail?.context)
     const onKey = e => {
       const metaK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'
@@ -180,10 +186,12 @@ function Shell({
 
   /* ----------------------------- Link prefetching ---------------------------- */
   const handleRailPrefetch = useCallback((to) => {
+    // Resolve role from link; fall back to current nav role
     const r = roleFromPath(to) || navRole
-    // Warm the matching role router & common subpages
-    preloadRoutesForRole(r)
-      .catch(() => {}) // best-effort
+    try {
+      const maybe = preloadRoutesForRole?.(r, to)
+      void maybe
+    } catch { /* best-effort only */ }
   }, [navRole])
 
   /* --------------------------------- Render --------------------------------- */
@@ -229,7 +237,7 @@ function Shell({
                 className={({ isActive }) =>
                   `${styles.railBtn} ${isActive ? styles.railActive : ''}`
                 }
-                end={!!exact}            // exact only if explicitly requested
+                end={!!exact} // exact only if explicitly requested
                 onMouseEnter={() => handleRailPrefetch(to)}
                 onFocus={() => handleRailPrefetch(to)}
               >

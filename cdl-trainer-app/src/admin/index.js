@@ -1,45 +1,60 @@
 // src/admin/index.js
-// ======================================================================
-// ADMIN BARREL (pure)
-// - Re-export admin pages & role-scoped UI bits
-// - Keep this file side-effect free (no JSX execution, no lazy() calls)
-// - Also re-export Walkthroughs & Utils barrels for convenience
-// ======================================================================
+// ============================================================================
+// ADMIN BARREL (pure, tree-shakable)
+// - Centralizes exports for admin pages and submodules
+// - Keep JSX/CSS out of barrels to preserve Fast Refresh
+// ============================================================================
 
-// ---- Pages / Views ----------------------------------------------------
-export { default as AdminDashboard } from './AdminDashboard.jsx'
+// -- Pages / Views -----------------------------------------------------------
+// Prefer importing from each module's own barrel when available.
+// These direct exports remain for back-compat with older imports.
+export { default as AdminDashboard } from './dashboard/AdminDashboard.jsx'
 export { default as AdminProfile }   from './AdminProfile.jsx'
-export { default as AdminUsers }     from './AdminUsers.jsx'
-export { default as AdminReports }   from './AdminReports.jsx'
 
-// Companies suite (canonical file name retained: AdminCompanies.jsx)
-export { default as AdminCompanies }  from './companies/AdminCompanies.jsx'
-export { CompanyDetail, AddStudentDrawer } from './companies' // via barrel
+// Reports now lives under /reports (keep the direct export for compat)
+export { default as AdminReports }   from './reports/AdminReports.jsx'
+export * from './reports'            // sections/components/hooks/services (if any)
 
-// Billing (screen + barrel-friendly named exports)
-export { default as AdminBilling } from './billing/Billing.jsx'
-export * from './billing/index.js'  // safe if present; ignored if not
+// -- Companies Suite ---------------------------------------------------------
+// Prefer: import { AdminCompanies, CompanyDetail, AddStudentDrawer, AddCompanyDrawer } from '@admin/companies'
+export { default as AdminCompanies } from './companies/AdminCompanies.jsx' // compat
+export * from './companies'          // surfaces: AdminCompanies, CompanyDetail,
+// add-student (drawer, hooks, utils), add-company (drawer, hooks, utils),
+// components/hooks/services barrels
 
-// ---- UI Controls (components only — safe for Fast Refresh) ------------
+// -- Communications ----------------------------------------------------------
+// Prefer: import { AdminCommunications, ... } from '@admin/communications'
+export { default as AdminCommunications } from './communications/AdminCommunications.jsx' // compat
+export * from './communications'    // components/hooks/services barrels
+
+// -- Billing -----------------------------------------------------------------
+// Prefer: import { Billing } from '@admin/billing'
+export { default as AdminBilling }  from './billing/Billing.jsx' // compat
+export * from './billing'           // components, hooks, services, utils
+
+// -- Settings ----------------------------------------------------------------
+// Prefer: import { AdminSettings, useBillingSettings, ... } from '@admin/settings'
+export * from './settings'          // sections/hooks/services/utils
+
+// -- UI Controls (standalone atoms used across admin) ------------------------
 export { default as ExportUsersControls }     from './ExportUsersControls.jsx'
 export { default as ExportCompaniesControls } from './ExportCompaniesControls.jsx'
 
-// ---- Walkthroughs (admin module) -------------------------------------
-// Consumers can: import { WalkthroughManager } from '@admin'
-export * from './walkthroughs/index.js'
+// -- Walkthroughs (admin module) ---------------------------------------------
+export * from './walkthroughs'
 
-// ---- Admin Utilities --------------------------------------------------
-// Re-exports enrollmentAssignments.js (and future utils)
-export * from './utils/index.js'
+// -- Admin Utilities ----------------------------------------------------------
+export * from './utils'
 
-// ---- Preload helpers (functions only; tree-shakable) ------------------
+// -- Preload helpers ----------------------------------------------------------
 export * from './preload.js'
 
-// ----------------------------------------------------------------------
-// Notes:
-// - Keep this barrel free of dynamic imports or runtime logic.
-// - Routers should still lazy-load pages to preserve code-splitting.
-// - The companies & billing barrels make it easy to import related bits:
-//     import { AdminCompanies, CompanyDetail } from '@admin'
-//     import { AdminBilling } from '@admin'
-// ----------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Optional legacy alias (soft transition). Uncomment if needed.
+// export { default as AdminUsers } from './companies/AdminCompanies.jsx' // DEPRECATED: use AdminCompanies
+
+// Optional convenience namespaces (opt-in):
+// export * as Companies       from './companies'
+// export * as Communications  from './communications'
+// export * as BillingNS       from './billing'
+// export { default as AdminRouter } from './AdminRouter.jsx'

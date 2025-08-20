@@ -1,0 +1,114 @@
+/* Path: src/admin/dashboard/components/KpiRow.module.css */
+/* ==========================================================================
+   KPI Row (cards)
+   - Clean, responsive KPI widget grid
+   - Uses tokens defined in src/styles/theme.css
+   ========================================================================== */
+
+.kpiRow {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.75rem; /* local spacing */
+}
+
+@media (max-width: 1200px) {
+  .kpiRow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .kpiRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .kpiRow { grid-template-columns: 1fr; }
+}
+
+/* Core card */
+.kpiCard {
+  position: relative;
+  background: var(--card-bg);
+  color: var(--text-dark);
+  border: 1px solid color-mix(in oklab, var(--card-bg), #fff 8%);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  box-shadow: var(--shadow-1);
+  transition: transform .12s ease, box-shadow .12s ease, border-color .15s ease;
+  will-change: transform;
+}
+
+.kpiCard:focus-visible,
+.kpiCard:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+  border-color: color-mix(in oklab, var(--accent), #fff 12%);
+  outline: none;
+}
+
+/* Warning flavor (for "expiring soon", etc.) */
+.warn {
+  background: color-mix(in oklab, var(--card-bg), var(--error) 12%);
+  border-color: color-mix(in oklab, var(--error), #000 40%);
+  box-shadow: 0 2px 14px rgba(229,62,62,.18); /* based on --error */
+}
+
+/* Content */
+.header {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .9rem;
+  opacity: .92;
+}
+
+.emoji {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.value {
+  margin-top: .25rem;
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  font-weight: 800;
+  font-size: clamp(1.35rem, 1.1rem + 1.2vw, 1.9rem);
+  letter-spacing: .02em;
+}
+
+/* Optional "delta" chip (growth trend) */
+.deltaUp {
+  color: var(--success);
+  font-size: .85rem;
+  font-weight: 700;
+}
+.deltaDown {
+  color: var(--error);
+  font-size: .85rem;
+  font-weight: 700;
+}
+
+/* Skeleton (loading state) */
+.skeleton {
+  display: inline-block;
+  width: 4ch;
+  height: 1.1em;
+  vertical-align: middle;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, #1b212b 0%, #222a36 40%, #1b212b 80%);
+  background-size: 200% 100%;
+  animation: kpiPulse 1.15s ease-in-out infinite;
+}
+@keyframes kpiPulse {
+  0% { background-position: 0% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* High-contrast / forced colors */
+@media (forced-colors: active) {
+  .kpiCard, .warn {
+    background: Canvas;
+    color: CanvasText;
+    border-color: ButtonText;
+    box-shadow: none;
+  }
+  .kpiCard:focus-visible,
+  .kpiCard:hover { outline: 2px solid ButtonText; }
+}

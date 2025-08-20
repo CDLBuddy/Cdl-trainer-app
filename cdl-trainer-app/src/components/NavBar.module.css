@@ -1,7 +1,7 @@
 /* === NavBar.module.css =======================================================
    Works with/without theme tokens:
    --brand-dark, --brand-mid, --brand-light, --accent, --text-light, --card-bg-dark
-   --error, --safe-area-inset-top
+   --error, --safe-area-inset-top, --z-navbar, --ring
    ========================================================================== */
 
 :root {
@@ -53,7 +53,7 @@
   padding-top: max(0.62em, calc(0.62em + var(--safe-area-inset-top)));
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: var(--z-navbar, 1000);
   box-shadow: 0 2px 16px #00285b18;
   border-bottom: 1.5px solid var(--accent, #b9d7e8);
   backdrop-filter: blur(14px) saturate(140%);
@@ -70,7 +70,7 @@
 }
 
 /* Fallback when backdrop-filter unsupported */
-@supports not ((backdrop-filter: blur(10px))) {
+@supports not ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
   .navbar {
     background: linear-gradient(
       120deg,
@@ -95,8 +95,8 @@
   padding: 4px 6px;
 }
 .left:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--brand-light, #66c0d6), white 12%);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--brand-light, #66c0d6), white 10%));
 }
 
 .logo {
@@ -169,6 +169,17 @@
   height: 2px;
   background: currentColor;
   border-radius: 2px;
+}
+
+/* Icon + label (used by NavBar.jsx) */
+.linkIcon {
+  margin-right: 0.45em;
+  line-height: 1;
+  display: inline-grid;
+  place-items: center;
+}
+.linkLabel {
+  line-height: 1.25;
 }
 
 /* Theme toggle */
@@ -426,7 +437,7 @@
   }
 }
 
-/* Dark-mode border nuance */
+/* Dark-mode border nuance (only if your CSS Modules support :global) */
 :global(body.dark-mode) .navbar {
   border-bottom-color: color-mix(in oklab, var(--accent), #000 25%);
 }

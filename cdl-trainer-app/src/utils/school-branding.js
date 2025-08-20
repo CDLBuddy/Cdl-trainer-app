@@ -1,12 +1,18 @@
 // src/utils/school-branding.js
-// Branding helpers (logo + name + primary color) for React + Vite
+// ======================================================================
+// School Branding Utilities
+// - Logo, name, sub-headline, and primary color
+// - Integrates with Firestore + localStorage cache
+// - Broadcasts updates via DOM CustomEvent ("branding:updated")
+// ======================================================================
 
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore'
-
 import { db } from './firebase.js'
 
-/** Demo fallback brands (used if Firestore fails or offline) */
-const SCHOOL_BRANDS = [
+// ----------------------------------------------------------------------
+// Demo fallback brands (used offline or if Firestore fails)
+// ----------------------------------------------------------------------
+const DEMO_SCHOOLS = [
   {
     id: 'cdlbuddy',
     schoolName: 'CDL Buddy',
@@ -14,7 +20,6 @@ const SCHOOL_BRANDS = [
     contactEmail: 'support@cdltrainerapp.com',
     website: 'https://cdltrainerapp.com',
     subHeadline: 'Your all-in-one CDL prep coach. Scroll down to get started!',
-    // primaryColor intentionally omitted for fallback
   },
   {
     id: 'browning-mountain',
@@ -26,6 +31,9 @@ const SCHOOL_BRANDS = [
   },
 ]
 
+// ----------------------------------------------------------------------
+// LocalStorage keys
+// ----------------------------------------------------------------------
 const LS_KEYS = {
   SCHOOL_ID: 'schoolId',
   BRAND_JSON: 'schoolBrand',
@@ -34,14 +42,14 @@ const LS_KEYS = {
   BRAND_COLOR: 'branding.primaryColor',
 }
 
-/** Apply CSS var and persist for instant UI use */
+// ----------------------------------------------------------------------
+// Internal: Apply branding to CSS vars + persist for instant UI usage
+// ----------------------------------------------------------------------
 function applyBrandVars(brand) {
   if (!brand) return
+
   if (brand.primaryColor) {
-    document.documentElement.style.setProperty(
-      '--brand-primary',
-      brand.primaryColor
-    )
+    document.documentElement.style.setProperty('--brand-primary', brand.primaryColor)
     localStorage.setItem(LS_KEYS.BRAND_COLOR, brand.primaryColor)
   }
   if (brand.logoUrl) {
@@ -51,7 +59,7 @@ function applyBrandVars(brand) {
     localStorage.setItem(LS_KEYS.BRAND_NAME, brand.schoolName || brand.name)
   }
 
-  // Broadcast to any listeners (e.g., header/logo components)
+  // Broadcast to any listeners (header/logo components, Shell, etc.)
   try {
     window.dispatchEvent(
       new CustomEvent('branding:updated', {
@@ -60,39 +68,42 @@ function applyBrandVars(brand) {
           schoolName: brand.schoolName || brand.name || '',
           primaryColor: brand.primaryColor || '',
         },
-      })
+      }),
     )
   } catch {
-    /* noop in non-DOM contexts */
+    /* no-op in non-DOM contexts */
   }
 }
 
-/** Try Firestore first; if missing, fall back to demo list; persist to localStorage */
+// ----------------------------------------------------------------------
+// Public API
+// ----------------------------------------------------------------------
+
+/** Get current school branding (Firestore → fallback → cache) */
 export async function getCurrentSchoolBranding() {
-  const id = localStorage.getItem(LS_KEYS.SCHOOL_ID) || SCHOOL_BRANDS[0].id
+  const id = localStorage.getItem(LS_KEYS.SCHOOL_ID) || DEMO_SCHOOLS[0].id
 
   // 1) Firestore attempt
   try {
     const snap = await getDoc(doc(db, 'schools', id))
     if (snap.exists()) {
       const data = { id, ...snap.data() }
-      // Persist + apply
       localStorage.setItem(LS_KEYS.BRAND_JSON, JSON.stringify(data))
       applyBrandVars(data)
       return data
     }
   } catch {
-    // ignore; fall back below
+    // ignored, fallback below
   }
 
   // 2) Fallback demo
-  const brand = SCHOOL_BRANDS.find(s => s.id === id) || SCHOOL_BRANDS[0]
+  const brand = DEMO_SCHOOLS.find(s => s.id === id) || DEMO_SCHOOLS[0]
   localStorage.setItem(LS_KEYS.BRAND_JSON, JSON.stringify(brand))
-  applyBrandVars(brand) // no color in fallback, but we still broadcast
+  applyBrandVars(brand)
   return brand
 }
 
-/** Helper: fetch branding *for a specific schoolId* (not necessarily current) */
+/** Fetch branding for a specific school id (without changing current) */
 export async function getBrandingForSchoolId(schoolId) {
   if (!schoolId) return null
   try {
@@ -101,24 +112,24 @@ export async function getBrandingForSchoolId(schoolId) {
       return { id: schoolId, ...snap.data() }
     }
   } catch {
-    /* ignore */
+    // ignore
   }
-  return SCHOOL_BRANDS.find(s => s.id === schoolId) || null
+  return DEMO_SCHOOLS.find(s => s.id === schoolId) || null
 }
 
-/** Set current school id and preload branding (logo/name/color) */
+/** Set the active schoolId and preload branding */
 export async function setCurrentSchool(schoolId) {
   if (!schoolId) return
   localStorage.setItem(LS_KEYS.SCHOOL_ID, schoolId)
-  await getCurrentSchoolBranding() // loads + persists + emits branding:updated
+  await getCurrentSchoolBranding() // loads + persists + emits
 }
 
-/** List all demo schools (legacy/fallback) */
+/** List demo fallback schools */
 export function getAllSchools() {
-  return SCHOOL_BRANDS
+  return DEMO_SCHOOLS
 }
 
-/** Load all schools from Firestore (filter disabled) */
+/** Fetch all schools from Firestore (skips disabled) */
 export async function fetchSchoolsFromFirestore() {
   const snap = await getDocs(collection(db, 'schools'))
   return snap.docs
@@ -126,7 +137,7 @@ export async function fetchSchoolsFromFirestore() {
     .filter(s => !s.disabled)
 }
 
-/** Read branding from localStorage without hitting Firestore (fast path) */
+/** Get cached branding JSON (fast path, may be stale) */
 export function getCachedBranding() {
   try {
     const json = localStorage.getItem(LS_KEYS.BRAND_JSON)
@@ -136,7 +147,7 @@ export function getCachedBranding() {
   }
 }
 
-/** Convenience: return the cached logoUrl/schoolName/primaryColor quickly */
+/** Quick summary: { logoUrl, schoolName, primaryColor } */
 export function getCachedBrandingSummary() {
   return {
     logoUrl: localStorage.getItem(LS_KEYS.BRAND_LOGO) || '',
