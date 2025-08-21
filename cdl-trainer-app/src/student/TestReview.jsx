@@ -11,7 +11,7 @@ import {
   getUserProgress,
 } from '@utils/ui-helpers.js'
 
-import { useToast } from '@/components/ToastContext.js'
+import { useToast } from '@/components/useToast.js'
 
 // Centralized email getter
 function getCurrentUserEmail() {

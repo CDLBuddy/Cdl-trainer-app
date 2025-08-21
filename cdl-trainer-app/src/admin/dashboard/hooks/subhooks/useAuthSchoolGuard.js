@@ -17,7 +17,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { useToast } from '@components/ToastContext.js'
+import { useToast } from '@components/useToast.js'
 import { db } from '@utils/firebase.js'
 
 /** @typedef {'student'|'instructor'|'admin'|'superadmin'} Role */

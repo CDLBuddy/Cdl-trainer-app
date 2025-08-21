@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import Shell from '@components/Shell.jsx'
 import { db } from '@utils/firebase.js'
 
-import { useToast } from '@/components/ToastContext.js'
+import { useToast } from '@/components/useToast.js'
 
 import styles from './SuperAdminDashboard.module.css'
 

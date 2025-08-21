@@ -6,7 +6,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 
-import { useToast } from '@components/ToastContext.js'
+import { useToast } from '@components/useToast.js'
 // Reuse Admin preview so the “student view” matches what admins see
 import * as WTValidate from '@walkthrough-utils/validateWalkthroughs.js'
 

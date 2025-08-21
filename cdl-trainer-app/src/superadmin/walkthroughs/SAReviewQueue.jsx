@@ -8,7 +8,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { useToast } from '@components/ToastContext.js'
+import { useToast } from '@components/useToast.js'
 
 // import { showToast } from '@utils/ui-helpers.js'
 

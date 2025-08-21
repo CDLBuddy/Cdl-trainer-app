@@ -1,15 +1,10 @@
-import {
-  db,
-  doc,
-  getDoc,
-  collection,
-  addDoc,
-  serverTimestamp
-} from 'firebase/firestore'
+//src/instructor/StudentProfileForInstructor.jsx
+import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 
 import ChecklistReviewModal from '@components/ChecklistReviewModal.jsx' // Assume you move modal logic here
+import { db } from '@utils/firebase.js'
 import {
   verifyStudentProfile,
   verifyStudentPermit,
@@ -17,7 +12,7 @@ import {
   reviewStudentWalkthrough,
 } from '@utils/ui-helpers.js'
 
-import { useToast } from '@/components/ToastContext.js'
+import { useToast } from '@/components/useToast.js'
 
 export default function InstructorStudentProfile() {
   const { showToast } = useToast()

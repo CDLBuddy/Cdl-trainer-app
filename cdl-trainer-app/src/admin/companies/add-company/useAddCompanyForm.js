@@ -9,7 +9,9 @@
 
 import { useCallback, useMemo, useState } from 'react'
 
-import { saveCompany, existsByNameInSchool as _existsByNameInSchool } from './services'
+import { saveCompany } from '@admin/companies/add-company/services/index.js'
+import { existsByNameInSchool as _existsByNameInSchool } from '@admin/companies/services/index.js'
+
 import { toCompanyPayload } from './utils/transforms.js'
 import { validateCompany } from './utils/validations.js'
 

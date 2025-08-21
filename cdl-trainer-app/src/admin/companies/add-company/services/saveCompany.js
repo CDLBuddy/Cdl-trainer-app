@@ -11,7 +11,7 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '@utils/firebase.js'
 
 // Optional preflight duplicate check (exported by main companies services barrel)
-import { existsByNameInSchool } from '@admin/companies/services'
+import { existsByNameInSchool } from '@admin/companies/services/index'
 
 /**
  * @typedef {Object} SaveCompanyInput

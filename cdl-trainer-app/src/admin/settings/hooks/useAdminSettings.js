@@ -14,7 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { auth } from '@utils/firebase.js'
 
-import { useToast } from '@/components/ToastContext.js'
+import { useToast } from '@/components/useToast.js'
 
 import { getSettings, updateSettings } from '../services/settingsApi.js'
 

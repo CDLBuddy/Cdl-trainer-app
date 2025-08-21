@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import { useToast } from '@/components/ToastContext.js'
+import { useToast } from '@/components/useToast.js'
 
 // --- Lazy load jsPDF --------------------------------------------------------
 let _jsPDF = null

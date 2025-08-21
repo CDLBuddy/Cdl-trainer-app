@@ -1,9 +1,9 @@
 // Path: src/admin/dashboard/services/dashboardApi.js
 // ============================================================================
-// Admin • Dashboard API
+// Admin • Dashboard API (pure module)
 // - Unified, school-scoped endpoints used by dashboard widgets
 // - Supports AbortSignal, light in-memory caching, and mock mode
-// - Stable shapes (see JSDoc), defensive defaults, no UI side-effects here
+// - Stable, hook-friendly shapes; defensive defaults; no UI side-effects
 // ============================================================================
 
 /* -------------------------------- Flags ---------------------------------- */
@@ -56,16 +56,60 @@ const _getCached = (k) => _cache.get(k)
 const _setCached = (k, v, ttlMs = 30_000) => {
   _cache.set(k, v)
   if (ttlMs > 0) {
-    setTimeout(() => _cache.get(k) === v && _cache.delete(k), ttlMs).unref?.()
+    const t = setTimeout(() => {
+      if (_cache.get(k) === v) _cache.delete(k)
+    }, ttlMs)
+    // Node-only; ignore in browsers
+    t.unref?.()
   }
 }
 
 /* -------------------------------- Shapes --------------------------------- */
 /**
+ * Normalized company row used by the Companies widget.
  * @typedef {{ id:string, name:string, studentCount:number, active:boolean, trend:'up'|'flat'|'down', updatedAt:string }} CompanyRow
- * @typedef {{ id:string, type:'warning'|'error'|'info', title:string, detail?:string, href?:string, due?:string }} AlertItem
+ */
+
+/**
+ * Normalized alert used by Alerts widget.
+ * - `severity` is the canonical field; `type` is kept for backward compat.
+ * @typedef {{
+ *   id: string,
+ *   severity: 'info'|'warning'|'error'|'success',
+ *   title: string,
+ *   description?: string,
+ *   count?: number,
+ *   href?: string,
+ *   ctaLabel?: string,
+ *   icon?: string,
+ *   dueAtISO?: string,
+ *   // legacy aliases kept for compat
+ *   type?: 'warning'|'error'|'info',
+ *   detail?: string,
+ *   due?: string,
+ * }} AlertItem
+ */
+
+/**
+ * KPIs counters.
  * @typedef {{ studentCount:number, instructorCount:number, adminCount:number, permitSoon:number, medSoon:number, incomplete:number }} Kpis
- * @typedef {{ id:string, actor:string, action:string, timestamp:string, icon?:string }} ActivityItem
+ */
+
+/**
+ * Normalized activity item used by Activity widget.
+ * - Canonical fields: id, type, message, actor, date (ISO), meta
+ * - Legacy aliases `action`, `timestamp` included for compat
+ * @typedef {{
+ *   id:string,
+ *   type:string,
+ *   message:string,
+ *   actor?:string,
+ *   date:string,       // ISO date string
+ *   meta?:any,
+ *   // legacy
+ *   action?:string,
+ *   timestamp?:string,
+ * }} ActivityItem
  */
 
 /* -------------------------------- Mocks ---------------------------------- */
@@ -73,57 +117,146 @@ const _setCached = (k, v, ttlMs = 30_000) => {
 function mockCompanies({ limit = 5 } = {}) {
   const now = Date.now()
   const rows = [
-    { id: 'acme', name: 'ACME Logistics',   studentCount: 42, active: true,  trend: 'up'   },
-    { id: 'road', name: 'RoadStar Freight', studentCount: 31, active: true,  trend: 'flat' },
-    { id: 'midw', name: 'Midwest Carriers', studentCount: 18, active: false, trend: 'down' },
-    { id: 'north',name: 'North Haul LLC',   studentCount: 11, active: true,  trend: 'up'   },
-    { id: 'swift',name: 'Swift & Sons',     studentCount: 8,  active: true,  trend: 'flat' },
-  ].slice(0, Math.max(1, limit)).map((r, i) => ({ ...r, updatedAt: new Date(now - i*3_600_000).toISOString() }))
-  return rows
+    { id: 'acme',  name: 'ACME Logistics',   studentCount: 42, active: true,  trend: 'up'   },
+    { id: 'road',  name: 'RoadStar Freight', studentCount: 31, active: true,  trend: 'flat' },
+    { id: 'midw',  name: 'Midwest Carriers', studentCount: 18, active: false, trend: 'down' },
+    { id: 'north', name: 'North Haul LLC',   studentCount: 11, active: true,  trend: 'up'   },
+    { id: 'swift', name: 'Swift & Sons',     studentCount: 8,  active: true,  trend: 'flat' },
+  ]
+  return rows.slice(0, Math.max(1, limit)).map((r, i) => ({
+    ...r,
+    updatedAt: new Date(now - i * 3_600_000).toISOString(),
+  }))
 }
 
 function mockAlerts() {
   const soon = (d) => new Date(Date.now() + d * 86_400_000).toISOString()
+  /** @type {AlertItem[]} */
   return [
-    { id: 'a1', type: 'warning', title: '3 permits expiring within 30 days', href: '/admin/reports?view=permits', due: soon(27) },
-    { id: 'a2', type: 'error',   title: '1 medical card expired',             href: '/admin/reports?view=med-cards', due: soon(-2) },
-    { id: 'a3', type: 'info',    title: 'Instructor upload pending review',   href: '/admin/reports?view=instructors' },
+    {
+      id: 'a1',
+      severity: 'warning',
+      title: '3 permits expiring within 30 days',
+      href: '/admin/reports?view=permits',
+      dueAtISO: soon(27),
+    },
+    {
+      id: 'a2',
+      severity: 'error',
+      title: '1 medical card expired',
+      href: '/admin/reports?view=med-cards',
+      dueAtISO: soon(-2),
+    },
+    {
+      id: 'a3',
+      severity: 'info',
+      title: 'Instructor upload pending review',
+      href: '/admin/reports?view=instructors',
+    },
   ]
 }
 
 function mockKpis() {
   return {
-    studentCount:  128,
+    studentCount: 128,
     instructorCount: 7,
-    adminCount:      2,
-    permitSoon:     4,
-    medSoon:        2,
-    incomplete:    19,
+    adminCount: 2,
+    permitSoon: 4,
+    medSoon: 2,
+    incomplete: 19,
   }
 }
 
 function mockActivity({ limit = 10 } = {}) {
   const base = [
-    { actor: 'You',            action: 'Marked invoice INV-104 paid' },
-    { actor: 'J. Rivera',      action: 'Added student to ACME Logistics' },
-    { actor: 'System',         action: 'Reported 8 completions to TPR' },
-    { actor: 'M. Chen',        action: 'Updated instructor certification' },
-    { actor: 'System',         action: 'Scheduled permit expiry export' },
+    { actor: 'You',       message: 'Marked invoice INV-104 paid',         type: 'BILLING'   },
+    { actor: 'J. Rivera', message: 'Added student to ACME Logistics',     type: 'ENROLLMENT'},
+    { actor: 'System',    message: 'Reported 8 completions to TPR',       type: 'REPORTING' },
+    { actor: 'M. Chen',   message: 'Updated instructor certification',    type: 'PROFILE'   },
+    { actor: 'System',    message: 'Scheduled permit expiry export',      type: 'AUTOMATION'},
   ]
   const now = Date.now()
   return base.slice(0, Math.max(1, limit)).map((x, i) => ({
     id: `act-${i + 1}`,
     actor: x.actor,
-    action: x.action,
+    type: x.type,
+    message: x.message,
+    date: new Date(now - i * 45 * 60 * 1000).toISOString(),
+    // legacy aliases:
+    action: x.message,
     timestamp: new Date(now - i * 45 * 60 * 1000).toISOString(),
   }))
+}
+
+/* ---------------------------- Normalizers -------------------------------- */
+
+const asSeverity = (v) => {
+  const s = String(v || '').toLowerCase()
+  return /** @type {'info'|'warning'|'error'|'success'} */(
+    s === 'warning' ? 'warning' :
+    s === 'error'   ? 'error'   :
+    s === 'success' ? 'success' : 'info'
+  )
+}
+
+/** @param {any} raw @param {number} i */
+function normalizeAlert(raw, i) {
+  const id = String(raw?.id ?? `alert-${i + 1}`)
+  const severity = asSeverity(raw?.severity ?? raw?.type ?? 'info')
+  const title = String(raw?.title || 'Alert')
+  const description = raw?.description ?? raw?.detail ?? ''
+  const href = raw?.href || ''
+  const ctaLabel = raw?.ctaLabel || ''
+  const icon = raw?.icon || ''
+  const dueAtISO = raw?.dueAtISO ?? raw?.due ?? ''
+  const count = Number.isFinite(raw?.count) ? Number(raw.count) : undefined
+  /** @type {AlertItem} */
+  return {
+    id,
+    severity,
+    title,
+    description,
+    href,
+    ctaLabel,
+    icon,
+    dueAtISO,
+    count,
+    // legacy aliases kept for compatibility:
+    type: severity, // mirrors severity
+    detail: description,
+    due: dueAtISO,
+  }
+}
+
+/** @param {any} raw @param {number} i */
+function normalizeActivity(raw, i) {
+  const id = String(raw?.id ?? `act-${i + 1}`)
+  const type = String(raw?.type || 'UNKNOWN')
+  const message = String(raw?.message ?? raw?.action ?? 'Updated')
+  const actor = raw?.actor ? String(raw.actor) : undefined
+  const dateISO =
+    typeof raw?.date === 'string' ? raw.date :
+    typeof raw?.timestamp === 'string' ? raw.timestamp :
+    new Date().toISOString()
+  /** @type {ActivityItem} */
+  return {
+    id,
+    type,
+    message,
+    actor,
+    date: dateISO,
+    meta: raw?.meta ?? undefined,
+    // legacy aliases:
+    action: message,
+    timestamp: dateISO,
+  }
 }
 
 /* ------------------------------- API Facade ------------------------------- */
 
 export const companies = {
   /**
-   * @param {{ schoolId:string, limit?:number, signal?:AbortSignal }} params
+   * @param {{ schoolId?:string, limit?:number, signal?:AbortSignal }} params
    * @returns {Promise<CompanyRow[]>}
    */
   async getSnapshot({ schoolId, limit = 5, signal } = {}) {
@@ -138,15 +271,15 @@ export const companies = {
       return data
     }
 
-    // Example HTTP endpoint; replace with Firestore/callable if desired
     const url = `${DASHBOARD_BASE_URL}/companies?s=${encodeURIComponent(schoolId)}&limit=${limit}`
     const { ok, data, error } = await fetchJSON(url, { signal })
     if (!ok) throw new Error(error || 'Failed to load companies')
+
     const rows = (Array.isArray(data) ? data : []).map((c) => ({
       id: c.id ?? c.companyId,
       name: String(c.name || 'Company'),
       studentCount: Number(c.studentCount ?? c.students ?? 0) || 0,
-      active: Boolean('active' in c ? c.active : (String(c.status || '').toLowerCase() !== 'inactive')),
+      active: 'active' in c ? !!c.active : (String(c.status || '').toLowerCase() !== 'inactive'),
       trend: ['up', 'flat', 'down'].includes(String(c.trend)) ? c.trend : 'flat',
       updatedAt: c.updatedAt || c.updated_at || new Date().toISOString(),
     }))
@@ -157,7 +290,7 @@ export const companies = {
 
 export const alerts = {
   /**
-   * @param {{ schoolId:string, signal?:AbortSignal }} params
+   * @param {{ schoolId?:string, signal?:AbortSignal }} params
    * @returns {Promise<AlertItem[]>}
    */
   async get({ schoolId, signal } = {}) {
@@ -175,14 +308,8 @@ export const alerts = {
     const url = `${DASHBOARD_BASE_URL}/alerts?s=${encodeURIComponent(schoolId)}`
     const { ok, data, error } = await fetchJSON(url, { signal })
     if (!ok) throw new Error(error || 'Failed to load alerts')
-    const rows = (Array.isArray(data) ? data : []).map((a, i) => ({
-      id: a.id ?? `alert-${i + 1}`,
-      type: /** @type {'warning'|'error'|'info'} */ (['warning','error','info'].includes(a.type) ? a.type : 'info'),
-      title: String(a.title || 'Alert'),
-      detail: a.detail || '',
-      href: a.href || '',
-      due: a.due || '',
-    }))
+
+    const rows = (Array.isArray(data) ? data : []).map((a, i) => normalizeAlert(a, i))
     _setCached(key, rows, 15_000)
     return rows
   },
@@ -190,7 +317,7 @@ export const alerts = {
 
 export const kpis = {
   /**
-   * @param {{ schoolId:string, signal?:AbortSignal }} params
+   * @param {{ schoolId?:string, signal?:AbortSignal }} params
    * @returns {Promise<Kpis>}
    */
   async get({ schoolId, signal } = {}) {
@@ -209,14 +336,14 @@ export const kpis = {
     const { ok, data, error } = await fetchJSON(url, { signal })
     if (!ok) throw new Error(error || 'Failed to load KPIs')
 
-    const safe = (n, d=0) => (Number.isFinite(+n) ? +n : d)
+    const safe = (n, d = 0) => (Number.isFinite(+n) ? +n : d)
     const out = {
-      studentCount:   safe(data.studentCount),
-      instructorCount:safe(data.instructorCount),
-      adminCount:     safe(data.adminCount),
-      permitSoon:     safe(data.permitSoon),
-      medSoon:        safe(data.medSoon),
-      incomplete:     safe(data.incomplete),
+      studentCount: safe(data.studentCount),
+      instructorCount: safe(data.instructorCount),
+      adminCount: safe(data.adminCount),
+      permitSoon: safe(data.permitSoon),
+      medSoon: safe(data.medSoon),
+      incomplete: safe(data.incomplete),
     }
     _setCached(key, out, 15_000)
     return out
@@ -225,7 +352,7 @@ export const kpis = {
 
 export const activity = {
   /**
-   * @param {{ schoolId:string, limit?:number, signal?:AbortSignal }} params
+   * @param {{ schoolId?:string, limit?:number, signal?:AbortSignal }} params
    * @returns {Promise<ActivityItem[]>}
    */
   async getRecent({ schoolId, limit = 10, signal } = {}) {
@@ -243,19 +370,28 @@ export const activity = {
     const url = `${DASHBOARD_BASE_URL}/activity?s=${encodeURIComponent(schoolId)}&limit=${limit}`
     const { ok, data, error } = await fetchJSON(url, { signal })
     if (!ok) throw new Error(error || 'Failed to load activity')
-    const rows = (Array.isArray(data) ? data : []).map((e, i) => ({
-      id: e.id ?? `act-${i + 1}`,
-      actor: String(e.actor || 'System'),
-      action: String(e.action || 'Updated'),
-      timestamp: e.timestamp || new Date().toISOString(),
-      icon: e.icon || '',
-    }))
+
+    const rows = (Array.isArray(data) ? data : []).map((e, i) => normalizeActivity(e, i))
     _setCached(key, rows, 10_000)
     return rows
   },
 }
 
-/* ------------------------------ Public API ------------------------------- */
+/* ------------------------- Named exports for hooks ------------------------ */
+/** Matches `useDashboardKpis` expectations */
+export async function getKpis(args) {
+  return kpis.get(args)
+}
+/** Matches `useDashboardAlerts` expectations */
+export async function getAlerts(args) {
+  return alerts.get(args)
+}
+/** Matches `useRecentActivity` expectations */
+export async function getRecentActivity(args) {
+  return activity.getRecent(args)
+}
+
+/* ------------------------------ Public API -------------------------------- */
 
 const dashboardApi = { companies, alerts, kpis, activity }
 export default dashboardApi

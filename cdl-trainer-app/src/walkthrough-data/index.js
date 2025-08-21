@@ -15,7 +15,6 @@ const IS_DEV =
   import.meta.env.DEV === true
 
 // ---- Loader (async resolver) -----------------------------------------------
-export { resolveWalkthrough } from './loaders/resolveWalkthrough.js'
 
 // ---- Utils (helpers for parsing/validation) --------------------------------
 export {

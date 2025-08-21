@@ -1,14 +1,19 @@
-// src/walkthrough-data/utils/parseXlsx.js
 // Robust Excel helpers using exceljs (read + write) with safety guards.
 // - Browser-first; Node-safe fallbacks behind feature checks.
 // - Guards: file type/size, max rows/cols, null-prototype + key sanitization.
 // - Sheet selection by name or index.
 // - Optional header mapping (return objects keyed by header row).
+// - Lazy loads exceljs to avoid bloating initial bundles.
 
-import ExcelJS from 'exceljs'
-
-/** Block prototype-pollution keys */
 const BLOCKED_KEYS = new Set(['__proto__', 'prototype', 'constructor'])
+const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
+
+/** Default limits tuned for typical admin uploads */
+const DEFAULT_LIMITS = Object.freeze({
+  maxBytes: 8 * 1024 * 1024, // 8 MB
+  maxRows: 20000,
+  maxCols: 256,
+})
 
 /** Create a null-prototype object and copy safe keys */
 function createSafeObject(entries) {
@@ -20,28 +25,18 @@ function createSafeObject(entries) {
 }
 
 /** Safe, cross-platform filename sanitizer (no control chars in regex) */
-function sanitizeFilename(name = 'export.xlsx') {
+export function sanitizeFilename(name = 'export.xlsx') {
   const s = String(name)
-
-  // Replace control chars + forbidden Win/Mac chars without using control-char regex
   let cleaned = ''
   const forbidden = '<>:"/\\|?*' // printable only
   for (const ch of s) {
     const cp = ch.codePointAt(0)
-    if (cp <= 31 || forbidden.includes(ch)) {
-      cleaned += '_'
-    } else {
-      cleaned += ch
-    }
+    if (cp <= 31 || forbidden.includes(ch)) cleaned += '_'
+    else cleaned += ch
   }
-
-  // Trim and strip trailing spaces/dots (Windows)
   cleaned = cleaned.trim().replace(/[. ]+$/g, '')
-
-  // Disallow "." and ".."
   if (cleaned === '' || cleaned === '.' || cleaned === '..') cleaned = 'unnamed'
 
-  // Split base/ext
   let base = cleaned
   let ext = ''
   const lastDot = cleaned.lastIndexOf('.')
@@ -49,25 +44,15 @@ function sanitizeFilename(name = 'export.xlsx') {
     base = cleaned.slice(0, lastDot)
     ext = cleaned.slice(lastDot)
   }
-
-  // Windows reserved device names
-  if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(base)) {
-    base = '_' + base
-  }
-
-  // Collapse multiple underscores
+  if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(base)) base = '_' + base
   base = base.replace(/_+/g, '_')
 
-  // Enforce max length (keep extension)
   const MAX = 180
   const allowBase = Math.max(1, MAX - ext.length)
   if (base.length > allowBase) base = base.slice(0, allowBase)
 
   return base + ext
 }
-
-/** Is this environment a browser? */
-const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
 
 /** Coerce supported inputs to ArrayBuffer */
 async function toArrayBuffer(input) {
@@ -76,7 +61,7 @@ async function toArrayBuffer(input) {
   if (typeof Blob !== 'undefined' && input instanceof Blob) {
     return await input.arrayBuffer()
   }
-  // Node Buffer support (optional)
+  // Node Buffer support
   if (typeof Buffer !== 'undefined' && typeof input === 'object' && Buffer.isBuffer?.(input)) {
     return input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength)
   }
@@ -90,15 +75,23 @@ async function toArrayBuffer(input) {
   throw new TypeError('parseXlsxFile: unsupported input type')
 }
 
+/** Lazy-load exceljs so it doesn’t inflate your initial bundles */
+async function loadExcelJS() {
+  // exceljs has both CJS/ESM builds; dynamic import keeps it on-demand
+  const m = await import('exceljs')
+  // Some bundlers put the class on default, some on the module
+  return m.default ?? m
+}
+
 /**
  * Parse an .xlsx into rows or objects.
  * @param {File|Blob|ArrayBuffer|Buffer|Uint8Array} file
  * @param {{
  *   sheet?: number|string,          // index (0-based) or sheet name (default: first sheet)
  *   hasHeader?: boolean,            // if true, map rows to objects using first row as headers
- *   maxBytes?: number,              // hard size cap (default 8 MB)
- *   maxRows?: number,               // hard row cap (default 20000)
- *   maxCols?: number,               // hard column cap (default 256)
+ *   maxBytes?: number,              // hard size cap
+ *   maxRows?: number,               // hard row cap
+ *   maxCols?: number,               // hard column cap
  *   trimHeader?: boolean,           // trim header cell text
  *   coerceStrings?: boolean,        // coerce non-string cell types to string
  * }=} options
@@ -108,9 +101,9 @@ export async function parseXlsxFile(file, options = {}) {
   const {
     sheet = 0,
     hasHeader = false,
-    maxBytes = 8 * 1024 * 1024, // 8MB
-    maxRows = 20000,
-    maxCols = 256,
+    maxBytes = DEFAULT_LIMITS.maxBytes,
+    maxRows = DEFAULT_LIMITS.maxRows,
+    maxCols = DEFAULT_LIMITS.maxCols,
     trimHeader = true,
     coerceStrings = false,
   } = options
@@ -129,8 +122,9 @@ export async function parseXlsxFile(file, options = {}) {
   }
 
   const buffer = await toArrayBuffer(file)
-
+  const ExcelJS = await loadExcelJS()
   const workbook = new ExcelJS.Workbook()
+
   try {
     await workbook.xlsx.load(buffer)
   } catch (err) {
@@ -169,21 +163,17 @@ export async function parseXlsxFile(file, options = {}) {
       throw new Error(`parseXlsxFile: too many columns in a row (${arr.length} > ${maxCols})`)
     }
 
-    // Coerce values if desired
     const normalized = coerceStrings ? arr.map((v) => (v == null ? '' : String(v))) : arr
 
     if (hasHeader && rowCount === 0) {
       headers = normalized.map((h) => {
         let key = h == null ? '' : String(h)
         if (trimHeader) key = key.trim()
-        // Replace invalid/empty keys with safe placeholders
         if (!key) key = 'col_' + Math.random().toString(36).slice(2, 8)
-        // Sanitize keys
         if (BLOCKED_KEYS.has(key)) key = `_${key}`
         return key
       })
     } else if (hasHeader && headers) {
-      // Map to object with null-prototype and safe keys
       const pairs = headers.map((k, i) => [k, normalized[i]])
       out.push(createSafeObject(pairs))
     } else {
@@ -201,7 +191,7 @@ export async function parseXlsxFile(file, options = {}) {
 
 /**
  * Create an .xlsx from rows or objects and trigger a download (browser),
- * or return a Buffer (Node).
+ * or return a Buffer/Uint8Array (Node).
  * @param {Array<Array<any>>|Array<Record<string, any>>} data
  * @param {{
  *   filename?: string,
@@ -215,6 +205,7 @@ export async function exportXlsxFile(
   data,
   { filename = 'export.xlsx', sheetName = 'Sheet1', fromObjects = false, headers = null } = {}
 ) {
+  const ExcelJS = await loadExcelJS()
   const workbook = new ExcelJS.Workbook()
   const worksheet = workbook.addWorksheet(sheetName)
 
@@ -237,7 +228,6 @@ export async function exportXlsxFile(
       worksheet.addRow(keys.map((k) => safe[k] ?? ''))
     }
   } else {
-    // array-of-arrays
     if (!Array.isArray(data)) {
       throw new TypeError('exportXlsxFile: expected array of arrays')
     }
@@ -254,7 +244,6 @@ export async function exportXlsxFile(
       const a = document.createElement('a')
       a.href = url
       a.download = sanitizeFilename(filename)
-      // Safari fallback
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -263,9 +252,22 @@ export async function exportXlsxFile(
     }
     return
   } else {
-    // Node: return a Buffer/Uint8Array to the caller
-    // (caller can write to disk: fs.writeFileSync(filename, buffer))
     const buf = await workbook.xlsx.writeBuffer()
     return typeof Buffer !== 'undefined' ? Buffer.from(buf) : buf
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Back-compat + expected exports elsewhere in the app                 */
+/* ------------------------------------------------------------------ */
+
+/** Your build uses this to gate XLSX features; exceljs loads on demand. */
+export const isXlsxAvailable = () => true
+
+/** Alias expected by older imports */
+export async function parseXlsxToWalkthrough(file, options = {}) {
+  return parseXlsxFile(file, options)
+}
+
+/** Default export required by some call sites */
+export default parseXlsxToWalkthrough

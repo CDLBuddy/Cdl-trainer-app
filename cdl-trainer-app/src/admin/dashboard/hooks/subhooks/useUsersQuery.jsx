@@ -10,7 +10,7 @@
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useToast } from '@components/ToastContext.js'
+import { useToast } from '@components/useToast.js'
 import { db } from '@utils/firebase.js'
 
 // roles we care about for the dashboard

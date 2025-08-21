@@ -27,7 +27,6 @@ import { db, auth } from '@utils/firebase.js'
 
 // Back-compat: several files import the toast hook and helpers from here.
 // Keep these exports so you don’t have to edit every caller at once.
-export { useToast } from '@components/useToast.js'
 export function registerToastHandler() {
   // Legacy no-op (kept for compatibility).
   // Historically used to bind a global toast function before React was mounted.

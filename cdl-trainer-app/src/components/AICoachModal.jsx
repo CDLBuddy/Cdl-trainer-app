@@ -11,7 +11,7 @@ import React, {
 import { askCDLAI } from '@utils/aiApi.js' // e.g. "../utils/ai-api" -> rename file to aiApi.js for consistency
 import { auth } from '@utils/firebase.js'
 
-import { getUserInitials } from '@/components/ToastContext.js'
+import { getUserInitials } from '@/utils/ui-helpers.js'
 
 import styles from './AICoachModal.module.css'
 

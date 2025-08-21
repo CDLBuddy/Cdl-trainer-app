@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { useToast } from '@utils/ui-helpers.js'
+import { useToast } from '@/components/useToast.js'
 
 import {
   getCurrentUserEmail,

@@ -12,7 +12,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@components/ToastContext.js'
+import { useToast } from '@components/useToast.js'
 import { auth, storage } from '@utils/firebase.js'
 import {
   markStudentProfileComplete,

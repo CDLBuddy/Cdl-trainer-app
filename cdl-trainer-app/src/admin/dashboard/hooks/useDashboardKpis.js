@@ -3,12 +3,13 @@
 // useDashboardKpis
 // - Fetches KPI counters for the Admin Dashboard
 // - Dashboard-scoped (schoolId), abort-safe, and refreshable
+// - Uses DYNAMIC import for dashboardApi to avoid mixed static/dynamic chunks
 // - Returns a stable shape for KpiRow and other widgets
 // ============================================================================
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+// @ts-check
 
-import * as dashboardApi from '../services/dashboardApi.js'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 /**
  * @typedef {Object} Kpis
@@ -34,11 +35,35 @@ import * as dashboardApi from '../services/dashboardApi.js'
  * @property {() => Promise<void>} refresh
  */
 
-/** Safe number -> int (>=0) */
-function ni(x, d = 0) {
-  const n = Number.isFinite(x) ? Number(x) : d
-  return n < 0 ? 0 : Math.trunc(n)
+/* -------------------------------------------------------------------------- */
+/* Dynamic loader (cached)                                                    */
+/* -------------------------------------------------------------------------- */
+
+let _kpisClientPromise = null
+const loadKpisClient = async () => {
+  if (_kpisClientPromise) return _kpisClientPromise
+  _kpisClientPromise = import('../services/dashboardApi.js').then((m) => {
+    // dashboardApi exports named `kpis` and default { kpis }
+    return m.kpis ?? m.default?.kpis
+  })
+  return _kpisClientPromise
 }
+
+/* -------------------------------------------------------------------------- */
+/* Utils                                                                       */
+/* -------------------------------------------------------------------------- */
+
+/** Safe number → non-negative integer */
+function ni(x, d = 0) {
+  const v = Number(x)
+  if (!Number.isFinite(v)) return d
+  const i = Math.trunc(v)
+  return i < 0 ? 0 : i
+}
+
+/* -------------------------------------------------------------------------- */
+/* Hook                                                                        */
+/* -------------------------------------------------------------------------- */
 
 /**
  * Fetch KPIs for the Admin Dashboard.
@@ -62,11 +87,13 @@ export function useDashboardKpis({ schoolId } = {}) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(/** @type {Error|null} */(null))
 
+  // Drop stale responses on fast remounts/navigation
   const reqIdRef = useRef(0)
 
   const fetchOnce = useCallback(async () => {
     if (!schoolId) {
-      setData((d) => ({ ...d,
+      setData((d) => ({
+        ...d,
         studentCount: 0, instructorCount: 0, adminCount: 0,
         permitSoon: 0, medSoon: 0, incomplete: 0, total: 0,
         percents: { students:0, instructors:0, admins:0, permitSoon:0, medSoon:0, incomplete:0 },
@@ -83,19 +110,22 @@ export function useDashboardKpis({ schoolId } = {}) {
     const ctrl = new AbortController()
 
     try {
-      const res = await dashboardApi.getKpis({ schoolId, signal: ctrl.signal })
+      const kpisClient = await loadKpisClient()
+      if (!kpisClient?.get) throw new Error('KPIs client unavailable')
+
+      const res = await kpisClient.get({ schoolId, signal: ctrl.signal })
 
       // ignore stale responses
       if (id !== reqIdRef.current) return
 
       // Defensive normalization
       const k = /** @type {Kpis} */({
-        studentCount:   ni(res?.studentCount),
-        instructorCount:ni(res?.instructorCount),
-        adminCount:     ni(res?.adminCount),
-        permitSoon:     ni(res?.permitSoon),
-        medSoon:        ni(res?.medSoon),
-        incomplete:     ni(res?.incomplete),
+        studentCount:    ni(res?.studentCount),
+        instructorCount: ni(res?.instructorCount),
+        adminCount:      ni(res?.adminCount),
+        permitSoon:      ni(res?.permitSoon),
+        medSoon:         ni(res?.medSoon),
+        incomplete:      ni(res?.incomplete),
       })
 
       const total = ni(res?.total ?? (k.studentCount + k.instructorCount + k.adminCount))
@@ -114,9 +144,10 @@ export function useDashboardKpis({ schoolId } = {}) {
         },
       })
     } catch (err) {
-      if (/** @type any */(err)?.name === 'AbortError') return
+      if (/** @type {any} */ (err)?.name === 'AbortError') return
       setError(err instanceof Error ? err : new Error('Failed to load KPIs'))
-      setData((d) => ({ ...d,
+      setData((d) => ({
+        ...d,
         studentCount:0, instructorCount:0, adminCount:0,
         permitSoon:0, medSoon:0, incomplete:0, total:0,
         percents: { students:0, instructors:0, admins:0, permitSoon:0, medSoon:0, incomplete:0 },
@@ -141,11 +172,12 @@ export function useDashboardKpis({ schoolId } = {}) {
     })()
     return () => {
       cancelled = true
-      reqIdRef.current = reqIdAtMount + 1 // invalidate in-flight responses
+      // invalidate in-flight responses
+      reqIdRef.current = reqIdAtMount + 1
     }
   }, [fetchOnce])
 
-  // Stable memo (so consumers don’t re-render on identity alone)
+  // Stable identity for consumers
   const memoData = useMemo(() => data, [data])
 
   return { loading, data: memoData, error, refresh }

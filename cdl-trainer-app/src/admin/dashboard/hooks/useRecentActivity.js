@@ -3,12 +3,13 @@
 // useRecentActivity
 // - Fetches recent activity feed for the Admin Dashboard
 // - Dashboard-scoped (schoolId), abort-safe, and refreshable
+// - Uses DYNAMIC import for dashboardApi to avoid mixed static/dynamic chunks
 // - Returns normalized activity items sorted by newest first
 // ============================================================================
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+// @ts-check
 
-import * as dashboardApi from '../services/dashboardApi.js'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 /**
  * @typedef {Object} ActivityItem
@@ -28,28 +29,86 @@ import * as dashboardApi from '../services/dashboardApi.js'
  * @property {() => Promise<void>} refresh
  */
 
+/* -------------------------------------------------------------------------- */
+/* Dynamic loader (cached)                                                    */
+/* -------------------------------------------------------------------------- */
+
+let _activityClientPromise = null
+const loadActivityClient = async () => {
+  if (_activityClientPromise) return _activityClientPromise
+  _activityClientPromise = import('../services/dashboardApi.js').then((m) => {
+    // dashboardApi exports named `activity` and default { activity }
+    return m.activity ?? m.default?.activity
+  })
+  return _activityClientPromise
+}
+
+/* -------------------------------------------------------------------------- */
+/* Utilities                                                                  */
+/* -------------------------------------------------------------------------- */
+
+function cryptoRandomId() {
+  try {
+    return globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)
+  } catch {
+    return Math.random().toString(36).slice(2)
+  }
+}
+
+function safeDate(x) {
+  try {
+    const d = x instanceof Date ? x : new Date(x)
+    return Number.isFinite(d?.getTime?.()) ? d : new Date()
+  } catch {
+    return new Date()
+  }
+}
+
 /**
- * Normalize raw API result → ActivityItem
+ * Normalize raw API row → ActivityItem.
+ * Supports:
+ *  - { id, actor, action, timestamp, icon? }     ← current dashboardApi.activity mock/shape
+ *  - { id, type, message, actor?, date, meta? }  ← generic shape
  */
 function normalizeItem(raw, idx = 0) {
   try {
+    const id = String(raw?.id ?? `tmp-${idx}-${Date.now()}`)
+    const actor = raw?.actor ? String(raw.actor) : undefined
+
+    // Prefer explicit fields when present
+    if (raw?.message || raw?.type || raw?.date) {
+      return {
+        id,
+        type: String(raw?.type ?? 'INFO'),
+        message: String(raw?.message ?? 'Updated'),
+        actor,
+        date: safeDate(raw?.date),
+        meta: raw?.meta ?? null,
+      }
+    }
+
+    // Fallback to dashboardApi.activity shape
     return {
-      id: String(raw?.id ?? `tmp-${idx}-${Date.now()}`),
-      type: String(raw?.type ?? 'UNKNOWN'),
-      message: String(raw?.message ?? 'No details'),
-      actor: raw?.actor ? String(raw.actor) : undefined,
-      date: raw?.date ? new Date(raw.date) : new Date(),
-      meta: raw?.meta ?? null,
+      id,
+      type: 'INFO',
+      message: String(raw?.action ?? 'Updated'),
+      actor,
+      date: safeDate(raw?.timestamp),
+      meta: raw?.icon ? { icon: raw.icon } : null,
     }
   } catch {
     return {
-      id: `bad-${idx}-${Date.now()}`,
+      id: `bad-${idx}-${cryptoRandomId()}`,
       type: 'ERROR',
       message: 'Malformed activity item',
       date: new Date(),
     }
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Hook                                                                        */
+/* -------------------------------------------------------------------------- */
 
 /**
  * Fetch recent activity for the Admin Dashboard.
@@ -61,9 +120,12 @@ export function useRecentActivity({ schoolId, limit = 20 } = {}) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(/** @type {Error|null} */(null))
 
+  // Drop stale responses on fast remounts/navigation
   const reqIdRef = useRef(0)
 
   const fetchOnce = useCallback(async () => {
+    const take = Number.isFinite(+limit) && +limit > 0 ? +limit : 20
+
     if (!schoolId) {
       setData([])
       setError(null)
@@ -73,18 +135,23 @@ export function useRecentActivity({ schoolId, limit = 20 } = {}) {
 
     setLoading(true)
     setError(null)
+
     const id = ++reqIdRef.current
     const ctrl = new AbortController()
 
     try {
-      const res = await dashboardApi.getRecentActivity({
+      const activityClient = await loadActivityClient()
+      if (!activityClient?.getRecent) throw new Error('Activity client unavailable')
+
+      const rows = await activityClient.getRecent({
         schoolId,
-        limit,
+        limit: take,
         signal: ctrl.signal,
       })
 
       if (id !== reqIdRef.current) return // ignore stale
-      const arr = Array.isArray(res) ? res : []
+
+      const arr = Array.isArray(rows) ? rows : []
       const items = arr.map(normalizeItem)
 
       // Sort newest first by date
@@ -92,7 +159,7 @@ export function useRecentActivity({ schoolId, limit = 20 } = {}) {
 
       setData(items)
     } catch (err) {
-      if (/** @type any */(err)?.name === 'AbortError') return
+      if (/** @type {any} */ (err)?.name === 'AbortError') return
       setError(err instanceof Error ? err : new Error('Failed to load activity'))
       setData([])
     } finally {
@@ -109,13 +176,16 @@ export function useRecentActivity({ schoolId, limit = 20 } = {}) {
   useEffect(() => {
     let cancelled = false
     const currentReqId = reqIdRef.current
+
     ;(async () => {
       await fetchOnce()
       if (cancelled) return
     })()
+
     return () => {
       cancelled = true
-      reqIdRef.current = currentReqId + 1 // invalidate in-flight responses
+      // invalidate in-flight responses
+      reqIdRef.current = currentReqId + 1
     }
   }, [fetchOnce])
 

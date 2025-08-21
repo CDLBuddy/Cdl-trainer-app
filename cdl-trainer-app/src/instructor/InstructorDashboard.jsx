@@ -13,7 +13,7 @@ import Shell from '@components/Shell.jsx'
 import { db, auth } from '@utils/firebase.js'
 import { getNextChecklistAlert } from '@utils/ui-helpers.js'
 
-import { useToast } from '@/components/ToastContext.js'
+import { useToast } from '@/components/useToast.js'
 
 import styles from './InstructorDashboard.module.css'
 

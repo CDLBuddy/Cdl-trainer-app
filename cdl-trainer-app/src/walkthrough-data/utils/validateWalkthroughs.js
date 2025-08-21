@@ -201,6 +201,25 @@ export function validateWalkthroughs(map, options) {
   return { ok: allOk, results }
 }
 
-// Canonical exports
-// (Named exports already declared above via 'export function ...')
+/* ------------------------------------------------------------------------- */
+/* Back-compat / singular aliases expected by SA screens                     */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Validate a single walkthrough (alias).
+ * @param {any} doc
+ * @param {ValidateOptions} [options]
+ * @returns {{ ok: boolean, problems: string[] }}
+ */
+export function validateSingle(doc, options) {
+  return validateWalkthrough('walkthrough', doc, options)
+}
+
+/** Exact alias for validateSingle (older name) */
+export const validateSingleWalkthrough = validateSingle
+
+/** Shorthand alias for the batch validator */
+export const validate = validateWalkthroughs
+
+// Canonical default (keep existing behavior)
 export default validateWalkthrough

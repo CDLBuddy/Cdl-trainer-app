@@ -3,15 +3,17 @@ import { collection, doc, getDoc, getDocs, setDoc, serverTimestamp } from 'fireb
 import React, { useEffect, useMemo, useState } from 'react'
 
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@components/ToastContext.js' // keep exact casing/extension per your setup
+import { useToast } from '@components/useToast.js' // keep exact casing/extension per your setup
 import { db, auth } from '@utils/firebase.js'
 
 /* Walkthrough data utils */
 import {
   getDefaultWalkthroughByClass,
   getWalkthroughLabel,
-  resolveWalkthrough,
-} from '@walkthrough-data' // alias → src/walkthrough-data/index.js
+  
+} from '@walkthrough-data'
+
+import resolveWalkthrough from '@/walkthrough-data/loaders/resolveWalkthrough.js'
 
 // Hybrid plan: CDL class tokens supported by defaults + resolver
 const CLASS_TOKENS = ['A', 'A-WO-AIR-ELEC', 'A-WO-HYD-ELEC', 'B', 'PASSENGER-BUS']

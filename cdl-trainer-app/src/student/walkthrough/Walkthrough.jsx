@@ -18,7 +18,7 @@ import React, {
 import { useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@components/ToastContext.js'
+import { useToast } from '@components/useToast.js'
 import { db } from '@utils/firebase.js'
 import {
   getUserProgress,
@@ -26,10 +26,10 @@ import {
   updateELDTProgress,
 } from '@utils/ui-helpers.js'
 
-import {
-  resolveWalkthrough,   // ({ classType, schoolId }) or (classType, schoolId)
-  getWalkthroughLabel,
-} from '@walkthrough-data'
+import { getWalkthroughLabel } from '@walkthrough-data'
+
+import { resolveWalkthrough } from '@/walkthrough-data/loaders/resolveWalkthrough.js'
+
 
 // Drills via barrel
 import {

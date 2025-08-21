@@ -5,42 +5,44 @@
 // - Per-tab sessionStorage cache with TTL
 // - Accepts role string | string[] | predicate(role) => boolean
 // - Optional router preload hook (warms role router bundle)
+// - FIX: avoid update-depth loops by making callbacks stable via refs
 // ======================================================================
 
-import { onAuthStateChanged, getIdTokenResult } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { onAuthStateChanged, getIdTokenResult } from 'firebase/auth'
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
-import SplashScreen from '@components/SplashScreen.jsx';
-import { auth, db } from '@utils/firebase.js';
-import { preloadRoutesForRole } from '@utils/route-preload.js';
+import SplashScreen from '@components/SplashScreen.jsx'
+import { auth, db } from '@utils/firebase.js'
+import { preloadRoutesForRole } from '@utils/route-preload.js'
 
-// --------------------------- Config -----------------------------------
+/* -------------------------------- Config --------------------------------- */
 
-/** Where to look for the role, in order. Override via props if needed. */
+/** Resolution order for role lookups (override via props if needed). */
 const DEFAULT_ROLE_SOURCES = /** @type {const} */ ([
-  'customClaims',    // token.claims.role OR token.claims.roles[0]
-  'userDocByUid',    // Firestore: users/<uid> { role }
-  'userDocByEmail',  // Firestore: users where email == currentUser.email
-]);
+  'customClaims',   // token.claims.role OR token.claims.roles[0]
+  'userDocByUid',   // Firestore: users/<uid> { role }
+  'userDocByEmail', // Firestore: users where email == currentUser.email
+])
 
 /** Session cache key (per tab) */
-const CACHE_KEY = 'roleCache_v1';
+const CACHE_KEY = 'roleCache_v1'
 
-/** Normalize app roles */
+/** Normalize to one of our known roles, else null. */
 function normalizeRole(role) {
-  const r = String(role ?? '').trim().toLowerCase();
-  return r === 'student' || r === 'instructor' || r === 'admin' || r === 'superadmin' ? r : null;
+  const r = String(role ?? '').trim().toLowerCase()
+  return r === 'student' || r === 'instructor' || r === 'admin' || r === 'superadmin' ? r : null
 }
 
-// --------------------------- Hook -------------------------------------
+/* -------------------------------- Hook ----------------------------------- */
 
 /**
  * useUserRole
  * - Subscribes to Firebase auth
- * - Resolves role via sources (claims/Firestore)
- * - Caches in sessionStorage (TTL)
+ * - Resolves role via sources (claims / Firestore)
+ * - Caches result in sessionStorage with TTL
+ * - Uses refs for callbacks to avoid effect thrash
  */
 export function useUserRole(options = {}) {
   const {
@@ -48,7 +50,7 @@ export function useUserRole(options = {}) {
     cacheTtlSec = 300, // 5 min
     onResolved,        // (user, role) => void
     onRoleChange,      // (prev, next) => void
-  } = options;
+  } = options
 
   const [state, setState] = useState(() => ({
     loading: true,
@@ -56,65 +58,79 @@ export function useUserRole(options = {}) {
     user: null,
     role: null,
     email: null,
-  }));
-  const prevRoleRef = useRef(null);
+  }))
+
+  // Keep callbacks in refs so the auth subscription effect doesn't depend on
+  // their identity (fixes update-depth loops).
+  const onResolvedRef = useRef(onResolved)
+  const onRoleChangeRef = useRef(onRoleChange)
+  useEffect(() => { onResolvedRef.current = onResolved }, [onResolved])
+  useEffect(() => { onRoleChangeRef.current = onRoleChange }, [onRoleChange])
+
+  // Stable key for sources (arrays often change identity).
+  const sourcesKey = useMemo(() => {
+    return Array.isArray(sources) ? sources.join('|') : 'custom'
+  }, [sources])
+
+  const prevRoleRef = useRef(null)
 
   useEffect(() => {
-    let mounted = true;
+    let mounted = true
 
     const unsub = onAuthStateChanged(auth, async (user) => {
-      if (!mounted) return;
+      if (!mounted) return
       try {
         if (!user) {
-          sessionStorage.removeItem(CACHE_KEY);
-          prevRoleRef.current = null;
-          setState({ loading: false, error: null, user: null, role: null, email: null });
-          if (typeof onResolved === 'function') onResolved(null, null);
-          return;
+          sessionStorage.removeItem(CACHE_KEY)
+          prevRoleRef.current = null
+          setState({ loading: false, error: null, user: null, role: null, email: null })
+          onResolvedRef.current?.(null, null)
+          return
         }
 
-        const email = user.email || null;
+        const email = user.email || null
 
         // 1) Cache (fast path)
-        const cached = safeGetCache(user.uid, email);
+        const cached = safeGetCache(user.uid, email)
         if (cached) {
-          const role = normalizeRole(cached.role);
-          maybeNotifyRoleChange(prevRoleRef, role, onRoleChange);
-          setState({ loading: false, error: null, user, role, email });
-          if (typeof onResolved === 'function') onResolved(user, role);
-          return;
+          const role = normalizeRole(cached.role)
+          maybeNotifyRoleChange(prevRoleRef, role, onRoleChangeRef.current)
+          setState({ loading: false, error: null, user, role, email })
+          onResolvedRef.current?.(user, role)
+          return
         }
 
         // 2) Resolve live, then normalize
-        const rawRole = await resolveRoleFromSources(user, email, sources);
-        const role = normalizeRole(rawRole);
+        const rawRole = await resolveRoleFromSources(user, email, sources)
+        const role = normalizeRole(rawRole)
 
-        // Cache (allow caching null briefly to prevent hammering)
-        safeSetCache(user.uid, email, role, role ? cacheTtlSec : 30);
+        // Cache (cache null briefly to avoid hammering)
+        safeSetCache(user.uid, email, role, role ? cacheTtlSec : 30)
 
-        // Back-compat with code that reads from window/localStorage
+        // Optional back-compat
         if (role) {
           try {
-            window.currentUserRole = role;
-            localStorage.setItem('userRole', role);
+            window.currentUserRole = role
+            localStorage.setItem('userRole', role)
           } catch { /* ignore */ }
         }
 
-        maybeNotifyRoleChange(prevRoleRef, role, onRoleChange);
-        setState({ loading: false, error: null, user, role, email });
-        if (typeof onResolved === 'function') onResolved(user, role);
+        maybeNotifyRoleChange(prevRoleRef, role, onRoleChangeRef.current)
+        setState({ loading: false, error: null, user, role, email })
+        onResolvedRef.current?.(user, role)
       } catch (err) {
-        setState((s) => ({ ...s, loading: false, error: err || new Error('Role check failed') }));
+        setState((s) => ({ ...s, loading: false, error: err || new Error('Role check failed') }))
       }
-    });
+    })
 
-    return () => { mounted = false; try { unsub(); } catch { /* ignore */ } };
-  }, [cacheTtlSec, onResolved, onRoleChange, sources]);
+    return () => { mounted = false; try { unsub() } catch { /* ignore */ } }
+    // IMPORTANT: do NOT depend on function props here — we use refs above.
+  }, [cacheTtlSec, sourcesKey, sources])
 
-  return state;
+  return state
 }
 
-// --------------------------- Component --------------------------------
+/* ------------------------------- Component ------------------------------- */
 
 /**
  * RequireRole
@@ -135,53 +151,66 @@ export function RequireRole({
   preload = true,
   sources = DEFAULT_ROLE_SOURCES,
 }) {
-  const location = useLocation();
-  const preloadedRef = useRef(new Set()); // once-per-role guard
+  const location = useLocation()
+  const preloadedRef = useRef(new Set()) // once-per-role guard
 
   const { loading, user, role: currentRole } = useUserRole({
     sources,
     onResolved: (u, r) => {
-      if (!u || !r) return;
-      // Optional preload of role-specific routes (once per role)
+      if (!u || !r) return
       if (preload === true) {
         if (!preloadedRef.current.has(r)) {
-          preloadedRef.current.add(r);
-          preloadRoutesForRole(r).catch(() => {});
+          preloadedRef.current.add(r)
+          preloadRoutesForRole?.(r)?.catch?.(() => {})
         }
       } else if (typeof preload === 'function') {
-        try { preload(r); } catch { /* ignore */ }
+        try { preload(r) } catch { /* ignore */ }
       }
     },
-  });
+  })
 
   // Prefer the new prop; fall back to the legacy prop name
-  const required = requiredRole ?? legacyRole;
+  const required = requiredRole ?? legacyRole
 
   const allowed = useMemo(() => {
-    if (!required) return true; // only requires sign-in
-    if (typeof required === 'function') return !!required(currentRole);
-    if (Array.isArray(required)) return required.map(normalizeRole).includes(currentRole);
-    return normalizeRole(required) === currentRole;
-  }, [required, currentRole]);
+    if (!required) return true // only requires sign-in
+    if (typeof required === 'function') return !!required(currentRole)
+    if (Array.isArray(required)) return required.map(normalizeRole).includes(currentRole)
+    return normalizeRole(required) === currentRole
+  }, [required, currentRole])
 
   // Not signed in → send to login, preserve "from"
   if (!loading && !user) {
-    return <Navigate to={redirectTo} state={{ from: location }} replace />;
+    return <Navigate to={redirectTo} state={{ from: location }} replace />
   }
 
   // Still determining
-  if (loading) return fallback;
+  if (loading) return fallback
 
   // Signed in but not authorized
-  if (!allowed) return onDeny;
+  if (!allowed) return onDeny
 
-  return <>{children}</>;
+  return <>{children}</>
 }
 
-// --------------------------- Defaults ---------------------------------
+/**
+ * Route wrapper variant:
+ * <Route element={<RequireRoleRoute requiredRole="admin" />}>
+ *   <Route path="..." element={<AdminPage/>} />
+ * </Route>
+ */
+export function RequireRoleRoute(props) {
+  return (
+    <RequireRole {...props}>
+      <Outlet />
+    </RequireRole>
+  )
+}
+
+/* ------------------------------- Defaults -------------------------------- */
 
 export function DefaultLoader({ text = 'Loading…' }) {
-  return <SplashScreen message={text} showTip={false} />;
+  return <SplashScreen message={text} showTip={false} />
 }
 
 export function DefaultAccessDenied() {
@@ -197,10 +226,10 @@ export function DefaultAccessDenied() {
         </button>
       </div>
     </div>
-  );
+  )
 }
 
-// --------------------------- Helpers ----------------------------------
+/* -------------------------------- Helpers -------------------------------- */
 
 async function resolveRoleFromSources(user, email, sources) {
   for (const source of sources) {
@@ -208,83 +237,81 @@ async function resolveRoleFromSources(user, email, sources) {
       switch (source) {
         case 'customClaims': {
           // Force refresh once after sign-in to reduce stale-claim reads.
-          const token = await getIdTokenResult(user, true);
-          const claimRole = token?.claims?.role || token?.claims?.roles?.[0];
-          if (claimRole) return claimRole;
-          break;
+          const token = await getIdTokenResult(user, true)
+          const claimRole = token?.claims?.role || token?.claims?.roles?.[0]
+          if (claimRole) return claimRole
+          break
         }
         case 'userDocByUid': {
-          const ref = doc(db, 'users', user.uid);
-          const snap = await getDoc(ref);
+          const ref = doc(db, 'users', user.uid)
+          const snap = await getDoc(ref)
           if (snap.exists()) {
-            const role = snap.data()?.role;
-            if (role) return role;
+            const role = snap.data()?.role
+            if (role) return role
           }
-          break;
+          break
         }
         case 'userDocByEmail': {
-          if (!email) break;
-          const q = query(collection(db, 'users'), where('email', '==', email));
-          const res = await getDocs(q);
+          if (!email) break
+          const q = query(collection(db, 'users'), where('email', '==', email))
+          const res = await getDocs(q)
           if (!res.empty) {
-            const role = res.docs[0].data()?.role;
-            if (role) return role;
+            const role = res.docs[0].data()?.role
+            if (role) return role
           }
-          break;
+          break
         }
         default: {
-          // Allow custom resolvers via function
           if (typeof source === 'function') {
-            const role = await source({ user, email });
-            if (role) return role;
+            const role = await source({ user, email })
+            if (role) return role
           }
         }
       }
     } catch {
-      // Ignore and try next source
+      // ignore and try next
     }
   }
-  return null;
+  return null
 }
 
 // Cache structure: { [uidOrEmail]: { role, exp: timestampMillis } }
 function safeGetCache(uid, email) {
   try {
-    const raw = sessionStorage.getItem(CACHE_KEY);
-    if (!raw) return null;
-    const data = JSON.parse(raw);
-    const key = uid || email;
-    const entry = key ? data[key] : null;
-    if (!entry) return null;
-    if (Date.now() > entry.exp) return null;
-    return { role: entry.role };
+    const raw = sessionStorage.getItem(CACHE_KEY)
+    if (!raw) return null
+    const data = JSON.parse(raw)
+    const key = uid || email
+    const entry = key ? data[key] : null
+    if (!entry) return null
+    if (Date.now() > entry.exp) return null
+    return { role: entry.role }
   } catch {
-    return null;
+    return null
   }
 }
 
 function safeSetCache(uid, email, role, ttlSeconds = 300) {
   try {
-    const key = uid || email;
-    if (!key) return;
-    const raw = sessionStorage.getItem(CACHE_KEY);
-    const data = raw ? JSON.parse(raw) : {};
-    // Store normalized role so lookups are consistent
-    data[key] = { role: normalizeRole(role), exp: Date.now() + ttlSeconds * 1000 };
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    const key = uid || email
+    if (!key) return
+    const raw = sessionStorage.getItem(CACHE_KEY)
+    const data = raw ? JSON.parse(raw) : {}
+    data[key] = { role: normalizeRole(role), exp: Date.now() + ttlSeconds * 1000 }
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(data))
   } catch {
     // ignore
   }
 }
 
 function maybeNotifyRoleChange(ref, next, cb) {
-  const prev = ref.current;
+  const prev = ref.current
   if (prev !== next) {
-    ref.current = next;
+    ref.current = next
     if (typeof cb === 'function') {
-      try { cb(prev, next); } catch { /* ignore */ }
+      try { cb(prev, next) } catch { /* ignore */ }
     }
   }
 }
 
-export default RequireRole;
+export default RequireRole

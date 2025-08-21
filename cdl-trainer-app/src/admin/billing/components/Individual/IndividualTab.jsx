@@ -1,7 +1,7 @@
 // Path: src/admin/billing/components/Individual/IndividualTab.jsx
 import React, { useMemo, useState, useCallback } from 'react'
 
-import { useBillingDashboard } from '@/admin/dashboard/hooks'
+import { useBillingDashboard } from '@admin/billing/hooks/public/index.js'
 
 import { downloadCsv } from '../../utils'
 

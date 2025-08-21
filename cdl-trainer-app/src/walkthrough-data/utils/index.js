@@ -34,9 +34,11 @@ const parseXlsx =
   /** @type {any} */ (xlsxNS).parseXlsxToWalkthrough ??
   /** @type {any} */ (xlsxNS).default
 
+// Keep isXlsxAvailable synchronous; fall back to a false-returning fn
 const isXlsxAvailable =
-  /** @type {any} */ (xlsxNS).isXlsxAvailable ??
-  (async () => false)
+  typeof /** @type {any} */ (xlsxNS).isXlsxAvailable === 'function'
+    ? /** @type {any} */ (xlsxNS).isXlsxAvailable
+    : () => false
 
 const validateWalkthroughs =
   /** @type {any} */ (validateNS).validateWalkthroughs ??
@@ -51,6 +53,12 @@ const validateWalkthroughShape =
 export { applyOverlays } from './applyOverlays.js'
 
 // ---------------------------
+// Pass-through low-level XLSX helpers for power users
+// (These are pure and safe to re-export.)
+// ---------------------------
+export { parseXlsxFile, exportXlsxFile } from './parseXlsx.js'
+
+// ---------------------------
 // Named exports (preferred)
 // ---------------------------
 export {
@@ -63,6 +71,11 @@ export {
 }
 
 // ---------------------------
+// Back-compat aliases used by admin upload screens
+// ---------------------------
+export { parseCsv as parseCsvToWalkthrough, parseMarkdown as parseMarkdownToWalkthrough }
+
+// ---------------------------
 // Optional convenience default
 // ---------------------------
 export default {
@@ -72,6 +85,9 @@ export default {
   isXlsxAvailable,
   validateWalkthroughs,
   validateWalkthroughShape,
+  // Back-compat keys
+  parseCsvToWalkthrough: parseCsv,
+  parseMarkdownToWalkthrough: parseMarkdown,
 }
 
 /**

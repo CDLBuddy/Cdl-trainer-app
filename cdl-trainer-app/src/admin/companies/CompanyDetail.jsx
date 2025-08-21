@@ -5,6 +5,7 @@
 // - Local search (debounced), CSV export, verify links
 // - Lazily mounts AddStudentDrawer; safe refresh on close
 // - Supports deep-link from “Add Company → Create & Add First Student”
+// - Uses dynamic import to warm the AddStudent drawer chunk (no static preload)
 // ============================================================================
 
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
@@ -15,9 +16,8 @@ import React, {
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
 
 import { BillingSummaryCard } from '@admin/billing'
-import { preloadRoute } from '@admin/preload.js' // warm the drawer chunk just-in-time
 import Shell from '@components/Shell.jsx'
-import { useToast } from '@components/ToastContext.js'
+import { useToast } from '@components/useToast.js'
 import { db } from '@utils/firebase.js'
 
 import {
@@ -28,7 +28,9 @@ import {
 import { CompanyOverviewCard } from './components/detail'
 import useDebounced from './hooks/useDebounced.js'
 
-
+// --- Dynamic preload wrapper (replaces static `import { preloadRoute } from '@admin/preload.js'`) ---
+const preloadRoute = async (...args) =>
+  (await import('@/admin/preload.js')).preloadRoute?.(...args)
 
 // Lazy-load the drawer as its own chunk (avoid importing from barrels here)
 const AddStudentDrawer = lazy(() =>
@@ -60,6 +62,7 @@ function mapUserDoc(ds) {
 
 /** Small CSV helper (no deps) */
 function exportRosterCsv(companyId, rows) {
+  if (!companyId) return
   const headers = ['Name', 'Email', 'Course', 'Class', 'Billing Mode', 'Instructor', 'Enroll %', 'BTW %']
   const lines = rows.map(r => [
     r.name,
@@ -79,8 +82,10 @@ function exportRosterCsv(companyId, rows) {
   const a = document.createElement('a')
   a.href = url
   a.download = `company-${companyId}-roster.csv`
+  document.body.appendChild(a)
   a.click()
-  // Revoke on next tick (Safari sometimes needs a delay)
+  a.remove()
+  // Revoke on next microtask; Safari sometimes needs a short delay
   setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
@@ -132,7 +137,6 @@ export default function CompanyDetail() {
         setCompany(c)
         setRoster(r)
       } catch (e) {
-         
         console.error('[CompanyDetail] load failed', e)
         showToast('Failed to load company roster.', 3000, 'error')
       } finally {

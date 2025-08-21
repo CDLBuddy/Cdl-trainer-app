@@ -76,7 +76,6 @@ export { ToastContext }
 /* ------------------------------------------------------------------ */
 
 // Hook (canonical in ./useToast.js)
-export { useToast } from './useToast.js'
 
 // Provider component (canonical in ./ToastProvider.jsx)
 export { default as ToastProvider } from './ToastProvider.jsx'
@@ -86,4 +85,3 @@ export { showToast } from './toast-compat.js'
 
 // Some older files pulled utility helpers from here.
 // Re-export to avoid breakage (canonical: @utils/ui-helpers.js)
-export { getUserInitials } from '@utils/ui-helpers.js'

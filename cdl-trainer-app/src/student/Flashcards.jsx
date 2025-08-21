@@ -11,7 +11,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore'
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { useToast } from '@components/ToastContext.js'
+import { useToast } from '@components/useToast.js'
 import { db, auth } from '@utils/firebase.js'
 import {
   incrementStudentStudyMinutes,

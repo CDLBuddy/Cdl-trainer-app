@@ -25,7 +25,8 @@
 
 import { useMemo } from 'react'
 
-import { toCurrencyShort } from '../../utils/formatters.js'
+import { toCurrencyShort } from '@admin/billing/utils/index.js'
+
 import useEmployerBilling from '../internal/useEmployerBilling.js'
 
 /**
