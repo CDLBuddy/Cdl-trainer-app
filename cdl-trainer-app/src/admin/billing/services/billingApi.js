@@ -20,13 +20,14 @@ import {
   where,
 } from 'firebase/firestore'
 
+import { ENV } from '@utils/env.js'
 import { db } from '@utils/firebase.js'
 
 // --------------------------------- Config -----------------------------------
 
 /** Flip to false when you wire Firestore (or via VITE_BILLING_MOCKS) */
 export const USE_BILLING_MOCKS =
-  (import.meta?.env?.VITE_BILLING_MOCKS ?? 'true') !== 'false'
+  (ENV.VITE_BILLING_MOCKS ?? 'true') !== 'false'
 
 // --------------------------------- Helpers ----------------------------------
 

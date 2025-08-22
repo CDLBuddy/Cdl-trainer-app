@@ -1,3 +1,4 @@
+//src/superadmin/SchoolManagement.jsx
 import {
   collection,
   deleteDoc,
@@ -15,7 +16,7 @@ import { useNavigate } from 'react-router-dom'
 import { getUserRole } from '@utils/auth.js' // <- role check helper
 import { db } from '@utils/firebase.js' // <- adjust if needed
 
-import { showToast } from '@/components/ToastContext.js' // <- your toast helper
+import { showToast } from '@/components/toast-compat.js'
 
 /* ============================================================================
    Helpers

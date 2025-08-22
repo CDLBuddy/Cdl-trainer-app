@@ -195,8 +195,11 @@ function buildAlerts({ permitSoon = 0, medSoon = 0, incomplete = 0 } = {}) {
 export function useAdminDashboard() {
   const navigate = useNavigate()
 
-  // 1) Auth + school scope
-  const { schoolId, loading: guardLoading } = useAuthSchoolGuard()
+  // 1) Auth + school scope (loop-safe: do NOT navigate from inside this hook)
+  const { schoolId, loading: guardLoading } = useAuthSchoolGuard({
+    requireRole: 'admin',
+    redirectTo: null, // let <RequireRole requiredRole="admin" /> own redirects
+  })
 
   // 2) Users (one fetch; we derive everything else from here)
   const { users = [], loading: usersLoading } = useUsersQuery({ schoolId })

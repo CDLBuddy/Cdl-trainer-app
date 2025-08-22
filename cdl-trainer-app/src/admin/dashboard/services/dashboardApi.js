@@ -6,16 +6,18 @@
 // - Stable, hook-friendly shapes; defensive defaults; no UI side-effects
 // ============================================================================
 
+import { ENV } from '@utils/env.js'
+
 /* -------------------------------- Flags ---------------------------------- */
 /** Toggle to use baked-in mocks (handy during dev / offline) */
 export const USE_DASHBOARD_MOCKS =
   (typeof window !== 'undefined' && window.__DASHBOARD_MOCKS__) ||
-  (import.meta?.env?.VITE_DASHBOARD_MOCKS === 'true') ||
+  (ENV.VITE_DASHBOARD_MOCKS === 'true') ||
   true // default true until your real endpoints are wired
 
 /** Optional base URL for HTTP API (if you’re not using Firestore/callables) */
 export const DASHBOARD_BASE_URL =
-  import.meta?.env?.VITE_DASHBOARD_API_URL || '/api/dashboard'
+  ENV.VITE_DASHBOARD_API_URL || '/api/dashboard'
 
 /* ------------------------------ Utilities -------------------------------- */
 

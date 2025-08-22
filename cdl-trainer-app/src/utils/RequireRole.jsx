@@ -6,6 +6,7 @@
 // - Accepts role string | string[] | predicate(role) => boolean
 // - Optional router preload hook (warms role router bundle)
 // - FIX: avoid update-depth loops by making callbacks stable via refs
+// - FIX: no redirects/denials while authed but role is still null
 // ======================================================================
 
 import { onAuthStateChanged, getIdTokenResult } from 'firebase/auth'
@@ -14,6 +15,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
 import SplashScreen from '@components/SplashScreen.jsx'
+import { __DEV__ } from '@utils/env.js'
 import { auth, db } from '@utils/firebase.js'
 import { preloadRoutesForRole } from '@utils/route-preload.js'
 
@@ -140,6 +142,12 @@ export function useUserRole(options = {}) {
  * - onDeny: ReactNode when authed but not authorized
  * - preload: boolean | (role) => void  (preload role router chunks)
  * - sources: override role resolution order
+ *
+ * Loop-safety rules:
+ * - While loading → show fallback.
+ * - If authed but role is still null → show "finalizing role" loader (NO redirects).
+ * - Only redirect when user is NOT signed in.
+ * - Only deny when a concrete role is known and doesn’t satisfy the requirement.
  */
 export function RequireRole({
   requiredRole,
@@ -171,23 +179,31 @@ export function RequireRole({
 
   // Prefer the new prop; fall back to the legacy prop name
   const required = requiredRole ?? legacyRole
+  const normalizedCurrent = normalizeRole(currentRole)
 
+  // 4) With a concrete role, evaluate requirement
   const allowed = useMemo(() => {
     if (!required) return true // only requires sign-in
-    if (typeof required === 'function') return !!required(currentRole)
-    if (Array.isArray(required)) return required.map(normalizeRole).includes(currentRole)
-    return normalizeRole(required) === currentRole
-  }, [required, currentRole])
+    if (typeof required === 'function') return !!required(normalizedCurrent)
+    if (Array.isArray(required)) return required.map(normalizeRole).includes(normalizedCurrent)
+    return normalizeRole(required) === normalizedCurrent
+  }, [required, normalizedCurrent])
 
-  // Not signed in → send to login, preserve "from"
+  // 1) Not signed in → send to login, preserve "from"
   if (!loading && !user) {
     return <Navigate to={redirectTo} state={{ from: location }} replace />
   }
 
-  // Still determining
+  // 2) Still determining auth/role → loader
   if (loading) return fallback
 
-  // Signed in but not authorized
+  // 3) Signed in, but role is not yet resolved → WAIT here (no redirects / no deny)
+  if (user && !normalizedCurrent) {
+    if (__DEV__) console.warn('[RequireRole] user authenticated, role not resolved yet — holding.')
+    return <DefaultLoader text="Finalizing your role…" />
+  }
+
+  // 5) Signed in but not authorized (role is known and mismatched)
   if (!allowed) return onDeny
 
   return <>{children}</>

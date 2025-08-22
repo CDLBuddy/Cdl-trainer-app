@@ -37,7 +37,7 @@ const isStaticAsset = (url) =>
 const shouldSkip = (url) => SKIP_PATTERNS.some((re) => re.test(url.href));
 const log = (...args) => {
   if (self?.location?.hostname === 'localhost') {
-    console.debug('[SW]', ...args);
+    console.warn('[SW]', ...args);
   }
 };
 

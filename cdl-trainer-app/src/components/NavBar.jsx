@@ -28,6 +28,7 @@ import {
 } from '@/utils/route-preload.js'
 
 import { useSession } from '../session/useSession.js'
+
 import styles from './NavBar.module.css'
 
 /* -------------------------------- Component ------------------------------- */
@@ -244,6 +245,7 @@ function NavBar({ brand: brandProp }) {
         id="main-navigation"
         role="menubar"
       >
+        {/* ← hover/focus/touch prefetch */}
         {links.map(link => (
           <NavLink
             key={link.to}
@@ -252,7 +254,7 @@ function NavBar({ brand: brandProp }) {
               `${styles.link} ${isActive ? styles.active : ''}`
             }
             onClick={() => setMenuOpen(false)}
-            {...prefetchOnIntent(link.to)}   {/* ← hover/focus/touch prefetch */}
+            {...prefetchOnIntent(link.to)}
             end={!!link.exact}
             role="menuitem"
           >

@@ -14,7 +14,6 @@ import { Outlet, ScrollRestoration, useLocation } from 'react-router-dom'
 // Global UI
 import NavBar from '@components/NavBar.jsx'
 import SplashScreen from '@components/SplashScreen.jsx'
-
 // Layout hooks (centralized)
 import { useBrandingSync, useHideNavBar } from '@utils/layout-hooks.js'
 

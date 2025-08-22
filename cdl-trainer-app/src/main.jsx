@@ -18,8 +18,9 @@ import './styles/index.css'
 
 // Providers
 import SplashScreen from '@components/SplashScreen.jsx'
-import { ToastProvider } from '@components/ToastContext.js'
+import ToastProvider from '@components/ToastProvider.jsx'
 import { useAuthStatus } from '@utils/auth.js'
+import { __DEV__ } from '@utils/env.js'
 import { warmRoutesOnSession } from '@utils/route-preload.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
@@ -45,7 +46,7 @@ void (async () => {
     })
   } catch (err) {
     // Non-fatal: continue rendering even if branding fetch fails
-    if (import.meta?.env?.DEV) console.warn('[bootstrap] Branding fetch failed:', err)
+    if (__DEV__) console.warn('[bootstrap] Branding fetch failed:', err)
   }
 })()
 
@@ -66,7 +67,7 @@ export function SessionRoot({ children }) {
     [auth.loading, auth.isLoggedIn, auth.role, auth.user]
   )
 
-  if (import.meta.env.DEV) syncSessionDebug(value)
+  if (__DEV__) syncSessionDebug(value)
 
   // 🔒 Fire warming only when login state/role truly change (loop-safe)
   const last = React.useRef({ isLoggedIn: null, role: null })

@@ -10,9 +10,7 @@
 import React, { Suspense, lazy, useMemo, useCallback } from 'react'
 
 import Shell from '@components/Shell.jsx'
-import styles from './AdminDashboard.module.css'
 
-// ---- Data hooks (STATIC imports from the hooks barrel) ----------------
 import {
   useAuthSchoolGuard,
   useDashboardKpis,        // -> { loading, data, error, refresh }
@@ -20,6 +18,10 @@ import {
   useDashboardAlerts,      // -> { loading, items, error, stats, refresh }
   useRecentActivity,       // -> { loading, data,  error, refresh }
 } from '@admin/dashboard/hooks'
+
+import styles from './AdminDashboard.module.css'
+
+// ---- Data hooks (STATIC imports from the hooks barrel) ----------------
 
 // ---- UI widgets (LAZY for code-splitting) ----------------------------
 const KpiRow             = lazy(() => import('./components/KpiRow.jsx'))
@@ -143,7 +145,15 @@ export default function AdminDashboard() {
           <section aria-label="Key metrics">
             <h2 className="visually-hidden">Key metrics</h2>
             <ErrorNotice message={kpiError?.message} />
-            <KpiRow {...kpiProps} />
+            <KpiRow
+              {...kpiProps}
+              onStudentsClick={() => {}}
+              onInstructorsClick={() => {}}
+              onAdminsClick={() => {}}
+              onPermitSoonClick={() => {}}
+              onMedSoonClick={() => {}}
+              onIncompleteClick={() => {}}
+            />
           </section>
         </Suspense>
 
@@ -152,25 +162,29 @@ export default function AdminDashboard() {
           {/* Companies overview */}
           <Suspense fallback={<Fallback label="Loading companies…" />}>
             <>
-              <ErrorNotice message={coError?.message} />
+              <ErrorNotice message={coError} />
               <CompaniesMiniTable
-                rows={companyRows}
+                companies={companyRows}
                 loading={coLoading}
-                onViewAllHref="/admin/companies"
+                onView={() => {}}
               />
             </>
           </Suspense>
 
           {/* Compliance snapshot */}
           <Suspense fallback={<Fallback label="Loading compliance…" />}>
-            <ComplianceRadar title="Compliance Snapshot" categories={complianceCategories} />
+            <ComplianceRadar title="Compliance Snapshot" metrics={complianceCategories} />
           </Suspense>
 
           {/* Recent activity */}
           <Suspense fallback={<Fallback label="Loading activity…" />}>
             <>
               <ErrorNotice message={actError?.message} />
-              <ActivityFeed items={activityItems} />
+              <ActivityFeed
+                items={activityItems}
+                onItemClick={() => {}}
+                renderItem={(item) => <div>{item?.description || 'No description'}</div>}
+              />
             </>
           </Suspense>
 
@@ -178,13 +192,13 @@ export default function AdminDashboard() {
           <Suspense fallback={<Fallback label="Loading alerts…" />}>
             <>
               <ErrorNotice message={alertError?.message} />
-              <AlertsCard items={alertItems} onViewAllHref="/admin/reports" />
+              <AlertsCard alerts={alertItems} />
             </>
           </Suspense>
 
           {/* Billing summary (scoped by school) */}
           <Suspense fallback={<Fallback label="Loading billing…" />}>
-            <BillingSummary schoolId={schoolId} />
+            <BillingSummary />
           </Suspense>
 
           {/* Quick actions */}
@@ -202,11 +216,11 @@ export default function AdminDashboard() {
           {/* Report tiles */}
           <Suspense fallback={<Fallback label="Loading report tiles…" />}>
             <ReportsTiles
-              tiles={[
-                { label: 'Completion Report', to: '/admin/reports?view=completions' },
-                { label: 'Permit Expiring',   to: '/admin/reports?view=permits' },
-                { label: 'Medical Expiring',  to: '/admin/reports?view=med-cards' },
-                { label: 'Instructor Load',   to: '/admin/reports?view=instructors' },
+              reports={[
+                { title: 'Completion Report', description: '', to: '/admin/reports?view=completions' },
+                { title: 'Permit Expiring',   description: '', to: '/admin/reports?view=permits' },
+                { title: 'Medical Expiring',  description: '', to: '/admin/reports?view=med-cards' },
+                { title: 'Instructor Load',   description: '', to: '/admin/reports?view=instructors' },
               ]}
             />
           </Suspense>

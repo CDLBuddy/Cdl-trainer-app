@@ -1,27 +1,34 @@
+// src/components/useToast.js
 // @ts-check
-import { useContext, useMemo } from 'react'
+import { useContext, useEffect, useRef } from 'react'
+
 import ToastContext, { defaultToast } from './ToastContext.js'
 
-/**
- * useToast
- * Returns the callable toast API with helpers.
- *
- * Usage:
- *   const toast = useToast()
- *   toast('Saved!')
- *   toast.success('Saved!', { duration: 2000 })
- *   toast.show('Saved!', 'success', 2000) // legacy signature still works
- */
 export function useToast() {
   const api = useContext(ToastContext)
-  return useMemo(() => {
-    // Dev guard: surface when the provider isn't mounted
-    if (import.meta?.env?.DEV && api === defaultToast) {
-      // eslint-disable-next-line no-console
-      console.warn('[useToast] No <ToastProvider> found; toast() is a no-op.')
+  const warned = useRef(false)
+
+  useEffect(() => {
+    // Determine "dev" in a TS-friendly way (works with CJS tsconfig too)
+    let isDev =
+      typeof process !== 'undefined' &&
+      !!process.env &&
+      process.env.NODE_ENV === 'development'
+
+    if (!isDev) {
+      // Prefer Vite’s flag when available, but guard for TS checkers that
+      // disallow `import.meta` under non-ES module targets.
+      // @ts-ignore -- Allowed in Vite/ESM builds; safe to ignore for CJS checking
+      isDev = typeof import.meta !== 'undefined' && !!import.meta.env?.DEV
     }
-    return api
+
+    if (isDev && api === defaultToast && !warned.current) {
+      console.warn('[useToast] No <ToastProvider> found; toast() is a no-op.')
+      warned.current = true
+    }
   }, [api])
+
+  return api
 }
 
 export default useToast

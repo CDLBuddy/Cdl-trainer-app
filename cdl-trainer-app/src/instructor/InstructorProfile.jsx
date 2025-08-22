@@ -1,3 +1,4 @@
+//src/instructor/InstructorProfile.jsx
 import {
   collection,
   query,
@@ -15,6 +16,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { db, storage } from '@utils/firebase.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
+
 // import { showToast } from '@utils/ui-helpers.js'
 import { useToast } from '@/components/useToast.js'
 

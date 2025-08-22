@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import { getUserRole } from '@utils/auth.js'
 import { db } from '@utils/firebase.js' // adjust if your path differs
 
-import { showToast } from '@/components/ToastContext.js'
+import { showToast } from '@/components/toast-compat.js'
 /* =========================
    Helpers
 ========================= */

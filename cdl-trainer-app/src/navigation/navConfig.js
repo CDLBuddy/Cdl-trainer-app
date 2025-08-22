@@ -10,6 +10,8 @@
 // - Pure module: side-effect free; great for SSR and tree-shaking.
 // ======================================================================
 
+import { __DEV__ } from '@utils/env.js'
+
 /**
  * @typedef {'student'|'instructor'|'admin'|'superadmin'} Role
  *
@@ -50,10 +52,9 @@ export function roleFromPath(path = '') {
 
 /** DEV assertion for nav item paths (keeps config tidy) */
 function assertPathPrefix(item, role) {
-  if (import.meta?.env?.DEV) {
+  if (__DEV__) {
     const ok = roleFromPath(item.to) === role || item.to === '/'
     if (!ok) {
-      // eslint-disable-next-line no-console
       console.warn(`[navConfig] "${item.label}" path "${item.to}" is not under "/${role}".`)
     }
   }

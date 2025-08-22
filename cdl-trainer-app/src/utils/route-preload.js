@@ -31,7 +31,7 @@ async function _once(key, loader) {
   } catch (err) {
     // Best effort: never throw
     if (typeof import.meta !== 'undefined' && import.meta?.env?.DEV) {
-      // eslint-disable-next-line no-console
+       
       console.warn(`[route-preload] Failed "${key}":`, err);
     }
   }

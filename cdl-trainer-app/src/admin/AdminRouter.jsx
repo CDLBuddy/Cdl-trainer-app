@@ -11,6 +11,8 @@
 import React, { Suspense, lazy, useEffect, memo } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 
+import { __DEV__ } from '@utils/env.js'
+
 // Preload helpers (single source of truth lives in ./preload.js)
 import {
   preloadAdminAll as _preloadAll,
@@ -64,8 +66,7 @@ class AdminSectionErrorBoundary extends React.Component {
     return { err }
   }
   componentDidCatch(error, info) {
-    if (import.meta?.env?.DEV) {
-       
+    if (__DEV__) {
       console.error('[AdminRouter] render error:', error, info)
     }
   }

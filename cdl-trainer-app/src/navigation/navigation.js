@@ -177,7 +177,7 @@ export function safeNavigate(navigate, to, options = {}) {
       window.location.assign(href)
     }
   } catch (err) {
-    // eslint-disable-next-line no-console
+     
     console.error('[navigation] navigate failed:', err)
     try {
       if (typeof window !== 'undefined') window.location.assign(href)

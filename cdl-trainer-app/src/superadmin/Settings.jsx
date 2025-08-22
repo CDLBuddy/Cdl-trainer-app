@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom'
 import { getUserRole } from '@utils/auth.js' // <- same helper used elsewhere
 import { db } from '@utils/firebase.js' // <- adjust if needed
 
-import { showToast } from '@/components/ToastContext.js' // <- global toast, styled to your theme
+import { showToast } from '@/components/toast-compat.js' // <- global toast, styled to your theme
 
 /* ============================================================================
    Utilities (Firestore CRUD)
