@@ -25,6 +25,13 @@
 // Role helpers
 // ----------------------------------------------------------------------
 
+export const ROLE_LIST = /** @type {const} */ ([
+  'student',
+  'instructor',
+  'admin',
+  'superadmin',
+])
+
 /** @param {unknown} r @returns {Role|null} */
 export function normalizeRole(r) {
   const v = String(r ?? '').trim().toLowerCase()
@@ -46,7 +53,7 @@ function assertPathPrefix(item, role) {
   if (import.meta?.env?.DEV) {
     const ok = roleFromPath(item.to) === role || item.to === '/'
     if (!ok) {
-       
+      // eslint-disable-next-line no-console
       console.warn(`[navConfig] "${item.label}" path "${item.to}" is not under "/${role}".`)
     }
   }
@@ -56,14 +63,14 @@ function assertPathPrefix(item, role) {
 // Student
 // ----------------------------------------------------------------------
 
-export const STUDENT_TOP_NAV = Object.freeze([
+export const STUDENT_TOP_NAV = Object.freeze(/** @type {NavItem[]} */([
   { to: '/student/dashboard',      label: 'Dashboard',      icon: '🏠', exact: true, prefetchRole: 'student' },
   { to: '/student/profile',        label: 'Profile',        icon: '👤',              prefetchRole: 'student' },
   { to: '/student/checklists',     label: 'Checklists',     icon: '📋',              prefetchRole: 'student' },
   { to: '/student/practice-tests', label: 'Practice Tests', icon: '📝',              prefetchRole: 'student' },
   { to: '/student/walkthrough',    label: 'Walkthrough',    icon: '🧭',              prefetchRole: 'student' },
   { to: '/student/flashcards',     label: 'Flashcards',     icon: '🗂️',              prefetchRole: 'student' },
-])
+]))
 
 export const STUDENT_DEEP_LINKS = Object.freeze([
   '/student/test-engine/:testName',
@@ -75,11 +82,11 @@ export const STUDENT_DEEP_LINKS = Object.freeze([
 // Instructor
 // ----------------------------------------------------------------------
 
-export const INSTRUCTOR_TOP_NAV = Object.freeze([
+export const INSTRUCTOR_TOP_NAV = Object.freeze(/** @type {NavItem[]} */([
   { to: '/instructor/dashboard',        label: 'Dashboard',        icon: '🏠', exact: true, prefetchRole: 'instructor' },
   { to: '/instructor/profile',          label: 'Profile',          icon: '👤',              prefetchRole: 'instructor' },
   { to: '/instructor/checklist-review', label: 'Checklist Review', icon: '✅',              prefetchRole: 'instructor' },
-])
+]))
 
 export const INSTRUCTOR_DEEP_LINKS = Object.freeze([
   '/instructor/student-profile/:studentId',
@@ -90,16 +97,16 @@ export const INSTRUCTOR_DEEP_LINKS = Object.freeze([
 // Admin
 // ----------------------------------------------------------------------
 
-export const ADMIN_TOP_NAV = Object.freeze([
+export const ADMIN_TOP_NAV = Object.freeze(/** @type {NavItem[]} */([
   { to: '/admin/dashboard',    label: 'Dashboard',    icon: '🏠', exact: true, prefetchRole: 'admin' },
   { to: '/admin/profile',      label: 'Profile',      icon: '👤',              prefetchRole: 'admin' },
-  // Removed Users tab (companies own user management now)
+  // Users tab removed; companies own user management now
   { to: '/admin/companies',    label: 'Companies',    icon: '🏢',              prefetchRole: 'admin' },
   { to: '/admin/billing',      label: 'Billing',      icon: '💳',              prefetchRole: 'admin' },
   { to: '/admin/reports',      label: 'Reports',      icon: '📄',              prefetchRole: 'admin' },
   { to: '/admin/walkthroughs', label: 'Walkthroughs', icon: '🧭',              prefetchRole: 'admin' },
   { to: '/admin/settings',     label: 'Settings',     icon: '⚙️',              prefetchRole: 'admin' },
-])
+]))
 
 export const ADMIN_DEEP_LINKS = Object.freeze([
   '/admin/companies/:companyId',
@@ -109,7 +116,7 @@ export const ADMIN_DEEP_LINKS = Object.freeze([
 // Superadmin
 // ----------------------------------------------------------------------
 
-export const SUPERADMIN_TOP_NAV = Object.freeze([
+export const SUPERADMIN_TOP_NAV = Object.freeze(/** @type {NavItem[]} */([
   { to: '/superadmin/dashboard',    label: 'Dashboard',    icon: '🏠', exact: true, prefetchRole: 'superadmin' },
   { to: '/superadmin/schools',      label: 'Schools',      icon: '🏫',              prefetchRole: 'superadmin' },
   { to: '/superadmin/users',        label: 'Users',        icon: '👥',              prefetchRole: 'superadmin' },
@@ -119,7 +126,7 @@ export const SUPERADMIN_TOP_NAV = Object.freeze([
   { to: '/superadmin/settings',     label: 'Settings',     icon: '⚙️',              prefetchRole: 'superadmin' },
   { to: '/superadmin/logs',         label: 'Logs',         icon: '📜',              prefetchRole: 'superadmin' },
   { to: '/superadmin/permissions',  label: 'Permissions',  icon: '🔐',              prefetchRole: 'superadmin' },
-])
+]))
 
 export const SUPERADMIN_DEEP_LINKS = Object.freeze([])
 
@@ -127,16 +134,19 @@ export const SUPERADMIN_DEEP_LINKS = Object.freeze([])
 // Helpers
 // ----------------------------------------------------------------------
 
+const DASHBOARD_ROUTE = Object.freeze({
+  student: '/student/dashboard',
+  instructor: '/instructor/dashboard',
+  admin: '/admin/dashboard',
+  superadmin: '/superadmin/dashboard',
+})
+
 export function getDashboardRoute(role) {
-  switch (normalizeRole(role)) {
-    case 'student':    return '/student/dashboard'
-    case 'instructor': return '/instructor/dashboard'
-    case 'admin':      return '/admin/dashboard'
-    case 'superadmin': return '/superadmin/dashboard'
-    default:           return '/login'
-  }
+  const r = normalizeRole(role)
+  return r ? DASHBOARD_ROUTE[r] : '/login'
 }
 
+/** Returns a *defensive copy* for safety (callers won’t mutate source arrays). */
 export function getTopNavForRole(role) {
   const r = normalizeRole(role)
   switch (r) {
@@ -169,9 +179,17 @@ export function getHiddenRoutesForRole(role) {
   }
 }
 
+/** Registry for quick lookups / diagnostics (frozen for safety). */
 export const NAV_REGISTRY = Object.freeze({
-  student:    { top: STUDENT_TOP_NAV,    hidden: STUDENT_DEEP_LINKS },
-  instructor: { top: INSTRUCTOR_TOP_NAV, hidden: INSTRUCTOR_DEEP_LINKS },
-  admin:      { top: ADMIN_TOP_NAV,      hidden: ADMIN_DEEP_LINKS },
-  superadmin: { top: SUPERADMIN_TOP_NAV, hidden: SUPERADMIN_DEEP_LINKS },
+  student:    Object.freeze({ top: STUDENT_TOP_NAV,    hidden: STUDENT_DEEP_LINKS }),
+  instructor: Object.freeze({ top: INSTRUCTOR_TOP_NAV, hidden: INSTRUCTOR_DEEP_LINKS }),
+  admin:      Object.freeze({ top: ADMIN_TOP_NAV,      hidden: ADMIN_DEEP_LINKS }),
+  superadmin: Object.freeze({ top: SUPERADMIN_TOP_NAV, hidden: SUPERADMIN_DEEP_LINKS }),
 })
+
+/** Optional utility: is a given path intended for a specific role? */
+export function isRouteForRole(path, role) {
+  const r = normalizeRole(role)
+  if (!r) return false
+  return roleFromPath(path) === r
+}

@@ -1,12 +1,11 @@
 // src/components/NavBar.jsx
 // ======================================================================
-// NavBar (mobile-polished)
+// NavBar (mobile-polished, dynamic-only preloads)
 // - Locks page scroll when mobile menu is open
-// - Focus management for burger/profile dropdown
+// - Focus mgmt for burger/profile dropdown
 // - ESC + resize close guards
-// - Intent prefetch for role routers (hover/focus/touchstart)
-// - Uses dynamic imports for admin/instructor preloaders to avoid
-//   static/dynamic chunk conflicts with route-preload.js
+// - Intent prefetch via route-preload (hover/focus/touchstart)
+// - Idle warming for the current role (deduped, network-aware)
 // ======================================================================
 
 import React, {
@@ -19,57 +18,23 @@ import React, {
 } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 
-import {
-  getDashboardRoute,
-  getTopNavForRole,
-} from '@navigation/navConfig.js'
-import {
-  getCachedBrandingSummary,
-  subscribeBrandingUpdated,
-} from '@utils/school-branding.js'
+import { getDashboardRoute, getTopNavForRole } from '@navigation/navConfig.js'
+import { getCachedBrandingSummary, subscribeBrandingUpdated } from '@utils/school-branding.js'
 
-// Central helper that itself dynamically imports role preloaders.
-import { preloadRoutesForRole } from '@/utils/route-preload.js'
+// Central helpers (all dynamic under the hood — no static imports of role modules)
+import {
+  prefetchOnIntent,     // returns { onMouseEnter, onFocus, onTouchStart }
+  warmRoutesOnSession,  // schedules idle warm for public + role shells
+} from '@/utils/route-preload.js'
 
 import { useSession } from '../session/useSession.js'
-
 import styles from './NavBar.module.css'
-
-/* --------------------------------- Helpers -------------------------------- */
-
-const noop = () => {}
-
-/** Infer role segment from a URL path */
-function roleFromPath(path = '') {
-  const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(String(path))
-  return m ? m[1].toLowerCase() : null
-}
-
-/** Dynamic wrappers (avoid static imports of admin/instructor preloaders) */
-async function warmAdminOnIdleDyn() {
-  try { return (await import('@admin/preload.js')).warmAdminOnIdle?.() } catch { return noop() }
-}
-async function warmInstructorOnIdleDyn() {
-  try { return (await import('@instructor/preload.js')).warmInstructorOnIdle?.() } catch { return noop() }
-}
-async function prefetchAdminByPathDyn(path) {
-  try { return (await import('@admin/preload.js')).prefetchAdminByPath?.(path) } catch { /* ignore */ }
-}
-async function prefetchInstructorByPathOrRouteDyn(path) {
-  try {
-    const mod = await import('@instructor/preload.js')
-    if (typeof mod.prefetchInstructorByPath === 'function') {
-      return mod.prefetchInstructorByPath(path)
-    }
-    return mod.preloadRoute?.(path)
-  } catch { /* ignore */ }
-}
 
 /* -------------------------------- Component ------------------------------- */
 
 function NavBar({ brand: brandProp }) {
   const session = useSession() || {}
-  const { role, user, logout, notifications: notifCount } = session
+  const { role, user, logout } = session
 
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -191,35 +156,14 @@ function NavBar({ brand: brandProp }) {
     return () => window.removeEventListener('resize', onResize)
   }, [menuOpen])
 
-  // Idle warm-up for role routers (gentle, idempotent) — now via dynamic import
+  // Idle warm-up for public + current role (deduped + network-aware)
   useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const cancelAdmin = (await warmAdminOnIdleDyn()) || noop
-        const cancelInstr = (await warmInstructorOnIdleDyn()) || noop
-        if (cancelled) {
-          // try to cancel immediately if effect already unmounted
-          try { cancelAdmin() } catch {
-            // intentionally ignored
-          }
-          try { cancelInstr() } catch {
-            // intentionally ignored
-          }
-        } else {
-          // store no-ops locally on cleanup
-          ;(NavBar.__adminCancel = cancelAdmin), (NavBar.__instrCancel = cancelInstr)
-        }
-      } catch { /* ignore */ }
-    })()
-    return () => {
-      cancelled = true
-      try { NavBar.__adminCancel?.() } catch { /* intentionally ignored */ }
-      try { NavBar.__instrCancel?.() } catch {
-        // intentionally ignored
-      }
-    }
-  }, [])
+    warmRoutesOnSession({
+      loading: false,
+      isLoggedIn: !!user,
+      role: role || undefined,
+    })
+  }, [user, role])
 
   // Build visible nav from central config
   const links = useMemo(() => {
@@ -266,34 +210,9 @@ function NavBar({ brand: brandProp }) {
     navigate(role ? getDashboardRoute(role) : '/')
   }, [navigate, role])
 
-  // Preload role router on nav intent (hover/focus/touch) — best-effort
-  const handleLinkPrefetch = useCallback((to) => {
-    const r = roleFromPath(to)
-    if (!r) return
-    try {
-      // If central preloader exists, let it decide (it does dynamic imports internally)
-      if (typeof preloadRoutesForRole === 'function') {
-        // Some apps accept (role, path), others only (role)
-        const res = preloadRoutesForRole.length >= 2
-          ? preloadRoutesForRole(r, to)
-          : preloadRoutesForRole(r)
-        void res
-        return
-      }
-      // Fallback to direct dynamic imports per role:
-      if (r === 'admin') {
-        void prefetchAdminByPathDyn(to)
-      } else if (r === 'instructor') {
-        void prefetchInstructorByPathOrRouteDyn(to)
-      }
-    } catch {
-      /* ignore prefetch errors */
-    }
-  }, [])
-
   const email = user?.email || ''
   const avatarUrl = user?.photoURL || '/default-avatar.svg'
-  const notifications = Number(notifCount ?? 0)
+  const notifications = Number(session.notifications ?? 0)
 
   return (
     <nav
@@ -333,9 +252,7 @@ function NavBar({ brand: brandProp }) {
               `${styles.link} ${isActive ? styles.active : ''}`
             }
             onClick={() => setMenuOpen(false)}
-            onMouseEnter={() => handleLinkPrefetch(link.to)}
-            onFocus={() => handleLinkPrefetch(link.to)}
-            onTouchStart={() => handleLinkPrefetch(link.to)}
+            {...prefetchOnIntent(link.to)}   {/* ← hover/focus/touch prefetch */}
             end={!!link.exact}
             role="menuitem"
           >

@@ -28,12 +28,13 @@ import { SessionProvider, syncSessionDebug } from '@session'
 // Router
 import { router } from './router.jsx'
 
-// ---- Bootstrap (no top-level await) -----------------------------------
+/* ------------------------------------------------------------------ */
+/* Bootstrap (brand color hint)                                       */
+/* ------------------------------------------------------------------ */
+
 void (async () => {
   try {
     const brand = await getCurrentSchoolBranding()
-
-    // Sync browser UI chrome color on first paint
     const meta = document.querySelector('meta[name="theme-color"]')
     if (meta && brand?.primaryColor) meta.setAttribute('content', brand.primaryColor)
 
@@ -44,11 +45,14 @@ void (async () => {
     })
   } catch (err) {
     // Non-fatal: continue rendering even if branding fetch fails
-    if (import.meta?.env?.DEV) console.warn('Branding bootstrap failed:', err)
+    if (import.meta?.env?.DEV) console.warn('[bootstrap] Branding fetch failed:', err)
   }
 })()
 
-// src/main.jsx (only the SessionRoot effect changes)
+/* ------------------------------------------------------------------ */
+/* Session root: exposes auth to context + warms routes on change     */
+/* ------------------------------------------------------------------ */
+
 export function SessionRoot({ children }) {
   const auth = useAuthStatus() // { loading, isLoggedIn, role, user }
 
@@ -64,23 +68,23 @@ export function SessionRoot({ children }) {
 
   if (import.meta.env.DEV) syncSessionDebug(value)
 
-  // 🔒 Only fire when isLoggedIn/role truly change
+  // 🔒 Fire warming only when login state/role truly change (loop-safe)
   const last = React.useRef({ isLoggedIn: null, role: null })
   React.useEffect(() => {
     const next = { isLoggedIn: !!value.isLoggedIn, role: value.role || null }
-    if (
-      next.isLoggedIn !== last.current.isLoggedIn ||
-      next.role !== last.current.role
-    ) {
-      warmRoutesOnSession(next)
+    if (next.isLoggedIn !== last.current.isLoggedIn || next.role !== last.current.role) {
+      warmRoutesOnSession({ loading: !!value.loading, isLoggedIn: next.isLoggedIn, role: next.role })
       last.current = next
     }
-  }, [value.isLoggedIn, value.role])
+  }, [value.isLoggedIn, value.role, value.loading])
 
   return <SessionProvider value={value}>{children}</SessionProvider>
 }
 
-// ---- Optional: tiny top-level error boundary ----------------------------
+/* ------------------------------------------------------------------ */
+/* Optional: tiny top-level error boundary                            */
+/* ------------------------------------------------------------------ */
+
 export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)
@@ -90,7 +94,7 @@ export class ErrorBoundary extends React.Component {
     return { err }
   }
   componentDidCatch(error, info) {
-    console.error('Uncaught app error:', error, info)
+    console.error('[App] Uncaught error:', error, info)
   }
   render() {
     if (this.state.err) {
@@ -102,7 +106,9 @@ export class ErrorBoundary extends React.Component {
           style={{ textAlign: 'center', padding: '6rem 1rem' }}
         >
           <h2>Something went wrong.</h2>
-          <p style={{ color: '#b22' }}>{String(this.state.err)}</p>
+          <p style={{ color: '#b22', maxWidth: 720, margin: '0 auto' }}>
+            {String(this.state.err)}
+          </p>
           <button className="btn" onClick={() => window.location.reload()} style={{ marginTop: 20 }}>
             Reload App
           </button>
@@ -113,7 +119,10 @@ export class ErrorBoundary extends React.Component {
   }
 }
 
-// ---- Mount --------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/* Mount                                                              */
+/* ------------------------------------------------------------------ */
+
 const container = document.getElementById('root')
 if (!container) {
   console.error('Root node "#root" not found in index.html')
@@ -138,14 +147,18 @@ root.render(
   </React.StrictMode>
 )
 
-// ---- Optional: Service Worker (only if you ship /sw.js) -----------------
+/* ------------------------------------------------------------------ */
+/* Optional: Service Worker (only if you ship /sw.js)                 */
+/* ------------------------------------------------------------------ */
 // if ('serviceWorker' in navigator && import.meta.env.PROD) {
 //   window.addEventListener('load', () => {
 //     navigator.serviceWorker.register('/sw.js').catch(() => {})
 //   })
 // }
 
-// ---- Vite HMR hygiene ---------------------------------------------------
+/* ------------------------------------------------------------------ */
+/* Vite HMR hygiene                                                   */
+/* ------------------------------------------------------------------ */
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     root.unmount()

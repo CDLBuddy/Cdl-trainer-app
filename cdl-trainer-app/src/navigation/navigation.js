@@ -8,11 +8,13 @@
 // - Pure module (no side effects) for SSR/tree-shaking friendliness
 // ======================================================================
 
+// Keep imports pure — this file has no React deps.
 import {
   normalizeRole as cfgNormalizeRole,
   getDashboardRoute as cfgGetDashboardRoute,
   getTopNavForRole as cfgGetTopNavForRole,
   getHiddenRoutesForRole as cfgGetHiddenRoutesForRole,
+  roleFromPath as cfgRoleFromPath,
 } from './navConfig.js'
 
 // ======================================================================
@@ -27,15 +29,29 @@ import {
  */
 export function normalizeRole(role) {
   try {
-    const v = (cfgNormalizeRole?.(role) ?? String(role ?? 'student'))
-      .trim()
-      .toLowerCase()
-    return /** @type any */ (
-      ['student', 'instructor', 'admin', 'superadmin'].includes(v) ? v : 'student'
+    const canon = cfgNormalizeRole?.(role)
+    const v = (canon ?? String(role ?? '')).trim().toLowerCase()
+    return /** @type any */(
+      v === 'student' || v === 'instructor' || v === 'admin' || v === 'superadmin'
+        ? v
+        : 'student'
     )
   } catch {
     return 'student'
   }
+}
+
+/**
+ * Infer a role segment from a pathname like "/student/...".
+ * @param {string} path
+ * @returns {'student'|'instructor'|'admin'|'superadmin'|null}
+ */
+export function roleFromPath(path = '') {
+  // prefer navConfig’s regex for consistency, fall back to local
+  return cfgRoleFromPath?.(path) ?? (()=>{
+    const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(String(path))
+    return m ? /** @type any */ (m[1].toLowerCase()) : null
+  })()
 }
 
 /**
@@ -56,31 +72,18 @@ export function getCurrentRole() {
   }
 }
 
-/**
- * Infer a role segment from a pathname like "/student/...".
- * @param {string} path
- * @returns {'student'|'instructor'|'admin'|'superadmin'|null}
- */
-export function roleFromPath(path = '') {
-  const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(String(path))
-  return m ? /** @type any */ (m[1].toLowerCase()) : null
-}
-
 // ======================================================================
 // Small URL helpers (defensive)
 // ======================================================================
 
-/** @param {string|URL} input */ export function toURL(input) {
+/** @param {string|URL} input */ 
+export function toURL(input) {
   try {
     if (input instanceof URL) return input
-    const base =
-      typeof window !== 'undefined'
-        ? window.location.href
-        : 'http://localhost/'
+    const base = typeof window !== 'undefined' ? window.location.href : 'http://localhost/'
     return new URL(String(input || '/'), base)
   } catch {
-    const origin =
-      typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
     return new URL('/', origin)
   }
 }
@@ -99,6 +102,26 @@ export function withQuery(urlLike, params = {}) {
     url.searchParams.set(k, String(v))
   })
   return url
+}
+
+/** Keep internal paths tidy */
+export function ensureLeadingSlash(p = '') {
+  const s = String(p || '')
+  return s.startsWith('/') ? s : `/${s}`
+}
+
+/** Simple internal path check */
+export function isInternalPath(p = '') {
+  const s = String(p || '')
+  return /^\/(?!\/)/.test(s) && !/^https?:\/\//i.test(s) && !/^javascript:/i.test(s)
+}
+
+/** Safe “return to” sanitizer used after login */
+export function sanitizeReturnPath(candidate = '') {
+  const s = String(candidate || '')
+  if (!isInternalPath(s)) return null
+  if (/^\/login(?:\/|$)/i.test(s)) return null
+  return s
 }
 
 // ======================================================================
@@ -130,11 +153,7 @@ export function getDashboardRoute(role) {
  * @param {string|null} [roleOverride]
  * @param {{ replace?: boolean }} [options]
  */
-export function goToCurrentDashboard(
-  navigate,
-  roleOverride = null,
-  options = { replace: true }
-) {
+export function goToCurrentDashboard(navigate, roleOverride = null, options = { replace: true }) {
   const role = normalizeRole(roleOverride || getCurrentRole())
   safeNavigate(navigate, getDashboardRoute(role), options)
 }
@@ -152,10 +171,13 @@ export function goToCurrentDashboard(
 export function safeNavigate(navigate, to, options = {}) {
   const href = to instanceof URL ? to.href : String(to || '/')
   try {
-    if (typeof navigate === 'function') navigate(href, options)
-    else if (typeof window !== 'undefined') window.location.assign(href)
+    if (typeof navigate === 'function') {
+      navigate(href, options)
+    } else if (typeof window !== 'undefined') {
+      window.location.assign(href)
+    }
   } catch (err) {
-     
+    // eslint-disable-next-line no-console
     console.error('[navigation] navigate failed:', err)
     try {
       if (typeof window !== 'undefined') window.location.assign(href)
@@ -179,14 +201,8 @@ export function redirectAfterLogin(navigate, role, location) {
     }
   } catch { /* ignore */ }
 
-  const candidate = fromState || fromQuery || ''
-  const safe =
-    typeof candidate === 'string' &&
-    candidate.length > 0 &&
-    !/^\/login(?:\/|$)/i.test(candidate) &&
-    !/^https?:\/\//i.test(candidate)
-
-  const dest = safe ? candidate : getDashboardRoute(role)
+  const candidate = sanitizeReturnPath(fromState || fromQuery || '')
+  const dest = candidate || getDashboardRoute(role)
   safeNavigate(navigate, dest, { replace: true })
 }
 
@@ -272,7 +288,7 @@ export const RouteBuilders = {
   instructorChecklistReview: InstructorRoutes.checklistReview,
   instructorStudentProfile:  InstructorRoutes.studentProfile,
 
-  // Admin aliases (users removed)
+  // Admin aliases
   adminDashboard:    AdminRoutes.dashboard,
   adminProfile:      AdminRoutes.profile,
   adminCompanies:    AdminRoutes.companies,
@@ -334,7 +350,6 @@ export function getNavLinksForRole(role) {
       return [
         { to: AdminRoutes.dashboard(),    label: 'Dashboard',    icon: '🏠', exact: true },
         { to: AdminRoutes.profile(),      label: 'Profile',      icon: '👤' },
-        // Users removed
         { to: AdminRoutes.companies(),    label: 'Companies',    icon: '🏢' },
         { to: AdminRoutes.reports(),      label: 'Reports',      icon: '📄' },
         { to: AdminRoutes.billing(),      label: 'Billing',      icon: '💳' },

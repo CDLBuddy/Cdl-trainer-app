@@ -3,4 +3,6 @@
 // Admin • Dashboard Services (barrel)
 // ============================================================================
 
-export { default as dashboardApi } from './dashboardApi.js'
+// Static re-exports; keep API shapes flat
+export * from './dashboardApi.js';
+export { default as dashboardApi } from './dashboardApi.js';

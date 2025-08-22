@@ -2,26 +2,26 @@
 // ======================================================================
 // Admin • Dashboard (widgets only)
 // - Fast, focused overview; no user-table here
-// - Pulls school-scoped data via lightweight hooks
-// - Lazy-loads heavier widgets; resilient empty states
+// - Uses static data hooks + lazy UI widgets (no mixed import modes)
+// - Resilient empty/error states and one-click refresh
 // ======================================================================
 
-import React, { Suspense, lazy, useMemo } from 'react'
+// @ts-check
+import React, { Suspense, lazy, useMemo, useCallback } from 'react'
 
 import Shell from '@components/Shell.jsx'
-
 import styles from './AdminDashboard.module.css'
+
+// ---- Data hooks (STATIC imports from the hooks barrel) ----------------
 import {
   useAuthSchoolGuard,
-  useDashboardKpis,
-  useCompaniesSnapshot,
-  useDashboardAlerts,
-  useRecentActivity,
+  useDashboardKpis,        // -> { loading, data, error, refresh }
+  useCompaniesSnapshot,    // -> { loading, rows, total, error, refresh }
+  useDashboardAlerts,      // -> { loading, items, error, stats, refresh }
+  useRecentActivity,       // -> { loading, data,  error, refresh }
 } from '@admin/dashboard/hooks'
 
-// ---- Hooks (from admin hooks barrel) ---------------------------------
-
-// ---- Widgets (lazy for perf) -----------------------------------------
+// ---- UI widgets (LAZY for code-splitting) ----------------------------
 const KpiRow             = lazy(() => import('./components/KpiRow.jsx'))
 const CompaniesMiniTable = lazy(() => import('./components/CompaniesMiniTable.jsx'))
 const ComplianceRadar    = lazy(() => import('./components/ComplianceRadar.jsx'))
@@ -45,39 +45,104 @@ function Fallback({ label = 'Loading…' }) {
   )
 }
 
+function ErrorNotice({ message }) {
+  if (!message) return null
+  return (
+    <div className="dashboard-card" role="alert" style={{ color: '#b42318', background: '#fef3f2' }}>
+      {String(message)}
+    </div>
+  )
+}
+
+const clamp = (n) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)))
+
 export default function AdminDashboard() {
   // 1) Guard → school scope
   const { schoolId, loading: guardLoading } = useAuthSchoolGuard()
 
-  // 2) Dashboard data (hooks no-op while schoolId is falsy)
-  const kpis      = useDashboardKpis({ schoolId })
-  const companies = useCompaniesSnapshot({ schoolId, limit: 5 })
-  const alerts    = useDashboardAlerts({ schoolId })
-  const activity  = useRecentActivity({ schoolId, limit: 10 })
+  // 2) Dashboard data (hooks safely no-op while schoolId is falsy)
+  const {
+    loading: kpiLoading,
+    data: kpiData,
+    error: kpiError,
+    refresh: refreshKpis,
+  } = useDashboardKpis({ schoolId })
 
-  const isLoading =
-    guardLoading || kpis.loading || companies.loading || alerts.loading || activity.loading
+  const {
+    loading: coLoading,
+    rows: companyRows = [],
+    error: coError,
+    refresh: refreshCompanies,
+  } = useCompaniesSnapshot({ schoolId, limit: 5 })
 
-  // Normalize KPI props for KpiRow
-  const kpiProps = useMemo(
-    () => ({
-      studentCount:    kpis.studentCount    ?? 0,
-      instructorCount: kpis.instructorCount ?? 0,
-      adminCount:      kpis.adminCount      ?? 0,
-      permitSoon:      kpis.permitSoon      ?? 0,
-      medSoon:         kpis.medSoon         ?? 0,
-      incomplete:      kpis.incomplete      ?? 0,
-    }),
-    [kpis]
-  )
+  const {
+    loading: alertLoading,
+    items: alertItems = [],
+    error: alertError,
+    refresh: refreshAlerts,
+  } = useDashboardAlerts({ schoolId, take: 8 })
+
+  const {
+    loading: actLoading,
+    data: activityItems = [],
+    error: actError,
+    refresh: refreshActivity,
+  } = useRecentActivity({ schoolId, limit: 10 })
+
+  const isLoading = guardLoading || kpiLoading || coLoading || alertLoading || actLoading
+
+  // 3) Normalize KPI props for KpiRow
+  const kpiProps = useMemo(() => ({
+    studentCount:    kpiData?.studentCount    ?? 0,
+    instructorCount: kpiData?.instructorCount ?? 0,
+    adminCount:      kpiData?.adminCount      ?? 0,
+    permitSoon:      kpiData?.permitSoon      ?? 0,
+    medSoon:         kpiData?.medSoon         ?? 0,
+    incomplete:      kpiData?.incomplete      ?? 0,
+  }), [kpiData])
+
+  // 4) Simple Compliance snapshot derived from KPIs (until server provides one)
+  const complianceCategories = useMemo(() => {
+    const total = Math.max(0, Number(kpiData?.studentCount || 0))
+    const profileOkPct =
+      total > 0 ? clamp(((total - (kpiData?.incomplete || 0)) / total) * 100) : 0
+    const atRisk = Number(kpiData?.permitSoon || 0) + Number(kpiData?.medSoon || 0)
+    const riskPct =
+      total > 0 ? clamp(((total - atRisk) / total) * 100) : 100
+
+    return [
+      { key: 'profiles',  label: 'Profiles OK',   value: profileOkPct },
+      { key: 'permits',   label: 'Permit Status', value: riskPct },
+      { key: 'training',  label: 'Training Logs', value: 65 }, // stub
+      { key: 'reporting', label: 'TPR Reporting', value: 72 }, // stub
+    ]
+  }, [kpiData])
+
+  // 5) One-click refresh (parallel)
+  const refreshAll = useCallback(() => {
+    void Promise.allSettled([
+      refreshKpis?.(),
+      refreshCompanies?.(),
+      refreshAlerts?.(),
+      refreshActivity?.(),
+    ])
+  }, [refreshKpis, refreshCompanies, refreshAlerts, refreshActivity])
 
   return (
     <Shell title="Admin Dashboard">
       <div className={styles.wrapper}>
+        {/* Optional global refresh */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          <button className="btn small outline" onClick={refreshAll} disabled={isLoading}>
+            ↻ Refresh
+          </button>
+        </div>
+
         {/* KPI row */}
         <Suspense fallback={<Fallback label="Loading KPIs…" />}>
           <section aria-label="Key metrics">
             <h2 className="visually-hidden">Key metrics</h2>
+            <ErrorNotice message={kpiError?.message} />
             <KpiRow {...kpiProps} />
           </section>
         </Suspense>
@@ -86,40 +151,38 @@ export default function AdminDashboard() {
         <div className={styles.widgetGrid} aria-label="Dashboard widgets">
           {/* Companies overview */}
           <Suspense fallback={<Fallback label="Loading companies…" />}>
-            <CompaniesMiniTable
-              rows={companies.rows || []}
-              loading={companies.loading}
-              onViewAllHref="/admin/companies"
-            />
+            <>
+              <ErrorNotice message={coError?.message} />
+              <CompaniesMiniTable
+                rows={companyRows}
+                loading={coLoading}
+                onViewAllHref="/admin/companies"
+              />
+            </>
           </Suspense>
 
           {/* Compliance snapshot */}
           <Suspense fallback={<Fallback label="Loading compliance…" />}>
-            <ComplianceRadar
-              title="Compliance Snapshot"
-              categories={
-                alerts.compliance?.categories || [
-                  { key: 'tpr',         label: 'TPR',         value: alerts.compliance?.tpr ?? 0 },
-                  { key: 'instructors', label: 'Instructors', value: alerts.compliance?.instructors ?? 0 },
-                  { key: 'records',     label: 'Records',     value: alerts.compliance?.records ?? 0 },
-                  { key: 'hours',       label: 'Hours',       value: alerts.compliance?.hours ?? 0 },
-                  { key: 'assessments', label: 'Assessments', value: alerts.compliance?.assessments ?? 0 },
-                ]
-              }
-            />
+            <ComplianceRadar title="Compliance Snapshot" categories={complianceCategories} />
           </Suspense>
 
           {/* Recent activity */}
           <Suspense fallback={<Fallback label="Loading activity…" />}>
-            <ActivityFeed items={activity.items || []} />
+            <>
+              <ErrorNotice message={actError?.message} />
+              <ActivityFeed items={activityItems} />
+            </>
           </Suspense>
 
           {/* Alerts */}
           <Suspense fallback={<Fallback label="Loading alerts…" />}>
-            <AlertsCard items={alerts.items || []} onViewAllHref="/admin/reports" />
+            <>
+              <ErrorNotice message={alertError?.message} />
+              <AlertsCard items={alertItems} onViewAllHref="/admin/reports" />
+            </>
           </Suspense>
 
-          {/* Billing summary */}
+          {/* Billing summary (scoped by school) */}
           <Suspense fallback={<Fallback label="Loading billing…" />}>
             <BillingSummary schoolId={schoolId} />
           </Suspense>
@@ -149,7 +212,7 @@ export default function AdminDashboard() {
           </Suspense>
         </div>
 
-        {/* Optional: global loading hint (keeps page from feeling frozen) */}
+        {/* Small global hint so the page doesn’t feel frozen */}
         {isLoading && (
           <p className="u-muted" style={{ marginTop: 8 }}>
             Fetching latest data…
