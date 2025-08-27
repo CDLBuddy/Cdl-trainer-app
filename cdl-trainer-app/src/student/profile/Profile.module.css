@@ -1,44 +1,80 @@
 /* src/student/profile/Profile.module.css */
+/* -----------------------------------------------------------------------------
+   Student Profile styles (accessible, theme-aware)
+   ----------------------------------------------------------------------------- */
+
 .loading {
   text-align: center;
   padding: 2rem 0;
 }
+.loading .spinner {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 0.5rem;
+  border-radius: 50%;
+  border: 3px solid rgba(0,0,0,.12);
+  border-top-color: currentColor;
+  animation: spn .8s linear infinite;
+}
+@keyframes spn { to { transform: rotate(360deg); } }
+
 .inactive {
-  max-width: 520px;
+  max-width: 560px;
   margin: 0 auto;
   text-align: center;
 }
 
+/* Progress group */
+.progressGroup {
+  margin: 0 0 1.25rem 0;
+}
+
+/* Progress bars */
 .progressBar {
-  --fill: var(--brand-primary, var(--brand-light));
+  --fill: var(--brand-primary, var(--brand-light, #4E8EF7));
+  --bar-h: 10px;
   position: relative;
-  height: 10px;
+  height: var(--bar-h);
   border-radius: 999px;
-  background: color-mix(in oklab, var(--brand-dark), #fff 4%);
-  border: 1px solid color-mix(in oklab, var(--accent), #000 35%);
-  margin: 0 0 1rem 0;
+  background: #eef1f8; /* fallback */
+  background: color-mix(in oklab, var(--brand-dark, #0b172b), #fff 6%);
+  border: 1px solid color-mix(in oklab, var(--accent, #0b172b), #000 35%);
+  margin: 0 0 .9rem 0;
   overflow: hidden;
 }
+.progressBarSecondary {
+  --fill: var(--brand-secondary, #6AA6FF);
+}
+
 .progressFill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--fill), color-mix(in oklab, var(--fill), #000 20%));
+  background: linear-gradient(
+    90deg,
+    var(--fill),
+    color-mix(in oklab, var(--fill), #000 18%)
+  );
   box-shadow: 0 4px 12px color-mix(in oklab, var(--fill), #000 40%);
   transition: width .24s ease;
 }
+
 .progressLabel {
   position: absolute;
   right: 10px;
   top: -24px;
   font-size: .9rem;
-  color: color-mix(in oklab, var(--text-light), transparent 25%);
+  letter-spacing: .2px;
+  color: color-mix(in oklab, var(--text-light, #3a475a), transparent 25%);
+  text-shadow: 0 1px 0 rgba(255,255,255,.25);
 }
 
+/* Form layout */
 .form {
   display: grid;
   gap: 1rem;
 }
 
+/* Footer */
 .footerRow {
   display: flex;
   align-items: center;
@@ -51,16 +87,45 @@
   opacity: .85;
 }
 
+/* Note beneath */
 .afterNote {
   margin-top: 1.1rem;
-  color: var(--brand-primary, var(--brand-light));
+  color: var(--brand-primary, var(--brand-light, #4E8EF7));
   font-weight: 600;
 }
+
+/* ------------------------------ Media queries ----------------------------- */
 
 @media (max-width: 560px) {
   .progressLabel { right: 0; left: 0; text-align: center; top: -22px; }
   .footerRow { flex-wrap: wrap; }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .progressFill { transition: none !important; }
+  .loading .spinner { animation: none !important; }
+}
+
+/* Dark scheme tweaks */
+@media (prefers-color-scheme: dark) {
+  .progressBar {
+    background: color-mix(in oklab, var(--brand-dark, #0b172b), #000 8%);
+    border-color: color-mix(in oklab, var(--accent, #93a1ff), #000 45%);
+  }
+  .progressLabel {
+    color: color-mix(in oklab, #fff, transparent 20%);
+    text-shadow: none;
+  }
+}
+
+/* High-contrast / forced-colors */
+@media (forced-colors: active) {
+  .progressBar { border: 1px solid CanvasText; background: Canvas; }
+  .progressFill { background: Highlight; box-shadow: none; }
+  .progressLabel { color: CanvasText; }
+}
+
+/* Print: hide dynamic chrome */
+@media print {
+  .progressGroup, .footerRow, .afterNote { break-inside: avoid; }
 }

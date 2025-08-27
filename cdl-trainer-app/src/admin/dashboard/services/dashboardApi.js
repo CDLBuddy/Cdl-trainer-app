@@ -4,20 +4,29 @@
 // - Unified, school-scoped endpoints used by dashboard widgets
 // - Supports AbortSignal, light in-memory caching, and mock mode
 // - Stable, hook-friendly shapes; defensive defaults; no UI side-effects
+// - Reports-aware deep link helpers (keeps routing consistent with /reports plan)
 // ============================================================================
 
 import { ENV } from '@utils/env.js'
 
 /* -------------------------------- Flags ---------------------------------- */
-/** Toggle to use baked-in mocks (handy during dev / offline) */
-export const USE_DASHBOARD_MOCKS =
+/** Toggle to use baked-in mocks (handy during dev/offline) */
+export let USE_DASHBOARD_MOCKS =
   (typeof window !== 'undefined' && window.__DASHBOARD_MOCKS__) ||
   (ENV.VITE_DASHBOARD_MOCKS === 'true') ||
-  true // default true until your real endpoints are wired
+  true // keep true until real endpoints are fully wired
 
 /** Optional base URL for HTTP API (if you’re not using Firestore/callables) */
 export const DASHBOARD_BASE_URL =
   ENV.VITE_DASHBOARD_API_URL || '/api/dashboard'
+
+/* --------------------------- Tunable cache TTLs --------------------------- */
+const TTL = {
+  companies: 30_000,
+  alerts:    15_000,
+  kpis:      15_000,
+  activity:  10_000,
+}
 
 /* ------------------------------ Utilities -------------------------------- */
 
@@ -65,6 +74,10 @@ const _setCached = (k, v, ttlMs = 30_000) => {
     t.unref?.()
   }
 }
+/** Maintenance helper: clear whole dashboard cache */
+export function clearDashboardCache() { _cache.clear() }
+/** Maintenance helper: flip mock mode at runtime (useful in dev tools) */
+export function setDashboardMocksEnabled(v) { USE_DASHBOARD_MOCKS = !!v }
 
 /* -------------------------------- Shapes --------------------------------- */
 /**
@@ -86,7 +99,7 @@ const _setCached = (k, v, ttlMs = 30_000) => {
  *   icon?: string,
  *   dueAtISO?: string,
  *   // legacy aliases kept for compat
- *   type?: 'warning'|'error'|'info',
+ *   type?: 'warning'|'error'|'info'|'success',
  *   detail?: string,
  *   due?: string,
  * }} AlertItem
@@ -114,6 +127,27 @@ const _setCached = (k, v, ttlMs = 30_000) => {
  * }} ActivityItem
  */
 
+/* ----------------------- Reports deep-link helpers ----------------------- */
+/**
+ * Build a link into the Admin Reports screen with optional state.
+ * Keeps the dashboard decoupled from the Reports implementation details
+ * while still routing users directly to the right view/filter.
+ *
+ * Examples:
+ *   buildReportsURL({ view: 'permits' })                // /admin/reports?view=permits
+ *   buildReportsURL({ companyId: 'acme' })              // /admin/reports?company=acme
+ *   buildReportsURL({ q: 'rivera', role: 'student' })   // /admin/reports?q=rivera&role=student
+ */
+export function buildReportsURL({ view, companyId, role, q } = {}) {
+  const params = new URLSearchParams()
+  if (view)      params.set('view', String(view))
+  if (companyId) params.set('company', String(companyId))
+  if (role)      params.set('role', String(role).toLowerCase())
+  if (q)         params.set('q', String(q))
+  const qs = params.toString()
+  return `/admin/reports${qs ? `?${qs}` : ''}`
+}
+
 /* -------------------------------- Mocks ---------------------------------- */
 
 function mockCompanies({ limit = 5 } = {}) {
@@ -139,21 +173,21 @@ function mockAlerts() {
       id: 'a1',
       severity: 'warning',
       title: '3 permits expiring within 30 days',
-      href: '/admin/reports?view=permits',
+      href: buildReportsURL({ view: 'permits' }),
       dueAtISO: soon(27),
     },
     {
       id: 'a2',
       severity: 'error',
       title: '1 medical card expired',
-      href: '/admin/reports?view=med-cards',
+      href: buildReportsURL({ view: 'med-cards' }),
       dueAtISO: soon(-2),
     },
     {
       id: 'a3',
       severity: 'info',
       title: 'Instructor upload pending review',
-      href: '/admin/reports?view=instructors',
+      href: buildReportsURL({ view: 'instructors' }),
     },
   ]
 }
@@ -207,7 +241,8 @@ function normalizeAlert(raw, i) {
   const severity = asSeverity(raw?.severity ?? raw?.type ?? 'info')
   const title = String(raw?.title || 'Alert')
   const description = raw?.description ?? raw?.detail ?? ''
-  const href = raw?.href || ''
+  // If backend didn’t supply a link, smart-default to reports root for warning/error types.
+  const href = raw?.href || (severity !== 'info' ? buildReportsURL({ view: 'overview' }) : '')
   const ctaLabel = raw?.ctaLabel || ''
   const icon = raw?.icon || ''
   const dueAtISO = raw?.dueAtISO ?? raw?.due ?? ''
@@ -269,7 +304,7 @@ export const companies = {
     if (USE_DASHBOARD_MOCKS || !schoolId) {
       await wait()
       const data = mockCompanies({ limit })
-      _setCached(key, data)
+      _setCached(key, data, TTL.companies)
       return data
     }
 
@@ -278,14 +313,14 @@ export const companies = {
     if (!ok) throw new Error(error || 'Failed to load companies')
 
     const rows = (Array.isArray(data) ? data : []).map((c) => ({
-      id: c.id ?? c.companyId,
+      id: c.id ?? c.companyId ?? String(c.name || 'company'),
       name: String(c.name || 'Company'),
       studentCount: Number(c.studentCount ?? c.students ?? 0) || 0,
       active: 'active' in c ? !!c.active : (String(c.status || '').toLowerCase() !== 'inactive'),
       trend: ['up', 'flat', 'down'].includes(String(c.trend)) ? c.trend : 'flat',
       updatedAt: c.updatedAt || c.updated_at || new Date().toISOString(),
     }))
-    _setCached(key, rows)
+    _setCached(key, rows, TTL.companies)
     return rows
   },
 }
@@ -303,7 +338,7 @@ export const alerts = {
     if (USE_DASHBOARD_MOCKS || !schoolId) {
       await wait()
       const data = mockAlerts()
-      _setCached(key, data, 15_000)
+      _setCached(key, data, TTL.alerts)
       return data
     }
 
@@ -312,7 +347,7 @@ export const alerts = {
     if (!ok) throw new Error(error || 'Failed to load alerts')
 
     const rows = (Array.isArray(data) ? data : []).map((a, i) => normalizeAlert(a, i))
-    _setCached(key, rows, 15_000)
+    _setCached(key, rows, TTL.alerts)
     return rows
   },
 }
@@ -330,7 +365,7 @@ export const kpis = {
     if (USE_DASHBOARD_MOCKS || !schoolId) {
       await wait()
       const data = mockKpis()
-      _setCached(key, data, 15_000)
+      _setCached(key, data, TTL.kpis)
       return data
     }
 
@@ -340,14 +375,14 @@ export const kpis = {
 
     const safe = (n, d = 0) => (Number.isFinite(+n) ? +n : d)
     const out = {
-      studentCount: safe(data.studentCount),
-      instructorCount: safe(data.instructorCount),
-      adminCount: safe(data.adminCount),
-      permitSoon: safe(data.permitSoon),
-      medSoon: safe(data.medSoon),
-      incomplete: safe(data.incomplete),
+      studentCount:  safe(data.studentCount),
+      instructorCount:safe(data.instructorCount),
+      adminCount:    safe(data.adminCount),
+      permitSoon:    safe(data.permitSoon),
+      medSoon:       safe(data.medSoon),
+      incomplete:    safe(data.incomplete),
     }
-    _setCached(key, out, 15_000)
+    _setCached(key, out, TTL.kpis)
     return out
   },
 }
@@ -365,7 +400,7 @@ export const activity = {
     if (USE_DASHBOARD_MOCKS || !schoolId) {
       await wait()
       const data = mockActivity({ limit })
-      _setCached(key, data, 10_000)
+      _setCached(key, data, TTL.activity)
       return data
     }
 
@@ -374,7 +409,7 @@ export const activity = {
     if (!ok) throw new Error(error || 'Failed to load activity')
 
     const rows = (Array.isArray(data) ? data : []).map((e, i) => normalizeActivity(e, i))
-    _setCached(key, rows, 10_000)
+    _setCached(key, rows, TTL.activity)
     return rows
   },
 }
@@ -397,3 +432,6 @@ export async function getRecentActivity(args) {
 
 const dashboardApi = { companies, alerts, kpis, activity }
 export default dashboardApi
+
+// Low-level helper (intentionally exported for test harnesses)
+export { fetchJSON as __fetchJSON }

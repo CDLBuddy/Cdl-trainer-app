@@ -1,0 +1,195 @@
+/* ============================================================================
+   CompanyRosterTable – themed roster table for a single company
+   Works with Admin theme tokens (brand-*, text-*, card-*, radius/shadows)
+   ========================================================================== */
+
+.wrap {
+  /* scoped theme vars (no global :root pollution) */
+  --crt-ink: var(--text-light, #fff);
+  --crt-border: color-mix(in oklab, var(--accent, #c4dbe8), #000 65%);
+  --crt-border-strong: color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
+  --crt-surface: var(--card-bg, rgba(255,255,255,.06));
+  --crt-surface-dark: var(--card-bg-dark, rgba(10,15,20,.60));
+  --crt-brand: var(--brand-light, #4e91ad);
+
+  position: relative;
+  overflow: auto;
+  scrollbar-gutter: stable both-edges; /* prevent layout shift on scrollbars */
+  border: 1px solid var(--crt-border);
+  border-radius: var(--radius-md, 10px);
+  background: linear-gradient(
+    0deg,
+    color-mix(in oklab, var(--crt-surface), transparent 0%) 0%,
+    var(--crt-surface) 100%
+  );
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+}
+
+/* subtle edge fade to hint horizontal scroll */
+.wrap::after {
+  content: "";
+  pointer-events: none;
+  position: sticky;
+  right: 0; top: 0; bottom: 0; width: 12px;
+  background: linear-gradient(to right, transparent, rgba(0,0,0,.18));
+  display: block;
+  margin-left: auto;
+}
+
+.wrap:focus-within {
+  box-shadow:
+    0 0 0 2px color-mix(in oklab, var(--crt-brand), #fff 16%),
+    var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+}
+
+/* Table base -------------------------------------------------------------- */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--crt-ink);
+  font-size: .95rem;
+}
+
+/* Sticky header */
+.thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.thead tr {
+  backdrop-filter: saturate(110%) blur(2px);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--crt-surface-dark), #000 8%) 0%,
+      color-mix(in oklab, var(--crt-surface-dark), #000 2%) 100%
+    );
+  border-bottom: 1px solid var(--crt-border-strong);
+}
+
+/* Cells ------------------------------------------------------------------- */
+.th, .td {
+  padding: 10px 12px;
+  vertical-align: top;
+  border-bottom: 1px solid color-mix(in oklab, var(--crt-border), #000 15%);
+}
+.th {
+  text-align: left;
+  font-weight: 800;
+  font-size: .85rem;
+  top: 0; /* keeps individual th sticky when scrolled */
+  position: sticky;
+}
+
+/* Alignment utilities for <TD align="..."> */
+.tdRight { text-align: right; }
+.tdCenter { text-align: center; }
+
+/* Zebra + hover + focus --------------------------------------------------- */
+.table tbody tr:nth-child(odd) .td {
+  background: color-mix(in oklab, var(--crt-surface), #000 6%);
+}
+.table tbody tr:hover .td {
+  background: color-mix(in oklab, var(--crt-surface), #fff 4%);
+}
+.row:focus-within .td {
+  outline: 2px solid color-mix(in oklab, var(--crt-brand), #fff 16%);
+  outline-offset: -2px;
+}
+
+/* Name/email -------------------------------------------------------------- */
+.name { font-weight: 700; }
+.email { font-size: .82rem; opacity: .85; }
+.email a { color: inherit; text-decoration: none; }
+.email a:hover { text-decoration: underline; }
+
+/* Status column ----------------------------------------------------------- */
+.statusCol { display: grid; gap: 4px; }
+.substatus { font-size: .78rem; opacity: .75; }
+
+/* Utilities --------------------------------------------------------------- */
+.bold  { font-weight: 600; }
+.muted { opacity: .8; }
+
+/* Empty state ------------------------------------------------------------- */
+.empty {
+  padding: 14px 12px;
+  color: #6b7280;
+  font-style: italic;
+  text-align: center;
+}
+
+/* Row action -------------------------------------------------------------- */
+.rowAction {
+  appearance: none;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06);
+  color: inherit;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow .15s ease, background .15s ease, border-color .15s ease;
+}
+.rowAction:hover,
+.rowAction:focus-visible {
+  background: rgba(255,255,255,.10);
+  border-color: color-mix(in oklab, var(--crt-brand), #fff 18%);
+  outline: none;
+  box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--crt-brand), #fff 12%));
+}
+
+/* Skeletons --------------------------------------------------------------- */
+.skel {
+  display: inline-block;
+  height: 12px;
+  border-radius: 6px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,.06) 25%,
+    rgba(255,255,255,.16) 50%,
+    rgba(255,255,255,.06) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+
+/* Responsive -------------------------------------------------------------- */
+@media (max-width: 880px) {
+  .td, .th { padding: 8px 10px; }
+  .table { font-size: .92rem; }
+}
+@media (max-width: 640px) {
+  .td, .th { padding: 7px 8px; }
+  .table { font-size: .90rem; }
+}
+
+/* Reduced motion ---------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .skel { animation: none; }
+}
+
+/* High contrast / forced colors ------------------------------------------ */
+@media (forced-colors: active) {
+  .wrap {
+    background: Canvas !important;
+    border-color: ButtonText !important;
+    box-shadow: none !important;
+  }
+  .th, .td {
+    color: CanvasText !important;
+    border-color: ButtonText !important;
+    background: Canvas !important;
+  }
+  .rowAction {
+    border: 1px solid ButtonText !important;
+    background: Canvas !important;
+    color: CanvasText !important;
+    box-shadow: none !important;
+  }
+}

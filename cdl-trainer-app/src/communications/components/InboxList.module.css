@@ -1,0 +1,171 @@
+/* src/communications/components/InboxList.module.css
+   Uses tokens from src/styles/theme.css:
+   --card-bg --brand-dark --brand-mid --brand-light --accent --text-light
+   --radius-lg --shadow-2 --shadow-3 --ring
+*/
+
+/* ---- Card shell ----------------------------------------------------- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
+  border-radius: var(--radius-lg, 14px);
+  box-shadow:
+    var(--shadow-3, 0 14px 40px rgba(0,0,0,.31)),
+    inset 0 1px 0 #ffffff12;
+  overflow: hidden;
+}
+
+/* ---- Header --------------------------------------------------------- */
+.cardHeader {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--accent), transparent 55%);
+  background: linear-gradient(
+    120deg,
+    color-mix(in oklab, var(--brand-dark), #000 4%),
+    color-mix(in oklab, var(--brand-mid),  #000 8%) 100%
+  );
+}
+
+.cardTitle {
+  margin: 0;
+  color: var(--text-light);
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+
+/* ---- Body ----------------------------------------------------------- */
+.body {
+  padding: 0.85rem 1rem 1rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+/* ---- Items ---------------------------------------------------------- */
+.item {
+  position: relative;
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 60%);
+  background: color-mix(in oklab, var(--brand-mid), #000 78%);
+  color: var(--text-light);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+  box-shadow:
+    var(--shadow-2, 0 12px 28px rgba(0,0,0,.25)),
+    inset 0 1px 0 #ffffff10;
+  transition:
+    transform 140ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+/* Make keyboard/interactive items feel clickable without extra props */
+.item[tabindex] { cursor: pointer; }
+@media (hover: hover) and (pointer: fine) {
+  .item[tabindex]:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in oklab, var(--brand-light), transparent 38%);
+    background: color-mix(in oklab, var(--brand-mid), #000 70%);
+    box-shadow: 0 14px 36px rgba(0,0,0,.32);
+  }
+}
+.item:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--ring, 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 10%)),
+    0 0 0 1px color-mix(in oklab, var(--brand-light), #000 35%),
+    var(--shadow-2, 0 12px 28px rgba(0,0,0,.25));
+}
+
+/* Unread accent (subtle left rail + dot) */
+.unread {
+  border-color: color-mix(in oklab, var(--brand-light), transparent 30%);
+}
+.unread::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+  background: color-mix(in oklab, var(--brand-light), white 6%);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--brand-light), #000 60%) inset;
+}
+.unread::after {
+  content: "";
+  position: absolute;
+  right: 10px; top: 10px;
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--brand-light), white 8%);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--brand-light), #000 55%);
+}
+
+/* Item header (subject + time) */
+.itemHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.itemTitle {
+  font-weight: 800;
+  letter-spacing: .01em;
+  color: var(--text-light);
+}
+
+.when {
+  white-space: nowrap;
+  font-size: 0.9rem;
+  color: color-mix(in oklab, var(--text-light), transparent 35%);
+}
+
+/* Body preview */
+.preview {
+  margin: 0.25rem 0 0;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--text-light), transparent 8%);
+}
+
+/* ---- Empty / error -------------------------------------------------- */
+.empty {
+  margin: 0.2rem 0;
+  color: color-mix(in oklab, var(--text-light), transparent 30%);
+}
+
+/* ---- Skeletons ------------------------------------------------------ */
+.skelRow {
+  display: grid;
+  gap: 6px;
+  padding: 0.5rem 0;
+}
+
+.skelTitle,
+.skelLine {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ffffff0a 25%, #ffffff22 37%, #ffffff0a 63%);
+  background-size: 400% 100%;
+  animation: inboxShimmer 1100ms ease-in-out infinite;
+}
+
+.skelTitle { width: 40%; }
+.skelLine  { width: 92%; }
+
+@keyframes inboxShimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position:   0% 0; }
+}
+
+/* ---- Reduced Motion ------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .item { transition: none !important; }
+  .skelTitle, .skelLine { animation: none !important; }
+}
+
+/* ---- Small screens -------------------------------------------------- */
+@media (max-width: 560px) {
+  .body { padding: 0.75rem 0.8rem 0.85rem; }
+  .item { padding: 0.55rem 0.7rem; }
+  .when { font-size: 0.88rem; }
+}

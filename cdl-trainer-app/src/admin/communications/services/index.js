@@ -1,2 +1,13 @@
-// Path: src/admin/communications/services/index.js
-export * from './commsApi.js'
+// src/admin/communications/services/index.js
+// ======================================================================
+// Admin • Communications • Services (barrel)
+// - Pure named exports that forward to the Firebase-backed service
+// - Easy to swap implementations later without touching callers
+// ======================================================================
+
+export {
+  queueMessage,
+  listMessages,
+  listTemplates,
+  upsertTemplate,
+} from './commsApi.js'

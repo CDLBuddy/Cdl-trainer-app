@@ -1,14 +1,81 @@
-/* Path: src/admin/communications/AdminCommunications.module.css */
-.wrapper {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
+/* src/admin/communications/AdminCommunications.module.css
+   Uses global tokens from src/styles/theme.css
+   ------------------------------------------------------ */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 1rem;
+  align-items: start;
 }
-.heading {
-  font-size: 1.7rem;
-  margin-bottom: .3em;
+
+.left { min-width: 0; }
+
+.right {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  min-width: 0;
 }
-.subhead {
-  color: #667;
-  margin-bottom: 1.4em;
+
+/* ---------- Generic card shell for lazy panels ---------- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
+  border-radius: var(--radius-lg, 14px);
+  box-shadow:
+    var(--shadow-3, 0 14px 40px rgba(0,0,0,.31)),
+    inset 0 1px 0 #ffffff12;
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--accent), transparent 55%);
+  background: linear-gradient(
+    120deg,
+    color-mix(in oklab, var(--brand-dark), #000 4%),
+    color-mix(in oklab, var(--brand-mid),  #000 8%) 100%
+  );
+}
+
+.cardTitle {
+  margin: 0;
+  color: var(--text-light);
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+
+.cardBody { padding: 0.9rem 1rem 1rem; }
+
+/* ---------- Skeleton shimmer ---------- */
+.skel {
+  height: 12px;
+  width: 92%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ffffff0a 25%, #ffffff22 37%, #ffffff0a 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1100ms ease-in-out infinite;
+  margin: 8px 0;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position:   0% 0; }
+}
+
+/* ---------- A11y: focus rings for interactive children ---------- */
+.card :is(button, a):focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+/* ---------- Respect reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .skel { animation: none !important; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1080px) {
+  .grid { grid-template-columns: 1fr; }
 }

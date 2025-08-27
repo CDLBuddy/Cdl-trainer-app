@@ -1,10 +1,14 @@
 // src/admin/AdminProfile.jsx
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
 import { db, auth } from '@utils/firebase.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
+
+// Prefetch the heavy Reports chunks on hover/focus (safe no-op on SSR)
+import { prefetchReports } from '@admin/reports'
 
 import { useToast } from '@/components/useToast.js'
 
@@ -53,7 +57,6 @@ export default function AdminProfile() {
         if (alive) setAdmin(data)
 
         // TODO: hydrate real snapshots from Firestore when ready
-        // Placeholder values to demonstrate visual
         if (alive) {
           setSnap({
             compliance: {
@@ -132,9 +135,9 @@ export default function AdminProfile() {
             <div><b>Role:</b> Admin</div>
           </div>
           <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <a className="btn outline" href="/admin/settings#branding">Edit School & Branding</a>
-            <a className="btn outline" href="/admin/settings#users">Invite Staff</a>
-            <a className="btn outline" href="/admin/billing">Manage Billing</a>
+            <Link className="btn outline" to="/admin/settings#branding">Edit School & Branding</Link>
+            <Link className="btn outline" to="/admin/settings#users">Invite Staff</Link>
+            <Link className="btn outline" to="/admin/billing">Manage Billing</Link>
           </div>
         </section>
 
@@ -146,7 +149,7 @@ export default function AdminProfile() {
             <div><b>State License:</b> {snap.compliance.license || '—'}</div>
             <div><b>Insurance Expiry:</b> {snap.compliance.insuranceExpiry || '—'}</div>
             <div style={{ marginTop: 10 }}>
-              <a className="btn small outline" href="/admin/settings#compliance">Update Compliance</a>
+              <Link className="btn small outline" to="/admin/settings#compliance">Update Compliance</Link>
             </div>
           </section>
 
@@ -155,9 +158,9 @@ export default function AdminProfile() {
             <div><b>Plan:</b> {snap.billing.plan}</div>
             <div><b>Default Payer:</b> {snap.billing.payerDefault}</div>
             <div><b>Next Invoice:</b> {snap.billing.nextInvoice || '—'}</div>
-            <div style={{ marginTop: 10 }}>
-              <a className="btn small outline" href="/admin/billing">Open Billing</a>
-              <a className="btn small outline" href="/admin/settings#billing" style={{ marginLeft: 8 }}>Billing Settings</a>
+            <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+              <Link className="btn small outline" to="/admin/billing">Open Billing</Link>
+              <Link className="btn small outline" to="/admin/settings#billing">Billing Settings</Link>
             </div>
           </section>
 
@@ -167,7 +170,15 @@ export default function AdminProfile() {
             <div><b>Instructors:</b> {snap.usage.instructors}</div>
             <div><b>Enrollments (month):</b> {snap.usage.enrollmentsThisMonth}</div>
             <div style={{ marginTop: 10 }}>
-              <a className="btn small outline" href="/admin/reports">View Reports</a>
+              <Link
+                className="btn small outline"
+                to="/admin/reports"
+                onMouseEnter={prefetchReports}
+                onFocus={prefetchReports}
+                title="Open Reports (prefetches in background)"
+              >
+                View Reports
+              </Link>
             </div>
           </section>
         </div>
@@ -176,9 +187,10 @@ export default function AdminProfile() {
         <div className="dashboard-card" style={{ marginTop: 16 }}>
           <h3 style={{ marginTop: 0 }}>Shortcuts</h3>
           <div className="u-flex u-wrap" style={{ gap: 8 }}>
-            <a className="btn outline" href="/admin/companies">Manage Companies</a>
-            <a className="btn outline" href="/admin/users">Manage Users</a>
-            <a className="btn outline" href="/admin/walkthroughs">Walkthrough Manager</a>
+            <Link className="btn outline" to="/admin/companies">Manage Companies</Link>
+            {/* Kept for backward-compat; router redirects to /admin/companies */}
+            <Link className="btn outline" to="/admin/users">Manage Users</Link>
+            <Link className="btn outline" to="/admin/walkthroughs">Walkthrough Manager</Link>
           </div>
         </div>
       </div>

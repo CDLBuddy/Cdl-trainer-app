@@ -1,0 +1,38 @@
+/*src/admin/walkthroughs/Upload/WalkthroughUpload.module.css*/
+.container { max-width: 980px; margin: 0 auto; padding: 16px; }
+.h2 { margin: 0 0 12px 0; font-size: 22px; font-weight: 700; }
+
+/* Cards & layout */
+.card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; background: #fff; margin-bottom: 12px; }
+.toolbar { display: flex; gap: 8px; }
+.footer { display: flex; gap: 8px; margin-top: 12px; }
+.flex { flex: 1; }
+.subtle { color: #6b7280; }
+
+/* Buttons */
+.btn { padding: 8px 12px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; cursor: pointer; }
+.btnPrimary { composes: btn; background: #111827; color: #fff; border-color: #111827; }
+
+/* Tabs */
+.tabs { display: flex; gap: 8px; margin: 12px 0; }
+.tab { composes: btn; }
+.tabActive { background: #eef2ff; border-color: #c7d2fe; }
+
+/* Meta fields */
+.metaGrid { display: grid; grid-template-columns: 2fr 140px 120px; gap: 10px; }
+.metaField { display: grid; gap: 4px; }
+.metaLabel { font-size: 12px; color: #6b7280; }
+.input { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #d1d5db; }
+
+/* Textareas & helpers */
+.bigInput { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #d1d5db; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.help { margin: 0 0 8px 0; color: #374151; }
+.fileRow { display: flex; gap: 8px; align-items: center; }
+
+/* Errors */
+.errorCard { border-color: #fecaca; background: #fff7ed; }
+.errorList { margin: 6px 0 0 18px; }
+
+/* Stats */
+.statsBar { display: flex; gap: 16px; align-items: center; }
+.stat { display: flex; gap: 6px; align-items: baseline; font-size: 12px; color: #6b7280; }

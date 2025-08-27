@@ -1,16 +1,94 @@
 // Path: /src/admin/walkthroughs/index.js
-// Barrel for Admin Walkthrough Management (no side effects)
-// Consumers import from '@admin-walkthroughs'
+// -----------------------------------------------------------------------------
+// Walkthroughs • root barrel (deluxe + polished)
+// - One-stop exports for Manager, List, Preview, Upload, Editor, Form
+// - Lazy versions for code-splitting
+// - Namespaced re-exports from each subfolder and the shared tools
+// - Convenience re-exports of the most commonly used helpers
+// - Tiny route helper you can adapt for React Router (or any router)
+// -----------------------------------------------------------------------------
 
-export { default as WalkthroughManager }  from './WalkthroughManager.jsx'
-export { default as WalkthroughList }     from './WalkthroughList.jsx'
-export { default as WalkthroughEditor }   from './WalkthroughEditor.jsx'
-export { default as WalkthroughPreview }  from './WalkthroughPreview.jsx'
-export { default as WalkthroughUpload }   from './WalkthroughUpload.jsx'
-export { default as WalkthroughForm }     from './WalkthroughForm.jsx'
+import React from 'react'
 
-// Helpers (resolver/validation utils used by the editor & preview)
-export * from './walkthroughHelpers.js'
+// ----- Direct component exports ----------------------------------------------
+export { default as WalkthroughManager } from './Manager/WalkthroughManager.jsx'
+export { default as WalkthroughList }    from './List/WalkthroughList.jsx'
+export { default as WalkthroughPreview } from './Preview/WalkthroughPreview.jsx'
+export { default as WalkthroughUpload }  from './Upload/WalkthroughUpload.jsx'
+export { default as WalkthroughEditor }  from './Editor/WalkthroughEditor.jsx'
+export { default as WalkthroughForm }    from './Form/WalkthroughForm.jsx'
 
-// Styles (optional; lets consumers import via the alias if desired)
-export { default as walkthroughStyles }   from './walkthroughStyles.module.css'
+// ----- Sub-package barrels as namespaces (tree-shakeable) --------------------
+export * as Manager from './Manager'
+export * as List    from './List'
+export * as Preview from './Preview'
+export * as Upload  from './Upload'
+export * as Editor  from './Editor'
+export * as Form    from './Form'
+export * as shared  from './shared'
+
+// ----- Convenience helpers (avoid deep import paths) -------------------------
+export {
+  toToken,
+  nextId,
+  nowIso,
+  cloneDeep,
+  inferLabelFromToken,
+} from './shared/services/walkthroughHelpers.js'
+
+export {
+  ensureScriptShape,
+  validateScript,
+} from './shared/services/wtValidation.js'
+
+// ----- Lazy variants for code splitting --------------------------------------
+export const WalkthroughManagerLazy = React.lazy(() => import('./Manager/WalkthroughManager.jsx'))
+export const WalkthroughListLazy    = React.lazy(() => import('./List/WalkthroughList.jsx'))
+export const WalkthroughPreviewLazy = React.lazy(() => import('./Preview/WalkthroughPreview.jsx'))
+export const WalkthroughUploadLazy  = React.lazy(() => import('./Upload/WalkthroughUpload.jsx'))
+export const WalkthroughEditorLazy  = React.lazy(() => import('./Editor/WalkthroughEditor.jsx'))
+export const WalkthroughFormLazy    = React.lazy(() => import('./Form/WalkthroughForm.jsx'))
+
+// ----- Screen registry (nice for dynamic renderers) --------------------------
+export const walkthroughScreens = {
+  Manager: WalkthroughManager,
+  List:    WalkthroughList,
+  Preview: WalkthroughPreview,
+  Upload:  WalkthroughUpload,
+  Editor:  WalkthroughEditor,
+  Form:    WalkthroughForm,
+}
+
+export const walkthroughScreensLazy = {
+  Manager: WalkthroughManagerLazy,
+  List:    WalkthroughListLazy,
+  Preview: WalkthroughPreviewLazy,
+  Upload:  WalkthroughUploadLazy,
+  Editor:  WalkthroughEditorLazy,
+  Form:    WalkthroughFormLazy,
+}
+
+// ----- Tiny route helper -----------------------------------------------------
+// Usage (React Router v6):
+//   import { getWalkthroughRoutes } from '@/admin/walkthroughs'
+//   const routes = getWalkthroughRoutes('/admin/walkthroughs')
+//   // then map routes → <Route path element={<Comp/>} />
+export function getWalkthroughRoutes(prefix = '/admin/walkthroughs') {
+  // Plain descriptors so you can adapt to any router
+  return [
+    { key: 'manager', path: `${prefix}`,             component: WalkthroughManagerLazy },
+    { key: 'list',    path: `${prefix}/list`,        component: WalkthroughListLazy },
+    { key: 'upload',  path: `${prefix}/upload`,      component: WalkthroughUploadLazy },
+    { key: 'preview', path: `${prefix}/preview/:id?`,component: WalkthroughPreviewLazy },
+    { key: 'editor',  path: `${prefix}/editor/:id?`, component: WalkthroughEditorLazy },
+    { key: 'form',    path: `${prefix}/form`,        component: WalkthroughFormLazy },
+  ]
+}
+
+// ----- Default export (friendly namespace) -----------------------------------
+const Walkthroughs = {
+  ...walkthroughScreens,
+  lazy: walkthroughScreensLazy,
+  getRoutes: getWalkthroughRoutes,
+}
+export default Walkthroughs

@@ -1,18 +1,89 @@
-// Firestore security rules (dev-relaxed)
-// Replace with tighter rules before production.
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function signedIn() { return request.auth != null; }
-    function isAdmin() { return request.auth.token.role == 'admin' || request.auth.token.role == 'superadmin'; }
-    function isSuper() { return request.auth.token.role == 'superadmin'; }
-    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
-
-    match /{document=**} {
-      allow read: if signedIn();
-      allow write: if signedIn();
+    function isSignedIn() {
+      return request.auth != null;
     }
+
+    // Prefer custom claims; fallback to users/{uid} doc
+    function userRole() {
+      return request.auth.token.role != null
+        ? request.auth.token.role
+        : get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function userSchool() {
+      return request.auth.token.schoolId != null
+        ? request.auth.token.schoolId
+        : get(/databases/$(database)/documents/users/$(request.auth.uid)).data.schoolId;
+    }
+    function sameSchool(schoolId) {
+      return isSignedIn() && userSchool() == schoolId;
+    }
+    function isAdmin() { return userRole() == "admin"; }
+
+    // ---- users (top-level) ----
+    match /users/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      // Admins may read users in the same school
+      allow read: if isSignedIn() && isAdmin() &&
+        get(/databases/$(database)/documents/users/$(uid)).data.schoolId == userSchool();
+
+      // Users can update limited self fields; Admin can update same-school users
+      allow update: if isSignedIn() && (
+        request.auth.uid == uid ||
+        (isAdmin() && get(/databases/$(database)/documents/users/$(uid)).data.schoolId == userSchool())
+      );
+      allow create: if false; // provision users server-side or via admin tools
+      allow delete: if isSignedIn() && isAdmin() &&
+        get(/databases/$(database)/documents/users/$(uid)).data.schoolId == userSchool();
+    }
+
+    // ---- schools namespace ----
+    match /schools/{schoolId} {
+
+      // Branding and provider profile: read for same school; admin can write
+      match /branding { 
+        allow read:  if sameSchool(schoolId);
+        allow write: if sameSchool(schoolId) && isAdmin();
+      }
+      match /providerProfile {
+        allow read:  if sameSchool(schoolId);
+        allow write: if sameSchool(schoolId) && isAdmin();
+      }
+
+      // Companies
+      match /companies/{companyId} {
+        allow read:  if sameSchool(schoolId);
+        allow write: if sameSchool(schoolId) && isAdmin();
+      }
+
+      // Students
+      match /students/{studentId} {
+        allow read:  if sameSchool(schoolId);
+        allow write: if sameSchool(schoolId) && isAdmin();
+
+        // Optional nested cert refs
+        match /certifications/{certRefId} {
+          allow read:  if sameSchool(schoolId);
+          allow write: if sameSchool(schoolId) && isAdmin();
+        }
+      }
+
+      // Canonical certifications (TPR payloads)
+      match /certifications/{certId} {
+        allow read:  if sameSchool(schoolId);
+        allow create, update, delete: if sameSchool(schoolId) && isAdmin();
+      }
+
+      // Submission batches / logs (optional)
+      match /tprSubmissions/{subId} {
+        allow read:  if sameSchool(schoolId);
+        allow write: if sameSchool(schoolId) && isAdmin();
+      }
+    }
+
+    // Deny everything else by default
+    match /{document=**} { allow read, write: if false; }
   }
 }

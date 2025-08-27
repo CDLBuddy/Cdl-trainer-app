@@ -1,36 +1,46 @@
 // src/student/profile/sections/EmergencySection.jsx
-import React, { useCallback, useId, useMemo } from 'react'
+import React, { useCallback, useId, useMemo, useState } from 'react'
 
 import { getSectionStatus } from '../schema/calculators.js'
 import Field from '../ui/Field.jsx'
+import ui from '../ui/fields.module.css'
 
 import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
 
 const DEFAULT_PHONE_PATTERN = '[0-9\\-\\(\\)\\+ ]{10,15}'
 
-function formatPhoneUS(digits) {
-  // very light formatter: 10 digits => (XXX) XXX-XXXX
-  if (digits.length !== 10) return null
-  const p1 = digits.slice(0, 3)
-  const p2 = digits.slice(3, 6)
-  const p3 = digits.slice(6)
-  return `(${p1}) ${p2}-${p3}`
+// Light US formatter for a 10-digit number → "(XXX) XXX-XXXX"
+// If 11 digits starting with "1", it trims the leading 1 then formats.
+function formatPhoneUSLike(input = '') {
+  const digits = String(input).replace(/\D+/g, '')
+  if (digits.length === 11 && digits.startsWith('1')) {
+    const d = digits.slice(1)
+    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+  }
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
+  return null
 }
 
 /**
  * EmergencySection
  * Props:
- * - value:       { emergencyName, emergencyPhone, emergencyRelation, verified? }
- * - onChange:    (key, value) => void
- * - phonePattern?: string (optional) — falls back to DEFAULT_PHONE_PATTERN
+ * - value:         { emergencyName, emergencyPhone, emergencyRelation, verified? }
+ * - onChange:      (key, value) => void
+ * - phonePattern?: string (optional) — defaults to 10–15 chars of digits/() +-space
  */
-export default function EmergencySection({ value, onChange, phonePattern = DEFAULT_PHONE_PATTERN }) {
+export default function EmergencySection({
+  value,
+  onChange,
+  phonePattern = DEFAULT_PHONE_PATTERN,
+}) {
   const v = useMemo(() => value || {}, [value])
   const sectionId = useId()
+  const titleId = `${sectionId}-title`
   const hintId = `${sectionId}-hint`
 
-  // derive status chip using schema helpers
   const status = useMemo(
     () => getSectionStatus('emergency', v, v?.verified || {}),
     [v]
@@ -40,14 +50,26 @@ export default function EmergencySection({ value, onChange, phonePattern = DEFAU
 
   const setField = useCallback((k, val) => onChange?.(k, val), [onChange])
 
+  const [phoneInvalid, setPhoneInvalid] = useState(false)
+
+  const handlePhoneInput = useCallback(
+    (e) => {
+      const val = e.target.value
+      // rely on native pattern validity (works with our pattern string)
+      const invalid = !!val && !e.target.checkValidity()
+      setPhoneInvalid(invalid)
+      setField('emergencyPhone', val)
+    },
+    [setField]
+  )
+
   const handlePhoneBlur = useCallback(() => {
-    const digits = String(v.emergencyPhone || '').replace(/\D+/g, '')
-    const formatted = formatPhoneUS(digits)
+    const formatted = formatPhoneUSLike(v.emergencyPhone)
     if (formatted) setField('emergencyPhone', formatted)
   }, [v?.emergencyPhone, setField])
 
   return (
-    <section id="emergency" className={styles.section} aria-labelledby={`${sectionId}-title`}>
+    <section id="emergency" className={styles.section} aria-labelledby={titleId}>
       <SectionHeader
         title="Emergency Contact"
         status={status}
@@ -55,45 +77,76 @@ export default function EmergencySection({ value, onChange, phonePattern = DEFAU
         verifiedAt={verifiedAt}
       />
 
-      <div id={`${sectionId}-title`} className="visually-hidden">Emergency Contact</div>
+      <h3 id={titleId} className="visually-hidden">Emergency Contact</h3>
       <div id={hintId} className={styles.sub}>
         Required for Enrollment • Used for safety and compliance.
       </div>
 
       <div className={styles.grid2}>
+        {/* Contact Name */}
+        <Field label="Contact Name" required hint="Full name of your emergency contact.">
+          <input
+            className={ui.input}
+            id={`${sectionId}-name`}
+            type="text"
+            placeholder="e.g., Jordan Smith"
+            value={v.emergencyName || ''}
+            onChange={(e) => setField('emergencyName', e.target.value)}
+            autoComplete="name"
+            autoCapitalize="words"
+            inputMode="text"
+            required
+            aria-describedby={hintId}
+          />
+        </Field>
+
+        {/* Phone */}
         <Field
-          label="Contact Name"
-          required
-          value={v.emergencyName || ''}
-          onChange={val => setField('emergencyName', val)}
-          placeholder="e.g., Jordan Smith"
-          autoComplete="name"
-          ariaDescribedBy={hintId}
-        />
-        <Field
-          type="tel"
           label="Phone"
           required
-          pattern={phonePattern}
-          inputMode="tel"
-          placeholder="(555) 555-5555"
-          value={v.emergencyPhone || ''}
-          onChange={val => setField('emergencyPhone', val)}
-          onBlur={handlePhoneBlur}
-          autoComplete="tel"
-          ariaDescribedBy={hintId}
-        />
+          hint={
+            phoneInvalid
+              ? 'Please enter a valid phone number.'
+              : 'Digits, spaces, parentheses, + or - (10–15 characters).'
+          }
+        >
+          <input
+            className={`${ui.input} ${phoneInvalid ? ui.inputInvalid : ''}`}
+            id={`${sectionId}-phone`}
+            type="tel"
+            inputMode="tel"
+            placeholder="(555) 555-5555"
+            pattern={phonePattern}
+            value={v.emergencyPhone || ''}
+            onChange={handlePhoneInput}
+            onBlur={handlePhoneBlur}
+            autoComplete="tel"
+            aria-describedby={hintId}
+            aria-invalid={phoneInvalid || undefined}
+            onInvalid={(e) => {
+              // Provide a clear native message when pattern fails
+              e.target.setCustomValidity('Enter a valid phone number (10–15 characters).')
+            }}
+            onInput={(e) => e.currentTarget.setCustomValidity('')}
+          />
+        </Field>
       </div>
 
       <div className={styles.grid}>
-        <Field
-          label="Relation"
-          required
-          value={v.emergencyRelation || ''}
-          onChange={val => setField('emergencyRelation', val)}
-          placeholder="Parent, spouse, friend…"
-          ariaDescribedBy={hintId}
-        />
+        {/* Relation */}
+        <Field label="Relation" required hint="How this person is related to you.">
+          <input
+            className={ui.input}
+            id={`${sectionId}-relation`}
+            type="text"
+            placeholder="Parent, spouse, friend…"
+            value={v.emergencyRelation || ''}
+            onChange={(e) => setField('emergencyRelation', e.target.value)}
+            autoComplete="relationship"
+            required
+            aria-describedby={hintId}
+          />
+        </Field>
       </div>
     </section>
   )

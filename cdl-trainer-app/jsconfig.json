@@ -1,9 +1,34 @@
+// tsconfig.json (or jsconfig.json)
 {
   "compilerOptions": {
+    /* ---- Paths / aliases ---- */
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
 
+      // Canonical types & utils
+      "@types/*": ["src/types/*"],
+      "@/types/*": ["src/types/*"],
+      "@/utils/*": ["src/utils/*"],
+
+      // Shared communications (global module)
+      "@communications": ["src/communications/index.js"],
+      "@communications/*": ["src/communications/*"],
+
+      // lib + user-profile module
+      "@lib/*": ["src/lib/*"],
+      "@user-profile": ["src/lib/user-profile/index.js"],
+      "@user-profile/*": ["src/lib/user-profile/*"],
+      "@user-profile/helpers": ["src/lib/user-profile/helpers.js"],
+      "@user-profile/normalize": ["src/lib/user-profile/normalize.js"],
+      "@user-profile/progress": ["src/lib/user-profile/progress.js"],
+      "@user-profile/firestore": ["src/lib/user-profile/firestore.js"],
+      "@user-profile/lists": ["src/lib/user-profile/lists.js"],
+
+      // App setup / overrides
+      "@setup/*": ["src/setup/*"],
+
+      // Core app areas
       "@components/*": ["src/components/*"],
       "@utils/*": ["src/utils/*"],
       "@navigation/*": ["src/navigation/*"],
@@ -12,22 +37,29 @@
       "@assets/*": ["src/assets/*"],
       "@shared/*": ["src/shared/*"],
 
-      // session (used as both bare and subpaths)
+      // Session (bare + subpaths)
       "@session": ["src/session/index.js"],
       "@session/*": ["src/session/*"],
 
-      // walkthrough data (public entry + subfolders)
+      // Data / workers
+      "@data/*": ["src/data/*"],
+      "@workers/*": ["src/workers/*"],
+
+      // Walkthrough system
       "@walkthrough-data": ["src/walkthrough-data/index.js"],
       "@walkthrough-data/*": ["src/walkthrough-data/*"],
-
-      // optional direct access to subpackages
       "@walkthrough-defaults": ["src/walkthrough-data/defaults/index.js"],
       "@walkthrough-defaults/*": ["src/walkthrough-data/defaults/*"],
       "@walkthrough-loaders": ["src/walkthrough-data/loaders/index.js"],
       "@walkthrough-loaders/*": ["src/walkthrough-data/loaders/*"],
       "@walkthrough-utils/*": ["src/walkthrough-data/utils/*"],
+      "@walkthrough-overlays/*": ["src/walkthrough-data/overlays/*"],
+      "@walkthrough-restrictions/*": ["src/walkthrough-data/overlays/restrictions/*"],
+      "@walkthrough-restriction-automatic": ["src/walkthrough-data/overlays/restrictions/automatic.js"],
+      "@walkthrough-restriction-no-air": ["src/walkthrough-data/overlays/restrictions/no-air.js"],
+      "@walkthrough-restriction-no-fifth-wheel": ["src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js"],
 
-      // student/instructor/admin areas
+      // Role-specific
       "@student/*": ["src/student/*"],
       "@student-components/*": ["src/student/components/*"],
       "@student-profile/*": ["src/student/profile/*"],
@@ -36,12 +68,31 @@
       "@student-walkthrough/*": ["src/student/walkthrough/*"],
 
       "@instructor/*": ["src/instructor/*"],
+
       "@admin/*": ["src/admin/*"],
+      "@admin-walkthroughs/*": ["src/admin/walkthroughs/*"],
       "@superadmin/*": ["src/superadmin/*"]
     },
-    "checkJs": false,
-    "types": ["vite/client"],
-    "jsx": "react-jsx"
+
+    /* ---- TS/JS interop & modern build settings ---- */
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",      // Ideal for Vite
+    "allowJs": true,                    // JS + TS side-by-side
+    "checkJs": false,                   // flip to true for JSDoc checking
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+
+    /* ---- React / Vite typings ---- */
+    "jsx": "react-jsx",
+    "types": ["vite/client"]
   },
-  "include": ["src", "vite.config.js"]
+
+  /* Project files */
+  "include": ["src", "env.d.ts", "vite.config.ts", "vite.config.js"],
+  "exclude": ["dist", "build", "coverage", "node_modules"]
 }

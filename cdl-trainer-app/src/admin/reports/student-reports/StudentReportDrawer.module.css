@@ -1,0 +1,268 @@
+/* src/admin/reports/StudentReportDrawer.module.css */
+/* ======================================================================
+   StudentReportDrawer – deluxe, polished, a11y-friendly
+   - Glassy right-side drawer that respects theme tokens
+   - Sticky header with subtle blur
+   - Smooth (but respectful) enter animations
+   - Strong focus-visible states + disabled styles
+   - Safe-area insets (iOS) + tidy scrollbars
+   - Responsive grid fields
+   - High-contrast + reduced-motion fallbacks
+   ====================================================================== */
+
+/* --------- Overlay (backdrop) --------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+
+  background: var(--modal-overlay, rgba(17,24,39,.55));
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+
+  /* gentle fade-in */
+  animation: drawerFadeIn .12s ease;
+}
+
+/* --------- Panel (the drawer) --------- */
+.panel {
+  width: min(600px, 100%);
+  height: 100%;
+
+  background: var(--card-bg, rgba(255,255,255,.06));
+  color: var(--text-light, #fff);
+  border-left: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
+  box-shadow: var(--shadow-2, 0 10px 40px rgba(0,0,0,.45));
+
+  /* base padding + safe-area */
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-left: 16px;
+
+  overflow: auto;
+
+  /* enter animation */
+  transform: translateX(8%);
+  opacity: .96;
+  will-change: transform, opacity;
+}
+
+.entered {
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform .18s ease, opacity .18s ease;
+}
+
+/* Sticky header for quick actions */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+
+  /* subtle backdrop and divider */
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--card-bg, rgba(255,255,255,.06)), #000 8%) 0%,
+      color-mix(in oklab, var(--card-bg, rgba(255,255,255,.06)), #000 0%) 100%
+    );
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(3px) saturate(110%);
+}
+
+.title {
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+
+.subtitle {
+  font-size: 12px;
+  opacity: .8;
+  margin-top: 2px;
+
+  max-width: 48ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --------- Actions (header buttons) --------- */
+.actions {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Local button fallbacks (play nice with global .btn if present) */
+.btnGhost {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.28);
+  color: inherit;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease, opacity .15s ease;
+}
+
+.btnPrimary {
+  appearance: none;
+  background: var(--brand-light, #4e91ad);
+  border: 1px solid rgba(255,255,255,.15);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: filter .15s ease, box-shadow .15s ease, opacity .15s ease;
+}
+
+/* Hover / focus-visible rings */
+.btnGhost:hover,
+.btnGhost:focus-visible {
+  background: rgba(255,255,255,.10);
+  border-color: color-mix(in oklab, var(--brand-light, #4e91ad), #fff 20%);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light, #4e91ad), #fff 12%);
+}
+
+.btnPrimary:hover,
+.btnPrimary:focus-visible {
+  filter: brightness(1.05);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light, #4e91ad), #fff 18%);
+}
+
+/* Disabled states */
+.btnGhost:disabled,
+.btnPrimary:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* --------- Alert (validation issues) --------- */
+.alert {
+  background: color-mix(in oklab, var(--error, #e53e3e), transparent 85%);
+  border: 1px solid color-mix(in oklab, var(--error, #e53e3e), #000 35%);
+  color: var(--text-light, #fff);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.alertList {
+  margin: 6px 0 0 18px;
+  padding: 0;
+  line-height: 1.4;
+}
+
+/* --------- Sections / fields --------- */
+.section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.section:last-of-type {
+  border-bottom: 0;
+}
+
+.field {
+  min-width: 0; /* enable ellipsis within grid cell */
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  color: rgba(255,255,255,.65);
+}
+
+.fieldValue {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.strong {
+  font-weight: 800;
+}
+
+/* --------- Scrollbar polish (non-intrusive) --------- */
+.panel::-webkit-scrollbar {
+  width: 10px;
+}
+.panel::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--accent, #c4dbe8), #000 55%);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* --------- Responsive --------- */
+@media (max-width: 560px) {
+  .section { grid-template-columns: 1fr; }
+  .actions { gap: 6px; }
+}
+
+/* --------- Animations / reduced motion --------- */
+@keyframes drawerFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay { animation: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .panel, .entered { transition: none; transform: none; opacity: 1; }
+}
+
+/* --------- High contrast / forced colors --------- */
+@media (forced-colors: active) {
+  .overlay {
+    background: Canvas !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .panel {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: ButtonText !important;
+    box-shadow: none !important;
+  }
+  .header {
+    background: Canvas !important;
+    border-bottom: 1px solid ButtonText !important;
+  }
+  .btnGhost, .btnPrimary {
+    border-color: ButtonText !important;
+    box-shadow: none !important;
+  }
+  .btnGhost:focus-visible,
+  .btnPrimary:focus-visible {
+    outline: 1px solid ButtonText !important;
+  }
+}

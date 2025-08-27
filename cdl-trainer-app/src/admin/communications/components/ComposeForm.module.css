@@ -1,1 +1,256 @@
-/* TODO: styles */
+/* src/admin/communications/components/ComposeForm.module.css
+   ------------------------------------------------------------------
+   Uses global tokens from src/styles/theme.css:
+   --brand-dark --brand-mid --brand-light --accent --text-light
+   --card-bg --card-bg-dark --success --error
+   --radius-sm --radius-md --radius-lg
+   --shadow-1 --shadow-2 --shadow-3
+   --ring --ring-strong
+   ------------------------------------------------------------------ */
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
+  border-radius: var(--radius-lg, 14px);
+  box-shadow:
+    var(--shadow-3, 0 14px 40px rgba(0,0,0,.31)),
+    inset 0 1px 0 #ffffff12;
+  overflow: hidden;
+}
+
+.header {
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--accent), transparent 55%);
+  background:
+    linear-gradient(
+      120deg,
+      color-mix(in oklab, var(--brand-dark), #000 4%),
+      color-mix(in oklab, var(--brand-mid), #000 7%) 100%
+    );
+}
+
+.title {
+  margin: 0;
+  color: var(--text-light);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: color-mix(in oklab, var(--text-light), transparent 28%);
+  font-size: 0.95rem;
+}
+
+.form {
+  padding: 1rem 1.1rem 1.1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+/* ----------------------------- fields ------------------------------ */
+
+.fieldset {
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
+  border-radius: var(--radius-md, 10px);
+  padding: 0.85rem 0.9rem;
+  margin: 0;
+  background: color-mix(in oklab, var(--card-bg), #000 3%);
+}
+
+.legend {
+  padding: 0 0.4rem;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.channelsRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, max-content));
+  gap: 0.9rem 1.1rem;
+  align-items: center;
+  margin-top: 0.35rem;
+}
+
+.channel {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-template-columns: 18px 1fr;
+  gap: 0.55rem;
+  align-items: center;
+  color: var(--text-light);
+  font-weight: 600;
+  user-select: none;
+}
+
+.channel input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand-light);
+}
+
+.channel[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  margin-top: 0.5rem;
+  color: var(--error);
+  font-weight: 600;
+}
+
+/* grid rows (audience + schedule etc.) */
+.rowGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.label {
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.01em;
+}
+
+/* inputs/selects ----------------------------------------------------- */
+
+.input,
+.select,
+.textarea,
+.textareaMono {
+  width: 100%;
+  min-height: 40px;
+  padding: 0.6rem 0.7rem;
+  color: var(--text-light);
+  background: color-mix(in oklab, var(--brand-dark), #fff 4%);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 45%);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: inset 0 1px 0 #ffffff12;
+  transition: box-shadow 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.textarea,
+.textareaMono {
+  min-height: 132px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.textareaMono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+}
+
+.input::placeholder,
+.textarea::placeholder,
+.textareaMono::placeholder {
+  color: color-mix(in oklab, var(--text-light), transparent 45%);
+}
+
+.input:focus-visible,
+.select:focus-visible,
+.textarea:focus-visible,
+.textareaMono:focus-visible {
+  outline: none;
+  box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 12%));
+  border-color: color-mix(in oklab, var(--brand-light), #fff 28%);
+}
+
+/* small helpers under fields */
+.help {
+  margin: 0;
+  font-size: 0.9rem;
+  color: color-mix(in oklab, var(--text-light), transparent 36%);
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.count {
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in oklab, var(--text-light), transparent 40%);
+  font-size: 0.85rem;
+}
+
+/* ----------------------------- actions ------------------------------ */
+
+.actions {
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: start;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.btnPrimary,
+.btnGhost {
+  appearance: none;
+  border-radius: var(--radius-md, 10px);
+  padding: 0.6rem 0.95rem;
+  font-weight: 800;
+  min-height: 42px;
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+.btnPrimary {
+  background: linear-gradient(180deg, var(--brand-light), color-mix(in oklab, var(--brand-mid), #000 12%) 95%);
+  color: #fff;
+  border: 1px solid color-mix(in oklab, var(--brand-light), #000 18%);
+  box-shadow: 0 10px 24px color-mix(in oklab, var(--brand-light), #000 50%);
+}
+
+.btnPrimary:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.btnPrimary:focus-visible { outline: none; box-shadow: var(--ring-strong, 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 20%)); }
+.btnPrimary[disabled],
+.btnPrimary[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btnGhost {
+  background: color-mix(in oklab, var(--brand-dark), #fff 4%);
+  color: var(--text-light);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 45%);
+}
+
+.btnGhost:hover { transform: translateY(-1px); }
+.btnGhost:focus-visible { outline: none; box-shadow: var(--ring); }
+
+/* ----------------------------- responsive --------------------------- */
+
+@media (max-width: 960px) {
+  .channelsRow { grid-template-columns: repeat(2, minmax(0, max-content)); }
+  .rowGrid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .actions { grid-auto-flow: row; justify-content: stretch; }
+  .btnPrimary, .btnGhost { width: 100%; }
+}
+
+/* -------------------------- reduced motion -------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .select,
+  .textarea,
+  .textareaMono,
+  .btnPrimary,
+  .btnGhost {
+    transition: none !important;
+  }
+}

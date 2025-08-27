@@ -1,0 +1,77 @@
+/* ============================================================================
+   StatusPill – component styling
+   Harmonizes with Admin Dashboard theme tokens
+   ========================================================================== */
+
+.pill {
+  --c: #64748b; /* default (info) */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.size_sm { font-size: 12px; line-height: 1.2; padding: 2px 8px; }
+.size_md { font-size: 13px; line-height: 1.25; padding: 4px 10px; }
+
+.text { display: inline-block; transform: translateY(0.5px); }
+
+/* Dot --------------------------------------------------------------- */
+.dot {
+  width: 6px;
+  height: 6px;
+  min-width: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .9;
+}
+
+/* Variants ---------------------------------------------------------- */
+.solid {
+  background: var(--c);
+  color: #fff;
+  border-color: color-mix(in oklab, var(--c), #000 18%);
+}
+.solid .dot { background: #fff; opacity: 1; }
+
+.soft {
+  background: color-mix(in oklab, var(--c), transparent 85%);
+  color: var(--c);
+  border-color: color-mix(in oklab, var(--c), #000 75%);
+}
+
+.outline {
+  background: transparent;
+  color: var(--c);
+  border-color: color-mix(in oklab, var(--c), #000 40%);
+}
+
+/* Tones ------------------------------------------------------------- */
+.kind_info    { --c: var(--muted, #475569); }
+.kind_success { --c: var(--success, #16a34a); }
+.kind_warning { --c: var(--warning, #d97706); }
+.kind_error   { --c: var(--error, #dc2626); }
+
+/* Hover/focus polish (non-intrusive) -------------------------------- */
+.pill:where(:hover, :focus-visible) {
+  box-shadow: var(--shadow-0, 0 0 0 0),
+              0 0 0 2px color-mix(in oklab, var(--c), #fff 80% / 35%);
+  outline: none;
+}
+
+/* High contrast / forced colors ------------------------------------ */
+@media (forced-colors: active) {
+  .pill {
+    border-color: ButtonText !important;
+    color: ButtonText !important;
+    background: Canvas !important;
+    box-shadow: none !important;
+  }
+  .solid { background: ButtonFace !important; }
+  .dot { background: currentColor !important; }
+}

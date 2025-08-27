@@ -1,87 +1,99 @@
+// src/student/preload.js
 // ======================================================================
 // Student route preloader
-// - Exposes the standard API the global preloader expects:
+// - Exposes a standard API the global preloader expects:
 //     * preloadAboveTheFold()  → light, most-used screens
-//     * preloadAll()           → everything student may touch
+//     * preloadAll()           → everything a student may touch
 //     * preloadRoute(name)     → targeted warm by route key
-// - Keeps your original names as aliases for compatibility
+// - Keeps original names as aliases for compatibility
 // - Pure module (no React imports, no side effects)
 // ======================================================================
 
-// ---- Pages (dynamic imports only run when called) ---------------------
-const preloadStudentDashboard = () => import('@student/StudentDashboard.jsx')
-const preloadProfile          = () => import('@student-profile/Profile.jsx')
-const preloadChecklists       = () => import('@student/Checklists.jsx')
-const preloadPracticeTests    = () => import('@student/PracticeTests.jsx')
-const preloadWalkthrough      = () => import('@student-walkthrough/Walkthrough.jsx')
-const preloadFlashcards       = () => import('@student/Flashcards.jsx')
+// ---------- Dynamic import fns (run only when called) ------------------
+const loadDashboard       = () => import('@student/StudentDashboard.jsx')
+const loadProfile         = () => import('@student-profile/Profile.jsx')
+const loadChecklists      = () => import('@student/Checklists.jsx')
+const loadPracticeTests   = () => import('@student/PracticeTests.jsx')
+const loadWalkthrough     = () => import('@student-walkthrough/Walkthrough.jsx')
+const loadFlashcards      = () => import('@student/Flashcards.jsx')
 
-// ---- Wrappers (via components barrel loader fns) ----------------------
-// If these loader fns aren’t exported yet, you can safely swap to direct
-// dynamic imports like: () => import('@student-components/TestEngineWrapper.jsx')
-import {
-  loadTestEngineWrapper,
-  loadTestReviewWrapper,
-  loadTestResultsWrapper,
-} from '@student-components'
+// Test flow wrappers
+const loadTestEngineWrap  = () => import('@student-components/TestEngineWrapper.jsx')
+const loadTestReviewWrap  = () => import('@student-components/TestReviewWrapper.jsx')
+const loadTestResultsWrap = () => import('@student-components/TestResultsWrapper.jsx')
 
-// ---- Above-the-fold (light set) --------------------------------------
+// ---------- Route key → loader map ------------------------------------
+const LOADERS = {
+  dashboard:   loadDashboard,
+  profile:     loadProfile,
+  checklists:  loadChecklists,
+  practice:    loadPracticeTests,
+  walkthrough: loadWalkthrough,
+  flashcards:  loadFlashcards,
+
+  'test:engine':  loadTestEngineWrap,
+  'test:review':  loadTestReviewWrap,
+  'test:results': loadTestResultsWrap,
+}
+
+// Small helper to swallow prefetch failures (best-effort)
+const warm = (fn) => {
+  try {
+    const p = fn?.()
+    // allow both promise and non-promise returns (for safety)
+    if (p && typeof p.then === 'function') p.catch(() => {})
+  } catch {/* ignore */}
+}
+
+// ---------- Above-the-fold (light set) ---------------------------------
 export async function preloadAboveTheFold() {
   await Promise.allSettled([
-    preloadStudentDashboard(),
-    preloadProfile(),
-    preloadChecklists(),
+    loadDashboard(),
+    loadProfile(),
+    loadChecklists(),
   ])
 }
 
-// ---- Full warm (everything student) -----------------------------------
+// ---------- Full warm (everything student) -----------------------------
 export async function preloadAll() {
-  await Promise.allSettled([
-    // Core pages
-    preloadStudentDashboard(),
-    preloadProfile(),
-    preloadChecklists(),
-    preloadPracticeTests(),
-    preloadWalkthrough(),
-    preloadFlashcards(),
-    // Test flow wrappers
-    loadTestEngineWrapper(),
-    loadTestReviewWrapper(),
-    loadTestResultsWrapper(),
-  ])
+  // Call all known loaders; Promise.allSettled keeps it resilient
+  await Promise.allSettled(Object.values(LOADERS).map((fn) => fn()))
 }
 
-// ---- Targeted route warmers -------------------------------------------
+// ---------- Targeted route warmer --------------------------------------
 /**
  * Preload a specific student route by key.
- * Keys are yours to choose; keep them consistent across app.
- *
- * Supported (suggested) keys:
+ * Supported keys:
  *  - 'dashboard' | 'profile' | 'checklists' | 'practice'
  *  - 'walkthrough' | 'flashcards'
  *  - 'test:engine' | 'test:review' | 'test:results'
  */
 export async function preloadRoute(name) {
-  switch (String(name)) {
-    case 'dashboard':  return preloadStudentDashboard()
-    case 'profile':    return preloadProfile()
-    case 'checklists': return preloadChecklists()
-    case 'practice':   return preloadPracticeTests()
-    case 'walkthrough':return preloadWalkthrough()
-    case 'flashcards': return preloadFlashcards()
-
-    case 'test:engine':  return loadTestEngineWrapper()
-    case 'test:review':  return loadTestReviewWrapper()
-    case 'test:results': return loadTestResultsWrapper()
-
-    default:
-      // No-op for unknown keys; keep best-effort
-      return
+  const key = String(name)
+  const fn = LOADERS[key]
+  if (!fn) return
+  try {
+    await fn()
+  } catch {
+    // best-effort: ignore preload errors
   }
 }
 
-// ---- Back-compat aliases (optional, keep if used elsewhere) -----------
+// ---------- Back-compat aliases ----------------------------------------
 /** Old name: warm everything student-related */
 export const preloadStudentRoutes = preloadAll
 /** Old name: warm a minimal core subset */
 export const preloadStudentCore = preloadAboveTheFold
+
+// ---------- Optional: granular named exports (if you want them) --------
+// export { loadDashboard as preloadStudentDashboard }
+// export { loadProfile as preloadProfile }
+// export { loadChecklists as preloadChecklists }
+// export { loadPracticeTests as preloadPracticeTests }
+// export { loadWalkthrough as preloadWalkthrough }
+// export { loadFlashcards as preloadFlashcards }
+// export {
+//   loadTestEngineWrap as loadTestEngineWrapper,
+//   loadTestReviewWrap as loadTestReviewWrapper,
+//   loadTestResultsWrap as loadTestResultsWrapper,
+// }

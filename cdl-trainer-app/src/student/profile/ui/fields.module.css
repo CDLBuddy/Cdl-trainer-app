@@ -1,9 +1,18 @@
-/* Shared form atoms styling (dark-friendly, uses global tokens) */
+/* src/student/profile/ui/fields.module.css */
+/* -----------------------------------------------------------------------------
+   Shared form atoms styling (dark-friendly, token-based)
+   Compatible with Field.jsx, Select.jsx, UploadField.jsx, CheckboxGroup.jsx
+   ----------------------------------------------------------------------------- */
 
 /* ---------- Base field wrapper ---------- */
 .field {
   display: grid;
   gap: 6px;
+}
+
+/* If parent marks aria-invalid, tint the label too (subtle) */
+.field[aria-invalid="true"] .label {
+  color: color-mix(in oklab, var(--error), #fff 15%);
 }
 
 /* Row for label + actions (e.g., Clear / Choose file) */
@@ -19,6 +28,20 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Inline help block (when <Field> receives children) */
+.inlineHelp {
+  margin-top: 4px;
+  font-size: .9rem;
+  color: color-mix(in oklab, var(--text-light), transparent 28%);
+}
+
+/* Character counter (e.g., "12 / 160") */
+.counter {
+  margin-left: auto;
+  font-size: .82rem;
+  color: color-mix(in oklab, var(--text-light), transparent 38%);
 }
 
 /* ---------- Labels / meta ---------- */
@@ -44,6 +67,40 @@
   font-weight: 700;
 }
 
+/* When hint + error are shown together (CheckboxGroup), stack neatly */
+.hintBlock {
+  display: grid;
+  gap: 2px;
+}
+
+/* ---------- Control wrapper + size variants ---------- */
+.controlWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* lets adornments sit inline with the control */
+}
+
+/* Extra wrapper used by Select.jsx for caret spacing */
+.selectWrap {
+  position: relative;
+  isolation: isolate; /* ensure inner focus rings render nicely */
+}
+
+/* Size modifiers apply to the control within the wrapper */
+.size_sm .control {
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: .92rem;
+}
+
+.size_md .control { /* default already set on .control */ }
+
+.size_lg .control {
+  min-height: 44px;
+  padding: 12px 14px;
+  font-size: 1rem;
+}
+
 /* ---------- Controls ---------- */
 .control {
   background: var(--card-bg);
@@ -55,6 +112,10 @@
   outline: none;
   width: 100%;
   transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+}
+
+.control::placeholder {
+  color: color-mix(in oklab, var(--text-light), transparent 45%);
 }
 
 .control:hover {
@@ -71,10 +132,22 @@
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--error), #fff 10%);
 }
 
-.control:disabled {
+.control:disabled,
+[disabled] .control {
   opacity: .65;
   cursor: not-allowed;
   filter: grayscale(.1);
+}
+
+.control:read-only {
+  background: color-mix(in oklab, var(--card-bg), #000 6%);
+  cursor: default;
+}
+
+/* Autofill (WebKit) -- preserve dark text contrast */
+.control:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-light);
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .textarea {
@@ -82,19 +155,38 @@
   resize: vertical;
 }
 
+/* ---------- Adornments (prefix/suffix) ---------- */
+.adornmentStart,
+.adornmentEnd {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-inline: 6px;
+  color: color-mix(in oklab, var(--text-light), transparent 20%);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.adornmentEnd {
+  margin-left: auto; /* pushes to the right edge if needed */
+  opacity: .9;
+}
+
+/* Legacy inline row (kept for compatibility) */
 .inline {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.endAdornment {
+.endAdornment { /* legacy alias (kept so nothing breaks) */
   margin-left: auto;
   opacity: .9;
 }
 
-/* ---------- Select caret (native) ---------- */
+/* ---------- Native select caret (decorative) ---------- */
 .select {
+  appearance: none;
   background-image:
     linear-gradient(45deg, transparent 50%, var(--accent) 50%),
     linear-gradient(135deg, var(--accent) 50%, transparent 50%);
@@ -104,6 +196,10 @@
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
   padding-right: 28px;
+}
+
+.select:disabled {
+  opacity: .7;
 }
 
 /* ---------- Checkbox group ---------- */
@@ -125,6 +221,11 @@
   gap: 10px 14px;
 }
 
+.groupCol {
+  display: grid;
+  gap: 10px;
+}
+
 .check {
   display: inline-flex;
   align-items: center;
@@ -135,14 +236,25 @@
   background: color-mix(in oklab, var(--brand-dark), #fff 4%);
   cursor: pointer;
   user-select: none;
+  transition: border-color .12s ease, background .12s ease, transform .12s ease;
 }
 
 .check:hover {
   border-color: color-mix(in oklab, var(--accent), #fff 12%);
 }
 
+.check:focus-within {
+  outline: 2px solid color-mix(in oklab, var(--brand-light), #fff 25%);
+  outline-offset: 2px;
+}
+
 .check input {
   accent-color: var(--brand-light);
+}
+
+/* Checked state highlight without relying on :has() */
+.check input:checked + span {
+  font-weight: 600;
 }
 
 /* ---------- Upload: buttons ---------- */
@@ -230,6 +342,16 @@
   margin-top: 8px;
 }
 
+.thumbLink {
+  display: inline-block;
+  border-radius: 10px;
+  outline-offset: 3px;
+}
+
+.thumbLink:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--brand-light), #fff 30%);
+}
+
 .thumb {
   width: 90px;
   height: 70px;
@@ -270,5 +392,30 @@
   .uploadBtn,
   .dropZone {
     transition: none !important;
+  }
+}
+
+/* ---------- Forced colors / print hygiene ---------- */
+@media (forced-colors: active) {
+  .control,
+  .group,
+  .uploadBtn,
+  .dropZone {
+    border-color: CanvasText !important;
+    background: Canvas !important;
+    color: CanvasText !important;
+    box-shadow: none !important;
+  }
+  .select {
+    background-image: none !important;
+    padding-right: 10px;
+  }
+}
+
+@media print {
+  .uploadBtn,
+  .dropZone,
+  .thumb {
+    box-shadow: none !important;
   }
 }

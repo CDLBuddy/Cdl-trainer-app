@@ -1,8 +1,9 @@
 // Path: eslint.config.js
 // ============================================================================
-// ESLint Flat Config (React + Vite + Aliases)
-// - Includes React, Hooks, Refresh, A11y, Import hygiene
-// - Resolves Vite aliases for eslint-plugin-import
+// ESLint Flat Config (React + Vite + JS/TS + Aliases)
+// - React, Hooks, Refresh, A11y, Import hygiene
+// - TS-aware (separate block) without requiring type-checking
+// - Resolves Vite aliases + TS paths (incl. @/types, @setup, @lib/@user-profile/*)
 // - DX rules for consistency and safety
 // ============================================================================
 
@@ -13,6 +14,8 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import a11y from 'eslint-plugin-jsx-a11y'
 import importPlugin from 'eslint-plugin-import'
+import ts from '@typescript-eslint/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
 import { FlatCompat } from '@eslint/eslintrc'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import { fileURLToPath } from 'node:url'
@@ -29,15 +32,12 @@ const legacy = compat
     'plugin:react-hooks/recommended',
     'plugin:jsx-a11y/recommended',
   )
-  .map(cfg => ({
+  .map((cfg) => ({
     ...cfg,
     files: ['**/*.{js,jsx}'],
     ignores: ['vite.config.*', 'eslint.config.*', 'dev-utils/**'],
   }))
 
-// ----------------------------------------------------------------------------
-// Main export
-// ----------------------------------------------------------------------------
 export default defineConfig([
   // Global ignores
   globalIgnores([
@@ -57,7 +57,7 @@ export default defineConfig([
   // Converted legacy layers
   ...legacy,
 
-  // ---- App source rules -----------------------------------------------------
+  // ---- App source rules (JS/JSX) -------------------------------------------
   {
     files: ['**/*.{js,jsx}'],
     ignores: ['vite.config.*', 'eslint.config.*', 'dev-utils/**'],
@@ -171,6 +171,8 @@ export default defineConfig([
             { pattern: 'react', group: 'external', position: 'before' },
 
             { pattern: '@{,**/*}', group: 'internal', position: 'before' },
+            { pattern: '@types{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@/types{,/**}', group: 'internal', position: 'before' },
             { pattern: '@utils/**', group: 'internal', position: 'before' },
             { pattern: '@components/**', group: 'internal', position: 'before' },
             { pattern: '@styles/**', group: 'internal', position: 'before' },
@@ -223,11 +225,24 @@ export default defineConfig([
     settings: {
       react: { version: 'detect' },
       'import/resolver': {
-        node: { extensions: ['.js', '.jsx', '.json', '.css', '.d.ts'] },
+        node: { extensions: ['.js', '.jsx', '.json', '.css', '.ts', '.tsx'] },
         alias: {
           map: [
             ['@', './src'],
+            ['@lib', './src/lib'],
+            ['@setup', './src/setup'],
 
+            // user-profile module + common direct subpaths
+            ['@user-profile', './src/lib/user-profile'],
+            ['@user-profile/helpers', './src/lib/user-profile/helpers.js'],
+            ['@user-profile/normalize', './src/lib/user-profile/normalize.js'],
+            ['@user-profile/progress', './src/lib/user-profile/progress.js'],
+            ['@user-profile/firestore', './src/lib/user-profile/firestore.js'],
+            ['@user-profile/lists', './src/lib/user-profile/lists.js'],
+
+            ['@types', './src/types'],
+            ['@/types', './src/types'],
+            ['@communications', './src/communications'],
             ['@components', './src/components'],
             ['@utils', './src/utils'],
             ['@navigation', './src/navigation'],
@@ -242,8 +257,6 @@ export default defineConfig([
             ['@walkthrough-loaders', './src/walkthrough-data/loaders'],
             ['@walkthrough-utils', './src/walkthrough-data/utils'],
             ['@walkthrough-overlays', './src/walkthrough-data/overlays'],
-
-            // Single overlay shortcuts
             ['@walkthrough-restriction-automatic', './src/walkthrough-data/overlays/restrictions/automatic.js'],
             ['@walkthrough-restriction-no-air', './src/walkthrough-data/overlays/restrictions/no-air.js'],
             ['@walkthrough-restriction-no-fifth-wheel', './src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'],
@@ -261,28 +274,148 @@ export default defineConfig([
             ['@admin-walkthroughs', './src/admin/walkthroughs'],
             ['@superadmin', './src/superadmin'],
           ],
-          extensions: ['.js', '.jsx', '.json', '.css'],
+          extensions: ['.js', '.jsx', '.json', '.css', '.ts', '.tsx'],
+        },
+        // Make import/no-unresolved TS-aware
+        typescript: {
+          alwaysTryTypes: true,
+          project: ['./tsconfig.json', './jsconfig.json'],
         },
       },
     },
   },
 
-  // One-off overrides
+  // ---- TS/TSX block --------------------------------------------------------
   {
-    files: ['src/components/toast-compat.js'],
+    files: ['**/*.{ts,tsx}'],
+    ignores: ['vite.config.*', 'eslint.config.*', 'dev-utils/**'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      parser: tsParser,
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+        // Add project for type-aware rules if you want stricter checking:
+        // project: ['./tsconfig.json'],
+        // tsconfigRootDir: __dirname,
+      },
+      globals: { ...globals.browser, ...globals.node },
+    },
+    plugins: {
+      '@typescript-eslint': ts,
+      react,
+      'react-hooks': reactHooks,
+      'jsx-a11y': a11y,
+      import: importPlugin,
+    },
+    extends: [
+      js.configs.recommended,
+      ...ts.configs.recommended, // light, not type-checked
+      reactRefresh.configs.vite,
+    ],
     rules: {
-      'no-restricted-globals': 'off',
-      'no-restricted-properties': 'off',
+      // Defer unused vars to TS plugin; disable base rule for TS files
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          varsIgnorePattern: '^(?:[A-Z_]|set[A-Z])',
+          argsIgnorePattern: '^_',
+          caughtErrors: 'all',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+
+      // Same React + hooks guidance
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      'react-hooks/exhaustive-deps': 'warn',
+
+      // Import hygiene
+      'import/no-unresolved': ['error', { commonjs: true, caseSensitive: true }],
+      'import/no-duplicates': 'warn',
+      'import/newline-after-import': 'warn',
+      'import/extensions': 'off',
+      'import/order': [
+        'warn',
+        {
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+            'object',
+            'type',
+          ],
+          pathGroups: [
+            { pattern: 'react', group: 'external', position: 'before' },
+            { pattern: '@types{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@/types{,/**}', group: 'internal', position: 'before' },
+          ],
+          pathGroupsExcludedImportTypes: ['react', 'builtin', 'external'],
+          'newlines-between': 'always',
+          alphabetize: { order: 'asc', caseInsensitive: true },
+        },
+      ],
+
+      // A11y & DX
+      'jsx-a11y/no-autofocus': 'warn',
+      'jsx-a11y/no-noninteractive-tabindex': 'error',
+      'jsx-a11y/aria-role': 'error',
+      'jsx-a11y/label-has-associated-control': 'error',
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-debugger': 'warn',
+      eqeqeq: ['warn', 'smart'],
+      'prefer-const': 'warn',
+    },
+    settings: {
+      react: { version: 'detect' },
+      'import/resolver': {
+        node: { extensions: ['.js', '.jsx', '.json', '.css', '.ts', '.tsx'] },
+        alias: {
+          map: [
+            ['@', './src'],
+            ['@lib', './src/lib'],
+            ['@setup', './src/setup'],
+            ['@user-profile', './src/lib/user-profile'],
+            ['@types', './src/types'],
+            ['@/types', './src/types'],
+            ['@/utils', './src/utils'],
+          ],
+          extensions: ['.js', '.jsx', '.json', '.css', '.ts', '.tsx'],
+        },
+        typescript: {
+          alwaysTryTypes: true,
+          project: ['./tsconfig.json', './jsconfig.json'],
+        },
+      },
     },
   },
+
+  // Tests (Vitest/Jest) – optional but handy
   {
-    files: ['src/**/*Router.jsx'],
+    files: ['**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node, ...globals.jest },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
+
+  // Router exports should be component-only (refresh hint)
+  {
+    files: ['src/**/*Router.jsx', 'src/**/*Router.tsx'],
     rules: {
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
+
+  // Specific overrides
   {
-    files: ['src/utils/RequireRole.jsx'],
+    files: ['src/utils/RequireRole.jsx', 'src/utils/RequireRole.tsx'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
 

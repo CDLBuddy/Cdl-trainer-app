@@ -1,25 +1,32 @@
-// src/admin/AdminRouter.jsx
+// Path: /src/admin/AdminRouter.jsx
 // ======================================================================
 // Admin Router (nested under /admin/*)
 // - Lazy-loads admin pages + walkthroughs
-// - Local Suspense fallback (a11y-friendly spinner+status)
-// - Error boundary with retry + reload
+// - Accessible Suspense fallback (spinner + live status)
+// - Tight error boundary with retry/reload
 // - Idle warm-up of *core* screens (lighter than full preload)
-// - Exposes AdminRouter.preload() for eager warming
+// - Reports polish: warm heavy reports bundles on idle + ensure modal portal
+// - Scroll-to-top (and best-effort focus) on route changes
+// - Exposes AdminRouter.preload() and .preloadCore() for eager warming
 // ======================================================================
 
 import React, { Suspense, lazy, useEffect, memo } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
-
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { __DEV__ } from '@utils/env.js'
 
-// Preload helpers (single source of truth lives in ./preload.js)
+// Single source of truth for code-splitting warmups
 import {
   preloadAdminAll as _preloadAll,
   preloadAdminCore as _preloadCore,
 } from './preload.js'
 
-// ---- Lazy pages --------------------------------------------------------
+// Reports: idle prefetch + portal root for modals (SubmitToTPRDialog, etc.)
+import {
+  prefetchOnIdle as prefetchReportsOnIdle,
+  ensureModalRoot,
+} from '@admin/reports'
+
+// ---------- Lazy pages -------------------------------------------------
 const AdminDashboard      = lazy(() => import('@admin/dashboard/AdminDashboard.jsx'))
 const AdminProfile        = lazy(() => import('@admin/AdminProfile.jsx'))
 const AdminReports        = lazy(() => import('@admin/reports/AdminReports.jsx'))
@@ -28,34 +35,57 @@ const AdminReports        = lazy(() => import('@admin/reports/AdminReports.jsx')
 const AdminCompanies      = lazy(() => import('@admin/companies/AdminCompanies.jsx'))
 const CompanyDetail       = lazy(() => import('@admin/companies/CompanyDetail.jsx'))
 
-// Communications (new)
+// Communications / Billing / Settings
 const AdminCommunications = lazy(() => import('@admin/communications/AdminCommunications.jsx'))
-
-// Billing
 const AdminBilling        = lazy(() => import('@admin/billing/Billing.jsx'))
-
-// Walkthrough management
-const WalkthroughManager  = lazy(() => import('@admin/walkthroughs/WalkthroughManager.jsx'))
-
-// Settings
 const AdminSettings       = lazy(() => import('@admin/settings/AdminSettings.jsx'))
 
-// ---- Local loading UI (accessible) ------------------------------------
+// Walkthrough management hub
+const WalkthroughManager  = lazy(() => import('@admin/walkthroughs/WalkthroughManager.jsx'))
+
+// ---------- Local loading UI (accessible) ------------------------------
 const Loading = memo(function Loading({ text = 'Loading admin page…' }) {
   return (
     <div
-      className="loading-container"
       role="status"
       aria-live="polite"
       style={{ textAlign: 'center', marginTop: '4rem' }}
     >
+      {/* Intentionally keep spinner styling external; text covers no-CSS envs */}
       <div className="spinner" aria-hidden="true" />
       <p style={{ marginTop: 8 }}>{text}</p>
     </div>
   )
 })
 
-// ---- Small, contained error boundary ----------------------------------
+// ---------- Scroll & focus on route change -----------------------------
+function ScrollToTopOnRouteChange() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    // Scroll
+    try {
+      // Some browsers support 'instant'
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    } catch {
+      window.scrollTo(0, 0)
+    }
+
+    // Best-effort focus handoff (no-op if nothing matches)
+    const tryFocus = () => {
+      const el =
+        document.querySelector('[data-route-focus]') ||
+        document.querySelector('main h1, [role="main"] h1') ||
+        document.querySelector('main, [role="main"]')
+      if (el && typeof el.focus === 'function') el.focus()
+    }
+    // Let layout paint first
+    const id = window.requestAnimationFrame(tryFocus)
+    return () => window.cancelAnimationFrame?.(id)
+  }, [pathname])
+  return null
+}
+
+// ---------- Small, contained error boundary ----------------------------
 class AdminSectionErrorBoundary extends React.Component {
   constructor(props) {
     super(props)
@@ -67,18 +97,19 @@ class AdminSectionErrorBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (__DEV__) {
+      // eslint-disable-next-line no-console
       console.error('[AdminRouter] render error:', error, info)
     }
   }
-  reset() { this.setState({ err: null }) }
+  reset() {
+    this.setState({ err: null })
+  }
   render() {
     if (this.state.err) {
       const msg =
-        (this.state.err && (this.state.err.message || String(this.state.err))) ||
-        'Unknown error.'
+        this.state.err?.message || String(this.state.err) || 'Unknown error.'
       return (
         <div
-          className="error-overlay"
           role="alert"
           aria-live="assertive"
           style={{ padding: '3rem 1rem', textAlign: 'center' }}
@@ -92,36 +123,54 @@ class AdminSectionErrorBoundary extends React.Component {
         </div>
       )
     }
+    // eslint-disable-next-line react/prop-types
     return this.props.children
   }
 }
 
-// ---- Fallback route: normalize unknown paths ---------------------------
+// ---------- Fallback route: normalize unknown paths --------------------
 function AdminNotFound() {
   return <Navigate to="/admin/dashboard" replace />
 }
 
-// ---- Router component --------------------------------------------------
+// ---------- Router -----------------------------------------------------
 export default function AdminRouter() {
-  // Light idle warm-up of core screens after mount (skips for reduce motion)
+  // Ensure a portal root for modal components used across the admin (esp. Reports)
+  useEffect(() => {
+    ensureModalRoot('modal-root')
+  }, [])
+
+  // Light idle warm-up of core screens after mount (respect reduced-motion).
+  // Warm Reports’ heavier bundles/services separately without blocking initial render.
   useEffect(() => {
     if (typeof window === 'undefined') return
+
     const prefersReduced =
       !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
 
-    const warm = () => { if (!prefersReduced) _preloadCore().catch(() => {}) }
+    const warmCore = () => {
+      if (!prefersReduced) _preloadCore().catch(() => {})
+    }
+    const disposeReportsIdle = prefetchReportsOnIdle()
 
     if ('requestIdleCallback' in window) {
-      // @ts-expect-error not in all TS DOM libs
-      const id = window.requestIdleCallback(warm, { timeout: 2000 })
-      return () => window.cancelIdleCallback?.(id)
+      // @ts-expect-error not in all lib.d.ts variants
+      const id = window.requestIdleCallback(warmCore, { timeout: 2000 })
+      return () => {
+        window.cancelIdleCallback?.(id)
+        disposeReportsIdle?.()
+      }
     }
-    const t = setTimeout(warm, 300)
-    return () => clearTimeout(t)
+    const t = setTimeout(warmCore, 300)
+    return () => {
+      clearTimeout(t)
+      disposeReportsIdle?.()
+    }
   }, [])
 
   return (
     <AdminSectionErrorBoundary>
+      <ScrollToTopOnRouteChange />
       <Suspense fallback={<Loading text="Loading admin area…" />}>
         <Routes>
           {/* Root (/admin) → dashboard */}
@@ -141,7 +190,7 @@ export default function AdminRouter() {
           <Route path="billing" element={<AdminBilling />} />
           <Route path="settings" element={<AdminSettings />} />
 
-          {/* Walkthrough management hub */}
+          {/* Walkthrough management hub (self-contained router under here) */}
           <Route path="walkthroughs/*" element={<WalkthroughManager />} />
 
           {/* Legacy: /admin/users → redirect to Companies */}
@@ -160,5 +209,7 @@ export default function AdminRouter() {
  * Usage:
  *   import AdminRouter from '@admin/AdminRouter.jsx'
  *   AdminRouter.preload?.()
+ *   AdminRouter.preloadCore?.()
  */
 AdminRouter.preload = _preloadAll
+AdminRouter.preloadCore = _preloadCore

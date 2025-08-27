@@ -1,0 +1,147 @@
+/* src/student/dashboard/components/BannerNextSteps.module.css */
+
+.banner {
+  --ring: color-mix(in oklab, var(--brand-light, #22d3ee), #fff 12%);
+  --brd:  color-mix(in oklab, var(--accent, #4fb0c6), #000 45%);
+  --bg:   color-mix(in oklab, var(--brand-dark, #0b2328), #fff 4%);
+
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--brd);
+  box-shadow: 0 10px 28px #0004, inset 0 1px 0 #ffffff0f;
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+}
+
+/* Visual variant cues (set by component via data-variant attr) */
+.banner[data-variant="success"] {
+  --bg:  color-mix(in oklab, var(--ok-bg, rgba(16,185,129,.12)), #000 80%);
+  --brd: var(--ok-br, rgba(16,185,129,.4));
+}
+
+.banner[data-variant="info"] {
+  /* keep defaults; subtle blue tint for info if you want stronger look: */
+  /* --bg: color-mix(in oklab, #1e40af, #fff 90%); */
+}
+
+.banner:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.row {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+}
+
+.list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--ok-bg, rgba(16,185,129,.12));
+  color: var(--ok-fg, #065f46);
+  font-weight: 800;
+  border: 1px solid var(--ok-br, rgba(16,185,129,.4));
+  font-size: .9rem;
+  user-select: none;
+}
+
+.label {
+  color: var(--text-light, #eef6f8);
+  font-weight: 600;
+  text-decoration: none; /* keep links looking like labels */
+}
+
+.label:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* CTA button */
+.action {
+  appearance: none;
+  border: 1px solid color-mix(in oklab, var(--brand-light, #22d3ee), #000 40%);
+  background: color-mix(in oklab, var(--brand-mid, #164e63), #000 70%);
+  color: var(--text-light, #eef6f8);
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: border-color .12s ease, transform .12s ease, box-shadow .12s ease, background .12s ease;
+  white-space: nowrap;
+}
+
+.action:hover,
+.action:focus-visible {
+  border-color: color-mix(in oklab, var(--brand-light, #22d3ee), #fff 12%);
+  box-shadow: 0 8px 18px #0004;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.action:active {
+  transform: translateY(0);
+}
+
+.action:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 560px) {
+  .item {
+    grid-template-columns: 20px 1fr;
+    gap: 8px;
+  }
+  .action {
+    width: 100%;
+    justify-self: start;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .action { transition: none !important; }
+  .banner { backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+
+/* High-contrast / forced colors */
+@media (forced-colors: active) {
+  .banner {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border: 1px solid CanvasText !important;
+    box-shadow: none !important;
+  }
+  .badge {
+    forced-color-adjust: none;
+    background: Highlight !important;
+    color: HighlightText !important;
+    border-color: Highlight !important;
+  }
+  .label:focus-visible {
+    outline-color: Highlight !important;
+  }
+}

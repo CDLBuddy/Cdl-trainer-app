@@ -1,0 +1,53 @@
+/* TipsRow -- component-scoped styles */
+
+.row {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.card {
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: color-mix(in oklab, var(--brand-dark), #fff 4%);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 45%);
+  box-shadow: 0 10px 28px #0004, inset 0 1px 0 #ffffff0f;
+}
+
+.title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px 0;
+  font-weight: 800;
+  color: var(--accent, #4fb0c6);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+.icon {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+}
+
+.body {
+  color: color-mix(in oklab, var(--text-light), transparent 10%);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    box-shadow: 0 8px 20px #0004;
+  }
+}

@@ -1,4 +1,12 @@
 // Path: vite.config.js
+// ======================================================================
+// Vite Config (React + Aliases + DX extras)
+// - React Fast Refresh
+// - Aliases aligned with src structure (incl. @communications, @lib, @setup)
+// - Optional visualizer & inspect (opt-in via env vars)
+// - Stable vendor manualChunks for better browser caching
+// ======================================================================
+
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
@@ -29,7 +37,7 @@ async function maybeInspect(enabled) {
 }
 
 export default defineConfig(async ({ mode }) => {
-  // Load both VITE_* and bare envs so VISUALIZE/INSPECT keep working
+  // Load both VITE_* and bare envs so VISUALIZE/INSPECT work either way
   const envVite = loadEnv(mode, process.cwd(), 'VITE_')
   const envAll  = loadEnv(mode, process.cwd(), '')
 
@@ -53,6 +61,25 @@ export default defineConfig(async ({ mode }) => {
         // ===== Base =====
         '@': r('src'),
 
+        // ===== Shared Communications (new) =====
+        '@communications': r('src/communications'),
+
+        // ===== lib (user-profile module) =====
+        '@lib': r('src/lib'),
+        '@user-profile': r('src/lib/user-profile'),
+        '@user-profile/helpers': r('src/lib/user-profile/helpers.js'),
+        '@user-profile/normalize': r('src/lib/user-profile/normalize.js'),
+        '@user-profile/progress': r('src/lib/user-profile/progress.js'),
+        '@user-profile/firestore': r('src/lib/user-profile/firestore.js'),
+        '@user-profile/lists': r('src/lib/user-profile/lists.js'),
+
+        // ===== Setup / overrides =====
+        '@setup': r('src/setup'),
+
+        // ===== Types / Canonical domain models =====
+        '@types': r('src/types'),
+        '@/types': r('src/types'),
+
         // ===== Shared / Global =====
         '@assets': r('src/assets'),
         '@components': r('src/components'),
@@ -63,15 +90,17 @@ export default defineConfig(async ({ mode }) => {
         '@styles': r('src/styles'),
         '@utils': r('src/utils'),
 
-        // ===== Walkthrough system (global) =====
+        // ===== Data / Workers =====
+        '@data': r('src/data'),
+        '@workers': r('src/workers'),
+
+        // ===== Walkthrough system =====
         '@walkthrough-data': r('src/walkthrough-data'),
         '@walkthrough-defaults': r('src/walkthrough-data/defaults'),
         '@walkthrough-loaders': r('src/walkthrough-data/loaders'),
         '@walkthrough-utils': r('src/walkthrough-data/utils'),
         '@walkthrough-overlays': r('src/walkthrough-data/overlays'),
-        // Folder alias for restrictions (use file imports inside if preferred)
         '@walkthrough-restrictions': r('src/walkthrough-data/overlays/restrictions'),
-        // Single-file convenience aliases (kept for compatibility)
         '@walkthrough-restriction-automatic': r('src/walkthrough-data/overlays/restrictions/automatic.js'),
         '@walkthrough-restriction-no-air': r('src/walkthrough-data/overlays/restrictions/no-air.js'),
         '@walkthrough-restriction-no-fifth-wheel': r('src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'),
@@ -86,12 +115,13 @@ export default defineConfig(async ({ mode }) => {
 
         '@instructor': r('src/instructor'),
 
-        // Admin: Dashboard, Companies suite, Billing, Walkthroughs, Settings, etc.
+        // Admin
         '@admin': r('src/admin'),
         '@admin-walkthroughs': r('src/admin/walkthroughs'),
 
         '@superadmin': r('src/superadmin'),
       },
+      // Ensure one copy of React in the graph
       dedupe: ['react', 'react-dom'],
     },
 
@@ -101,12 +131,13 @@ export default defineConfig(async ({ mode }) => {
       port: 5173,
       strictPort: true,
       open: true,
-      // proxy: { ... } // add Firebase emulators here if needed
+      // proxy: { '/__/firebase': 'http://127.0.0.1:5000' } // example for emulators
     },
 
     preview: {
       port: 4173,
       open: false,
+      strictPort: true,
     },
 
     optimizeDeps: {
@@ -119,7 +150,6 @@ export default defineConfig(async ({ mode }) => {
         'firebase/auth',
         'firebase/firestore',
         'firebase/storage',
-        // 'xlsx', // enable if you add CSV/XLSX parsing in dev
       ],
       esbuildOptions: { target: 'es2020' },
     },
@@ -128,12 +158,13 @@ export default defineConfig(async ({ mode }) => {
       target: 'es2020',
       sourcemap: !isProd,
       cssCodeSplit: true,
-      cssMinify: true,
-      reportCompressedSize: false,   // faster builds; use visualizer when needed
-      chunkSizeWarningLimit: 1024,   // Firebase & router chunks can be large
+      cssMinify: true,                 // Vite 5+ flag
+      reportCompressedSize: false,     // faster builds; use visualizer when needed
+      chunkSizeWarningLimit: 1024,     // router + firebase can be chunky
       rollupOptions: {
         output: {
           manualChunks: {
+            // keep these vendor chunks stable
             'vendor-react': ['react', 'react-dom'],
             'vendor-router': ['react-router', 'react-router-dom'],
             'vendor-firebase': [
@@ -142,12 +173,9 @@ export default defineConfig(async ({ mode }) => {
               'firebase/firestore',
               'firebase/storage',
             ],
-            // Add feature bundles later if desired:
-            // 'feature-admin': ['@admin/preload.js', '@admin/companies/...'],
           },
         },
       },
-      // assetsInlineLimit: 0,
     },
 
     define: {

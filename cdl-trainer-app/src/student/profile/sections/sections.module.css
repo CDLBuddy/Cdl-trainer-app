@@ -1,18 +1,41 @@
 /* src/student/profile/sections/sections.module.css */
-/* Shared section styles (keeps pages consistent) */
+/* -----------------------------------------------------------------------------
+   Shared section styles (schema-driven profile UI)
+   - Themeable via CSS vars
+   - Container-query friendly
+   - A11y: focus rings, forced-colors, print-safe
+   ----------------------------------------------------------------------------- */
 
 :root {
-  /* Tunables if you want to theme sections independently later */
+  /* Tunables */
   --section-pad: clamp(14px, 2.2vw, 18px);
   --section-radius: 14px;
   --section-shadow:
     0 14px 40px #0005,
     inset 0 1px 0 #ffffff10;
-  --section-border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
-  --section-bg: var(--card-bg);
+  --section-border: 1px solid color-mix(in oklab, var(--accent, #4fb0c6), transparent 54%);
+  --section-bg: var(--card-bg, rgba(255,255,255,.06));
+  --section-outline: color-mix(in oklab, var(--accent, #4fb0c6), #000 35%);
+
+  /* Status chip palettes */
+  --ok-bg: rgba(16,185,129,.12);
+  --ok-fg: #065f46;
+  --ok-br: rgba(16,185,129,.4);
+
+  --warn-bg: rgba(245,158,11,.12);
+  --warn-fg: #92400e;
+  --warn-br: rgba(245,158,11,.4);
+
+  --pending-bg: rgba(59,130,246,.12);
+  --pending-fg: #1e40af;
+  --pending-br: rgba(59,130,246,.4);
+
+  --error-fg: #b91c1c; /* red-700-ish */
+  --muted-fg: color-mix(in oklab, var(--text-light, #fff), transparent 30%);
+  --subtle-fg: color-mix(in oklab, var(--text-light, #fff), transparent 40%);
 }
 
-/* Make each section a container for smarter layout with container queries */
+/* Section container (CQ root) */
 .section {
   container: section / inline-size;
   background: var(--section-bg);
@@ -26,11 +49,18 @@
 
 @supports not (backdrop-filter: blur(10px)) {
   .section {
-    /* Slightly stronger bg when no blur is available for contrast */
+    /* Stronger bg when no blur available for contrast */
     background: color-mix(in oklab, var(--section-bg), #000 6%);
   }
 }
 
+/* Keyboard focus ring so groups are easy to scan */
+.section:focus-within {
+  outline: 2px solid var(--section-outline);
+  outline-offset: 2px;
+}
+
+/* Header row above content */
 .header {
   display: flex;
   align-items: center;
@@ -41,7 +71,7 @@
 
 .title {
   font-weight: 800;
-  color: var(--accent);
+  color: var(--accent, #4fb0c6);
   letter-spacing: 0.01em;
   line-height: 1.2;
 }
@@ -49,7 +79,7 @@
 .sub {
   margin-left: auto;
   font-size: 0.92rem;
-  color: color-mix(in oklab, var(--text-light), transparent 30%);
+  color: var(--muted-fg);
 }
 
 /* Content grids */
@@ -68,6 +98,13 @@
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Optional vertical stack helper if you ever need it */
+.gridCol {
+  display: grid;
+  gap: 12px;
+  grid-auto-flow: row;
 }
 
 /* Actions row */
@@ -90,11 +127,31 @@
 /* Small note text block (used for legal note in Waiver) */
 .note {
   font-size: 0.9rem;
-  color: color-mix(in oklab, var(--text-light), transparent 28%);
+  color: var(--muted-fg);
   margin-top: 4px;
 }
 
-/* Visually-hidden helper for a11y when needed within sections */
+/* Utility text styles referenced by sections */
+.subtle {
+  color: var(--subtle-fg);
+  font-size: .875rem;
+}
+
+.errorText {
+  color: var(--error-fg);
+  font-weight: 600;
+}
+
+/* Read-only card (CDL section) */
+.readonlyCard {
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--panel, #fff);
+  color: inherit;
+}
+
+/* Visually-hidden helper inside modules (use plain "visually-hidden" for global) */
 .srOnly {
   position: absolute !important;
   width: 1px; height: 1px;
@@ -103,9 +160,14 @@
   white-space: nowrap; border: 0;
 }
 
-/* Responsive:
-   Prefer container queries so sections adapt inside any layout,
-   with a viewport fallback for older browsers. */
+/* Flag invalid fields inside a section (reinforces input styles) */
+.section [aria-invalid="true"] {
+  outline: 2px solid var(--error-fg);
+  outline-offset: 1px;
+}
+
+/* ----------------------------- Responsive ----------------------------- */
+/* Prefer container queries so sections adapt inside any layout */
 @container section (width < 640px) {
   .grid2,
   .grid3 {
@@ -121,14 +183,46 @@
   }
 }
 
-/* Reduced motion: dial down heavy effects if requested */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .section {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    box-shadow: 0 8px 20px #0004;
   }
 }
-/* === SectionHeader basics === */
+
+/* Print: clean PDF-friendly output */
+@media print {
+  .section {
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    border-color: #000 !important;
+  }
+  .chip {
+    border-color: #000 !important;
+    color: #000 !important;
+  }
+}
+
+/* High-contrast / forced-colors */
+@media (forced-colors: active) {
+  .section {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border: 1px solid CanvasText !important;
+    box-shadow: none !important;
+  }
+  .chip {
+    forced-color-adjust: none;
+    background: Highlight !important;
+    color: HighlightText !important;
+    border-color: Highlight !important;
+  }
+}
+
+/* =========================== SectionHeader ============================ */
 .sectionHeader {
   display: flex;
   align-items: center;
@@ -156,7 +250,7 @@
   font-size: .875rem; /* ~14px */
 }
 
-/* === Status chips (minimal) === */
+/* ------------------------------ Status chips ------------------------------ */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -169,19 +263,19 @@
 }
 
 .chipOk {
-  background: rgba(16, 185, 129, 0.12);     /* emerald-500-ish */
-  color: #065f46;                            /* emerald-800-ish */
-  border-color: rgba(16, 185, 129, 0.4);
+  background: var(--ok-bg);
+  color: var(--ok-fg);
+  border-color: var(--ok-br);
 }
 
 .chipWarn {
-  background: rgba(245, 158, 11, 0.12);     /* amber-500-ish */
-  color: #92400e;                            /* amber-800-ish */
-  border-color: rgba(245, 158, 11, 0.4);
+  background: var(--warn-bg);
+  color: var(--warn-fg);
+  border-color: var(--warn-br);
 }
 
 .chipPending {
-  background: rgba(59, 130, 246, 0.12);     /* blue-500-ish */
-  color: #1e40af;                            /* blue-800-ish */
-  border-color: rgba(59, 130, 246, 0.4);
+  background: var(--pending-bg);
+  color: var(--pending-fg);
+  border-color: var(--pending-br);
 }

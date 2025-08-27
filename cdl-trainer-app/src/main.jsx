@@ -2,28 +2,31 @@
 // ============================================================
 // App bootstrap (React + Vite + Data Router)
 // - Global styles
-// - Branding pre-load (theme-color + cache)
+// - School overrides (per-school links/scheduling)  <-- added
+// - Branding pre-load (theme-color + live updates)
 // - Top-level providers (Toast, Session)
 // - Route preloading (public + role-aware, idle/network-aware)
 // - RouterProvider mount
-// - Optional top-level error boundary
+// - Compact top-level error boundary
 // ============================================================
 
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 
+// 🔹 Must run before anything reads window.schoolWebsites / schoolScheduling
+import '@/setup/school-overrides.js'
+
 // Global styles
 import './styles/index.css'
 
-// Providers
+// Providers & utils
 import SplashScreen from '@components/SplashScreen.jsx'
 import ToastProvider from '@components/ToastProvider.jsx'
 import { useAuthStatus } from '@utils/auth.js'
 import { __DEV__ } from '@utils/env.js'
 import { warmRoutesOnSession } from '@utils/route-preload.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
-
 import { SessionProvider, syncSessionDebug } from '@session'
 
 // Router
@@ -45,13 +48,13 @@ void (async () => {
       if (meta && b?.primaryColor) meta.setAttribute('content', b.primaryColor)
     })
   } catch (err) {
-    // Non-fatal: continue rendering even if branding fetch fails
     if (__DEV__) console.warn('[bootstrap] Branding fetch failed:', err)
   }
 })()
 
 /* ------------------------------------------------------------------ */
 /* Session root: exposes auth to context + warms routes on change     */
+/* Also mirrors a couple of legacy globals used by older modules.     */
 /* ------------------------------------------------------------------ */
 
 export function SessionRoot({ children }) {
@@ -69,7 +72,7 @@ export function SessionRoot({ children }) {
 
   if (__DEV__) syncSessionDebug(value)
 
-  // 🔒 Fire warming only when login state/role truly change (loop-safe)
+  // 🔥 Route warming only when login/role truly change (loop-safe)
   const last = React.useRef({ isLoggedIn: null, role: null })
   React.useEffect(() => {
     const next = { isLoggedIn: !!value.isLoggedIn, role: value.role || null }
@@ -78,6 +81,22 @@ export function SessionRoot({ children }) {
       last.current = next
     }
   }, [value.isLoggedIn, value.role, value.loading])
+
+  // 🧭 Mirror schoolId/email for legacy helpers that read from window/localStorage
+  React.useEffect(() => {
+    const u = value.user || {}
+    const schoolId = (u.profile?.schoolId ?? u.schoolId ?? '').trim()
+    const email = (u.email ?? u.profile?.email ?? '').trim()
+
+    if (schoolId) {
+      try { localStorage.setItem('schoolId', schoolId) } catch {}
+      // keep a window property too (older code checks window.schoolId first)
+      window.schoolId = schoolId
+    }
+    if (email) {
+      window.currentUserEmail = email
+    }
+  }, [value.user])
 
   return <SessionProvider value={value}>{children}</SessionProvider>
 }

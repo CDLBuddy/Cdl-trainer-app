@@ -1,9 +1,10 @@
 // src/student/profile/sections/MedicalSection.jsx
-import React, { useId, useMemo } from 'react'
+import React, { useId, useMemo, useState, useCallback } from 'react'
 
 import { getSectionStatus } from '../schema/calculators.js'
 import Field from '../ui/Field.jsx'
 import UploadField from '../ui/UploadField.jsx'
+import ui from '../ui/fields.module.css'
 
 import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
@@ -11,11 +12,15 @@ import styles from './sections.module.css'
 export default function MedicalSection({ value, onChange, onUpload }) {
   const v = useMemo(() => value || {}, [value])
   const sectionId = useId()
+  const titleId = `${sectionId}-title`
   const hintId = `${sectionId}-hint`
+  const helpId = `${sectionId}-expiry-help`
 
   // yyyy-mm-dd for <input type="date">
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
-  const expiryInvalid = v.medCardExpiry && v.medCardExpiry < today
+  const [expiryInvalid, setExpiryInvalid] = useState(
+    !!(v.medCardExpiry && v.medCardExpiry < today)
+  )
 
   // status chip via schema helpers
   const status = useMemo(
@@ -25,14 +30,35 @@ export default function MedicalSection({ value, onChange, onUpload }) {
   const verifiedBy = v?.verified?.by
   const verifiedAt = v?.verified?.at
 
-  const setField = (k, val) => onChange?.(k, val)
-  const handleSelect = (file) => {
-    if (!file) return
-    onUpload?.(file, 'students/medical', 'medicalCardUrl')
-  }
+  const setField = useCallback((k, val) => onChange?.(k, val), [onChange])
+
+  const handleSelect = useCallback(
+    (file) => {
+      if (!file) return
+      // Parent handler persists to storage + sets medicalCardUrl
+      onUpload?.(file, 'students/medical', 'medicalCardUrl')
+    },
+    [onUpload]
+  )
+
+  const handleExpiryChange = useCallback(
+    (e) => {
+      const val = e.target.value
+      const invalid = !!val && val < today
+      setExpiryInvalid(invalid)
+      // Native constraint feedback for better a11y
+      if (invalid) {
+        e.target.setCustomValidity('Expiration must be in the future.')
+      } else {
+        e.target.setCustomValidity('')
+      }
+      setField('medCardExpiry', val)
+    },
+    [setField, today]
+  )
 
   return (
-    <section id="medical" className={styles.section} aria-labelledby={`${sectionId}-title`}>
+    <section id="medical" className={styles.section} aria-labelledby={titleId}>
       <SectionHeader
         title="Medical Card"
         status={status}
@@ -40,38 +66,56 @@ export default function MedicalSection({ value, onChange, onUpload }) {
         verifiedAt={verifiedAt}
       />
 
-      <div id={`${sectionId}-title`} className="visually-hidden">Medical Card</div>
+      <h3 id={titleId} className="visually-hidden">Medical Card</h3>
       <div id={hintId} className={styles.sub}>
         Required before Behind-the-Wheel • Upload your DOT medical certificate and set its expiration date.
       </div>
 
       <div className={styles.grid2}>
-        {/* schema validate: image: true, maxMB: 8 */}
-        <UploadField
-          label={v.medicalCardUrl ? 'Replace Medical Card Image' : 'Upload Medical Card Image'}
-          currentUrl={v.medicalCardUrl}
-          accept="image/*"
-          maxSizeMB={8}
-          imageOnly
-          capture="environment"
-          previewAlt="Medical card preview"
-          onSelectFile={handleSelect}
-          ariaDescribedBy={hintId}
-        />
+        {/* Medical card upload */}
+        <div className={styles.fieldGroup}>
+          <UploadField
+            label={v.medicalCardUrl ? 'Replace Medical Card Image' : 'Upload Medical Card Image'}
+            currentUrl={v.medicalCardUrl}
+            accept="image/*"
+            maxSizeMB={8}
+            imageOnly
+            capture="environment"
+            previewAlt="Medical card preview"
+            onSelectFile={handleSelect}
+            ariaDescribedBy={hintId}
+          />
+          {v.medicalCardUrl ? (
+            <div style={{ marginTop: 8 }}>
+              <button
+                type="button"
+                className="btn outline"
+                onClick={() => setField('medicalCardUrl', '')}
+              >
+                Remove
+              </button>
+            </div>
+          ) : null}
+          <small className={styles.subtle}>
+            JPG/PNG/WebP • Max 8&nbsp;MB • Ensure your name and dates are readable.
+          </small>
+        </div>
 
-        <Field
-          type="date"
-          label="Medical Card Expiration"
-          value={v.medCardExpiry || ''}
-          onChange={(val) => setField('medCardExpiry', val)}
-          min={today} // future-only per schema (future: true)
-          ariaDescribedBy={`${hintId} ${sectionId}-expiry-help`}
-          ariaInvalid={expiryInvalid || undefined}
-        >
-          <small
-            id={`${sectionId}-expiry-help`}
-            className={expiryInvalid ? styles.errorText : styles.subtle}
-          >
+        {/* Medical card expiration */}
+        <Field label="Medical Card Expiration" required>
+          <input
+            className={`${ui.input} ${expiryInvalid ? ui.inputInvalid : ''}`}
+            id={`${sectionId}-medcard-expiry`}
+            type="date"
+            value={v.medCardExpiry || ''}
+            onChange={handleExpiryChange}
+            min={today} // future-only per schema
+            required
+            aria-describedby={`${hintId} ${helpId}`}
+            aria-invalid={expiryInvalid || undefined}
+            onInput={(e) => e.currentTarget.setCustomValidity('')}
+          />
+          <small id={helpId} className={expiryInvalid ? styles.errorText : styles.subtle}>
             {expiryInvalid ? 'Expiration must be in the future.' : 'Must be a future date.'}
           </small>
         </Field>

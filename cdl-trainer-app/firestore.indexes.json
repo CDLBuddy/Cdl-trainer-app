@@ -7,6 +7,24 @@
         { "fieldPath": "date", "order": "DESCENDING" }
       ]
     }
+  ]
+}
+    {
+      "collectionGroup": "students",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "schoolId", "order": "ASCENDING" },
+        { "fieldPath": "assignedCompany", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "certifications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "schoolId", "order": "ASCENDING" },
+        { "fieldPath": "training.classType", "order": "ASCENDING" }
+      ]
+    }
   ],
   "fieldOverrides": []
 }

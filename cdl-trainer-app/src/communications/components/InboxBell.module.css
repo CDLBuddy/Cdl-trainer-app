@@ -1,0 +1,129 @@
+/* src/communications/components/InboxBell.module.css */
+
+/* Button (container) */
+.bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+
+  background: transparent;
+  color: var(--text-light, #e8f2f6);
+  border: 1px solid color-mix(in oklab, var(--accent, #79aecd), transparent 50%);
+
+  box-shadow: inset 0 1px 0 #ffffff1a, 0 2px 10px rgb(0 0 0 / 18%);
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+.bell:hover {
+  background: color-mix(in oklab, var(--brand-mid, #143544), transparent 70%);
+  border-color: color-mix(in oklab, var(--accent, #79aecd), transparent 35%);
+  transform: translateY(-1px);
+}
+
+.bell:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.bell:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--brand-light, #4e91ad), white 35%);
+  outline-offset: 2px;
+}
+
+/* Optional unread pulse (applies when parent adds .hasUnread) */
+.hasUnread::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  pointer-events: none;
+  box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand-light, #4e91ad), transparent 0%);
+  animation: bell-ping 2100ms ease-out infinite;
+}
+
+/* Icon */
+.icon {
+  font-size: 18px;
+  line-height: 1;
+  transform: translateY(-1px); /* optical centering */
+}
+
+/* Badge */
+.badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  transform: translate(25%, -25%);
+
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+
+  display: grid;
+  place-items: center;
+
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+
+  background: var(--brand-light, #4e91ad);
+  border: 1px solid color-mix(in oklab, var(--brand-light, #4e91ad), #000 18%);
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 28%), inset 0 1px 0 #ffffff22;
+}
+
+/* Disabled state */
+.bell:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+
+/* Animations --------------------------------------------------------- */
+@keyframes bell-ping {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand-light, #4e91ad), transparent 0%);
+    opacity: 0.9;
+  }
+  70% {
+    box-shadow: 0 0 0 14px transparent;
+    opacity: 0;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    opacity: 0;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .bell,
+  .bell:hover,
+  .bell:active {
+    transition: none;
+    transform: none;
+  }
+  .hasUnread::after {
+    animation: none;
+  }
+}
+
+/* High-contrast / forced-colors support */
+@media (forced-colors: active) {
+  .bell {
+    border-color: ButtonText;
+    color: ButtonText;
+    box-shadow: none;
+  }
+  .badge {
+    border-color: ButtonText;
+    color: ButtonText;
+    background: CanvasText;
+  }
+}

@@ -166,14 +166,13 @@ function NavBar({ brand: brandProp }) {
     })
   }, [user, role])
 
-  // Build visible nav from central config
+  // Build visible nav from central config (remove extra 'Home')
   const links = useMemo(() => {
-    const base = [{ to: '/', label: 'Home', icon: '🏠', exact: true }]
     const roleLinks = (getTopNavForRole(role || 'student') || []).map(l => ({
-      exact: false, // nested routes remain active
+      exact: false, // nested routes remain active unless config says exact
       ...l,
     }))
-    return [...base, ...roleLinks]
+    return roleLinks
   }, [role])
 
   // Profile dropdown items
@@ -227,7 +226,7 @@ function NavBar({ brand: brandProp }) {
         className={styles.left}
         onClick={goHome}
         type="button"
-        aria-label="Go to home"
+        aria-label="Go to dashboard"
       >
         <img
           src={brand?.logoUrl || '/default-logo.svg'}
@@ -257,6 +256,8 @@ function NavBar({ brand: brandProp }) {
             {...prefetchOnIntent(link.to)}
             end={!!link.exact}
             role="menuitem"
+            // data-preload-key is harmless metadata for analytics/debug
+            data-preload-key={link.preloadKey || undefined}
           >
             {link.icon ? (
               <span className={styles.linkIcon} aria-hidden>

@@ -1,0 +1,134 @@
+/*src/admin/walkthroughs/Preview/WalkthroughPreview.module.css*/
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 20px;
+}
+.meta {
+  margin-left: 6px;
+  font-size: 12px;
+  color: #6b7280;
+}
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+}
+.btnPrimary {
+  composes: btn;
+  background: #111827;
+  color: #fff;
+  border-color: #111827;
+}
+.btnWarn {
+  composes: btn;
+  background: #b45309;
+  color: #fff;
+  border-color: #b45309;
+}
+
+/* Cards / layout */
+.card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #fff;
+}
+.footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.subtle {
+  color: #6b7280;
+}
+
+/* Badges */
+.badge {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #111827;
+  white-space: nowrap;
+}
+.badgePill { background: #e5e7eb; color: #111827; }
+.badgeOk    { background: #065f46; color: #fff; }
+.badgeDark  { background: #1f2937; color: #fff; }
+.badgeNeutral { background: #6b7280; color: #fff; }
+
+.badgeGood { background: #ecfdf5; color: #065f46; }
+.badgeBad  { background: #fef2f2; color: #991b1b; }
+.badgeInfo { background: #e0e7ff; color: #3730a3; }
+.badgeWarn { background: #fef3c7; color: #92400e; }
+.badgeCrit { background: #fee2e2; color: #991b1b; }
+
+/* Stats bar */
+.statsBar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.stat {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  font-size: 12px;
+  color: #6b7280;
+}
+.flex { flex: 1; }
+
+/* Sections & steps */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sectionTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+.flags {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.list {
+  list-style: none;
+  padding-left: 0;
+  margin: 8px 0 0 0;
+}
+.item { padding: 8px 0; border-top: 1px dashed #e5e7eb; }
+
+.row { display: flex; gap: 8px; align-items: baseline; }
+.n   { min-width: 28px; color: #9ca3af; font-weight: 600; }
+.stepBody { flex: 1; }
+.stepLabel { font-weight: 600; margin-bottom: 2px; }
+.stepScript { white-space: pre-wrap; line-height: 1.5; }

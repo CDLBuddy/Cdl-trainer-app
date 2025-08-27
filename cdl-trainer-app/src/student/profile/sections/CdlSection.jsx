@@ -2,7 +2,6 @@
 import React, { useMemo } from 'react'
 
 import { getWalkthroughLabel } from '@walkthrough-data'
-
 import { getSectionStatus } from '../schema/calculators.js'
 
 import SectionHeader from './SectionHeader.jsx'
@@ -11,16 +10,29 @@ import styles from './sections.module.css'
 /**
  * CdlSection (read-only for students)
  * Props:
- * - value: { course, cdlClass, overlays?: string[], assignedInstructor? , verified? }
+ * - value: {
+ *     course?: string,
+ *     cdlClass?: string,                // 'A' | 'B' | 'C' (admin-set)
+ *     overlays?: string[],              // preferred (chips)
+ *     restrictions?: string[],          // back-compat alias for overlays
+ *     assignedInstructor?: string,
+ *     verified?: { by?: string, at?: string }
+ *   }
  * - onChange?: (key, val) => void   // accepted but unused (read-only)
  * - onToggle?: (key, val) => void   // accepted but unused (read-only)
  */
-export default function CdlSection({ value = {} /* onChange, onToggle, read-only */ }) {
-  const overlays = useMemo(
-    () => (Array.isArray(value.overlays) ? value.overlays.filter(Boolean) : []),
-    [value.overlays]
-  )
+function CdlSection({ value = {} /* read-only */ }) {
+  // Normalize overlays/restrictions (support both shapes; filter empties/dupes)
+  const overlays = useMemo(() => {
+    const a = Array.isArray(value.overlays) ? value.overlays : []
+    const b = Array.isArray(value.restrictions) ? value.restrictions : []
+    const all = [...a, ...b]
+      .map((x) => (x == null ? '' : String(x).trim()))
+      .filter(Boolean)
+    return [...new Set(all)]
+  }, [value.overlays, value.restrictions])
 
+  // Section status chips + verification meta
   const status = useMemo(
     () => getSectionStatus('cdlInfo', value, value?.verified || {}),
     [value]
@@ -28,7 +40,13 @@ export default function CdlSection({ value = {} /* onChange, onToggle, read-only
   const verifiedBy = value?.verified?.by
   const verifiedAt = value?.verified?.at
 
-  const prettyClass = getWalkthroughLabel?.(value.cdlClass) || value.cdlClass || ''
+  // Pretty CDL class label (fallback to raw)
+  const prettyClass =
+    getWalkthroughLabel?.(value.cdlClass) ||
+    (value.cdlClass ? String(value.cdlClass).toUpperCase() : '')
+
+  const course = (value.course || '').trim()
+  const instructor = (value.assignedInstructor || '').trim()
 
   return (
     <section id="cdlInfo" className={styles.section} aria-labelledby="cdl-info-title">
@@ -39,7 +57,9 @@ export default function CdlSection({ value = {} /* onChange, onToggle, read-only
         verifiedAt={verifiedAt}
       />
 
-      <h3 id="cdl-info-title" className="visually-hidden">CDL Assignment</h3>
+      <h3 id="cdl-info-title" className="visually-hidden">
+        CDL Assignment
+      </h3>
 
       {/* Read-only summary card */}
       <div
@@ -51,14 +71,11 @@ export default function CdlSection({ value = {} /* onChange, onToggle, read-only
           background: 'var(--panel, #fff)',
         }}
         aria-live="polite"
+        aria-describedby="cdl-info-help"
       >
-        <Row label="Course">
-          {value.course ? value.course : <i>Not set</i>}
-        </Row>
+        <Row label="Course">{course || <i>Not set</i>}</Row>
 
-        <Row label="CDL Class">
-          {prettyClass ? prettyClass : <i>Not set</i>}
-        </Row>
+        <Row label="CDL Class">{prettyClass || <i>Not set</i>}</Row>
 
         <Row label="Overlays / Restrictions">
           {overlays.length ? (
@@ -73,9 +90,9 @@ export default function CdlSection({ value = {} /* onChange, onToggle, read-only
                     borderRadius: 999,
                     fontSize: 12,
                     lineHeight: 1.4,
-                    background: 'rgba(59,130,246,0.12)',
-                    color: '#1e40af',
-                    border: '1px solid rgba(59,130,246,0.35)',
+                    background: 'color-mix(in oklab, var(--primary, #3b82f6) 12%, transparent)',
+                    color: 'color-mix(in oklab, var(--primary-foreground, #0b2469) 80%, #0b2469)',
+                    border: '1px solid color-mix(in oklab, var(--primary, #3b82f6) 35%, transparent)',
                   }}
                 >
                   {o}
@@ -88,11 +105,11 @@ export default function CdlSection({ value = {} /* onChange, onToggle, read-only
         </Row>
 
         <Row label="Assigned Instructor">
-          {value.assignedInstructor ? value.assignedInstructor : <i>Unassigned</i>}
+          {instructor || <i>Unassigned</i>}
         </Row>
       </div>
 
-      <p className={styles.sub} style={{ marginTop: 8 }}>
+      <p id="cdl-info-help" className={styles.sub} style={{ marginTop: 8 }}>
         These fields are set by your school and are read-only. Contact your administrator if something looks off.
       </p>
     </section>
@@ -124,3 +141,5 @@ function Row({ label, children }) {
     </div>
   )
 }
+
+export default CdlSection

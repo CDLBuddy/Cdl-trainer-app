@@ -1,27 +1,36 @@
+// Path: src/walkthrough-data/loaders/resolveWalkthrough.js
 // ======================================================================
-// resolveWalkthrough (v2, polished) — NO REACT HOOKS HERE
-// - Resolve a base script (defaults or full custom per school)
-// - Optionally apply school overlays + CDL restriction overlays
-// - Two call forms (matches schema.d.ts):
+// resolveWalkthrough (v2.1 polished) — PURE FUNCTION (no React hooks)
+// - Resolves a walkthrough script by classType (+ optional school custom)
+// - Applies school overlays and CDL restriction overlays (non-destructive)
+// - Two call forms:
 //     resolveWalkthrough(classType, schoolId?)
 //     resolveWalkthrough({ classType, schoolId?, preferCustom?, softFail?, restrictions?, toast? })
-// - Pure, side-effect free; tolerant error handling in dev
+// - SSR-safe, idempotent fetches, tolerant parsing + clear dev diagnostics
 // ======================================================================
 
 import { doc, getDoc } from 'firebase/firestore'
-
 import { db } from '@utils/firebase.js'
 
 import {
   DEFAULT_WALKTHROUGHS,
-  getWalkthroughByClass,   // UI-friendly token/code helper
+  getWalkthroughByClass, // token/code helper
 } from '@walkthrough-data'
 
 import { applyOverlays } from '@walkthrough-utils'
-
 import { overlaysForRestrictions } from '@walkthrough-overlays'
 
-// ---------- Token normalization (kept in sync with your barrels) ----------
+// ---------- Small helpers ---------------------------------------------------
+
+/** DEV flag without crashing in non-Vite envs */
+const __DEV__ = !!(typeof import !== 'undefined' && typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV)
+
+/** Best-effort toast (never throws) */
+function safeToast(fn, msg, type = 'info') {
+  try { fn?.(msg, type) } catch { /* noop */ }
+}
+
+/** Map various inputs → canonical token used in data barrels */
 const CODE_TO_TOKEN = {
   A: 'class-a',
   'A-WO-AIR-ELEC': 'class-a-wo-air-elec',
@@ -32,43 +41,92 @@ const CODE_TO_TOKEN = {
 function toToken(input) {
   if (input == null) return ''
   const s = String(input).trim()
-  const asCode = s.toUpperCase().replace(/\s+/g, '-').replace(/_/g, '-')
-  if (CODE_TO_TOKEN[asCode]) return CODE_TO_TOKEN[asCode]
+  const code = s.toUpperCase().replace(/\s+/g, '-').replace(/_/g, '-')
+  if (CODE_TO_TOKEN[code]) return CODE_TO_TOKEN[code]
+  // generic slug
   return s.toLowerCase().replace(/_/g, '-').replace(/\s+/g, '-')
 }
 
-// ---------- Firestore payload coercion (tolerant) ------------------------
+/** Coerce heterogeneous Firestore payloads into a sections[] script */
 function coerceToScript(payload) {
   if (!payload) return null
-  if (Array.isArray(payload.sections)) return payload.sections           // preferred
-  if (Array.isArray(payload.script))   return payload.script             // alias
-  if (Array.isArray(payload.steps))    return [{ section: 'Custom', steps: payload.steps }] // legacy
+  if (Array.isArray(payload.sections)) return payload.sections
+  if (Array.isArray(payload.script))   return payload.script
+  if (Array.isArray(payload.steps))    return [{ section: 'Custom', steps: payload.steps }]
   return null
 }
 
-// ---------- School overlay (patch) ---------------------------------------
-async function loadSchoolOverlay(schoolId, token) {
-  if (!schoolId) return null
-  try {
-    const ref = doc(db, 'schools', String(schoolId), 'walkthroughOverlays', token)
-    const snap = await getDoc(ref)
-    if (!snap.exists()) return null
-    const data = snap.data()
-    if (data && Array.isArray(data.rules)) {
-      return { id: `school:${schoolId}:${token}`, rules: data.rules }
-    }
-  } catch {
-    // swallow overlay errors; base script will still render
+/** Normalize & dedupe restriction codes (E/L/Z/O/… → string[]) */
+function normalizeRestrictions(list) {
+  if (!Array.isArray(list) || list.length === 0) return []
+  const out = []
+  const seen = new Set()
+  for (const v of list) {
+    const s = String(v ?? '').trim().toUpperCase()
+    if (!s) continue
+    if (!seen.has(s)) { seen.add(s); out.push(s) }
   }
-  return null
+  return out
 }
 
-// ---------- Provenance helpers -------------------------------------------
-function buildSourceHint({ hasSchoolOverlay, usedRestrictionIds, isCustom }) {
+/** Provenance / meta string for quick UIs */
+function buildSourceHint({ isCustom, hasSchoolOverlay, usedRestrictionIds }) {
   const parts = [isCustom ? 'custom' : 'defaults']
   if (hasSchoolOverlay) parts.push('school-overlay')
   if (usedRestrictionIds?.length) parts.push('restrictions')
   return parts.join('+')
+}
+
+// ---------- Memoized Firestore fetches (no duplicate requests) --------------
+
+/** @type {Map<string, Promise<any|null>>} */
+const _customCache = new Map()
+/** @type {Map<string, Promise<any|null>>} */
+const _overlayCache = new Map()
+
+async function loadCustomScript(schoolId, token) {
+  if (!db || !schoolId || !token) return null
+  const key = `${schoolId}::${token}`
+  if (_customCache.has(key)) return _customCache.get(key)
+
+  const p = (async () => {
+    try {
+      const ref = doc(db, 'schools', String(schoolId), 'walkthroughs', token)
+      const snap = await getDoc(ref)
+      if (!snap.exists()) return null
+      return coerceToScript(snap.data()) || null
+    } catch (e) {
+      if (__DEV__) console.warn('[resolveWalkthrough] custom fetch failed:', e)
+      return null
+    }
+  })()
+
+  _customCache.set(key, p)
+  return p
+}
+
+async function loadSchoolOverlay(schoolId, token) {
+  if (!db || !schoolId || !token) return null
+  const key = `${schoolId}::ov::${token}`
+  if (_overlayCache.has(key)) return _overlayCache.get(key)
+
+  const p = (async () => {
+    try {
+      const ref = doc(db, 'schools', String(schoolId), 'walkthroughOverlays', token)
+      const snap = await getDoc(ref)
+      if (!snap.exists()) return null
+      const data = snap.data()
+      if (data && Array.isArray(data.rules)) {
+        return { id: `school:${schoolId}:${token}`, rules: data.rules }
+      }
+    } catch (e) {
+      if (__DEV__) console.warn('[resolveWalkthrough] school overlay fetch failed:', e)
+    }
+    return null
+  })()
+
+  _overlayCache.set(key, p)
+  return p
 }
 
 // ======================================================================
@@ -76,6 +134,8 @@ function buildSourceHint({ hasSchoolOverlay, usedRestrictionIds, isCustom }) {
 // ======================================================================
 
 /**
+ * Resolve a walkthrough script for a given class / school.
+ *
  * @param {string|{
  *   classType: string,
  *   schoolId?: string | null,
@@ -85,11 +145,11 @@ function buildSourceHint({ hasSchoolOverlay, usedRestrictionIds, isCustom }) {
  *   toast?: (msg: string, type?: 'info'|'success'|'error'|'warning') => void
  * }} arg1
  * @param {string=} arg2
- * @returns {Promise<any>}  // simple form: WalkthroughScript|null
- *                          // object form: { script, isCustom?, sourceHint?, applied? }
+ * @returns {Promise<any>} // simple form → WalkthroughScript|null
+ *                        // object form → { script, isCustom, sourceHint, applied }
  */
 export async function resolveWalkthrough(arg1, arg2) {
-  // Normalize args (support both forms)
+  // Normalize args (support both call forms)
   const opts =
     typeof arg1 === 'object' && arg1 !== null
       ? { preferCustom: true, softFail: false, restrictions: [], ...arg1 }
@@ -100,90 +160,74 @@ export async function resolveWalkthrough(arg1, arg2) {
     schoolId = null,
     preferCustom = true,
     softFail = false,
-    restrictions = [],
     toast,
   } = opts
 
+  const restrictions = normalizeRestrictions(opts.restrictions)
+
   if (!classType) {
-    if (import.meta.env.DEV) console.warn('[resolveWalkthrough] Missing classType')
+    if (__DEV__) console.warn('[resolveWalkthrough] Missing classType')
     return typeof arg1 === 'object' ? { script: null, sourceHint: 'error' } : null
   }
 
   const token = toToken(classType)
 
-  // 1) Try FULL custom replacement first (if permitted)
+  // 1) Full school custom script
   if (preferCustom && schoolId) {
     try {
-      const ref = doc(db, 'schools', String(schoolId), 'walkthroughs', token)
-      const snap = await getDoc(ref)
+      const customScript = await loadCustomScript(schoolId, token)
+      if (Array.isArray(customScript) && customScript.length) {
+        const restrictionOverlays = restrictions.length ? overlaysForRestrictions(restrictions) : []
+        const appliedIds = restrictionOverlays.map(o => o?.id).filter(Boolean)
+        const finalScript = restrictionOverlays.length
+          ? applyOverlays(customScript, restrictionOverlays)
+          : customScript
 
-      if (snap.exists()) {
-        const customScript = coerceToScript(snap.data())
-        if (customScript && customScript.length) {
-          // Apply restriction overlays on top of custom (school-owned) script
-          const restrictionOverlays = overlaysForRestrictions(restrictions || [])
-          const appliedIds = restrictionOverlays.map(o => o.id).filter(Boolean)
-          const finalScript = restrictionOverlays.length
-            ? applyOverlays(customScript, restrictionOverlays)
-            : customScript
-
-          const result = {
-            script: finalScript,
-            isCustom: true,
-            sourceHint: buildSourceHint({ isCustom: true, usedRestrictionIds: appliedIds }),
-            applied: appliedIds,
-          }
-          return typeof arg1 === 'object' ? result : finalScript
+        const meta = {
+          script: finalScript,
+          isCustom: true,
+          sourceHint: buildSourceHint({ isCustom: true, usedRestrictionIds: appliedIds }),
+          applied: appliedIds,
         }
-        if (import.meta.env.DEV) {
-          console.warn(`[resolveWalkthrough] Custom walkthrough for ${token} exists but is empty/malformed`)
-        }
-      } else if (import.meta.env.DEV) {
-        console.warn(`[resolveWalkthrough] No custom walkthrough found for ${token} at school ${schoolId}`)
+        return typeof arg1 === 'object' ? meta : finalScript
       }
+      if (__DEV__) console.warn(`[resolveWalkthrough] No usable custom script for "${token}" at school "${schoolId}"`)
     } catch (e) {
-      try { toast?.('Failed to load custom walkthrough. Using default.', 'warning') } catch {
-        // Intentionally ignore toast errors (non-critical)
-      }
+      safeToast(toast, 'Failed to load custom walkthrough. Using default.', 'warning')
       if (!softFail) throw e
-      // fall through to defaults
+      // else fall through to defaults
     }
   }
 
-  // 2) Base default (token-aware helper first; falls back to map)
-  const base =
-    getWalkthroughByClass?.(token) ||
-    DEFAULT_WALKTHROUGHS?.[token] ||
-    null
-
+  // 2) Defaults (via helper first; fallback to map)
+  const base = (getWalkthroughByClass?.(token) || DEFAULT_WALKTHROUGHS?.[token] || null)
   if (!base) {
-    try { toast?.(`Walkthrough for ${classType} not available.`, 'error') } catch { /* ignore toast errors */ }
+    safeToast(toast, `Walkthrough for ${classType} not available.`, 'error')
     return typeof arg1 === 'object' ? { script: null, sourceHint: 'not-found' } : null
   }
 
-  // 3) School overlay (patch) + restriction overlays (patch)
+  // 3) School overlay + restrictions
   const overlays = []
   const schoolOv = await loadSchoolOverlay(schoolId, token)
   if (schoolOv) overlays.push(schoolOv)
 
-  const restrictionOverlays = overlaysForRestrictions(restrictions || [])
-  overlays.push(...restrictionOverlays)
+  if (restrictions.length) overlays.push(...overlaysForRestrictions(restrictions))
 
   const finalScript = overlays.length ? applyOverlays(base, overlays) : base
+  const appliedIds  = overlays.map(o => o?.id).filter(Boolean)
 
-  const appliedIds = overlays.map(o => o.id).filter(Boolean)
-  const result = {
+  const meta = {
     script: finalScript,
     isCustom: false,
     sourceHint: buildSourceHint({
       isCustom: false,
       hasSchoolOverlay: !!schoolOv,
-      usedRestrictionIds: appliedIds.filter(id => id?.startsWith?.('restriction:')),
+      usedRestrictionIds: appliedIds.filter(id => String(id).startsWith('restriction:')),
     }),
     applied: appliedIds,
   }
 
-  return typeof arg1 === 'object' ? result : finalScript
+  return typeof arg1 === 'object' ? meta : finalScript
 }
 
 export default resolveWalkthrough

@@ -1,0 +1,84 @@
+/* src/student/dashboard/components/QuickLinks.module.css */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 8px;
+  flex-wrap: wrap;
+}
+
+.noWrap {
+  flex-wrap: nowrap;
+  overflow: auto hidden;
+  scrollbar-width: thin;
+}
+
+/* alignment variants */
+.a_left   { justify-content: flex-start; }
+.a_center { justify-content: center; }
+.a_right  { justify-content: flex-end; }
+
+/* size variants adjust button padding & font */
+.s_sm .btn { padding: 6px 10px; font-size: .92rem; }
+.s_md .btn { padding: 8px 12px; font-size: 1rem; }
+.s_lg .btn { padding: 10px 14px; font-size: 1.05rem; }
+
+/* button */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklab, var(--brand-light, #22d3ee), #000 45%);
+  background: color-mix(in oklab, var(--brand-mid, #164e63), #000 72%);
+  color: var(--text-light, #eaf6f9);
+  text-decoration: none;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, background .12s ease;
+  padding: 8px 12px; /* default for s_md */
+  will-change: transform;
+}
+
+.btn:hover,
+.btn:focus-visible {
+  border-color: color-mix(in oklab, var(--brand-light, #22d3ee), #fff 14%);
+  background: color-mix(in oklab, var(--brand-mid, #164e63), #000 64%);
+  box-shadow: 0 10px 20px #0004;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* disabled/inert style */
+.isDisabled {
+  cursor: not-allowed;
+  opacity: .6;
+  filter: grayscale(.1);
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* icon & label */
+.icon {
+  font-size: 1.05rem;
+  filter: drop-shadow(0 1px 6px #0007);
+}
+
+.label {
+  white-space: nowrap;
+}
+
+/* external mark (↗) */
+.externalMark {
+  margin-left: 2px;
+  opacity: .9;
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none !important; }
+}

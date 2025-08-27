@@ -1,4 +1,10 @@
-// Path: src/admin/communications/hooks/index.js
-export { default as useComposeMessage } from './useComposeMessage.js'
-export { default as useMessageHistory } from './useMessageHistory.js'
-export { default as useTemplates } from './useTemplates.js'
+// src/admin/communications/hooks/index.js
+// ======================================================================
+// Admin • Communications • Hooks (barrel)
+// - Pure named exports (no defaults, no side effects)
+// - Keeps import sites tidy: `import { useComposeMessage } from '@admin/communications'`
+// ======================================================================
+
+export { useComposeMessage } from './useComposeMessage.js'
+export { useMessageHistory } from './useMessageHistory.js'
+export { useTemplates }      from './useTemplates.js'

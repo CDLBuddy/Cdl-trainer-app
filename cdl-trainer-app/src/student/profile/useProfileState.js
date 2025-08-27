@@ -1,112 +1,144 @@
 // src/student/profile/useProfileState.js
 // ============================================================================
-// useProfileState(email, options?)
+// useProfileState(email?, options?)
 // Lightweight profile loader with optional realtime subscription.
-// Adds derived flags + a safe nested selector for dotted paths.
+// - Works with new @user-profile lib (get/subscribe)
+// - Optional fallback to current auth user when email is not provided
+// - Race-safe, SSR-safe, with derived flags + dotted-path selector
 // ============================================================================
 
 import * as React from 'react'
-
-import { getUserProfile, subscribeUserProfile } from '@utils/userProfile.js'
+import { auth } from '@utils/firebase.js'
+import { getUserProfile, subscribeUserProfile } from '@user-profile'
 
 /**
  * @typedef {Object} UseProfileOptions
- * @property {Object|null} [initial=null]  Initial profile value (used if no email)
- * @property {boolean} [realtime=true]     Subscribe to live updates
+ * @property {Object|null} [initial=null]       Initial profile when no email
+ * @property {boolean}     [realtime=true]      Subscribe to live updates
+ * @property {boolean}     [fallbackToAuth=true]Use auth.currentUser.email if email is falsy
  */
 
 /**
  * @typedef {Object} UseProfileReturn
  * @property {Object|null} profile
  * @property {(updater: Function|Object) => void} setProfile
+ * @property {boolean} ready                     // !loading
  * @property {boolean} loading
  * @property {Error|null} error
  * @property {() => Promise<void>} refresh
- * @property {boolean} isEmployerPaid         billing.mode === 'employer'
- * @property {boolean} isIndividual           billing.mode === 'individual'
- * @property {boolean} hasVehicle             vehicleQualified === 'yes'
- * @property {Object}  verified               verified block (or {})
- * @property {(path:string, fallback?:any)=>any} select  Safe dotted getter, e.g. select('billing.mode','employer')
+ * @property {boolean} isEmployerPaid            // billing.mode === 'employer'
+ * @property {boolean} isIndividual              // billing.mode === 'individual'
+ * @property {boolean} hasVehicle                // vehicleQualified === 'yes'
+ * @property {Object}  verified                  // {} or map; boolean true becomes {global:true}
+ * @property {(path:string, fallback?:any)=>any} select  // dotted getter
  */
 
+function shallowEqual(a, b) {
+  if (Object.is(a, b)) return true
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false
+  const ka = Object.keys(a), kb = Object.keys(b)
+  if (ka.length !== kb.length) return false
+  for (let i = 0; i < ka.length; i++) {
+    const k = ka[i]
+    if (!Object.prototype.hasOwnProperty.call(b, k) || !Object.is(a[k], b[k])) return false
+  }
+  return true
+}
+
 /**
- * useProfileState(email, options?)
- * @param {string|null|undefined} email
- * @param {UseProfileOptions} [options]
- * @returns {UseProfileReturn}
+ * useProfileState(email?, options?)
+ * If email is omitted and fallbackToAuth is true, we’ll use the current user.
  */
-export function useProfileState(email, { initial = null, realtime = true } = {}) {
-  const [profile, setProfile] = React.useState(initial)
+export function useProfileState(email, {
+  initial = null,
+  realtime = true,
+  fallbackToAuth = true,
+} = {}) {
+  // Resolve effective email (once per render) with auth fallback
+  const effectiveEmail = React.useMemo(() => {
+    if (email) return email
+    if (!fallbackToAuth) return ''
+    try {
+      return auth?.currentUser?.email || ''
+    } catch { return '' }
+  }, [email, fallbackToAuth])
+
+  const [profile, _setProfile] = React.useState(initial)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState(null)
 
   // Track the latest email to ignore late async updates
-  const latestEmailRef = React.useRef(email)
+  const latestEmailRef = React.useRef(effectiveEmail)
 
-  // Shallow set: avoid rerenders when nothing changed
-  const setProfileShallow = React.useCallback((next) => {
-    setProfile(prev => {
+  // Shallow setter avoids extra renders for identical objects
+  const setProfile = React.useCallback((next) => {
+    _setProfile(prev => {
       const value = typeof next === 'function' ? next(prev) : next
-      return shallowEqual(prev, value) ? prev : value
+      return shallowEqual(prev || null, value || null) ? prev : value
     })
   }, [])
 
   const refresh = React.useCallback(async () => {
-    if (!email) {
-      setLoading(false)
-      setProfileShallow(initial || null)
+    const currentEmail = effectiveEmail
+    latestEmailRef.current = currentEmail
+
+    if (!currentEmail) {
+      setProfile(initial || null)
       setError(null)
+      setLoading(false)
       return
     }
+
     try {
       setLoading(true)
       setError(null)
-      latestEmailRef.current = email
-      const data = await getUserProfile(email) // may return null
-      if (latestEmailRef.current === email) {
-        setProfileShallow(data || {})
+      const data = await getUserProfile(currentEmail) // may be null
+      if (latestEmailRef.current === currentEmail) {
+        setProfile(data || {})
       }
     } catch (err) {
-      if (latestEmailRef.current === email) setError(err || new Error('Failed to load profile'))
+      if (latestEmailRef.current === currentEmail) {
+        setError(err || new Error('Failed to load profile'))
+      }
     } finally {
-      if (latestEmailRef.current === email) setLoading(false)
+      if (latestEmailRef.current === currentEmail) {
+        setLoading(false)
+      }
     }
-  }, [email, initial, setProfileShallow])
+  }, [effectiveEmail, initial, setProfile])
 
+  // Initial load + optional realtime subscription
   React.useEffect(() => {
     let unsub = () => {}
-    let mounted = true
+    let active = true
 
     ;(async () => {
       await refresh()
-      if (!mounted) return
+      if (!active) return
 
-      if (realtime && email) {
+      if (realtime && effectiveEmail) {
         try {
-          unsub = subscribeUserProfile(email, (live) => {
-            if (!mounted || latestEmailRef.current !== email) return
-            if (live) setProfileShallow(live)
+          unsub = subscribeUserProfile(effectiveEmail, (live) => {
+            if (!active || latestEmailRef.current !== effectiveEmail) return
+            if (live) setProfile(live)
           })
         } catch {
-          // Non-fatal: ignore if subscription is unavailable
+          // Non-fatal; keep showing the last loaded snapshot
         }
       }
     })()
 
     return () => {
-      mounted = false
-      try { unsub && unsub() } catch { /* ignore unsubscribe errors */ }
+      active = false
+      try { unsub() } catch {}
     }
-    // Intentionally depend only on email/realtime.
-  }, [email, realtime]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [effectiveEmail, realtime, refresh, setProfile])
 
-  /* ---------------------------------------------------------------------- */
-  /* Derived flags + selector                                               */
-  /* ---------------------------------------------------------------------- */
+  /* -------------------------- Derived helpers -------------------------- */
 
   const select = React.useCallback((path, fallback = undefined) => {
     if (!profile || !path) return fallback
-    const val = path.split('.').reduce((acc, key) => (acc == null ? acc : acc[key]), profile)
+    const val = path.split('.').reduce((acc, k) => (acc == null ? acc : acc[k]), profile)
     return val == null ? fallback : val
   }, [profile])
 
@@ -114,42 +146,26 @@ export function useProfileState(email, { initial = null, realtime = true } = {})
   const isEmployerPaid = billingMode === 'employer'
   const isIndividual   = billingMode === 'individual'
   const hasVehicle     = String(select('vehicleQualified', '')).toLowerCase() === 'yes'
-  const verified       = select('verified', {}) || {}
+
+  // verified may be: true | {} | {section:boolean|{by,at}}
+  const verifiedRaw = select('verified', {})
+  const verified = (verifiedRaw === true)
+    ? { global: true }
+    : (verifiedRaw && typeof verifiedRaw === 'object' ? verifiedRaw : {})
 
   return {
     profile,
-    setProfile: setProfileShallow,
+    setProfile,
+    ready: !loading,
     loading,
     error,
     refresh,
-    // derived
     isEmployerPaid,
     isIndividual,
     hasVehicle,
     verified,
     select,
   }
-}
-
-/* -------------------------------------------------------------------------- */
-/* Utils                                                                      */
-/* -------------------------------------------------------------------------- */
-
-function shallowEqual(a, b) {
-  if (Object.is(a, b)) return true
-  if (!a || !b) return false
-  if (typeof a !== 'object' || typeof b !== 'object') return false
-
-  const aKeys = Object.keys(a)
-  const bKeys = Object.keys(b)
-  if (aKeys.length !== bKeys.length) return false
-  for (let i = 0; i < aKeys.length; i++) {
-    const k = aKeys[i]
-    if (!Object.prototype.hasOwnProperty.call(b, k) || !Object.is(a[k], b[k])) {
-      return false
-    }
-  }
-  return true
 }
 
 export default useProfileState

@@ -1,5 +1,5 @@
 // src/student/profile/sections/CoursePaymentSection.jsx
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 
 import { getSectionStatus } from '../schema/calculators.js'
 import Select from '../ui/Select.jsx'
@@ -15,28 +15,44 @@ const PAYMENT_STATUS_OPTIONS = [
   { value: 'paid',    label: 'Paid' },
 ]
 
-export default function CoursePaymentSection({ value, onChange, onUpload }) {
+// Normalize payer mode across shapes we’ve used in admin/student
+function normalizePayerMode(v = {}) {
+  const raw =
+    v?.billing?.mode ??
+    v?.billingMode ??
+    v?.billing?.payerDefault ?? // admin snapshot field
+    ''
+  return String(raw).trim().toLowerCase()
+}
+
+export default function CoursePaymentSection({ value = {}, onChange, onUpload }) {
   const v = useMemo(() => value || {}, [value])
-  const mode = String(v?.billing?.mode || '').toLowerCase()
+
+  // Honor both: parent already hides when employer, but be defensive here too
+  const payer = normalizePayerMode(v)
+  const isEmployerPaid = ['employer', 'company', 'sponsor', 'corporate'].includes(payer)
+  if (isEmployerPaid) return null
 
   const status = useMemo(
     () => getSectionStatus('payment', v, v?.verified || {}),
     [v]
   )
-
-  // Hide completely when employer-paid
-  if (mode !== 'individual') return null
   const verifiedBy = v?.verified?.by
   const verifiedAt = v?.verified?.at
-  const setField = (k, val) => onChange?.(k, val)
 
-  const handleProofUpload = (file) => {
-    if (!file) return
-    // Parent handles upload + URL write
-    onUpload?.(file, 'students/payments', 'paymentProofUrl')
-  }
+  const setField = useCallback((k, val) => onChange?.(k, val), [onChange])
+
+  const handleProofUpload = useCallback(
+    (file) => {
+      if (!file) return
+      // Parent handles upload + URL write
+      onUpload?.(file, 'students/payments', 'paymentProofUrl')
+    },
+    [onUpload]
+  )
 
   const isPaid = String(v.paymentStatus || '').toLowerCase() === 'paid'
+  const hasProof = !!v.paymentProofUrl
 
   return (
     <section id="payment" className={styles.section} aria-labelledby="payment-title">
@@ -56,16 +72,17 @@ export default function CoursePaymentSection({ value, onChange, onUpload }) {
         <Select
           label="Payment Status"
           value={v.paymentStatus || ''}
-          onChange={val => setField('paymentStatus', val)}
+          onChange={(val) => setField('paymentStatus', val)}
           options={PAYMENT_STATUS_OPTIONS}
-          hint="Set to Paid once you’ve completed payment."
+          hint="Set to Paid after you’ve completed payment."
+          aria-describedby="payment-hint"
         />
       </div>
 
       {isPaid && (
-        <div className={styles.grid}>
+        <div className={styles.grid} aria-live="polite">
           <UploadField
-            label="Upload Payment Proof"
+            label={hasProof ? 'Replace Payment Proof' : 'Upload Payment Proof'}
             currentUrl={v.paymentProofUrl}
             accept="image/*"
             maxSizeMB={8}
@@ -75,6 +92,18 @@ export default function CoursePaymentSection({ value, onChange, onUpload }) {
             previewAlt="Payment proof"
             hint="Photo/screenshot of a receipt or confirmation • Max 8MB."
           />
+          {hasProof && (
+            <div style={{ marginTop: 8 }}>
+              <button
+                type="button"
+                className="btn outline"
+                onClick={() => setField('paymentProofUrl', '')}
+                aria-label="Remove uploaded payment proof"
+              >
+                Remove proof
+              </button>
+            </div>
+          )}
         </div>
       )}
     </section>

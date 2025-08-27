@@ -1,9 +1,158 @@
-/*src/admin/reports/AdminReports.module.css*/
+/* ============================================================================
+   AdminReports.module.css
+   - Matches Admin Dashboard theme (tokens from src/styles/theme.css)
+   - Local classes aligned with AdminReports.jsx
+   ========================================================================== */
 
-.wrap { max-width: 1000px; margin: 0 auto; }
-.head { margin-bottom: 1rem; }
-.scope { color: #6b8a99; font-weight: 600; }
-.card { background: #fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; box-shadow:0 1px 2px rgba(0,0,0,.06); }
-.controls { display:flex; gap:1.2em; flex-wrap:wrap; margin-bottom:1em; }
-.tableScroll { background: rgba(10,40,60,.07); border-radius:13px; overflow:auto; }
-.srOnly { position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0; clip:rect(0 0 0 0); overflow:hidden; }
+/* ---------- Page wrapper ---------- */
+.wrap {
+  display: grid;
+  gap: 14px;
+}
+
+/* Card refinements only when inside Reports page wrapper */
+.wrap :global(.dashboard-card) {
+  background: var(--card-bg, rgba(255, 255, 255, 0.06));
+  color: var(--text-light, #fff);
+  border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
+  border-radius: var(--radius-md, 10px);
+  padding: 14px;
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.wrap :global(.dashboard-card:hover),
+.wrap :global(.dashboard-card:focus-within) {
+  border-color: color-mix(in oklab, var(--accent, #c4dbe8), #fff 16%);
+  box-shadow: var(--shadow-2, 0 10px 30px rgba(0,0,0,.25));
+}
+
+/* ---------- Header ---------- */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 2px 8px;
+  border-bottom: 1px dashed rgba(255,255,255,.10);
+}
+.scope {
+  font-size: .9rem;
+  color: color-mix(in oklab, var(--text-light, #fff), #000 35%);
+  background: color-mix(in oklab, var(--accent, #c4dbe8), #000 80%);
+  border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
+  padding: 6px 10px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+}
+
+/* ---------- Section title (global helper used by JSX) ---------- */
+:global(.section-title) {
+  font-weight: 800;
+  letter-spacing: .01em;
+  margin: -2px 0 10px;
+  color: var(--text-light, #fff);
+  opacity: .95;
+}
+
+/* ---------- Company chips row ---------- */
+.chipsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  /* Mobile-friendly horizontal scroll when overflowed */
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- Company chip ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--text-light, #fff);
+  background: rgba(255,255,255,.06);
+  border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 55%);
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease, transform .05s ease;
+  cursor: pointer;
+  user-select: none;
+  scroll-snap-align: start;
+}
+.chip:hover,
+.chip:focus-visible {
+  background: rgba(255,255,255,.10);
+  border-color: color-mix(in oklab, var(--accent, #c4dbe8), #fff 12%);
+  box-shadow: var(--shadow-2, 0 10px 30px rgba(0,0,0,.25));
+  outline: none;
+}
+.chip:active { transform: translateY(1px); }
+
+.chipActive {
+  background: color-mix(in oklab, var(--brand-dark, #0b1a22), #fff 6%);
+  border-color: color-mix(in oklab, var(--brand-light, #4e91ad), #fff 18%);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light, #4e91ad), #fff 10%);
+}
+
+/* Chip content parts */
+.chipLabel { font-weight: 700; letter-spacing: .01em; }
+.chipCount {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 .45em;
+  border-radius: 999px;
+  font-size: .8rem;
+  line-height: 1;
+  color: #fff;
+  background: color-mix(in oklab, var(--accent, #c4dbe8), #000 20%);
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+}
+.chipPill {
+  display: inline-flex;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* ---------- Small muted text ---------- */
+.muted {
+  font-size: .9rem;
+  color: color-mix(in oklab, var(--text-light, #fff), #000 50%);
+  opacity: .9;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 720px) {
+  .head { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .scope { font-size: .85rem; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .wrap :global(.dashboard-card),
+  .chip {
+    transition: none;
+  }
+}
+
+/* ---------- High contrast / forced colors ---------- */
+@media (forced-colors: active) {
+  .wrap :global(.dashboard-card) {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: ButtonText !important;
+    box-shadow: none !important;
+  }
+  .chip,
+  .chipActive {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: ButtonText !important;
+    box-shadow: none !important;
+  }
+}

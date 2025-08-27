@@ -24,6 +24,7 @@ import {
   // re-exports
   doc, getDoc, setDoc, updateDoc, addDoc, collection,
   serverTimestamp, increment, query, orderBy, limit, getDocs,
+  where, startAfter,
 } from 'firebase/firestore'
 import { getStorage, connectStorageEmulator } from 'firebase/storage'
 
@@ -53,9 +54,8 @@ const MULTI_TAB       = String(import.meta.env.VITE_FIRESTORE_MULTI_TAB || 'fals
 
 // Sanity warn in dev when not using emulators without real env set
 if (IS_DEV && !IS_EMU) {
-  const missing = Object.entries(firebaseConfig).filter(([_, v]) => !v)
+  const missing = Object.entries(firebaseConfig).filter(([, v]) => !v)
   if (missing.length) {
-     
     console.warn(
       '[firebase] Missing real env for:',
       missing.map(([k]) => k).join(', '),
@@ -72,33 +72,34 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
 const auth = getAuth(app)
 if (IS_EMU && IS_BROWSER) {
   try {
-    // Avoid “already connected” spam by constructing the URL once
     const authUrl = `http://${EMU_HOST}:${EMU_AUTH_PORT}`
-    // @ts-expect-error: disableWarnings accepted by SDK
     connectAuthEmulator(auth, authUrl, { disableWarnings: true })
     if (IS_DEV) console.warn('[firebase] Auth emulator:', authUrl)
   } catch (e) {
     if (IS_DEV) console.warn('[firebase] Failed to connect Auth emulator', e)
   }
 }
-// Set persistence after emulator wiring
-setPersistence(auth, browserLocalPersistence).catch((e) => {
-  if (IS_DEV) console.warn('[firebase] setPersistence fell back to default', e)
-})
+// Set persistence after emulator wiring (browser-only)
+if (IS_BROWSER) {
+  setPersistence(auth, browserLocalPersistence).catch((e) => {
+    if (IS_DEV) console.warn('[firebase] setPersistence fell back to default', e)
+  })
+}
 
 // Firestore — robust cache + network fallbacks
 let db
 try {
   db = initializeFirestore(app, {
-    cache: persistentLocalCache({
+    localCache: persistentLocalCache({
       tabManager: MULTI_TAB ? persistentMultipleTabManager() : persistentSingleTabManager(),
     }),
     experimentalAutoDetectLongPolling: true, // smoother on VPNs/hotel Wi-Fi
-    // useFetchStreams: false, // uncomment if you still see listener noise
+    // ignoreUndefinedProperties: true,      // enable if your writes may contain undefined
+    // useFetchStreams: false,               // uncomment if you still see listener noise
   })
 } catch {
   // Fallback (in-memory) if persistent cache init fails (private/incognito, etc.)
-  db = initializeFirestore(app, { cache: memoryLocalCache() })
+  db = initializeFirestore(app, { localCache: memoryLocalCache() })
 }
 if (IS_EMU && IS_BROWSER) {
   try {
@@ -126,10 +127,8 @@ if (IS_EMU && IS_BROWSER) {
 export async function __firebaseHealthcheck() {
   try {
     await getDoc(doc(db, '_health', '_ping')) // existence not required
-    // eslint-disable-next-line no-console
     console.info('[firebase] Firestore reachable')
   } catch (e) {
-     
     console.error('[firebase] Firestore unreachable', e)
   }
 }
@@ -150,12 +149,12 @@ export async function getLatestUpdate() {
 }
 
 export function getCurrentUserSchool() {
-  try { return localStorage.getItem('schoolId') || null } catch { return null }
+  try { return IS_BROWSER ? localStorage.getItem('schoolId') || null : null } catch { return null }
 }
 
 // NOTE: this “userRoles” collection is a light helper; your main role source
-// is still custom claims / users/<uid>. Keep these consistent or consider
-// removing this helper if it diverges from your auth flow.
+// is still custom claims / users/<uid>. Keep these consistent or remove this helper
+// if it diverges from your auth flow.
 export async function getUserRole(email) {
   try {
     if (!email) return 'student'
@@ -188,6 +187,7 @@ export { app, db, auth, storage }
 export {
   doc, getDoc, setDoc, updateDoc, addDoc, collection,
   serverTimestamp, increment, query, orderBy, limit, getDocs,
+  where, startAfter,
 }
 
 // Also export flags if you want quick checks elsewhere

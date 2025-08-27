@@ -2,13 +2,12 @@
 // ======================================================================
 // Central helpers for routing + nav across the app (React Router v6+)
 // - Role normalization & detection
-// - Dashboard helpers, safe navigation wrappers
-// - Route builders (kept DRY)
+// - Dashboard helpers, safe navigation wrappers (now handles external URLs)
+// - Route builders (kept DRY) + profileSection() helper
 // - Top/hidden nav link accessors (from navConfig) with safe fallbacks
 // - Pure module (no side effects) for SSR/tree-shaking friendliness
 // ======================================================================
 
-// Keep imports pure — this file has no React deps.
 import {
   normalizeRole as cfgNormalizeRole,
   getDashboardRoute as cfgGetDashboardRoute,
@@ -76,7 +75,18 @@ export function getCurrentRole() {
 // Small URL helpers (defensive)
 // ======================================================================
 
-/** @param {string|URL} input */ 
+/** @param {string} s */
+export function isExternalURL(s = '') {
+  const v = String(s || '')
+  return /^(?:https?:|mailto:|tel:)/i.test(v)
+}
+
+/** @param {string} s */
+export function isJavascriptURL(s = '') {
+  return /^javascript:/i.test(String(s || ''))
+}
+
+/** @param {string|URL} input */
 export function toURL(input) {
   try {
     if (input instanceof URL) return input
@@ -163,7 +173,10 @@ export function goToCurrentDashboard(navigate, roleOverride = null, options = { 
 // ======================================================================
 
 /**
- * Wrapper around react-router navigate that falls back to hard navigation.
+ * Wrapper around react-router navigate that also handles external URLs safely.
+ * - Internal path: uses client-side navigate(to, options).
+ * - External (http/https/mailto/tel): hard navigate via window.location.assign().
+ * - Guards against javascript: URLs.
  * @param {(to:string, opts?:any)=>void|undefined} navigate
  * @param {string|URL} to
  * @param {any} [options]
@@ -171,13 +184,18 @@ export function goToCurrentDashboard(navigate, roleOverride = null, options = { 
 export function safeNavigate(navigate, to, options = {}) {
   const href = to instanceof URL ? to.href : String(to || '/')
   try {
+    if (isJavascriptURL(href)) return // ignore dangerous URLs
+    if (isExternalURL(href)) {
+      if (typeof window !== 'undefined') window.location.assign(href)
+      return
+    }
+    const path = href instanceof URL ? href.pathname + href.search + href.hash : href
     if (typeof navigate === 'function') {
-      navigate(href, options)
+      navigate(path, options)
     } else if (typeof window !== 'undefined') {
-      window.location.assign(href)
+      window.location.assign(path)
     }
   } catch (err) {
-     
     console.error('[navigation] navigate failed:', err)
     try {
       if (typeof window !== 'undefined') window.location.assign(href)
@@ -211,9 +229,12 @@ export function redirectAfterLogin(navigate, role, location) {
 // ======================================================================
 
 // ---- Student
-export const StudentRoutes = {
+export const StudentRoutes = Object.freeze({
   dashboard:     () => '/student/dashboard',
   profile:       () => '/student/profile',
+  /** Deep-link to a profile section via hash, e.g., "#permit" */
+  profileSection: (section = '') =>
+    `/student/profile${section ? `#${String(section).replace(/\s+/g, '-').toLowerCase()}` : ''}`,
   checklists:    () => '/student/checklists',
   practiceTests: () => '/student/practice-tests',
   testEngine:    (testName = '') => `/student/test-engine/${encodeURIComponent(testName)}`,
@@ -221,18 +242,18 @@ export const StudentRoutes = {
   testResults:   () => '/student/test-results',
   walkthrough:   () => '/student/walkthrough',
   flashcards:    () => '/student/flashcards',
-}
+})
 
 // ---- Instructor
-export const InstructorRoutes = {
+export const InstructorRoutes = Object.freeze({
   dashboard:       () => '/instructor/dashboard',
   profile:         () => '/instructor/profile',
   checklistReview: () => '/instructor/checklist-review',
   studentProfile:  (studentId) => `/instructor/student-profile/${encodeURIComponent(studentId)}`,
-}
+})
 
 // ---- Admin (Users removed; companies own user mgmt)
-export const AdminRoutes = {
+export const AdminRoutes = Object.freeze({
   dashboard:     () => '/admin/dashboard',
   profile:       () => '/admin/profile',
   companies:     () => '/admin/companies',
@@ -240,10 +261,10 @@ export const AdminRoutes = {
   billing:       () => '/admin/billing',
   walkthroughs:  () => '/admin/walkthroughs',
   settings:      () => '/admin/settings',
-}
+})
 
 // ---- Superadmin
-export const SuperadminRoutes = {
+export const SuperadminRoutes = Object.freeze({
   dashboard:    () => '/superadmin/dashboard',
   schools:      () => '/superadmin/schools',
   users:        () => '/superadmin/users',
@@ -253,10 +274,10 @@ export const SuperadminRoutes = {
   logs:         () => '/superadmin/logs',
   permissions:  () => '/superadmin/permissions',
   walkthroughs: () => '/superadmin/walkthroughs',
-}
+})
 
 // ---- Unified role-aware builders
-export const RouteBuilders = {
+export const RouteBuilders = Object.freeze({
   /**
    * Role-aware profile route.
    * @param {'student'|'instructor'|'admin'|'superadmin'|string} role
@@ -274,6 +295,7 @@ export const RouteBuilders = {
   // Student aliases
   studentDashboard:     StudentRoutes.dashboard,
   studentProfile:       StudentRoutes.profile,
+  studentProfileSection:StudentRoutes.profileSection,
   studentChecklists:    StudentRoutes.checklists,
   studentPracticeTests: StudentRoutes.practiceTests,
   studentTestEngine:    StudentRoutes.testEngine,
@@ -307,7 +329,7 @@ export const RouteBuilders = {
   superadminLogs:         SuperadminRoutes.logs,
   superadminPermissions:  SuperadminRoutes.permissions,
   superadminWalkthroughs: SuperadminRoutes.walkthroughs,
-}
+})
 
 // ======================================================================
 // Nav links (top + hidden) – sourced from navConfig.js with fallbacks
@@ -325,52 +347,17 @@ export function getHiddenRoutesForRole(role) {
   return Array.isArray(res) ? [...res] : []
 }
 
-/**
- * Generated top-nav set when navConfig is absent.
- * @param {'student'|'instructor'|'admin'|'superadmin'|string} role
- */
-export function getNavLinksForRole(role) {
-  const links = getTopNavForRole(role)
-  if (links.length) return links
+/** Alias */
+export const getNavLinksForRole = getTopNavForRole
 
-  switch (normalizeRole(role)) {
-    case 'superadmin':
-      return [
-        { to: SuperadminRoutes.dashboard(),    label: 'Dashboard',    icon: '🏠', exact: true },
-        { to: SuperadminRoutes.schools(),      label: 'Schools',      icon: '🏫' },
-        { to: SuperadminRoutes.users(),        label: 'Users',        icon: '👥' },
-        { to: SuperadminRoutes.compliance(),   label: 'Compliance',   icon: '🛡️' },
-        { to: SuperadminRoutes.walkthroughs(), label: 'Walkthroughs', icon: '🧭' },
-        { to: SuperadminRoutes.billing(),      label: 'Billing',      icon: '💳' },
-        { to: SuperadminRoutes.settings(),     label: 'Settings',     icon: '⚙️' },
-        { to: SuperadminRoutes.logs(),         label: 'Logs',         icon: '📜' },
-        { to: SuperadminRoutes.permissions(),  label: 'Permissions',  icon: '🔐' },
-      ]
-    case 'admin':
-      return [
-        { to: AdminRoutes.dashboard(),    label: 'Dashboard',    icon: '🏠', exact: true },
-        { to: AdminRoutes.profile(),      label: 'Profile',      icon: '👤' },
-        { to: AdminRoutes.companies(),    label: 'Companies',    icon: '🏢' },
-        { to: AdminRoutes.reports(),      label: 'Reports',      icon: '📄' },
-        { to: AdminRoutes.billing(),      label: 'Billing',      icon: '💳' },
-        { to: AdminRoutes.walkthroughs(), label: 'Walkthroughs', icon: '🧭' },
-        { to: AdminRoutes.settings(),     label: 'Settings',     icon: '⚙️' },
-      ]
-    case 'instructor':
-      return [
-        { to: InstructorRoutes.dashboard(),       label: 'Dashboard',        icon: '🏠', exact: true },
-        { to: InstructorRoutes.profile(),         label: 'Profile',          icon: '👤' },
-        { to: InstructorRoutes.checklistReview(), label: 'Checklist Review', icon: '✅' },
-      ]
-    case 'student':
-    default:
-      return [
-        { to: StudentRoutes.dashboard(),     label: 'Dashboard',      icon: '🏠', exact: true },
-        { to: StudentRoutes.profile(),       label: 'Profile',        icon: '👤' },
-        { to: StudentRoutes.checklists(),    label: 'Checklists',     icon: '📋' },
-        { to: StudentRoutes.practiceTests(), label: 'Practice Tests', icon: '📝' },
-        { to: StudentRoutes.walkthrough(),   label: 'Walkthrough',    icon: '🧭' },
-        { to: StudentRoutes.flashcards(),    label: 'Flashcards',     icon: '🗂️' },
-      ]
+// ======================================================================
+// Optional: convenience aggregators
+// ======================================================================
+
+/** All known paths for a role (top + hidden), useful for guards/tools. */
+export function getAllRoutesForRole(role) {
+  return {
+    top: getTopNavForRole(role),
+    hidden: getHiddenRoutesForRole(role),
   }
 }

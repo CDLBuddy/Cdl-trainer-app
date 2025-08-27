@@ -1,0 +1,211 @@
+/* ============================================================================
+   UsersTable.module.css
+   - Matches Admin Dashboard aesthetics (glass card, subtle borders, focus rings)
+   - Sticky header, zebra rows, hover highlight, skeleton shimmer
+   - Scoped CSS vars on the wrapper (no global :root pollution)
+   ========================================================================== */
+
+/* ---------- Scroll wrapper ---------- */
+.tableWrap {
+  /* scoped theme vars */
+  --utx-ink: var(--text-light, #fff);
+  --utx-ink-muted: color-mix(in oklab, var(--utx-ink), #000 35%);
+  --utx-border: color-mix(in oklab, var(--accent, #c4dbe8), #000 65%);
+  --utx-border-strong: color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
+  --utx-surface: var(--card-bg, rgba(255,255,255,0.06));
+  --utx-surface-dark: var(--card-bg-dark, rgba(10,15,20,0.60));
+  --utx-brand: var(--brand-light, #4e91ad);
+  --utx-success: var(--success, #48bb78);
+  --utx-error: var(--error, #e53e3e);
+
+  position: relative;
+  overflow: auto;
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid var(--utx-border);
+  background: linear-gradient(
+    0deg,
+    color-mix(in oklab, var(--utx-surface), transparent 0%) 0%,
+    var(--utx-surface) 100%
+  );
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+  scrollbar-gutter: stable both-edges; /* prevent layout shift when scrollbars appear */
+}
+
+/* Subtle edge fade to hint scroll (non-intrusive) */
+.tableWrap::after {
+  content: "";
+  pointer-events: none;
+  position: sticky;
+  right: 0; top: 0; bottom: 0; width: 12px;
+  background: linear-gradient(to right, transparent, rgba(0,0,0,.18));
+  display: block;
+  margin-left: auto;
+}
+
+/* Focus ring when navigating inside the table */
+.tableWrap:focus-within {
+  box-shadow:
+    0 0 0 2px color-mix(in oklab, var(--utx-brand), #fff 16%),
+    var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+}
+
+/* ---------- Table ---------- */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--utx-ink);
+  font-size: .95rem;
+}
+
+/* Head */
+.th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  font-weight: 800;
+  letter-spacing: .01em;
+  padding: 10px 12px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--utx-surface-dark), #000 8%) 0%,
+      color-mix(in oklab, var(--utx-surface-dark), #000 2%) 100%
+    );
+  border-bottom: 1px solid var(--utx-border-strong);
+  backdrop-filter: saturate(110%) blur(2px);
+}
+
+/* Cells */
+.td {
+  padding: 10px 12px;
+  border-bottom: 1px solid color-mix(in oklab, var(--utx-border), #000 15%);
+  vertical-align: middle;
+}
+.tdRight { text-align: right; }
+.tdCenter { text-align: center; }
+
+/* Zebra rows */
+.table tbody tr:nth-child(odd) .td {
+  background: color-mix(in oklab, var(--utx-surface), #000 6%);
+}
+
+/* Hover */
+.table tbody tr:hover .td {
+  background: color-mix(in oklab, var(--utx-surface), #fff 4%);
+}
+
+/* Focus ring for keyboard nav (row-level) */
+.table tbody tr:focus-within .td {
+  outline: 2px solid color-mix(in oklab, var(--utx-brand), #fff 16%);
+  outline-offset: -2px;
+}
+
+/* ---------- Pills (used for permit expiry) ---------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: .85rem;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  color: inherit;
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+}
+
+.pillWarn {
+  background: color-mix(in oklab, var(--utx-error), transparent 86%);
+  border-color: color-mix(in oklab, var(--utx-error), #000 35%);
+  color: #fff;
+}
+
+/* ---------- Row action button ---------- */
+.rowAction {
+  appearance: none;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06);
+  color: inherit;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow .15s ease, background .15s ease, border-color .15s ease;
+}
+.rowAction:hover,
+.rowAction:focus-visible {
+  background: rgba(255,255,255,.10);
+  border-color: color-mix(in oklab, var(--utx-brand), #fff 18%);
+  outline: none;
+  box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--utx-brand), #fff 12%));
+}
+.rowAction:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* ---------- Skeleton ---------- */
+.skel {
+  display: inline-block;
+  height: 12px;
+  border-radius: 8px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,.06) 25%,
+    rgba(255,255,255,.16) 50%,
+    rgba(255,255,255,.06) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+
+/* ---------- Helpers ---------- */
+.muted { opacity: .7; }
+
+/* ---------- Responsive tweaks ---------- */
+@media (max-width: 880px) {
+  .td, .th { padding: 8px 10px; }
+  .table { font-size: .92rem; }
+}
+
+@media (max-width: 640px) {
+  .td, .th { padding: 7px 8px; }
+  .table { font-size: .90rem; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .skel { animation: none; }
+  .rowAction { transition: none; }
+}
+
+/* ---------- High contrast / forced colors ---------- */
+@media (forced-colors: active) {
+  .tableWrap {
+    border-color: ButtonText;
+    background: Canvas;
+    box-shadow: none;
+  }
+  .th, .td { border-color: ButtonText; background: Canvas; color: CanvasText; }
+  .pill, .pillWarn {
+    border: 1px solid ButtonText !important;
+    background: Canvas !important;
+    color: CanvasText !important;
+    box-shadow: none !important;
+  }
+  .rowAction {
+    border: 1px solid ButtonText;
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+  }
+}

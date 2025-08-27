@@ -1,0 +1,150 @@
+/* ============================================================================
+   ChecklistCard – component-scoped styling
+   Matches AdminDashboard look: dark glass, subtle borders, crisp typography
+   Depends on global theme tokens when present (with safe fallbacks)
+   ========================================================================== */
+
+.card {
+  background: var(--card-bg, rgba(255, 255, 255, 0.06));
+  color: var(--text-light, #fff);
+  border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
+  border-radius: var(--radius-md, 10px);
+  padding: 14px;
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+  transition: border-color .15s ease, box-shadow .15s ease;
+  backdrop-filter: var(--blur, saturate(1.1) blur(6px));
+}
+
+.card:hover,
+.card:focus-within {
+  border-color: color-mix(in oklab, var(--accent, #c4dbe8), #fff 16%);
+  box-shadow: var(--shadow-2, 0 10px 30px rgba(0,0,0,.25));
+}
+
+/* Attribute hooks for tiny UX details */
+.card[data-expanded="true"] {
+  /* leave room if the list grows */
+  padding-bottom: 16px;
+}
+.card[data-count="0"] {
+  opacity: .92;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cardTitle {
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+
+.cardActions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+/* Show a spinner when the Download button is busy (aria-busy=true) */
+.cardActions [aria-busy="true"] {
+  cursor: progress;
+  position: relative;
+  opacity: .9;
+}
+
+.cardActions [aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  border: 2px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 35%);
+  border-top-color: color-mix(in oklab, var(--accent, #c4dbe8), #fff 10%);
+  animation: checklist-spin .7s linear infinite;
+}
+@keyframes checklist-spin {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Body */
+.list {
+  margin: 6px 0 0 0;
+  padding: 0;
+  list-style: none;
+  line-height: 1.5;
+}
+.list li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  column-gap: .4rem;
+  padding: 2px 0;
+}
+.list li > [aria-hidden] {
+  opacity: .9;
+  width: 1.25em;
+  text-align: center;
+}
+
+.footerBar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.toggleBtn {
+  /* allow theme button to show; keep spacing consistent */
+}
+
+.tip {
+  margin-left: auto;
+  font-size: .85rem;
+  color: color-mix(in oklab, var(--text-light, #fff), #000 55%);
+  opacity: .9;
+}
+
+/* Helpers */
+.muted {
+  font-size: .9rem;
+  color: color-mix(in oklab, var(--text-light, #fff), #000 50%);
+  opacity: .9;
+}
+
+/* Focus visibility for keyboard users inside the card */
+.card :focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--accent, #c4dbe8), #fff 25%);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .card:hover,
+  .card:focus-within {
+    border-color: color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
+    box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+  }
+  .cardActions [aria-busy="true"]::after {
+    animation: none;
+  }
+}
+
+/* High contrast / forced colors */
+@media (forced-colors: active) {
+  .card {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: ButtonText !important;
+    box-shadow: none !important;
+  }
+  .card :focus-visible {
+    outline-color: Highlight !important;
+  }
+}

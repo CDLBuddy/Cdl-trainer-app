@@ -1,0 +1,119 @@
+/* ============================================================================
+   ExportMenu – component-scoped styling
+   Compact menubutton matching the Admin Dashboard theme
+   ========================================================================== */
+
+.wrap {
+  position: relative;
+  display: inline-block;
+  /* local tokens (scoped; no global pollution) */
+  --em-bg: var(--card-bg, rgba(255, 255, 255, 0.06));
+  --em-ink: var(--text-light, #fff);
+  --em-border: color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
+  --em-ring: color-mix(in oklab, var(--brand-light, #4e91ad), #fff 16%);
+  --em-shadow: var(--shadow-2, 0 10px 30px rgba(0,0,0,.25));
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  /* inherits global .btn look; just tighten spacing */
+  padding-inline: 12px;
+  white-space: nowrap;
+}
+
+.caret {
+  opacity: .9;
+  font-size: .9em;
+  transition: transform .12s ease;
+}
+
+/* Rotate caret when aria-expanded is true (no extra JS needed) */
+.trigger[aria-expanded="true"] .caret {
+  transform: rotate(180deg);
+}
+
+.menu {
+  position: absolute;
+  inset-inline-end: 0;           /* RTL-safe */
+  top: calc(100% + 6px);
+  min-width: 180px;
+  max-width: 320px;
+  max-height: 60vh;              /* long lists scroll instead of overflowing */
+  overflow: auto;
+  padding: 6px;
+  background: var(--em-bg);
+  color: var(--em-ink);
+  border: 1px solid var(--em-border);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: var(--em-shadow);
+  z-index: 40;
+  backdrop-filter: blur(6px);
+  animation: em-pop .12s ease-out both;
+}
+
+@keyframes em-pop {
+  from { opacity: 0; transform: translateY(-4px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: start;             /* RTL-safe */
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color .12s ease, color .12s ease, box-shadow .12s ease;
+}
+
+.item:hover,
+.item:focus-visible {
+  outline: none;
+  background: rgba(255,255,255,.12);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--em-ring), transparent 0%);
+}
+
+.kbd {
+  font: inherit;
+  font-size: .8em;
+  opacity: .75;
+  border: 1px solid rgba(255,255,255,.25);
+  padding: 0 .35em;
+  border-radius: 4px;
+}
+
+.meta {
+  font-size: .8em;
+  opacity: .8;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .caret { transition: none; }
+  .menu { animation: none; }
+  .item { transition: none; }
+}
+
+/* High contrast / forced colors */
+@media (forced-colors: active) {
+  .menu {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: ButtonText !important;
+    box-shadow: none !important;
+  }
+  .item:hover,
+  .item:focus-visible {
+    outline: 1px solid ButtonText !important;
+    background: ButtonFace !important;
+    box-shadow: none !important;
+  }
+}

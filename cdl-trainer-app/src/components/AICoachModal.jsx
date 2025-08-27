@@ -1,4 +1,4 @@
-//src/components/AICoachModal.jsx
+// src/components/AICoachModal.jsx
 import React, {
   useCallback,
   useEffect,
@@ -8,14 +8,14 @@ import React, {
   memo,
 } from 'react'
 
-import { askCDLAI } from '@utils/aiApi.js' // e.g. "../utils/ai-api" -> rename file to aiApi.js for consistency
+import { askCDLAI } from '@utils/aiApi.js'
 import { auth } from '@utils/firebase.js'
-
 import { getUserInitials } from '@/utils/ui-helpers.js'
 
-import styles from './AICoachModal.module.css'
+// 👉 unified comms (shared for student/instructor/admin recipients)
+import { InboxList, useUnreadAnnouncements } from '@communications'
 
-// If your API util is named differently, update this import:
+import styles from './AICoachModal.module.css'
 
 const MAX_HISTORY = 20
 
@@ -24,8 +24,8 @@ function sanitize(html) {
   if (!html) return ''
   return String(html)
     .replace(/<\s*script/gi, '&lt;script') // no scripts
-    .replace(/on\w+="[^"]*"/gi, '') // no inline handlers
-    .replace(/javascript:/gi, '') // strip js: urls
+    .replace(/on\w+="[^"]*"/gi, '')        // no inline handlers
+    .replace(/javascript:/gi, '')          // strip js: urls
 }
 
 function usePerUserKey(base) {
@@ -58,6 +58,9 @@ function AICoachModal({ open, onClose, context = 'dashboard' }) {
   const [aiPending, setAiPending] = useState(false)
   const [isFirstTime, setIsFirstTime] = useState(false)
 
+  // Announcements drawer
+  const [annOpen, setAnnOpen] = useState(false)
+
   const chatRef = useRef(null)
   const inputRef = useRef(null)
   const sendBtnRef = useRef(null)
@@ -66,10 +69,22 @@ function AICoachModal({ open, onClose, context = 'dashboard' }) {
   const name = localStorage.getItem('fullName') || 'Driver'
   const userRole = localStorage.getItem('userRole') || 'student'
   const schoolId = localStorage.getItem('schoolId') || ''
+  const companyId = localStorage.getItem('companyId') || ''
   const email =
     localStorage.getItem('currentUserEmail') || auth.currentUser?.email || ''
 
   const storageKey = usePerUserKey('aiCoachHistory')
+
+  // Unread announcements (shared inbox)
+  const { unread, markAllRead } = useUnreadAnnouncements({
+    role: userRole,
+    schoolId,
+    companyId,
+    take: 20,
+  })
+
+  // When the announcements drawer opens, consider all read
+  useEffect(() => { if (annOpen) markAllRead() }, [annOpen, markAllRead])
 
   // Starter suggestions by context
   const starterPrompts = useMemo(
@@ -104,7 +119,6 @@ function AICoachModal({ open, onClose, context = 'dashboard' }) {
     }),
     []
   )
-
   const suggestions = starterPrompts[context] || starterPrompts.dashboard
 
   // Open: load history (per school+user), seed greeting
@@ -231,11 +245,8 @@ function AICoachModal({ open, onClose, context = 'dashboard' }) {
     }
 
     let fmcsatag = 'Based on FMCSA regulations, updated 2024'
-    if (
-      /ask your instructor|official FMCSA manual|outside of CDL/i.test(reply)
-    ) {
+    if (/ask your instructor|official FMCSA manual|outside of CDL/i.test(reply))
       fmcsatag = ''
-    }
     if (/i (don'?t|cannot|can't) know|i am not sure|as an ai/i.test(reply)) {
       reply += `<br><span class='ai-handoff'>[View the <a href="https://www.fmcsa.dot.gov/regulations/title49/section/393.1" target="_blank" rel="noopener">official FMCSA manual</a> or ask your instructor for help]</span>`
     }
@@ -294,9 +305,9 @@ function AICoachModal({ open, onClose, context = 'dashboard' }) {
       <div className={`${styles.card} glass`}>
         {/* Header */}
         <div className={styles.header}>
-          <div className={styles.mascot}>
+          <div className={styles.mascot} aria-hidden="true">
             {/* tiny SVG buddy */}
-            <svg viewBox="0 0 88 88" width="56" height="56" aria-hidden="true">
+            <svg viewBox="0 0 88 88" width="56" height="56">
               <circle cx="44" cy="44" r="40" fill="#b6f0f7" />
               <ellipse cx="32" cy="38" rx="7" ry="10" fill="#fff" />
               <ellipse cx="56" cy="38" rx="7" ry="10" fill="#fff" />
@@ -307,7 +318,24 @@ function AICoachModal({ open, onClose, context = 'dashboard' }) {
               <ellipse cx="44" cy="46" rx="19" ry="12" fill="#b6f0f7" />
             </svg>
           </div>
+
           <span className={styles.title}>AI Coach</span>
+
+          {/* Announcements (shared inbox) */}
+          <button
+            type="button"
+            className={styles.annBtn}
+            aria-label={annOpen ? 'Close announcements' : 'Open announcements'}
+            onClick={() => setAnnOpen(v => !v)}
+          >
+            🔔
+            {unread > 0 && (
+              <span className={styles.badge} aria-label={`${unread} unread`}>
+                {unread > 9 ? '9+' : unread}
+              </span>
+            )}
+          </button>
+
           <button
             ref={closeBtnRef}
             className={styles.close}
@@ -361,6 +389,7 @@ function AICoachModal({ open, onClose, context = 'dashboard' }) {
               )}
               <div
                 className={styles.bubble}
+                // We sanitize above; keep FMCSA tag separate for styling
                 dangerouslySetInnerHTML={{
                   __html:
                     sanitize(msg.content) +
@@ -400,6 +429,23 @@ function AICoachModal({ open, onClose, context = 'dashboard' }) {
             Reset
           </button>
         </form>
+
+        {/* Inline right-side announcements drawer */}
+        {annOpen && (
+          <div className={styles.sideDrawer} role="dialog" aria-label="Announcements">
+            <InboxList
+              role={userRole}
+              schoolId={schoolId}
+              companyId={companyId}
+              title="Announcements"
+            />
+            <div className={styles.drawerActions}>
+              <button className="btn" type="button" onClick={() => setAnnOpen(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

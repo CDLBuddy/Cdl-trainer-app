@@ -1,19 +1,19 @@
 // src/student/profile/index.js
 // ======================================================================
-// PROFILE MODULE BARREL
-// ----------------------------------------------------------------------
-// This file re-exports the entire profile module so other parts of the
-// app can import from '@student/profile' without worrying about paths.
-// Keep it side-effect free (no JSX rendering here).
+// Student Profile — Barrel Exports (side-effect free)
+// - Import from '@student-profile' across the app
+// - Re-exports main component, hook, sections, UI atoms
+// - Also surfaces schema + calculators to avoid deep paths
 // ======================================================================
 
 // --- Main page/component ---
 export { default as Profile } from './Profile.jsx'
+export { default as StudentProfile } from './Profile.jsx' // friendly alias
 
-// --- Hooks ---
+// --- Hook (optional, realtime profile loader) ---
 export { default as useProfileState } from './useProfileState.js'
 
-// --- Form Sections ---
+// --- Form Sections (barrel re-export) ---
 export {
   BasicInfoSection,
   CdlSection,
@@ -26,10 +26,13 @@ export {
   WaiverSection,
 } from './sections'
 
-// --- UI Components (atoms/molecules) ---
+// --- UI Atoms/Molecules (barrel re-export) ---
+export { Field, Select, UploadField, CheckboxGroup } from './ui'
+
+// --- Schema + Calculators (single source of truth) ---
+export { PROFILE_SCHEMA, TIERS } from './schema/profileSchema.js'
 export {
-  Field,
-  Select,
-  UploadField,
-  CheckboxGroup,
-} from './ui'
+  getEnrollmentReadiness,
+  getBTWReadiness,
+  getSectionStatus,
+} from './schema/calculators.js'

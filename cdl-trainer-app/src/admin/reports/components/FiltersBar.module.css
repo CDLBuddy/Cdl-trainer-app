@@ -1,0 +1,202 @@
+/* ============================================================================
+   FiltersBar.module.css
+   - Compact, glassy toolbar matching your dashboard theme
+   - Works with AdminReports + reusable across pages
+   - Depends on global tokens from styles/theme.css
+   ========================================================================== */
+
+/* Local tokens so we don't repeat color-mix everywhere */
+.controls,
+.toolbar {
+  --fb-bg: var(--card-bg, rgba(255, 255, 255, 0.06));
+  --fb-ink: var(--text-light, #fff);
+  --fb-border: color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
+  --fb-border-strong: color-mix(in oklab, var(--accent, #c4dbe8), #fff 16%);
+  --fb-ring: color-mix(in oklab, var(--brand-light, #4e91ad), #fff 10%);
+  --fb-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+  --fb-shadow-2: var(--shadow-2, 0 10px 30px rgba(0,0,0,.25));
+}
+
+/* Aliases: your JSX checks controls || toolbar */
+.controls,
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 10px);
+
+  background: var(--fb-bg);
+  color: var(--fb-ink);
+  border: 1px solid var(--fb-border);
+  box-shadow: var(--fb-shadow);
+
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.controls:hover,
+.controls:focus-within,
+.toolbar:hover,
+.toolbar:focus-within {
+  border-color: var(--fb-border-strong);
+  box-shadow: var(--fb-shadow-2);
+}
+
+/* ---------- Inputs ---------- */
+
+.select {
+  appearance: none;
+  padding: 6px 28px 6px 10px;
+  min-width: 160px;
+
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid rgba(255,255,255,.18);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)) border-box,
+    rgba(255,255,255,.06);
+  color: inherit;
+
+  /* simple caret (SVG; currentColor) */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20' fill='none' stroke='white' stroke-opacity='.8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M5 7l5 5 5-5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 14px 14px;
+
+  outline: none;
+  transition: box-shadow .15s ease, border-color .15s ease, background .15s ease;
+}
+.select:focus-visible {
+  box-shadow: 0 0 0 3px var(--fb-ring);
+  border-color: color-mix(in oklab, var(--accent, #c4dbe8), #fff 24%);
+}
+
+/* Subtle text button (for Reset) */
+.fadedBtn {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid rgba(255,255,255,.12);
+  background: transparent;
+  color: color-mix(in oklab, var(--text-light, #fff), #fff 12%);
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.fadedBtn:hover,
+.fadedBtn:focus-visible {
+  background: rgba(255,255,255,.10);
+  color: var(--text-light, #fff);
+  border-color: rgba(255,255,255,.18);
+  outline: none;
+}
+
+/* Search wrapper lets us position icon + clear button */
+.searchWrap {
+  position: relative;
+  min-width: 260px;
+  max-width: 360px;
+  flex: 1 1 260px;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 32px 8px 30px; /* left room for icon, right room for clear × */
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid rgba(255,255,255,.18);
+
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)) border-box,
+    rgba(255,255,255,.06);
+  color: inherit;
+
+  outline: none;
+  transition: box-shadow .15s ease, border-color .15s ease, background .15s ease;
+}
+.input::placeholder {
+  color: color-mix(in oklab, var(--text-light, #fff), #000 45%);
+  opacity: .85;
+}
+.input:focus-visible {
+  box-shadow: 0 0 0 3px var(--fb-ring);
+  border-color: color-mix(in oklab, var(--accent, #c4dbe8), #fff 24%);
+}
+/* Nice selection color */
+.input::selection {
+  background: color-mix(in oklab, var(--brand-light, #4e91ad), #fff 15%);
+  color: #000;
+}
+
+/* Magnifier icon (pure text so no extra assets) */
+.searchIcon {
+  position: absolute;
+  inset-inline-start: 8px; /* RTL-safe */
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  opacity: .75;
+}
+
+/* Optional class if you want to replace the inline styles for the × clear button */
+.clearBtn {
+  position: absolute;
+  inset-inline-end: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  opacity: .75;
+  color: inherit;
+}
+.clearBtn:hover,
+.clearBtn:focus-visible { opacity: 1; outline: none; }
+
+/* Screen-reader-only text (a11y helper) */
+.srOnly {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0);
+  white-space: nowrap; border: 0;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 720px) {
+  .controls,
+  .toolbar {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  .select { min-width: 140px; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .controls:hover,
+  .controls:focus-within,
+  .toolbar:hover,
+  .toolbar:focus-within {
+    border-color: var(--fb-border);
+    box-shadow: var(--fb-shadow);
+  }
+}
+
+/* ---------- High contrast / forced colors ---------- */
+@media (forced-colors: active) {
+  .controls,
+  .toolbar {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: ButtonText !important;
+    box-shadow: none !important;
+  }
+  .select,
+  .input,
+  .fadedBtn {
+    forced-color-adjust: none;
+    background: Canvas !important;
+    border-color: ButtonText !important;
+    color: CanvasText !important;
+  }
+}

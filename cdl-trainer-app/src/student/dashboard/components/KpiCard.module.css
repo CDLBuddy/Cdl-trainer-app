@@ -1,0 +1,105 @@
+/* src/student/dashboard/components/KpiCard.module.css */
+/* Keeps your original class names for drop-in compatibility */
+
+.kpiCard {
+  --ring: color-mix(in oklab, var(--brand-light, #22d3ee), #fff 12%);
+  --fg: var(--text-light, #eef6f8);
+  --brd: color-mix(in oklab, var(--accent, #4fb0c6), #000 45%);
+  --bg: color-mix(in oklab, var(--brand-dark, #0b2328), #fff 4%);
+  --fill: var(--brand-primary, var(--brand-light, #22d3ee));
+
+  background: var(--bg);
+  border: 1px solid var(--brd);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 24px #0004, inset 0 1px 0 #ffffff12;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.kpiCard:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.v_ok  { --fill: #10b981; }
+.v_warn{ --fill: #f59e0b; }
+.v_info{ --fill: #3b82f6; }
+
+.kpiTitle {
+  margin: 0;
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: .01em;
+}
+
+.kpiValue {
+  font-size: clamp(1.25rem, 3.6vw, 1.8rem);
+  font-weight: 900;
+  color: var(--fg);
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-height: 1.8rem;
+}
+
+.kpiUnit {
+  font-size: .9rem;
+  opacity: .8;
+  font-weight: 700;
+}
+
+/* Progress */
+.progressTrack {
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--brand-dark, #0b2328), #fff 4%);
+  border: 1px solid color-mix(in oklab, var(--accent, #4fb0c6), #000 35%);
+  overflow: hidden;
+  position: relative;
+}
+
+.progressFill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--fill), color-mix(in oklab, var(--fill), #000 20%));
+  box-shadow: 0 4px 12px color-mix(in oklab, var(--fill), #000 40%);
+  transition: width .24s ease;
+}
+
+/* Hint */
+.kpiHint {
+  margin: 0;
+  font-size: .9rem;
+  color: color-mix(in oklab, var(--text-light), transparent 28%);
+}
+
+/* Skeleton block for value */
+.skelBlock {
+  display: inline-block;
+  width: 3.5ch;
+  height: 1em;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--brand-mid, #164e63), #000 70%) 20%,
+    color-mix(in oklab, var(--brand-mid, #164e63), #000 60%) 40%,
+    color-mix(in oklab, var(--brand-mid, #164e63), #000 70%) 60%
+  );
+  background-size: 200% 100%;
+  animation: skel 1.2s ease-in-out infinite;
+}
+
+@keyframes skel {
+  0%   { background-position: 200% 0; }
+  100% { background-position: 0% 0; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .progressFill { transition: none !important; }
+  .skelBlock { animation: none !important; }
+}

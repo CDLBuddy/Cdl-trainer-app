@@ -1,10 +1,20 @@
-/* src/components/AICoachModal.module.css */
+/* src/components/AICoachModal.module.css
+   - Theme-aware, a11y-first
+   - Includes Announcements bell/badge + right-side drawer
+   - Respects reduced-motion
+*/
 
 :root {
   --ai-card-bg: var(--card-bg, rgba(255, 255, 255, 0.06));
   --ai-ring: color-mix(in oklab, var(--brand-light), white 35%);
   --ai-accent: var(--brand-light, #4e91ad);
+  --ai-border: color-mix(in oklab, var(--accent), transparent 54%);
+  --ai-border-soft: color-mix(in oklab, var(--accent), transparent 60%);
+  --ai-surface-tint: color-mix(in oklab, var(--brand-mid), transparent 30%);
+  --ai-surface-dark: color-mix(in oklab, var(--brand-dark), transparent 70%);
 }
+
+/* ---- Overlay -------------------------------------------------------- */
 
 .modalOverlay {
   position: fixed;
@@ -21,8 +31,10 @@
   backdrop-filter: blur(2px);
 }
 
+/* ---- Card ----------------------------------------------------------- */
+
 .card {
-  position: relative;
+  position: relative; /* needed for side drawer anchor */
   z-index: 1001;
   width: min(96vw, 860px);
   max-height: min(86vh, 840px);
@@ -31,17 +43,17 @@
   gap: 10px;
   border-radius: 16px;
   background: var(--ai-card-bg);
-  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
-  box-shadow:
-    0 20px 60px #0008,
-    inset 0 1px 0 #ffffff12;
+  border: 1px solid var(--ai-border);
+  box-shadow: 0 20px 60px #0008, inset 0 1px 0 #ffffff12;
   padding: 14px 14px 12px;
   overflow: hidden;
 }
 
+/* ---- Header --------------------------------------------------------- */
+
 .header {
   display: grid;
-  grid-template-columns: 60px 1fr auto;
+  grid-template-columns: 60px 1fr auto auto; /* mascot | title | bell | close */
   align-items: center;
   gap: 10px;
 }
@@ -64,6 +76,42 @@
   text-shadow: 0 2px 6px #0004;
 }
 
+/* bell button for announcements */
+.annBtn {
+  position: relative;
+  appearance: none;
+  border: 1px solid var(--ai-border);
+  background: var(--ai-surface-tint);
+  color: var(--text-light);
+  line-height: 1;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.annBtn:hover,
+.annBtn:focus-visible {
+  outline: 2px solid var(--ai-ring);
+  outline-offset: 2px;
+}
+
+/* unread badge */
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--brand-light);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 12px #0007;
+}
+
 .close {
   appearance: none;
   border: 0;
@@ -81,6 +129,8 @@
   outline-offset: 2px;
 }
 
+/* ---- Intro + suggestions ------------------------------------------- */
+
 .intro {
   margin-top: 2px;
   color: var(--text-light);
@@ -96,7 +146,7 @@
   gap: 8px;
 }
 .suggestion {
-  background: color-mix(in oklab, var(--brand-mid), transparent 30%);
+  background: var(--ai-surface-tint);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
   color: var(--text-light);
   padding: 6px 10px;
@@ -111,13 +161,30 @@
   outline: none;
 }
 
+/* ---- Chat history --------------------------------------------------- */
+
 .history {
   overflow: auto;
   padding-right: 2px;
   border-radius: 12px;
-  background: color-mix(in oklab, var(--brand-dark), transparent 70%);
-  border: 1px solid color-mix(in oklab, var(--accent), transparent 60%);
+  background: var(--ai-surface-dark);
+  border: 1px solid var(--ai-border-soft);
+  scrollbar-gutter: stable;
 }
+
+/* subtle custom scrollbar */
+.history::-webkit-scrollbar { width: 10px; height: 10px; }
+.history::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--accent), #000 35%);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.history::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---- Message row ---------------------------------------------------- */
 
 .msg {
   display: grid;
@@ -125,6 +192,7 @@
   gap: 8px;
   padding: 10px 10px;
 }
+
 .userAvatar {
   width: 36px;
   height: 36px;
@@ -148,13 +216,11 @@
 
 .bubble {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid color-mix(in oklab, var(--accent), transparent 60%);
+  border: 1px solid var(--ai-border-soft);
   color: var(--text-light);
   padding: 10px 12px;
   border-radius: 12px;
-  box-shadow:
-    0 6px 20px #0004,
-    inset 0 1px 0 #ffffff10;
+  box-shadow: 0 6px 20px #0004, inset 0 1px 0 #ffffff10;
   line-height: 1.45;
 }
 
@@ -163,6 +229,8 @@
   font-size: 0.82rem;
   opacity: 0.75;
 }
+
+/* ---- Input row ------------------------------------------------------ */
 
 .inputRow {
   display: grid;
@@ -174,7 +242,7 @@
 .input {
   resize: none;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid color-mix(in oklab, var(--accent), transparent 60%);
+  border: 1px solid var(--ai-border-soft);
   color: var(--text-light);
   padding: 10px 12px;
   border-radius: 10px;
@@ -206,10 +274,7 @@
 }
 
 /* typing dots from your original */
-.typing-dots {
-  display: inline-flex;
-  gap: 4px;
-}
+.typing-dots { display: inline-flex; gap: 4px; }
 .typing-dots span {
   display: inline-block;
   width: 6px;
@@ -218,36 +283,62 @@
   background: var(--ai-accent);
   animation: b 1s infinite ease-in-out;
 }
-.typing-dots span:nth-child(2) {
-  animation-delay: 0.15s;
-}
-.typing-dots span:nth-child(3) {
-  animation-delay: 0.3s;
-}
+.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
 @keyframes b {
-  0%,
-  80%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.8;
-  }
-  40% {
-    transform: translateY(-6px);
-    opacity: 1;
-  }
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.8; }
+  40% { transform: translateY(-6px); opacity: 1; }
 }
 
-/* small screens */
+/* ---- Announcements side drawer ------------------------------------- */
+
+.sideDrawer {
+  position: absolute;
+  top: 70px;              /* below header area */
+  right: 12px;
+  bottom: 12px;
+  width: min(360px, 92vw);
+  border-left: 1px solid var(--ai-border);
+  background: color-mix(in oklab, var(--brand-dark), transparent 76%);
+  box-shadow: -20px 0 40px #0006, inset 0 1px 0 #ffffff12;
+  backdrop-filter: blur(2px);
+  border-radius: 12px;
+  padding: 10px 10px 12px;
+  overflow: auto;
+  z-index: 2;
+}
+
+.drawerActions {
+  position: sticky;
+  bottom: 0;
+  padding-top: 8px;
+  background: linear-gradient(
+    to top,
+    color-mix(in oklab, var(--ai-card-bg), #000 6%) 30%,
+    transparent
+  );
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ---- Reduced motion ------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-dots span { animation: none; }
+  .backdrop { backdrop-filter: none; }
+}
+
+/* ---- Responsive ----------------------------------------------------- */
+
 @media (max-width: 560px) {
-  .card {
-    width: 96vw;
-    padding: 12px;
-  }
-  .header {
-    grid-template-columns: 48px 1fr auto;
-  }
-  .mascot {
-    width: 48px;
-    height: 48px;
+  .card { width: 96vw; padding: 12px; }
+  .header { grid-template-columns: 48px 1fr auto auto; }
+  .mascot { width: 48px; height: 48px; }
+  .sideDrawer {
+    top: 64px;
+    right: 8px;
+    left: 8px;           /* drawer becomes full-width on very small screens */
+    width: auto;
   }
 }
