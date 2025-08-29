@@ -10,14 +10,14 @@
 import {
   doc,
   getDoc,
+  serverTimestamp,
   setDoc,
   updateDoc,
-  serverTimestamp,
 } from 'firebase/firestore'
 
 import { db } from '@utils/firebase.js'
 
-import { normalizeEmail, isEmail, shallowEqual } from './helpers.js'
+import { isEmail, normalizeEmail, shallowEqual } from './helpers.js'
 import { updateProfileProgress } from './progress.js'
 // NOTE: we define & export sanitizeFields below in this file (no external import)
 

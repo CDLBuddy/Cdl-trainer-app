@@ -8,14 +8,14 @@
 
 import {
   collection,
-  getDocs,
-  getDoc,
   doc,
-  query,
-  where,
-  orderBy,
+  getDoc,
+  getDocs,
   limit as fbLimit,
+  orderBy,
+  query,
   startAfter,
+  where,
 } from 'firebase/firestore'
 
 import { db } from '@/utils/firebase.js' // initialized Firestore instance

@@ -53,7 +53,6 @@ function push(problems, path, msg, prefix = '') {
 const isObj = v => v !== null && typeof v === 'object'
 const isBool = v => typeof v === 'boolean'
 const isStr = v => typeof v === 'string'
-const clampLen = (s, n) => (s.length > n ? s.slice(0, n) : s)
 
 /** Allowlist for strict key checks (non-breaking; tolerant to common extras) */
 const SECTION_KEYS = new Set([

@@ -1,5 +1,5 @@
 // src/student/profile/sections/CoursePaymentSection.jsx
-import React, { useMemo, useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
 import { getSectionStatus } from '../schema/calculators.js'
 import Select from '../ui/Select.jsx'
@@ -40,7 +40,6 @@ export default function CoursePaymentSection({
     'sponsor',
     'corporate',
   ].includes(payer)
-  if (isEmployerPaid) return null
 
   const status = useMemo(
     () => getSectionStatus('payment', v, v?.verified || {}),
@@ -59,6 +58,8 @@ export default function CoursePaymentSection({
     },
     [onUpload]
   )
+
+  if (isEmployerPaid) return null
 
   const isPaid = String(v.paymentStatus || '').toLowerCase() === 'paid'
   const hasProof = !!v.paymentProofUrl

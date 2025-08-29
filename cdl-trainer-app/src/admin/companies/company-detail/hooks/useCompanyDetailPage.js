@@ -12,8 +12,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { db } from '@utils/firebase.js'
 
 import {
-  getEnrollmentReadiness,
   getBTWReadiness,
+  getEnrollmentReadiness,
 } from '@student/profile/schema/calculators.js'
 
 import { pct } from '../utils/format.js'

@@ -80,7 +80,7 @@ export const PROFILE_SCHEMA = {
       key: 'overlays',
       type: 'multi',
       owner: 'admin',
-      requiredIn: [],               // does not affect readiness
+      requiredIn: [], // does not affect readiness
       weight: 0,
       importance: 'extra',
       readOnly: true,
@@ -92,7 +92,7 @@ export const PROFILE_SCHEMA = {
   permit: [
     {
       key: 'cdlPermit',
-      type: 'enum',                 // 'yes' | 'no'
+      type: 'enum', // 'yes' | 'no'
       owner: 'student',
       requiredIn: ['btw'],
       weight: 1,
@@ -175,9 +175,9 @@ export const PROFILE_SCHEMA = {
   vehicle: [
     {
       key: 'vehicleQualified',
-      type: 'enum',                 // 'yes' | 'no'
+      type: 'enum', // 'yes' | 'no'
       owner: 'student',
-      requiredIn: ['btw'],          // considered by calculators, but marked extra
+      requiredIn: ['btw'], // considered by calculators, but marked extra
       weight: 1,
       importance: 'extra',
       label: 'Uses Own Vehicle',
@@ -189,7 +189,7 @@ export const PROFILE_SCHEMA = {
       requiredIn: ['btw'],
       requiredWhen: { vehicleQualified: 'yes' },
       weight: 1,
-      importance: 'extra',          // nice-to-have docs if they bring a vehicle
+      importance: 'extra', // nice-to-have docs if they bring a vehicle
       validate: { image: true, maxMB: 8 },
       label: 'Truck Data Plate',
     },
@@ -202,7 +202,7 @@ export const PROFILE_SCHEMA = {
       weight: 1,
       importance: 'extra',
       validate: { image: true, maxMB: 8 },
-          label: 'Trailer Data Plate',
-        }
-      ],
-    };
+      label: 'Trailer Data Plate',
+    },
+  ],
+}

@@ -10,7 +10,7 @@
 import PropTypes from 'prop-types'
 import React, { memo, useEffect, useMemo, useRef } from 'react'
 
-import styles from './CompaniesTable.module.css'
+import './CompaniesTable.module.css'
 import CompanyRow from './CompanyRow.jsx'
 
 /**

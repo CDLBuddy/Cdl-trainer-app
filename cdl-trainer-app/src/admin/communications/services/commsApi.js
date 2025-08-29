@@ -9,19 +9,19 @@
 
 import { getAuth } from 'firebase/auth'
 import {
-  getFirestore,
   addDoc,
-  setDoc,
-  getDoc,
-  getDocs,
   collection,
   doc,
-  query,
-  where,
-  orderBy,
+  getDoc,
+  getDocs,
+  getFirestore,
   limit,
+  orderBy,
+  query,
   serverTimestamp,
+  setDoc,
   Timestamp,
+  where,
 } from 'firebase/firestore'
 
 /** Resolve DB from your initialized Firebase app (already bootstrapped app-wide). */

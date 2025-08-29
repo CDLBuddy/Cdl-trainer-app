@@ -1,9 +1,9 @@
 // Path: /src/admin/walkthroughs/Editor/WalkthroughEditor.jsx
-/* eslint-disable react-refresh/only-export-components */
 import React, { useCallback, useRef, useState, useEffect } from 'react'
-import { deepClone } from './services/wtValidation.js'
-import { useWalkthroughEditorState, useWalkthroughParsers } from './hooks'
+
 import { EditorTabs, SectionCard } from './components'
+import { useWalkthroughEditorState, useWalkthroughParsers } from './hooks'
+import { deepClone } from './services/wtValidation.js'
 import cls from './WalkthroughEditor.module.css'
 
 export default function WalkthroughEditor({
@@ -223,7 +223,7 @@ export default function WalkthroughEditor({
         <div className={cls.panel}>
           <p className={cls.help}>
             Paste <b>JSON</b> (either a bare <code>WalkthroughScript</code>{' '}
-            array or <code>{'{'}sections:[...]}</code>).
+            array or <code>{'{'}`sections:[...]`{"}"}</code>).
           </p>
           <textarea
             id="wt-json-input"

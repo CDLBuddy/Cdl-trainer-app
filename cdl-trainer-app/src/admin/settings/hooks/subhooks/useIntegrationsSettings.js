@@ -5,7 +5,7 @@
 // - Secrets/keys should be handled server-side; store only flags/ids/urls here.
 // ---------------------------------------------------------------------------
 
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 const KEY = 'integrations'
 

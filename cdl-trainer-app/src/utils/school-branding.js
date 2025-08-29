@@ -7,7 +7,7 @@
 // - SSR-safe (guards window/document/localStorage)
 // ======================================================================
 
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore'
 
 import { db } from './firebase.js'
 
@@ -67,13 +67,17 @@ function setLS(key, value) {
   if (!IS_BROWSER) return
   try {
     window.localStorage.setItem(key, value)
-  } catch {}
+  } catch {
+    // intentionally ignored
+  }
 }
 function setCSSVar(name, value) {
   if (!IS_BROWSER) return
   try {
     document.documentElement.style.setProperty(name, value)
-  } catch {}
+  } catch {
+    // intentionally ignored
+  }
 }
 
 function normalizeBrand(raw = {}, id = '') {
@@ -112,7 +116,9 @@ function applyBrand(brand) {
           },
         })
       )
-    } catch {}
+    } catch {
+      // intentionally ignored
+    }
   }
 }
 
@@ -227,5 +233,7 @@ export function clearBrandingCache() {
     window.localStorage.removeItem(LS_KEYS.BRAND_NAME)
     window.localStorage.removeItem(LS_KEYS.BRAND_COLOR)
     window.localStorage.removeItem(LS_KEYS.BRAND_AT)
-  } catch {}
+  } catch {
+    // intentionally ignored
+  }
 }

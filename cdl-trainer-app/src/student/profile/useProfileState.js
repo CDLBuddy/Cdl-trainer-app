@@ -137,7 +137,9 @@ export function useProfileState(
       active = false
       try {
         unsub()
-      } catch {}
+      } catch {
+        // intentionally ignored
+      }
     }
   }, [effectiveEmail, realtime, refresh, setProfile])
 

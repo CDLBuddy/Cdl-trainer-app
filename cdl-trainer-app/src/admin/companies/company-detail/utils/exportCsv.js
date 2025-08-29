@@ -1,7 +1,7 @@
 //src/admin/companies/company-detail/utils/exportCsv.js
 import {
-  getEnrollmentReadiness,
   getBTWReadiness,
+  getEnrollmentReadiness,
 } from '@student/profile/schema/calculators.js'
 
 import { pct } from './format.js'

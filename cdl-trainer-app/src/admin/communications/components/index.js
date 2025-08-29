@@ -8,8 +8,8 @@
 
 export { default as ComposeForm } from './ComposeForm.jsx'
 export { default as MessageHistoryTable } from './MessageHistoryTable.jsx'
-export { default as TemplateList } from './TemplateList.jsx'
 export { default as QuickAnnounce } from './QuickAnnounce.jsx'
+export { default as TemplateList } from './TemplateList.jsx'
 
 // Alias to match page-shell naming that expects "MessageList"
 export { default as MessageList } from './MessageHistoryTable.jsx'

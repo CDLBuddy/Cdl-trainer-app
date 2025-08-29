@@ -10,23 +10,22 @@
 // -----------------------------------------------------------------------------
 
 // Namespaced access
-export * as services from './services'
 export * as hooks from './hooks'
+export * as services from './services'
 
 // Star re-exports (tree-shakeable)
-export * from './services'
 export * from './hooks'
+export * from './services'
 
 // ---- Direct, convenience re-exports (avoid deep import paths) --------------
 export {
-  // walkthroughHelpers
-  toToken,
-  nextId,
-  nowIso,
   cloneDeep,
   inferLabelFromToken,
+  nextId,
+  nowIso,
+  // walkthroughHelpers
+  toToken,
 } from './services/walkthroughHelpers.js'
-
 export {
   // wtValidation
   ensureScriptShape,
@@ -37,5 +36,8 @@ export {
 export { default as useScriptState } from './hooks/useScriptState.js'
 
 // Optional default namespace object
+import * as hooks from './hooks'
+import * as services from './services'
+
 const shared = { services, hooks }
 export default shared

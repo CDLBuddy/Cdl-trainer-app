@@ -7,11 +7,11 @@
 // ======================================================================
 
 import { collection, getDocs, query, where } from 'firebase/firestore'
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useToast } from '@components/useToast.js'
-import { db, auth } from '@utils/firebase.js'
+import { auth, db } from '@utils/firebase.js'
 
 // TODO: later move this to Firestore/config
 const TESTS = ['General Knowledge', 'Air Brakes', 'Combination Vehicles']

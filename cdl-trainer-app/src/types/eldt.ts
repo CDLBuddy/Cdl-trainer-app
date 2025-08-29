@@ -4,7 +4,7 @@
 // - Enums (as const arrays) + literal unions
 // - Canonical TPRCompletion payload shape (mirrors your validators)
 // - CSV row type for bulk uploads
-// - Lightweight runtime type guards (isProgramType, isClassType, …)
+// - Lightweight runtime type guards + normalization helpers
 // ======================================================================
 
 /** YYYY-MM-DD (UTC, no time zone) */
@@ -162,6 +162,148 @@ export function isClassType(v: unknown): v is ClassType {
 }
 export function isEndorsement(v: unknown): v is Endorsement {
   return typeof v === 'string' && EndorsementSet.has(v as Endorsement)
+}
+
+/* ---------------------------- Normalizers (new) --------------------------- */
+/**
+ * Accepts common user/UIs strings and normalizes to a ProgramType.
+ * Returns undefined if it cannot be normalized.
+ */
+export function normalizeProgramType(v: unknown): ProgramType | undefined {
+  if (typeof v !== 'string') return undefined
+  const s = v.trim().toLowerCase()
+  const map: Record<string, ProgramType> = {
+    theory: 'theory',
+    classroom: 'theory',
+
+    btw: 'btw',
+    'behindthewheel': 'btw',
+    'behind-the-wheel': 'btw',
+    'behind the wheel': 'btw',
+
+    both: 'both',
+    combined: 'both',
+  }
+  return map[s]
+}
+
+/**
+ * Accepts strings like "A", "class a", "cdl-a" and normalizes to "A" | "B" | "C".
+ */
+export function normalizeClassType(v: unknown): ClassType | undefined {
+  if (typeof v !== 'string') return undefined
+  const s = v.trim().toUpperCase().replace(/\s+/g, '')
+  const map: Record<string, ClassType> = {
+    A: 'A',
+    CLASSA: 'A',
+    'CDLA': 'A',
+    'CDL-A': 'A',
+
+    B: 'B',
+    CLASSB: 'B',
+    'CDLB': 'B',
+    'CDL-B': 'B',
+
+    C: 'C',
+    CLASSC: 'C',
+    'CDLC': 'C',
+    'CDL-C': 'C',
+  }
+  return map[s]
+}
+
+/**
+ * Accepts endorsement letters or common names (case-insensitive).
+ * Returns a valid code letter (N,P,S,T,H,X) or '' for none.
+ */
+export function normalizeEndorsement(v: unknown): Endorsement | '' | undefined {
+  if (v == null) return ''
+  if (typeof v !== 'string') return undefined
+  const s = v.trim().toUpperCase()
+
+  // explicit "none" / empty
+  if (s === '' || s === 'NONE' || s === 'N/A' || s === 'NA' || s === 'NO') return ''
+
+  // letter codes
+  if (EndorsementSet.has(s as Endorsement)) return s as Endorsement
+
+  // common names -> letters
+  const map: Record<string, Endorsement | ''> = {
+    TANK: 'N',
+    TANKER: 'N',
+
+    PASSENGER: 'P',
+
+    SCHOOLBUS: 'S',
+    'SCHOOL BUS': 'S',
+
+    'DOUBLE': 'T',
+    'DOUBLES': 'T',
+    'TRIPLE': 'T',
+    'TRIPLES': 'T',
+    'DOUBLE/TRIPLE': 'T',
+    'DOUBLES/TRIPLES': 'T',
+
+    HAZMAT: 'H',
+    HAZARDOUS: 'H',
+    HAZARDOUSMATERIALS: 'H',
+
+    // X = Tank + Hazmat
+    'X': 'X',
+    'TANK+HAZMAT': 'X',
+    'TANK HAZMAT': 'X',
+    'HAZMAT+TANK': 'X',
+  }
+
+  // normalize spaces and punctuation for lookup
+  const key = s.replace(/[^\w]/g, '')
+  return map[key]
+}
+
+/**
+ * Formats various inputs into an ISODate (YYYY-MM-DD, UTC).
+ * Returns undefined for invalid inputs.
+ */
+export function toISODate(input: unknown): ISODate | undefined {
+  if (typeof input === 'string') {
+    const t = input.trim()
+    if (isISODateString(t)) return t as ISODate
+
+    // Try to parse common formats like MM/DD/YYYY or YYYY/MM/DD
+    const mdy = /^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/.exec(t)
+    if (mdy) {
+      const mm = Number(mdy[1])
+      const dd = Number(mdy[2])
+      const yyyy = Number(mdy[3].length === 2 ? `20${mdy[3]}` : mdy[3])
+      const d = new Date(Date.UTC(yyyy, mm - 1, dd))
+      if (!Number.isNaN(d.getTime())) return fmtDateUTC(d)
+    }
+
+    // fallback: Date.parse for other reasonable strings
+    const d = new Date(t)
+    if (!Number.isNaN(d.getTime())) return fmtDateUTC(d)
+    return undefined
+  }
+
+  if (input instanceof Date) {
+    if (!Number.isNaN(input.getTime())) return fmtDateUTC(input)
+    return undefined
+  }
+
+  if (typeof input === 'number') {
+    const d = new Date(input)
+    if (!Number.isNaN(d.getTime())) return fmtDateUTC(d)
+    return undefined
+  }
+
+  return undefined
+}
+
+function fmtDateUTC(d: Date): ISODate {
+  const yyyy = d.getUTCFullYear()
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+  const dd = String(d.getUTCDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}` as ISODate
 }
 
 /* ----------------------------- Re-exports (nice) -------------------------- */

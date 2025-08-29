@@ -9,18 +9,18 @@
 
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import {
-  doc,
-  setDoc,
-  getDoc,
-  serverTimestamp,
   collection,
+  doc,
+  getDoc,
   getDocs,
+  serverTimestamp,
+  setDoc,
 } from 'firebase/firestore'
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { auth, db } from '@utils/firebase.js'
-import { getInvite, consumeInvite, isValidInvite } from '@utils/invites.js'
+import { consumeInvite, getInvite, isValidInvite } from '@utils/invites.js'
 import {
   getCurrentSchoolBranding,
   setCurrentSchool,

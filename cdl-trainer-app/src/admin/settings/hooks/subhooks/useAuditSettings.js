@@ -5,7 +5,7 @@
 // - Your logging layer should check these flags when writing entries.
 // ---------------------------------------------------------------------------
 
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 const KEY = 'audit'
 

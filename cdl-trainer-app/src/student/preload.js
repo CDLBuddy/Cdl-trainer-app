@@ -39,16 +39,7 @@ const LOADERS = {
   'test:results': loadTestResultsWrap,
 }
 
-// Small helper to swallow prefetch failures (best-effort)
-const warm = fn => {
-  try {
-    const p = fn?.()
-    // allow both promise and non-promise returns (for safety)
-    if (p && typeof p.then === 'function') p.catch(() => {})
-  } catch {
-    /* ignore */
-  }
-}
+// (removed unused 'warm' helper)
 
 // ---------- Above-the-fold (light set) ---------------------------------
 export async function preloadAboveTheFold() {

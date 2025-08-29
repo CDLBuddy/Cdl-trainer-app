@@ -1,10 +1,10 @@
 // src/pages/NotFound.jsx
-import React, { useEffect, useCallback } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import React, { useCallback, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import {
-  getDashboardRoute,
   getCurrentRole,
+  getDashboardRoute,
   safeNavigate,
 } from '@navigation/navigation.js'
 

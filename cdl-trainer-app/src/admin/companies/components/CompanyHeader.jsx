@@ -10,7 +10,7 @@
 import PropTypes from 'prop-types'
 import React, { memo } from 'react'
 
-import styles from './CompanyHeader.module.css'
+import './CompanyHeader.module.css'
 /**
  * @typedef {{ schoolName?: string, logoUrl?: string, primaryColor?: string }} Brand
  */

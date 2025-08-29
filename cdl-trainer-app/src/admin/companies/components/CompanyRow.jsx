@@ -19,7 +19,7 @@ import React, {
   useState,
 } from 'react'
 
-import styles from './CompanyRow.module.css'
+import './CompanyRow.module.css'
 
 const inputStyle = { width: '97%', padding: '2px 7px' }
 const NAME_RE = /^[\w\s\-'.&]+$/

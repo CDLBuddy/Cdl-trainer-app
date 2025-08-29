@@ -1,6 +1,6 @@
 // Path: src/admin/communications/components/ComposeForm.jsx
 import PropTypes from 'prop-types'
-import React, { useMemo, useState, useCallback } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 
 import { useToast } from '@components/ToastProvider.jsx'
 
@@ -72,7 +72,7 @@ export default function ComposeForm({
       const obj = varsText.trim() ? JSON.parse(varsText) : {}
       setField('variables', obj)
       setVarsErr(null)
-    } catch (e) {
+    } catch (_) {
       setVarsErr('Invalid JSON')
     }
   }, [varsText, setField])

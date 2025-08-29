@@ -3,14 +3,14 @@
 import React from 'react'
 
 import {
-  MetaFields,
-  Tabs,
-  MarkdownPanel,
   CsvPanel,
-  JsonPanel,
-  XlsxPanel,
   ErrorsCard,
+  JsonPanel,
+  MarkdownPanel,
+  MetaFields,
   StatsBar,
+  Tabs,
+  XlsxPanel,
 } from './components'
 import { useUpload } from './hooks'
 import cls from './WalkthroughUpload.module.css'

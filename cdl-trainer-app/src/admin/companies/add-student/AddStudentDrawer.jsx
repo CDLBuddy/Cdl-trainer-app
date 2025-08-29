@@ -80,7 +80,6 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
       <form
         id="add-student-form"
         onSubmit={handleSubmit}
-        onKeyDown={onKeyDown}
         className={styles.form}
         aria-describedby={error ? errorId : descId}
         aria-busy={saving ? 'true' : 'false'}
@@ -99,8 +98,8 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
           firstFieldRef={firstFieldRef}
           instructors={instructors}
           instructorsLoading={instructorsLoading}
+          onKeyDown={onKeyDown}
         />
-
         {/* Instructor list status (non-blocking; SR-friendly) */}
         {(instructorsLoading || instructorsError) && (
           <div

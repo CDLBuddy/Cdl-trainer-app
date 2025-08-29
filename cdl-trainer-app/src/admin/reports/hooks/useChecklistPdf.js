@@ -101,7 +101,6 @@ export default function useChecklistPdf(defaults = {}) {
         const M = 40 // margin
         const W = doc.internal.pageSize.getWidth()
         const H = doc.internal.pageSize.getHeight()
-        const lineGap = 18
         const checkboxSize = 12
         const colGap = 10
         const contentWidth = W - M * 2 - checkboxSize - colGap

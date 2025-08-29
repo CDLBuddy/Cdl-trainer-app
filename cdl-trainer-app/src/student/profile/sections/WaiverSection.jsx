@@ -1,5 +1,5 @@
 // src/student/profile/sections/WaiverSection.jsx
-import React, { useId, useMemo, useCallback } from 'react'
+import React, { useCallback, useId, useMemo } from 'react'
 
 import { getSectionStatus } from '../schema/calculators.js'
 import Field from '../ui/Field.jsx'

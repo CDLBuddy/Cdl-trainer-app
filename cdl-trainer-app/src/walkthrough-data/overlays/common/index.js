@@ -12,7 +12,7 @@ import mergeSteps from './merge-steps.js'
 import renameSections from './rename-sections.js'
 
 // ----- Named exports for direct importing --------------------------------
-export { renameSections, mergeSteps }
+export { mergeSteps, renameSections }
 
 // ----- Aggregated list (order does not matter) ----------------------------
 export const ALL = /** @type {const} */ ([renameSections, mergeSteps])

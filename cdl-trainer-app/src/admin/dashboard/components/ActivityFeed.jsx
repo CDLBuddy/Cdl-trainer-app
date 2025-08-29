@@ -22,7 +22,7 @@
 // - A11y: region + list semantics, time titles, keyboard activation
 // ============================================================================
 
-import React, { memo, useMemo, useCallback } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 
 import styles from './ActivityFeed.module.css'
 

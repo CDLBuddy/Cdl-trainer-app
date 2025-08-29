@@ -15,17 +15,17 @@ import { StudentRoutes } from '@navigation/navigation.js'
 import { useSession } from '@session/useSession.js'
 
 import {
-  getEnrollmentReadiness,
   getBTWReadiness,
+  getEnrollmentReadiness,
   getNextActions,
 } from '@student/profile/schema/calculators.js'
 
 import {
-  KpiCard,
   BannerNextSteps,
+  KpiCard,
   QuickLinks,
-  UpdatesCard,
   TipsRow,
+  UpdatesCard,
 } from './components'
 import styles from './dashboard.module.css'
 import { useDashboardData } from './hooks/useDashboardData.js'

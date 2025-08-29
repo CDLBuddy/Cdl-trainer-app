@@ -7,17 +7,15 @@
 // ============================================================================
 
 export {
-  // Preferred modern APIs
-  getLatestUpdateOnce,
-  subscribeLatestUpdate,
-  loadDashboardSnapshot,
-
   // Handy dev/test helper
   __clearDashboardCache,
-
+  // Preferred modern APIs
+  getLatestUpdateOnce,
   // Convenience re-exports (used by dashboard quick links / CTA)
   getResourcesForSchool,
   getSchedulerURL,
+  loadDashboardSnapshot,
+  subscribeLatestUpdate,
 } from './dashboardApi.js'
 
 // --- Back-compat alias -----------------------------------------------------

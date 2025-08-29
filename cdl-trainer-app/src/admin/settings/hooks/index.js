@@ -5,5 +5,5 @@
 // - Re-exports all subhooks from ./subhooks
 // ======================================================================
 
-export { useAdminSettings } from './useAdminSettings.js'
 export * from './subhooks/index.js'
+export { useAdminSettings } from './useAdminSettings.js'

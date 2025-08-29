@@ -340,7 +340,9 @@ function ResultsActions({ result }) {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(JSON.stringify(result ?? {}, null, 2))
-    } catch {}
+    } catch {
+      // Ignore copy errors
+    }
   }
   const handleDownload = () => {
     const blob = new Blob([JSON.stringify(result ?? {}, null, 2)], {

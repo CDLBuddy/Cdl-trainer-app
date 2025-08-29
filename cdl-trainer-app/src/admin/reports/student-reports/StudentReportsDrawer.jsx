@@ -128,7 +128,7 @@ function fallbackBuildCert({ student, provider, training }) {
  * }} props
  */
 function StudentReportDrawer({
-  open = true,
+  _open = true,
   student,
   provider,
   training,
@@ -175,7 +175,7 @@ function StudentReportDrawer({
     }
   }, [mods.buildCertPayload, student, provider, training, schoolId])
 
-  if (!open) return null
+  const titleId = React.useId()
 
   // Close helpers
   const close = React.useCallback(() => {
@@ -333,7 +333,6 @@ function StudentReportDrawer({
 
   /* ------------------------------ render ------------------------------ */
 
-  const titleId = React.useId()
   const trainee = cert?.trainee || {}
   const trainingBlock = cert?.training || {}
   const providerBlock = cert?.provider || provider || {}
@@ -341,11 +340,10 @@ function StudentReportDrawer({
   return (
     <div
       ref={overlayRef}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={titleId}
-      onMouseDown={onBackdrop}
       className={styles.overlay}
+      onMouseDown={onBackdrop}
+      role="presentation"
+      tabIndex="-1"
       style={
         reduceMotion
           ? { backdropFilter: 'none', WebkitBackdropFilter: 'none' }
@@ -354,9 +352,10 @@ function StudentReportDrawer({
     >
       <aside
         ref={panelRef}
-        role="document"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         className={`${styles.panel} ${entered ? styles.entered : ''}`}
-        onMouseDown={e => e.stopPropagation()}
         style={
           reduceMotion
             ? { transition: 'none', transform: 'none', opacity: 1 }
@@ -483,7 +482,7 @@ function StudentReportDrawer({
 }
 
 StudentReportDrawer.propTypes = {
-  open: PropTypes.bool,
+  _open: PropTypes.bool,
   student: PropTypes.any,
   provider: PropTypes.any,
   training: PropTypes.any,

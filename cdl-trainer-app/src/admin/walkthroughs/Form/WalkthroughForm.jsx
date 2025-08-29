@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect } from 'react'
 
-import { Card, Btn } from './components'
+import { Btn, Card } from './components'
 import { useWalkthroughFormState } from './hooks'
 import cls from './WalkthroughForm.module.css'
 

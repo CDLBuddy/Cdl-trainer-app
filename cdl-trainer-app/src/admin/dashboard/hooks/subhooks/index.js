@@ -8,8 +8,8 @@
 
 // ---- Alphabetized re-exports -----------------------------------------------
 export { default as useAuthSchoolGuard } from './useAuthSchoolGuard.js'
-export { default as useUsersQuery } from './useUsersQuery.jsx'
 export { default as useUserMetrics } from './useUserMetrics.js'
+export { default as useUsersQuery } from './useUsersQuery.jsx'
 
 // Note:
 // You can `import * as AdminSubhooks from './subhooks'` directly — no need to

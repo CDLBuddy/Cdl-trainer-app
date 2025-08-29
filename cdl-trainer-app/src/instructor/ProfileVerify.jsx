@@ -4,17 +4,17 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/useToast.js'
+// Shared student helpers
 import { auth } from '@utils/firebase.js'
 import {
   subscribeUserProfile,
   updateUserProfileFields,
 } from '@utils/userProfile.js'
 
-// Shared student helpers
 import {
-  getSectionStatus,
-  getEnrollmentReadiness,
   getBTWReadiness,
+  getEnrollmentReadiness,
+  getSectionStatus,
 } from '@student/profile/schema/calculators.js'
 import SectionHeader from '@student/profile/sections/SectionHeader.jsx'
 

@@ -1,14 +1,14 @@
 //src/pages/welcome.jsx
+import '@components/Shell.module.css'
+
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
+  getAllSchools,
   getCurrentSchoolBranding,
   setCurrentSchool,
-  getAllSchools,
 } from '@utils/school-branding.js'
-
-import '@components/Shell.module.css'
 
 // Demo features array
 const FEATURES = [

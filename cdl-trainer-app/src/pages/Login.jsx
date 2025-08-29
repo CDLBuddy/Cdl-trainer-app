@@ -1,9 +1,11 @@
 // src/pages/Login.jsx (or wherever this lives)
+import '@components/Shell.module.css'
+
 import {
-  signInWithEmailAndPassword,
   GoogleAuthProvider,
-  signInWithPopup,
   sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signInWithPopup,
   signOut,
 } from 'firebase/auth'
 import React, { useState } from 'react'
@@ -12,8 +14,6 @@ import { useNavigate } from 'react-router-dom'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
 import { auth } from '@/utils/firebase.js'
-
-import '@components/Shell.module.css'
 
 const supportEmailDefault = 'support@cdltrainerapp.com'
 const demoEmail = 'demo@cdltrainerapp.com'

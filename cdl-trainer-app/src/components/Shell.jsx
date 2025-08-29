@@ -11,19 +11,19 @@
 // ======================================================================
 
 import React, {
-  useEffect,
-  useMemo,
-  useState,
+  memo,
   useCallback,
   useContext,
+  useEffect,
+  useMemo,
   useRef,
-  memo,
+  useState,
 } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 import AICoachModal from '@components/AICoachModal.jsx'
 import { ToastContext } from '@components/ToastContext.js'
-import { getTopNavForRole, getDashboardRoute } from '@navigation/navConfig.js'
+import { getDashboardRoute, getTopNavForRole } from '@navigation/navConfig.js'
 import {
   getCachedBrandingSummary,
   subscribeBrandingUpdated,

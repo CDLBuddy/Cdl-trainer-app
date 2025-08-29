@@ -8,7 +8,7 @@
 // - Section status plumbing for headers
 // ============================================================================
 
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -16,8 +16,8 @@ import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/useToast.js'
 import { auth, storage } from '@utils/firebase.js'
 import {
-  markStudentProfileComplete,
   markStudentPermitUploaded,
+  markStudentProfileComplete,
   markStudentVehicleUploaded,
 } from '@utils/ui-helpers.js'
 
@@ -27,8 +27,8 @@ import { subscribeUserProfile, updateUserProfileFields } from '@user-profile'
 
 import styles from './Profile.module.css'
 import {
-  getEnrollmentReadiness,
   getBTWReadiness,
+  getEnrollmentReadiness,
   getSectionStatus,
 } from './schema/calculators.js'
 // Sections via barrel

@@ -3,10 +3,10 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import {
+  countScript,
   deepClone,
   ensureScriptShape,
   validateScript,
-  countScript,
 } from '../services'
 
 export function useScriptState(initial) {

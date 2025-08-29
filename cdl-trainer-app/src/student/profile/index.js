@@ -27,12 +27,12 @@ export {
 } from './sections'
 
 // --- UI Atoms/Molecules (barrel re-export) ---
-export { Field, Select, UploadField, CheckboxGroup } from './ui'
+export { CheckboxGroup, Field, Select, UploadField } from './ui'
 
 // --- Schema + Calculators (single source of truth) ---
-export { PROFILE_SCHEMA, TIERS } from './schema/profileSchema.js'
 export {
-  getEnrollmentReadiness,
   getBTWReadiness,
+  getEnrollmentReadiness,
   getSectionStatus,
 } from './schema/calculators.js'
+export { PROFILE_SCHEMA, TIERS } from './schema/profileSchema.js'

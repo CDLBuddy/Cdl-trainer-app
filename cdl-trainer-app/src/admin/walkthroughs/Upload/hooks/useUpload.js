@@ -2,13 +2,13 @@
 import { useMemo, useRef, useState } from 'react'
 
 import {
-  parseMarkdownAny,
-  parseCsvAny,
-  validateShape,
-  normalizeClassCode,
-  rowsToSections,
   ensureScriptShape,
+  normalizeClassCode,
+  parseCsvAny,
+  parseMarkdownAny,
+  rowsToSections,
   validateScript,
+  validateShape,
 } from '../services/uploadUtils.js'
 
 export function useUpload({ onImported, parseXlsx }) {
@@ -130,7 +130,9 @@ export function useUpload({ onImported, parseXlsx }) {
       setBusy(false)
       try {
         if (fileInputRef.current) fileInputRef.current.value = ''
-      } catch {}
+      } catch {
+        // Intentionally ignore errors when resetting file input
+      }
     }
   }
 

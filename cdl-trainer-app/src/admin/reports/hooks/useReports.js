@@ -15,11 +15,11 @@
 
 import {
   useCallback,
+  useDeferredValue,
   useEffect,
   useMemo,
   useRef,
   useState,
-  useDeferredValue,
 } from 'react'
 
 import { loadReportsBundle } from '../services'
@@ -146,7 +146,7 @@ export default function useReports(schoolId, opts = {}) {
       setUsers(nu)
       setCompanies(nc)
       setLastLoadedAt(Date.now())
-    } catch (e) {
+    } catch (_) {
       if (ac.signal.aborted) return
       setError('Failed to load reports data. Please try again.')
     } finally {

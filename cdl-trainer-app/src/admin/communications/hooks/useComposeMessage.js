@@ -8,7 +8,7 @@
 // - Tiny utilities for toggling channels, attaching templates, etc.
 // =============================================================================
 
-import { useMemo, useState, useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { queueMessage } from '../services'
 

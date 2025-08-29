@@ -134,15 +134,17 @@ export default function QuickAnnounce({
       if (storageKey) {
         try {
           sessionStorage.removeItem(storageKey)
-        } catch {}
+        } catch {
+          // intentionally ignore error
+        }
       }
     } catch (err) {
       setAck({ type: 'err', msg: err?.message || 'Failed to send.' })
       if (liveRef.current) liveRef.current.textContent = 'Sending failed.'
     } finally {
       // auto-hide toast
-      const t = setTimeout(() => setAck(null), 3500)
-      return () => clearTimeout(t)
+      setTimeout(() => setAck(null), 3500)
+      // No need to return a cleanup function here
     }
   }
 

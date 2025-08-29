@@ -5,11 +5,10 @@ import { Link } from 'react-router-dom'
 
 import { prefetchReports } from '@admin/reports'
 import Shell from '@components/Shell.jsx'
-import { db, auth } from '@utils/firebase.js'
+import { auth, db } from '@utils/firebase.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
 // Prefetch the heavy Reports chunks on hover/focus (safe no-op on SSR)
-
 import { useToast } from '@/components/useToast.js'
 
 export default function AdminProfile() {

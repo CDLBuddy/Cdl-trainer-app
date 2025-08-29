@@ -6,10 +6,10 @@
 // - Keep paths in sync with sibling files
 // ======================================================================
 
-export * from './settingsApi.js'
-export * from './brandingApi.js'
 export * from './billingApi.js'
-export * from './notificationsApi.js'
-export * from './coursesApi.js'
+export * from './brandingApi.js'
 export * from './complianceApi.js'
+export * from './coursesApi.js'
+export * from './notificationsApi.js'
+export * from './settingsApi.js'
 export * from './usersApi.js'

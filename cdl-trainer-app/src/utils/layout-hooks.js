@@ -12,8 +12,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import {
-  subscribeBrandingUpdated,
   getCachedBrandingSummary,
+  subscribeBrandingUpdated,
 } from '@/utils/school-branding.js'
 
 // ----------------------------------------------------------------------

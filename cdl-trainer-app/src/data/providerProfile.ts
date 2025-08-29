@@ -21,7 +21,14 @@ export interface ProviderProfile {
 const cache = new Map<string, ProviderProfile>()
 
 function fromGlobals(): ProviderProfile {
-  const w = typeof window !== 'undefined' ? (window as any) : {}
+  type BrandingGlobals = {
+    __TPR_ID__?: string
+    __SCHOOL_NAME__?: string
+    __PROVIDER_NAME__?: string
+    __TPR_TIN__?: string
+    [key: string]: unknown
+  }
+  const w: BrandingGlobals = typeof window !== 'undefined' ? (window as unknown as BrandingGlobals) : {}
   return {
     tprId: String(w.__TPR_ID__ ?? '') || '',
     name: String(w.__SCHOOL_NAME__ ?? w.__PROVIDER_NAME__ ?? '') || undefined,
@@ -32,7 +39,7 @@ function fromGlobals(): ProviderProfile {
 
 export async function getProviderProfile(
   schoolId?: string,
-  opts?: { signal?: AbortSignal }
+  _opts?: { signal?: AbortSignal }
 ): Promise<ProviderProfile> {
   const key = String(schoolId || 'default')
   const hit = cache.get(key)

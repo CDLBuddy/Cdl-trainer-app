@@ -8,16 +8,16 @@ import {
   doc,
   getDoc,
   getDocs,
-  query,
-  where,
-  orderBy,
   limit,
-  writeBatch,
+  orderBy,
+  query,
   serverTimestamp,
   updateDoc,
+  where,
+  writeBatch,
 } from 'firebase/firestore'
 
-import { db, auth } from '@utils/firebase.js'
+import { auth, db } from '@utils/firebase.js'
 
 // === Config (adjust if your paths differ) ====================================
 const SUBMISSIONS = schoolId =>

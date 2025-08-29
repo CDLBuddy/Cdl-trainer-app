@@ -1,21 +1,21 @@
 //src/instructor/StudentProfileForInstructor.jsx
 import {
+  addDoc,
+  collection,
   doc,
   getDoc,
-  collection,
-  addDoc,
   serverTimestamp,
 } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 import ChecklistReviewModal from '@components/ChecklistReviewModal.jsx' // Assume you move modal logic here
 import { db } from '@utils/firebase.js'
 import {
-  verifyStudentProfile,
-  verifyStudentPermit,
-  verifyStudentVehicle,
   reviewStudentWalkthrough,
+  verifyStudentPermit,
+  verifyStudentProfile,
+  verifyStudentVehicle,
 } from '@utils/ui-helpers.js'
 
 import { useToast } from '@/components/useToast.js'

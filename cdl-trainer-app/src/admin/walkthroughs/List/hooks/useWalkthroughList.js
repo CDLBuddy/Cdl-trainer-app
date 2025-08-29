@@ -1,5 +1,5 @@
 //src/admin/walkthroughs/List/hooks/useWalkthroughList.js
-import { useMemo, useState, useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { sourceFrom } from '../services/listUtils.js'
 
@@ -67,7 +67,7 @@ export function useWalkthroughList(items) {
       .map(x => x.v)
   }, [items, q, status, klass, source, sortKey, sortDir])
 
-  const onRowKey = useCallback((e, id) => {
+  const onRowKey = useCallback((e, _id) => {
     // Consumers bind specific handlers on the row; this just normalizes keys
     // Enter → Preview, E → Edit
     if (e.key === 'Enter') {

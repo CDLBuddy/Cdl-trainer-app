@@ -13,8 +13,8 @@ export { default as AdminCommunications } from './AdminCommunications.jsx'
 export { default as ComposeForm } from './components/ComposeForm.jsx'
 export { default as MessageHistoryTable } from './components/MessageHistoryTable.jsx'
 export { default as MessageList } from './components/MessageHistoryTable.jsx' // alias
-export { default as TemplateList } from './components/TemplateList.jsx'
 export { default as QuickAnnounce } from './components/QuickAnnounce.jsx'
+export { default as TemplateList } from './components/TemplateList.jsx'
 
 // Hooks
 export { useComposeMessage } from './hooks/useComposeMessage.js'
@@ -23,9 +23,9 @@ export { useTemplates } from './hooks/useTemplates.js'
 
 // Services
 export {
-  queueMessage,
   listMessages,
   listTemplates,
+  queueMessage,
   upsertTemplate,
 } from './services/commsApi.js'
 

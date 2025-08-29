@@ -9,8 +9,8 @@
 
 import PropTypes from 'prop-types'
 import React, {
-  memo,
   lazy,
+  memo,
   Suspense,
   useCallback,
   useEffect,

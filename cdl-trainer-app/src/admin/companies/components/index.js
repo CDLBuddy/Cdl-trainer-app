@@ -7,9 +7,9 @@
 // ======================================================================
 
 // Core table & chrome
-export { default as CompanyHeader } from './CompanyHeader.jsx'
-export { default as CompanyFilters } from './CompanyFilters.jsx'
 export { default as CompaniesTable } from './CompaniesTable.jsx'
+export { default as CompanyFilters } from './CompanyFilters.jsx'
+export { default as CompanyHeader } from './CompanyHeader.jsx'
 export { default as CompanyRow } from './CompanyRow.jsx'
 
 // Detail cards (Overview / Documents / Notes)

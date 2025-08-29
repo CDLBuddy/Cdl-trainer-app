@@ -107,42 +107,60 @@ function InboxList({
               />
             ) : null
 
-            return (
-              <article
-                key={m.id}
-                role="listitem"
-                className={`${cls.item} ${!m.readAt ? cls.unread : ''}`}
-                onClick={clickable ? () => onItemClick(m) : undefined}
-                tabIndex={clickable ? 0 : undefined}
-                onKeyDown={
-                  clickable
-                    ? e => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          onItemClick(m)
-                        }
-                      }
-                    : undefined
-                }
-                aria-label={m.subject || 'Announcement'}
-                title={m.subject || 'Announcement'}
-              >
-                <header className={cls.itemHeader}>
-                  <span className={cls.itemTitle}>
-                    {m.subject || '(no subject)'}
-                  </span>
-                  <time
-                    className={cls.when}
-                    dateTime={new Date(
-                      m.createdAt?.toDate?.() ?? m.createdAt ?? Date.now()
-                    ).toISOString()}
-                  >
-                    {when}
-                  </time>
-                </header>
-                {content}
-              </article>
-            )
+            if (clickable) {
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  className={`${cls.item} ${!m.readAt ? cls.unread : ''}`}
+                  onClick={() => onItemClick(m)}
+                  aria-label={m.subject || 'Announcement'}
+                  title={m.subject || 'Announcement'}
+                  tabIndex={0}
+                  style={{ all: 'unset', display: 'block', width: '100%', textAlign: 'inherit', cursor: 'pointer' }}
+                >
+                  <header className={cls.itemHeader}>
+                    <span className={cls.itemTitle}>
+                      {m.subject || '(no subject)'}
+                    </span>
+                    <time
+                      className={cls.when}
+                      dateTime={new Date(
+                        m.createdAt?.toDate?.() ?? m.createdAt ?? Date.now()
+                      ).toISOString()}
+                    >
+                      {when}
+                    </time>
+                  </header>
+                  {content}
+                </button>
+              )
+            } else {
+              return (
+                <article
+                  key={m.id}
+                  role="listitem"
+                  className={`${cls.item} ${!m.readAt ? cls.unread : ''}`}
+                  aria-label={m.subject || 'Announcement'}
+                  title={m.subject || 'Announcement'}
+                >
+                  <header className={cls.itemHeader}>
+                    <span className={cls.itemTitle}>
+                      {m.subject || '(no subject)'}
+                    </span>
+                    <time
+                      className={cls.when}
+                      dateTime={new Date(
+                        m.createdAt?.toDate?.() ?? m.createdAt ?? Date.now()
+                      ).toISOString()}
+                    >
+                      {when}
+                    </time>
+                  </header>
+                  {content}
+                </article>
+              )
+            }
           })}
       </div>
     </section>

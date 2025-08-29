@@ -5,7 +5,7 @@
 // - Store URLs and event lists; validate shape lightly here.
 // ---------------------------------------------------------------------------
 
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 const KEY = 'webhooks'
 // canonical event names you plan to emit (extend freely)

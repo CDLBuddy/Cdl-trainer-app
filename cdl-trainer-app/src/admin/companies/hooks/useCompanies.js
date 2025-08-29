@@ -10,15 +10,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
-  listCompaniesBySchool,
   addCompany,
-  updateCompany,
-  removeCompany,
-  removeCompaniesBulk,
-  exportCompaniesToCSV,
-  exportCompaniesToPDF,
   downloadCompanyTemplateCSV,
   existsByNameInSchool,
+  exportCompaniesToCSV,
+  exportCompaniesToPDF,
+  listCompaniesBySchool,
+  removeCompaniesBulk,
+  removeCompany,
+  updateCompany,
 } from '../services'
 
 /** Company name rule (letters, numbers, space, - ' . &) */

@@ -26,30 +26,26 @@ import * as tprClient from './tprClient.js'
 import * as validators from './validators.js'
 
 // ---- Tree-shakeable named re-exports (preferred) ------------------------
+export { toCSV, toJSON } from './exporters.js'
+export { toTPRCompletion, toTPRCompletions } from './mappers.js'
 export {
   loadReportsBundle,
-  normalizeUser,
   normalizeCompany,
+  normalizeUser,
 } from './reportsApi.js'
-
-export { toTPRCompletion, toTPRCompletions } from './mappers.js'
-
 export {
-  validateTPRPayload,
-  validateTPRPayloads,
-  assertValidTPRPayload,
-} from './validators.js'
-
-export { toCSV, toJSON } from './exporters.js'
-
-export {
-  submitCompletion,
   bulkUpload,
-  providerId,
-  mode,
   canSubmitViaApi,
+  mode,
+  providerId,
+  submitCompletion,
   validateProviderConfig,
 } from './tprClient.js'
+export {
+  assertValidTPRPayload,
+  validateTPRPayload,
+  validateTPRPayloads,
+} from './validators.js'
 
 // ---- Optional helpers for useStudentCert() -------------------------------
 // If you later add real implementations, export them from another module
@@ -62,7 +58,7 @@ export async function loadStudentTraining(_studentId, _opts = {}) {
 }
 
 // ---- Back-compat namespace exports --------------------------------------
-export { reportsApi, tprClient, fieldMaps, mappers, validators, exporters }
+export { exporters, fieldMaps, mappers, reportsApi, tprClient, validators }
 
 // ---- Code-splitting helpers (unchanged) ----------------------------------
 export const lazy = {

@@ -1,17 +1,17 @@
 //src/instructor/InstructorProfile.jsx
 import {
   collection,
-  query,
-  where,
   getDocs,
+  query,
   updateDoc,
+  where,
 } from 'firebase/firestore'
 import {
-  uploadBytes,
   getDownloadURL,
   ref as storageRef,
+  uploadBytes,
 } from 'firebase/storage'
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { db, storage } from '@utils/firebase.js'

@@ -50,35 +50,33 @@ function QuickLinks({
 
   const safeItems = useMemo(() => {
     if (!Array.isArray(items)) return []
-    return items
-      .filter(Boolean)
-      .map((it) => {
-        // normalize fields
-        const href = it.href || it.to || ''
-        const isAbsolute = /^https?:\/\//i.test(href)
-        const isProto = /^(mailto:|tel:)/i.test(href)
+    return items.filter(Boolean).map(it => {
+      // normalize fields
+      const href = it.href || it.to || ''
+      const isAbsolute = /^https?:\/\//i.test(href)
+      const isProto = /^(mailto:|tel:)/i.test(href)
 
-        // if caller didn't force external, infer from URL
-        const external = (it.external ?? isAbsolute) || isProto
+      // if caller didn't force external, infer from URL
+      const external = (it.external ?? isAbsolute) || isProto
 
-        // default new tab: yes for http(s) externals, no for mailto/tel (unless caller opts in)
-        const newTab =
-          it.newTab !== undefined ? it.newTab : isAbsolute ? true : false
+      // default new tab: yes for http(s) externals, no for mailto/tel (unless caller opts in)
+      const newTab =
+        it.newTab !== undefined ? it.newTab : isAbsolute ? true : false
 
-        return {
-          ...it,
-          href,
-          external,
-          newTab,
-        }
-      })
+      return {
+        ...it,
+        href,
+        external,
+        newTab,
+      }
+    })
   }, [items])
 
   if (safeItems.length === 0) return null
 
   return (
     <nav className={className} aria-label={ariaLabel}>
-      {safeItems.map((it) => {
+      {safeItems.map(it => {
         const {
           id,
           label,
@@ -130,7 +128,11 @@ function QuickLinks({
             >
               {Icon}
               <span className={cls.label}>{label}</span>
-              {newTab && <span className={cls.externalMark} aria-hidden>↗</span>}
+              {newTab && (
+                <span className={cls.externalMark} aria-hidden>
+                  ↗
+                </span>
+              )}
             </a>
           )
         }
@@ -157,8 +159,8 @@ function QuickLinks({
 QuickLinks.propTypes = {
   items: PropTypes.arrayOf(
     PropTypes.shape({
-      to: PropTypes.string,          // internal route OR external URL (compat)
-      href: PropTypes.string,        // preferred for external URLs
+      to: PropTypes.string, // internal route OR external URL (compat)
+      href: PropTypes.string, // preferred for external URLs
       label: PropTypes.string.isRequired,
       icon: PropTypes.node,
       external: PropTypes.bool,

@@ -5,12 +5,12 @@
 // - Upload logo to Firebase Storage
 // ---------------------------------------------------------------------
 
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
 import {
+  deleteObject,
+  getDownloadURL,
   ref as storageRef,
   uploadBytes,
-  getDownloadURL,
-  deleteObject,
 } from 'firebase/storage'
 
 import { db, storage } from '@utils/firebase.js'

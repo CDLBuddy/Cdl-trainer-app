@@ -9,7 +9,7 @@
 // - FIX: no redirects/denials while authed but role is still null
 // ======================================================================
 
-import { onAuthStateChanged, getIdTokenResult } from 'firebase/auth'
+import { getIdTokenResult, onAuthStateChanged } from 'firebase/auth'
 import {
   collection,
   doc,

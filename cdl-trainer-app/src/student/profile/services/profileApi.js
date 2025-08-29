@@ -9,10 +9,10 @@
 import {
   doc,
   getDoc,
-  setDoc,
-  updateDoc,
   onSnapshot,
   serverTimestamp,
+  setDoc,
+  updateDoc,
 } from 'firebase/firestore'
 
 import { db } from '@/utils/firebase.js'

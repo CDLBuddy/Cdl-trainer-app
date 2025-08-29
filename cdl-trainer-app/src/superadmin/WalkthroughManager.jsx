@@ -4,14 +4,14 @@ import {
   doc,
   getDoc,
   getDocs,
-  setDoc,
   serverTimestamp,
+  setDoc,
 } from 'firebase/firestore'
 import React, { useEffect, useMemo, useState } from 'react'
 
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/useToast.js' // keep exact casing/extension per your setup
-import { db, auth } from '@utils/firebase.js'
+import { auth, db } from '@utils/firebase.js'
 
 /* Walkthrough data utils */
 import {

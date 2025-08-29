@@ -8,6 +8,6 @@
 //       from '@admin/companies/components/detail'
 // ============================================================================
 
-export { default as CompanyOverviewCard } from './CompanyOverviewCard.jsx'
 export { default as CompanyDocumentsCard } from './CompanyDocumentsCard.jsx'
 export { default as CompanyNotesCard } from './CompanyNotesCard.jsx'
+export { default as CompanyOverviewCard } from './CompanyOverviewCard.jsx'

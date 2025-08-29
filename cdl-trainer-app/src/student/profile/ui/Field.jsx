@@ -1,5 +1,5 @@
 // src/student/profile/ui/Field.jsx
-import React, { forwardRef, useId, useMemo, useCallback } from 'react'
+import React, { forwardRef, useCallback, useId, useMemo } from 'react'
 
 import cls from './fields.module.css'
 

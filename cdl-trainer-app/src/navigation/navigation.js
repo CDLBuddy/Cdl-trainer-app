@@ -9,10 +9,10 @@
 // ======================================================================
 
 import {
-  normalizeRole as cfgNormalizeRole,
   getDashboardRoute as cfgGetDashboardRoute,
-  getTopNavForRole as cfgGetTopNavForRole,
   getHiddenRoutesForRole as cfgGetHiddenRoutesForRole,
+  getTopNavForRole as cfgGetTopNavForRole,
+  normalizeRole as cfgNormalizeRole,
   roleFromPath as cfgRoleFromPath,
 } from './navConfig.js'
 

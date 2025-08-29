@@ -14,7 +14,7 @@ import * as restrictions from './restrictions/index.js'
 import * as school from './school/index.js'
 
 // Re-export category namespaces (handy for tooling/tests)
-export { restrictions, school, phases, common }
+export { common, phases, restrictions, school }
 
 /** @typedef {import('@walkthrough-loaders').WalkthroughOverlay} WalkthroughOverlay */
 

@@ -1,5 +1,5 @@
 // src/student/profile/sections/PermitSection.jsx
-import React, { useId, useMemo, useState, useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useId, useMemo, useState } from 'react'
 
 import { getSectionStatus } from '../schema/calculators.js'
 import Field from '../ui/Field.jsx'

@@ -4,8 +4,8 @@
 // -----------------------------------------------------------------------------
 
 // Pages
-export { default as SAReviewQueue } from './SAReviewQueue.jsx'
 export { default as SAReviewDetail } from './SAReviewDetail.jsx'
+export { default as SAReviewQueue } from './SAReviewQueue.jsx'
 
 // Firestore API (named exports)
 export * from './SaWalkthroughApi.js'

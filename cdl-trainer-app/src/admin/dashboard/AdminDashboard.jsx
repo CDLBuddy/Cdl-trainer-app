@@ -7,15 +7,15 @@
 // ======================================================================
 
 // @ts-check
-import React, { Suspense, lazy, useMemo, useCallback } from 'react'
+import React, { lazy, Suspense, useCallback, useMemo } from 'react'
 
 import Shell from '@components/Shell.jsx'
 
 import {
   useAuthSchoolGuard,
-  useDashboardKpis, // -> { loading, data, error, refresh }
   useCompaniesSnapshot, // -> { loading, rows, total, error, refresh }
   useDashboardAlerts, // -> { loading, items, error, stats, refresh }
+  useDashboardKpis, // -> { loading, data, error, refresh }
   useRecentActivity, // -> { loading, data,  error, refresh }
 } from '@admin/dashboard/hooks'
 

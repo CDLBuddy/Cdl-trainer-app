@@ -9,23 +9,23 @@
 // ======================================================================
 
 import React, {
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  Suspense,
 } from 'react'
 
 import Shell from '@components/Shell.jsx'
 
 import {
-  Branding,
-  Courses,
-  Users,
   Billing,
+  Branding,
   Compliance,
+  Courses,
   Notifications,
+  Users,
 } from './sections'
 
 // Keep the order stable

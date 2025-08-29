@@ -2,7 +2,7 @@
 // WalkthroughList (admin) — composition shell
 import React from 'react'
 
-import { ListToolbar, ListHeader, ListRow } from './components'
+import { ListHeader, ListRow, ListToolbar } from './components'
 import { useWalkthroughList } from './hooks'
 import cls from './WalkthroughList.module.css'
 

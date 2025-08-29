@@ -39,7 +39,9 @@ async function ensureBuilder() {
 export async function prefetchCertBuilder() {
   try {
     await ensureBuilder()
-  } catch {}
+  } catch {
+    // intentionally ignored
+  }
 }
 
 /* -------------------------------- Utilities ------------------------------ */

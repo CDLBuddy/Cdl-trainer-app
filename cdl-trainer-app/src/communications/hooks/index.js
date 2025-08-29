@@ -16,6 +16,6 @@ export { useInbox } from './useInbox.js'
  * Alias: useUnread
  */
 export {
-  useUnreadAnnouncements,
   useUnreadAnnouncements as useUnread,
+  useUnreadAnnouncements,
 } from './useUnread.js'

@@ -9,12 +9,12 @@
 // - Exposes AdminRouter.preload() and .preloadCore() for eager warming
 // ======================================================================
 
-import React, { Suspense, lazy, useEffect, memo } from 'react'
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import React, { lazy, memo, Suspense, useEffect } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import {
-  prefetchOnIdle as prefetchReportsOnIdle,
   ensureModalRoot,
+  prefetchOnIdle as prefetchReportsOnIdle,
 } from '@admin/reports'
 import { __DEV__ } from '@utils/env.js'
 

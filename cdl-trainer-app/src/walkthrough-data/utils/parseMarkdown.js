@@ -171,7 +171,9 @@ export function parseMarkdownToWalkthrough(md, meta = {}) {
       if (!Array.isArray(result.sections) || result.sections.length === 0) {
         console.warn('[parseMarkdown] Produced walkthrough has no sections')
       }
-    } catch {}
+    } catch {
+      // intentionally empty
+    }
   }
 
   return result

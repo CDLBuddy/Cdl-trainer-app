@@ -142,7 +142,7 @@ export default function useAddStudentForm({ companyId = '', onClose }) {
   }, [canSave, error])
 
   // -------------------------- Validation ------------------------------
-  function validate() {
+  const validate = useCallback(() => {
     const hasEmail = isEmail(form.email || '')
     const digits = onlyDigits(form.phone || '')
     const hasPhone = digits.length >= 7
@@ -152,7 +152,7 @@ export default function useAddStudentForm({ companyId = '', onClose }) {
     }
     if (!s(form.cdlClass)) return 'Please select a CDL class.'
     return ''
-  }
+  }, [form.email, form.phone, form.cdlClass])
 
   // -------------------------- Handlers --------------------------------
   const handleSubmit = useCallback(
@@ -195,7 +195,7 @@ export default function useAddStudentForm({ companyId = '', onClose }) {
         setSaving(false)
       }
     },
-    [saving, form, overlays, companyId, actor, onClose]
+    [saving, form, overlays, companyId, actor, onClose, validate]
   )
 
   // --------------------------- API ------------------------------------

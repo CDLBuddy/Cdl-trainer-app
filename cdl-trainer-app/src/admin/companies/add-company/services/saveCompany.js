@@ -6,11 +6,11 @@
 // - Pure service (no React), safe to tree-shake
 // ============================================================================
 
+// Optional preflight duplicate check (exported by main companies services barrel)
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 
 import { db } from '@utils/firebase.js'
 
-// Optional preflight duplicate check (exported by main companies services barrel)
 import { existsByNameInSchool } from '@admin/companies/services/index'
 
 /**

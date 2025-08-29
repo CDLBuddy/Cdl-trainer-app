@@ -8,8 +8,8 @@
 // - Scroll-to-top on route changes
 // ======================================================================
 
-import React, { Suspense, lazy, useEffect } from 'react'
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import React, { lazy, Suspense, useEffect } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import { preloadStudentCore } from '@student/preload.js'
 
@@ -63,7 +63,9 @@ function ScrollToTopOnRouteChange() {
     // best-effort scroll reset without jank
     try {
       window.history.scrollRestoration = 'manual'
-    } catch {}
+    } catch {
+      // Intentionally left blank: scrollRestoration may not be supported
+    }
     try {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
     } catch {

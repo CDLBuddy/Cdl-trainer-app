@@ -1,5 +1,5 @@
 // src/student/profile/sections/BasicInfoSection.jsx
-import React, { useMemo, useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { getSectionStatus } from '../schema/calculators.js'
 import Field from '../ui/Field.jsx'

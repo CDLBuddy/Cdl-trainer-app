@@ -14,16 +14,16 @@ import {
   toCsv,
   toISODate,
 } from './cert-template.js'
-import { openPrintableCert, downloadCsv, copy } from './pdf-utils.js'
+import { copy, downloadCsv, openPrintableCert } from './pdf-utils.js'
 
 export {
   buildCertPayload,
   buildTprCsvRow,
+  copy,
+  downloadCsv,
+  openPrintableCert,
   toCsv,
   toISODate,
-  openPrintableCert,
-  downloadCsv,
-  copy,
 }
 
 /**

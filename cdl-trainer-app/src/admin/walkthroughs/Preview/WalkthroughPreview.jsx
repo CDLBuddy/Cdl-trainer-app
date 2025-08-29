@@ -4,9 +4,9 @@ import React from 'react'
 
 import {
   PreviewHeader,
-  StatsBar,
   ProblemsList,
   SectionCard,
+  StatsBar,
 } from './components'
 import { usePreview } from './hooks'
 import cls from './WalkthroughPreview.module.css'

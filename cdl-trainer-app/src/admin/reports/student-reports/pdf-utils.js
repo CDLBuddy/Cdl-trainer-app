@@ -228,7 +228,9 @@ export function openPrintableCert(cert) {
     w.document.close()
     try {
       w.focus()
-    } catch {}
+    } catch {
+      // intentionally left blank
+    }
     return true
   } catch {
     return false

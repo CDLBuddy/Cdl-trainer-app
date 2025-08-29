@@ -4,7 +4,7 @@
 // - Default role, invites template, profile requirements
 // ---------------------------------------------------------------------
 
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
 
 import { db } from '@utils/firebase.js'
 

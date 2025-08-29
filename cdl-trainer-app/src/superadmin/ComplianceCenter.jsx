@@ -1,5 +1,5 @@
 // src/superadmin/Compliance.jsx
-import { collection, getDocs, updateDoc, doc } from 'firebase/firestore'
+import { collection, doc, getDocs, updateDoc } from 'firebase/firestore'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 

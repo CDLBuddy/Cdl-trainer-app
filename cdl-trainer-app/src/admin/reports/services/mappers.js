@@ -8,11 +8,11 @@
 // ======================================================================
 
 import {
-  normalizeTrainingType,
   normalizeClassType,
   normalizeEndorsement,
-  toISODate,
+  normalizeTrainingType,
   pathGet,
+  toISODate,
 } from './fieldMaps.js'
 
 /** Coalesce first non-empty trimmed string */

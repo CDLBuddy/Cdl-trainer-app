@@ -26,23 +26,22 @@ export { WalkthroughEditor }
 export { WalkthroughForm }
 
 // ----- Sub-package barrels as namespaces (tree-shakeable) --------------------
-export * as Manager from './Manager'
-export * as List from './List'
-export * as Preview from './Preview'
-export * as Upload from './Upload'
 export * as Editor from './Editor'
 export * as Form from './Form'
+export * as List from './List'
+export * as Manager from './Manager'
+export * as Preview from './Preview'
 export * as shared from './shared'
+export * as Upload from './Upload'
 
 // ----- Convenience helpers (avoid deep import paths) -------------------------
 export {
-  toToken,
-  nextId,
-  nowIso,
   cloneDeep,
   inferLabelFromToken,
+  nextId,
+  nowIso,
+  toToken,
 } from './shared/services/walkthroughHelpers.js'
-
 export {
   ensureScriptShape,
   validateScript,

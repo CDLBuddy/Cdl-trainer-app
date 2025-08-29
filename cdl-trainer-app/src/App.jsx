@@ -8,10 +8,10 @@
 // - Branding + NavBar visibility handled via layout hooks
 // ======================================================================
 
+// Global UI
 import React, { Suspense, useEffect, useRef } from 'react'
 import { Outlet, ScrollRestoration, useLocation } from 'react-router-dom'
 
-// Global UI
 import NavBar from '@components/NavBar.jsx'
 import SplashScreen from '@components/SplashScreen.jsx'
 // Layout hooks (centralized)

@@ -9,15 +9,15 @@
 
 // @ts-check
 
-import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
-  USE_BILLING_MOCKS,
-  mockEmployerInvoices,
   fetchEmployerInvoices,
   markEmployerInvoicePaid,
+  mockEmployerInvoices,
+  USE_BILLING_MOCKS,
 } from '../../services'
-import { downloadCsv, formatCurrency, fmtDate } from '../../utils'
+import { downloadCsv, fmtDate, formatCurrency } from '../../utils'
 
 /** @typedef {'unpaid'|'partial'|'paid'|'void'} InvoiceStatus */
 /**

@@ -4,7 +4,7 @@
 // - Configures cleanup windows for logs/PII (your backend cron enforces them).
 // ---------------------------------------------------------------------------
 
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 const KEY = 'dataRetention'
 

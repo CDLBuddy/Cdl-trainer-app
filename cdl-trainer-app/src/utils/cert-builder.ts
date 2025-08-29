@@ -7,16 +7,17 @@
 // ---------------------------------------------------------------------------
 
 import type {
-  TPRCompletion,
   ClassType,
   Endorsement,
   ProgramType,
+  TPRCompletion,
+  ISODate,
 } from '@/types/eldt'
 import {
-  toISODate,
   normalizeClassType,
   normalizeEndorsement,
   normalizeProgramType,
+  toISODate,
 } from '@/types/eldt'
 
 type AnyRecord = Record<string, unknown>
@@ -30,18 +31,25 @@ function coalesce(...vals: unknown[]) {
   }
   return ''
 }
-function coalesceDate(...vals: unknown[]) {
+function coalesceDate(...vals: unknown[]): ISODate | undefined {
   for (const v of vals) {
     const iso = toISODate(v)
     if (iso) return iso
   }
-  return ''
+  return undefined
 }
-function pathGet(obj: AnyRecord | null | undefined, path: string): unknown {
-  if (!obj) return undefined
-  return path
-    .split('.')
-    .reduce((acc: any, key) => (acc == null ? undefined : acc[key]), obj as any)
+
+function pathGet(obj: unknown, path: string): unknown {
+  if (!obj || typeof obj !== 'object') return undefined
+  let cur: unknown = obj
+  for (const key of path.split('.')) {
+    if (cur && typeof cur === 'object' && key in (cur as Record<string, unknown>)) {
+      cur = (cur as Record<string, unknown>)[key]
+    } else {
+      return undefined
+    }
+  }
+  return cur
 }
 
 export interface BuildArgs {
@@ -81,7 +89,7 @@ export function buildCert({
       student['dob'],
       student['dateOfBirth'],
       student['birthDate']
-    ),
+    ) as ISODate, // required by type
     licenseNumber: coalesce(student['licenseNumber'], student['cdlNumber']),
     licenseState: coalesce(student['licenseState'], student['cdlState']),
     clpNumber: S(student['clpNumber']),
@@ -91,12 +99,14 @@ export function buildCert({
   }
 
   // ---- provider ----------------------------------------------------------
+  interface WindowWithTPR extends Window {
+    __TPR_ID__?: string
+  }
+  const tprFromGlobal =
+    typeof window !== 'undefined' ? (window as WindowWithTPR).__TPR_ID__ ?? '' : ''
+
   const prov = {
-    tprId: coalesce(
-      provider['tprId'],
-      provider['TPR_ID'],
-      (typeof window !== 'undefined' && (window as any).__TPR_ID__) || ''
-    ),
+    tprId: coalesce(provider['tprId'], provider['TPR_ID'], tprFromGlobal),
     name: coalesce(provider['name'], provider['providerName']),
     tin: S(provider['tin'] ?? provider['TIN'] ?? ''),
   }
@@ -119,23 +129,24 @@ export function buildCert({
           ? 'btw'
           : 'both'
 
-  const programType = normalizeProgramType(
-    coalesce(training['programType'], training['trainingType']),
-    inferredProgram
-  )
+  const programType: ProgramType =
+    normalizeProgramType(
+      coalesce(training['programType'], training['trainingType'])
+    ) ?? inferredProgram
 
-  const classType: ClassType = normalizeClassType(
-    coalesce(training['classType'], training['class'], training['cdlClass']) ||
-      'A'
-  )
+  const classType: ClassType =
+    normalizeClassType(
+      coalesce(training['classType'], training['class'], training['cdlClass'])
+    ) ?? 'A'
 
-  const endorsement: Endorsement | undefined = normalizeEndorsement(
-    coalesce(
-      training['endorsement'],
-      training['endorse'],
-      training['endorsements']
-    )
-  )
+  const endorsement: Endorsement | '' =
+    normalizeEndorsement(
+      coalesce(
+        training['endorsement'],
+        training['endorse'],
+        training['endorsements']
+      )
+    ) ?? ''
 
   const completedAt = coalesceDate(
     training['completionDate'],

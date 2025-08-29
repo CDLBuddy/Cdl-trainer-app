@@ -7,19 +7,16 @@
 // ============================================================================
 
 export {
-  // Updates (one-shot + realtime)
-  getLatestUpdateOnce,
-  subscribeLatestUpdate,
-
-  // Combined snapshot (updates + resources + scheduler)
-  loadDashboardSnapshot,
-
   // Small dev helper
   __clearDashboardCache,
-
+  // Updates (one-shot + realtime)
+  getLatestUpdateOnce,
   // Resources / CTAs (used by QuickLinks & CTA button)
   getResourcesForSchool,
   getSchedulerURL,
+  // Combined snapshot (updates + resources + scheduler)
+  loadDashboardSnapshot,
+  subscribeLatestUpdate,
 } from './dashboardApi.js'
 
 // ---- Back-compat -----------------------------------------------------------

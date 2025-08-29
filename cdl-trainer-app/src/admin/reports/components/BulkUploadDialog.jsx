@@ -264,18 +264,32 @@ function BulkUploadDialogImpl({
     <div
       ref={overlayRef}
       className={styles.overlay}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={titleId}
-      aria-describedby={hintId}
+      tabIndex={0}
       onClick={e => {
         if (e.target === overlayRef.current) onClose?.()
       }}
+      onKeyDown={e => {
+        if (
+          (e.key === 'Enter' || e.key === ' ') &&
+          e.target === overlayRef.current
+        ) {
+          e.preventDefault()
+          onClose?.()
+        }
+      }}
+      role="button"
+      aria-label="Close dialog"
     >
-      <div ref={panelRef} className={styles.panel} role="document">
+      <section
+        ref={panelRef}
+        className={styles.panel}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={hintId}
+      >
         <header className={styles.header}>
-          <div>
-            <div className={styles.kicker}>Bulk Upload</div>
+          <div className={styles.titleWrap}>
             <h3 id={titleId} className={styles.title}>
               ELDT completion records (.csv)
             </h3>
@@ -371,7 +385,7 @@ function BulkUploadDialogImpl({
             <code className={styles.code}>{sampleHeaders.join(', ')}</code>
           </small>
         </section>
-      </div>
+      </section>
     </div>
   )
 }

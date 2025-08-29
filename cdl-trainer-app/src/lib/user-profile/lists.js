@@ -14,7 +14,6 @@ import {
   getDocs,
   limit,
   onSnapshot,
-  orderBy,
   query,
   where,
 } from 'firebase/firestore'

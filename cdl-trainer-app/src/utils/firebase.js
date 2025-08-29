@@ -6,38 +6,38 @@
 // - Exposes app, auth, db, storage + some tiny helpers
 // ======================================================================
 
-import { initializeApp, getApps, getApp } from 'firebase/app'
+import { getApp, getApps, initializeApp } from 'firebase/app'
 import {
-  getAuth,
-  setPersistence,
   browserLocalPersistence,
   connectAuthEmulator,
+  getAuth,
+  setPersistence,
 } from 'firebase/auth'
 import {
-  initializeFirestore,
-  persistentLocalCache,
-  persistentSingleTabManager,
-  persistentMultipleTabManager,
-  memoryLocalCache,
+  addDoc,
+  collection,
   connectFirestoreEmulator,
-  setLogLevel as setFsLogLevel,
   // re-exports
   doc,
   getDoc,
-  setDoc,
-  updateDoc,
-  addDoc,
-  collection,
-  serverTimestamp,
-  increment,
-  query,
-  orderBy,
-  limit,
   getDocs,
-  where,
+  increment,
+  initializeFirestore,
+  limit,
+  memoryLocalCache,
+  orderBy,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  persistentSingleTabManager,
+  query,
+  serverTimestamp,
+  setDoc,
+  setLogLevel as setFsLogLevel,
   startAfter,
+  updateDoc,
+  where,
 } from 'firebase/firestore'
-import { getStorage, connectStorageEmulator } from 'firebase/storage'
+import { connectStorageEmulator, getStorage } from 'firebase/storage'
 
 // ---------- Env & flags -------------------------------------------------
 
@@ -154,7 +154,7 @@ if (IS_EMU && IS_BROWSER) {
 export async function __firebaseHealthcheck() {
   try {
     await getDoc(doc(db, '_health', '_ping')) // existence not required
-    console.info('[firebase] Firestore reachable')
+    console.warn('[firebase] Firestore reachable')
   } catch (e) {
     console.error('[firebase] Firestore unreachable', e)
   }
@@ -222,22 +222,22 @@ export const refs = {
 
 // ---------- Exports (keep your public surface the same) -----------------
 
-export { app, db, auth, storage }
+export { app, auth, db, storage }
 export {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
   addDoc,
   collection,
-  serverTimestamp,
-  increment,
-  query,
-  orderBy,
-  limit,
+  doc,
+  getDoc,
   getDocs,
-  where,
+  increment,
+  limit,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
   startAfter,
+  updateDoc,
+  where,
 }
 
 // Also export flags if you want quick checks elsewhere

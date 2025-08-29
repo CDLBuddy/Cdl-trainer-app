@@ -2,7 +2,7 @@
 import React, { memo, useCallback } from 'react'
 
 import { StatusPill } from '..'
-import { formatCurrency, fmtDate } from '../../utils'
+import { fmtDate, formatCurrency } from '../../utils'
 
 function EmployerTableBase({ rows = [], onMarkPaid = () => {} }) {
   const hasRows = Array.isArray(rows) && rows.length > 0

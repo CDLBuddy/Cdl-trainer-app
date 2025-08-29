@@ -18,12 +18,12 @@ import styles from './AdminReports.module.css'
 import { ChecklistCard, FiltersBar, StatusPill } from './components'
 // Hooks (from ./hooks/index.js barrel)
 import {
-  useReports,
+  useBulkUpload,
   useChecklistPdf,
   useCompanyRoster,
+  useReports,
   useStudentCert,
   useTPRSubmit,
-  useBulkUpload,
 } from './hooks'
 
 // Toast (UX pings)
@@ -46,8 +46,11 @@ const StudentReportDrawer = React.lazy(
 
 // Memo wrappers so re-renders are minimized even for lazy comps
 const MemoUsersTable = React.memo(p => <UsersTable {...p} />)
+MemoUsersTable.displayName = 'MemoUsersTable'
 const MemoCompanyRosterTable = React.memo(p => <CompanyRosterTable {...p} />)
+MemoCompanyRosterTable.displayName = 'MemoCompanyRosterTable'
 const MemoExportMenu = React.memo(p => <ExportMenu {...p} />)
+MemoExportMenu.displayName = 'MemoExportMenu'
 
 /* ------------------------------- Fallbacks -------------------------------- */
 const FallbackCard = React.memo(function FallbackCard({
@@ -137,7 +140,7 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
   // 4) Per-student drawer
   const [drawerStudent, setDrawerStudent] = React.useState(null)
   // Thin style: hook returns cert + provider/training directly (accepts both call shapes)
-  const { cert, provider, training } = useStudentCert({
+  const { provider, training } = useStudentCert({
     student: drawerStudent,
     schoolId: currentSchoolId,
   })
@@ -161,47 +164,6 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
   const { submitting, submitMany } = useTPRSubmit()
   const [submitOpen, setSubmitOpen] = React.useState(false)
   const [pendingStudents, setPendingStudents] = React.useState([])
-
-  // 6) Auth gate
-  if (currentRole !== 'admin') {
-    return (
-      <div
-        className="dashboard-card"
-        style={{ margin: '2em auto', maxWidth: 520 }}
-      >
-        <h3>Access denied</h3>
-        <p>This page is for admins only.</p>
-      </div>
-    )
-  }
-
-  // 7) Error / loading states
-  if (loading) {
-    return (
-      <div className={`screen-wrapper fade-in ${styles.wrap}`}>
-        <header className={styles.head}>
-          <h2 className="dash-head">📄 Admin Reports</h2>
-        </header>
-        <FallbackCard>Loading reports…</FallbackCard>
-      </div>
-    )
-  }
-  if (error) {
-    return (
-      <div className={`screen-wrapper fade-in ${styles.wrap}`}>
-        <header className={styles.head}>
-          <h2 className="dash-head">📄 Admin Reports</h2>
-        </header>
-        <div
-          className="dashboard-card"
-          role="alert"
-          style={{ border: '1px solid #ff8a8a' }}
-        >
-          {String(error)}
-        </div>
-      </div>
-    )
-  }
 
   // 8) Handlers (stable)
   const onOpenStudent = React.useCallback(row => setDrawerStudent(row), [])
@@ -257,6 +219,47 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
       return () => clearTimeout(t)
     }
   }, [])
+
+  // 6) Auth gate
+  if (currentRole !== 'admin') {
+    return (
+      <div
+        className="dashboard-card"
+        style={{ margin: '2em auto', maxWidth: 520 }}
+      >
+        <h3>Access denied</h3>
+        <p>This page is for admins only.</p>
+      </div>
+    )
+  }
+
+  // 7) Error / loading states
+  if (loading) {
+    return (
+      <div className={`screen-wrapper fade-in ${styles.wrap}`}>
+        <header className={styles.head}>
+          <h2 className="dash-head">📄 Admin Reports</h2>
+        </header>
+        <FallbackCard>Loading reports…</FallbackCard>
+      </div>
+    )
+  }
+  if (error) {
+    return (
+      <div className={`screen-wrapper fade-in ${styles.wrap}`}>
+        <header className={styles.head}>
+          <h2 className="dash-head">📄 Admin Reports</h2>
+        </header>
+        <div
+          className="dashboard-card"
+          role="alert"
+          style={{ border: '1px solid #ff8a8a' }}
+        >
+          {String(error)}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={`screen-wrapper fade-in ${styles.wrap}`}>

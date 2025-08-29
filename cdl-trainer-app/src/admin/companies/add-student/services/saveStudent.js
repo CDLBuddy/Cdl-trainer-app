@@ -12,11 +12,11 @@ import {
   collection,
   doc,
   getDocs,
+  limit,
   query,
   serverTimestamp,
   setDoc,
   where,
-  limit,
 } from 'firebase/firestore'
 
 import { updateUserProfileFields } from '@user-profile/firestore' // ⬅️ new alias

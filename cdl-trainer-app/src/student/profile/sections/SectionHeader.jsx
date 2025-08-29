@@ -1,4 +1,4 @@
-// src/student/profile/sections/SectionHeader.jsx
+// Path: src/student/profile/sections/SectionHeader.jsx
 // ============================================================================
 // SectionHeader
 // - Consistent title + status chip used across Profile sections
@@ -9,6 +9,7 @@
 
 import React, { useMemo } from 'react'
 
+import { formatWhen } from './SectionHeader.helpers' // ✅ moved out to avoid fast-refresh rule
 import styles from './sections.module.css'
 
 /**
@@ -24,8 +25,8 @@ function normalizeStatus(v) {
   return 'missing'
 }
 
-/** Human labels used for the chip + screen readers */
-export const STATUS_LABELS = Object.freeze({
+/** Human labels used for the chip + screen readers (kept internal) */
+const STATUS_LABELS = Object.freeze({
   complete: {
     text: '✅ Verified',
     aria: 'Section complete and verified',
@@ -42,27 +43,6 @@ export const STATUS_LABELS = Object.freeze({
     className: `${styles.chip} ${styles.chipWarn}`,
   },
 })
-
-/**
- * Format a date/timestamp softly for the meta line.
- * Accepts Date, Firestore Timestamp-like (with toDate()), or ISO string.
- * @param {unknown} value
- */
-function formatWhen(value) {
-  if (!value) return ''
-  try {
-    const d =
-      value && typeof value === 'object' && typeof value.toDate === 'function'
-        ? value.toDate()
-        : value instanceof Date
-          ? value
-          : new Date(value)
-    if (!isFinite(+d)) return ''
-    return `on ${d.toLocaleDateString()}`
-  } catch {
-    return ''
-  }
-}
 
 /**
  * SectionHeader
@@ -108,5 +88,3 @@ export default function SectionHeader({
     </div>
   )
 }
-
-export { formatWhen }

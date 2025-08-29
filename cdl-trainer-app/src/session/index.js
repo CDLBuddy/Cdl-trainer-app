@@ -12,7 +12,7 @@
 // ============================================================
 
 // --- Context + defaults ---
-export { default as SessionContext, DEFAULT_SESSION } from './SessionContext.js'
+export { DEFAULT_SESSION, default as SessionContext } from './SessionContext.js'
 
 // --- Provider (component-only module) ---
 export { default as SessionProvider } from './SessionProvider.jsx'
@@ -31,15 +31,15 @@ export { default as SessionProvider } from './SessionProvider.jsx'
 //   export function getCurrentRoleFallback() { ... }
 //   export function syncSessionDebug(value) { ... }
 export {
+  getCurrentRoleFallback,
+  getCurrentUserEmailFallback,
+  syncSessionDebug,
+  useHasAnyRole,
+  useHasRole,
+  useIsLoading,
+  useIsLoggedIn,
+  useRole,
   default as useSession,
   useSessionSelector,
   useUser,
-  useRole,
-  useIsLoggedIn,
-  useIsLoading,
-  useHasRole,
-  useHasAnyRole,
-  getCurrentUserEmailFallback,
-  getCurrentRoleFallback,
-  syncSessionDebug,
 } from './useSession.js'

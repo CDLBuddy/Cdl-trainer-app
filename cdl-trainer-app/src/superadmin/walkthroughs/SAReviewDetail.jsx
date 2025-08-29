@@ -3,23 +3,22 @@
 // Superadmin • Review Detail
 // -----------------------------------------------------------------------------
 
+// Reuse Admin preview so the “student view” matches what admins see
 import React, { useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { useToast } from '@components/useToast.js'
 import * as WTValidate from '@walkthrough-utils/validateWalkthroughs.js'
 
-// Reuse Admin preview so the “student view” matches what admins see
 import WalkthroughPreview from '@admin/walkthroughs/Preview/WalkthroughPreview.jsx'
 
 // Prefer shared validator; fall back gracefully if export names differ
-
 import {
-  getSubmission,
   approveAndPublish,
-  requestChanges,
-  rejectSubmission,
   getCurrentPublishedForToken,
+  getSubmission,
+  rejectSubmission,
+  requestChanges,
 } from './SaWalkthroughApi.js'
 import styles from './saWalkthroughStyles.module.css'
 

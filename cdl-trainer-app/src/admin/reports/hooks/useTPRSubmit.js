@@ -46,7 +46,9 @@ async function loadServices() {
 export async function prefetchTPRServices() {
   try {
     await loadServices()
-  } catch {}
+  } catch {
+    // Intentionally empty: prefetch failures are non-fatal
+  }
 }
 
 /**
@@ -328,7 +330,7 @@ export default function useTPRSubmit() {
 
   const progress = useMemo(
     () => ({ ...progressRef.current }),
-    [lastResult, submitting]
+    []
   )
 
   return {

@@ -60,10 +60,14 @@ export function useDashboardData(opts = {}) {
     if (id) {
       try {
         localStorage.setItem('schoolId', id)
-      } catch {}
+      } catch {
+        // Ignore errors setting localStorage
+      }
       try {
         window.schoolId = id
-      } catch {}
+      } catch {
+        // Ignore errors setting window.schoolId
+      }
     }
   }, [user, schoolIdOverride])
 

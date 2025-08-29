@@ -3,8 +3,8 @@
 // Superadmin Router (nested under /superadmin/*)
 // ======================================================================
 
-import React, { Suspense, lazy, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import React, { lazy, Suspense, useEffect } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
 
 import {
   preloadSuperadminAll as _preloadAll,

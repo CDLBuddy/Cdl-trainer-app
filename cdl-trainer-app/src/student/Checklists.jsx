@@ -12,7 +12,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useToast } from '@components/useToast.js'
-import { db, auth } from '@utils/firebase.js'
+import { auth, db } from '@utils/firebase.js'
 
 // Template describing sections/items we compute statuses for
 const studentChecklistSectionsTemplate = [

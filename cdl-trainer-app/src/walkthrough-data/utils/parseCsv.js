@@ -226,7 +226,7 @@ function defaultHeaderMap(_firstRow = []) {
 function normalizeHeader(v) {
   return String(v ?? '')
     .toLowerCase()
-    .replace(/[\s_\-\/]+/g, '')
+    .replace(/[\s_\-/]+/g, '')
     .replace(/[^\w]/g, '')
 }
 
@@ -306,7 +306,9 @@ export function normalizeWalkthrough(w = {}, meta = {}) {
       if (!Array.isArray(result.sections) || result.sections.length === 0) {
         console.warn('[parseCsv] Produced walkthrough has no sections')
       }
-    } catch {}
+    } catch {
+      // intentionally empty: suppress warnings in production
+    }
   }
 
   return deepFreeze(result)

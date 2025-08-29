@@ -74,7 +74,7 @@ export { applyOverlays } from './applyOverlays.js'
 // ---------------------------
 // Pass-through low-level XLSX helpers for power users
 // ---------------------------
-export { parseXlsxFile, exportXlsxFile, sanitizeFilename } from './parseXlsx.js'
+export { exportXlsxFile, parseXlsxFile, sanitizeFilename } from './parseXlsx.js'
 
 // Optional: expose the normalizers from the parsers (handy in tests/tools)
 export { normalizeWalkthrough as normalizeCsvWalkthrough } from './parseCsv.js'

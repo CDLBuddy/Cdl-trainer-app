@@ -4,11 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { parseXlsxFile } from '@walkthrough-data/utils/parseXlsx.js'
 
 import {
-  toToken,
-  nextId,
-  nowIso,
   cloneDeep,
   inferLabelFromToken,
+  nextId,
+  nowIso,
+  toToken,
 } from '../services/walkthroughHelpers.js'
 
 /** @typedef {'list'|'editor'|'upload'|'preview'} ViewMode */

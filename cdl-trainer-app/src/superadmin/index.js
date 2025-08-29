@@ -7,21 +7,21 @@
 // ======================================================================
 
 // Core pages
-export { default as SuperAdminDashboard } from './SuperAdminDashboard.jsx'
-export { default as SchoolManagement } from './SchoolManagement.jsx'
-export { default as UserManagement } from './UserManagement.jsx'
-export { default as ComplianceCenter } from './ComplianceCenter.jsx'
 export { default as Billings } from './Billings.jsx'
-export { default as Settings } from './Settings.jsx'
+export { default as ComplianceCenter } from './ComplianceCenter.jsx'
 export { default as Logs } from './Logs.jsx'
 export { default as Permissions } from './Permissions.jsx'
+export { default as SchoolManagement } from './SchoolManagement.jsx'
+export { default as Settings } from './Settings.jsx'
+export { default as SuperAdminDashboard } from './SuperAdminDashboard.jsx'
+export { default as UserManagement } from './UserManagement.jsx'
 
 // Walkthroughs (custom/default script management per school)
 export { default as WalkthroughManager } from './WalkthroughManager.jsx'
 
 // Superadmin Walkthrough Review (queue + detail)
 // (Forwarded from the walkthroughs barrel for convenience)
-export { SAReviewQueue, SAReviewDetail } from './walkthroughs'
+export { SAReviewDetail, SAReviewQueue } from './walkthroughs'
 
 // Preload helpers (tree-shakable)
 export * from './preload.js'

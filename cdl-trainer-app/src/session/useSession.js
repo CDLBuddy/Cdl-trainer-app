@@ -3,7 +3,7 @@
 // Hooks + helpers (no components). Import where needed.
 // ======================================================================
 
-import { useContext, useRef, useDebugValue } from 'react'
+import { useContext, useDebugValue, useRef } from 'react'
 
 import SessionContext, { DEFAULT_SESSION } from './SessionContext.js'
 

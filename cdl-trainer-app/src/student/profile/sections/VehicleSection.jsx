@@ -1,5 +1,5 @@
 // src/student/profile/sections/VehicleSection.jsx
-import React, { useId, useMemo, useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useId, useMemo } from 'react'
 
 import { getSectionStatus } from '../schema/calculators.js'
 import Select from '../ui/Select.jsx'

@@ -10,17 +10,15 @@
 // - Compact top-level error boundary
 // ============================================================
 
+// 🔹 Must run before anything reads window.schoolWebsites / schoolScheduling
+import '@/setup/school-overrides.js'
+// Global styles
+import './styles/index.css'
+
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 
-// 🔹 Must run before anything reads window.schoolWebsites / schoolScheduling
-import '@/setup/school-overrides.js'
-
-// Global styles
-import './styles/index.css'
-
-// Providers & utils
 import SplashScreen from '@components/SplashScreen.jsx'
 import ToastProvider from '@components/ToastProvider.jsx'
 import { useAuthStatus } from '@utils/auth.js'
@@ -29,6 +27,7 @@ import { warmRoutesOnSession } from '@utils/route-preload.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
 import { SessionProvider, syncSessionDebug } from '@session'
+// Providers & utils
 
 // Router
 import { router } from './router.jsx'
@@ -100,7 +99,9 @@ export function SessionRoot({ children }) {
     if (schoolId) {
       try {
         localStorage.setItem('schoolId', schoolId)
-      } catch {}
+      } catch {
+        // Intentionally left blank: fallback if localStorage is unavailable
+      }
       // keep a window property too (older code checks window.schoolId first)
       window.schoolId = schoolId
     }

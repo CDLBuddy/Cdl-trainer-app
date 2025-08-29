@@ -1,18 +1,18 @@
 // src/components/AICoachModal.jsx
+// 👉 unified comms (shared for student/instructor/admin recipients)
 import React, {
+  memo,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  memo,
 } from 'react'
 
 import { askCDLAI } from '@utils/aiApi.js'
 import { auth } from '@utils/firebase.js'
 
 import { getUserInitials } from '@/utils/ui-helpers.js'
-// 👉 unified comms (shared for student/instructor/admin recipients)
 import { InboxList, useUnreadAnnouncements } from '@communications'
 
 import styles from './AICoachModal.module.css'

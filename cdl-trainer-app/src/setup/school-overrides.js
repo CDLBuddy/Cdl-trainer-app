@@ -77,12 +77,14 @@
   if (seedId && !localStorage.getItem('schoolId')) {
     try {
       localStorage.setItem('schoolId', seedId)
-    } catch {}
-    if (DEV) console.info('[school-overrides] Seeded schoolId:', seedId)
+    } catch {
+      // Intentionally ignore errors when setting localStorage
+    }
+    if (DEV) console.warn('[school-overrides] Seeded schoolId:', seedId)
   }
 
   if (DEV) {
-    console.info('[school-overrides] websites:', win.schoolWebsites)
-    console.info('[school-overrides] scheduling:', win.schoolScheduling)
+    console.warn('[school-overrides] websites:', win.schoolWebsites)
+    console.warn('[school-overrides] scheduling:', win.schoolScheduling)
   }
 })(typeof window !== 'undefined' ? window : undefined)

@@ -7,8 +7,8 @@
 
 // ----- Direct (eager) exports -----
 export { default as TestEngineWrapper } from './TestEngineWrapper.jsx'
-export { default as TestReviewWrapper } from './TestReviewWrapper.jsx'
 export { default as TestResultsWrapper } from './TestResultsWrapper.jsx'
+export { default as TestReviewWrapper } from './TestReviewWrapper.jsx'
 
 // ----- Lazy loaders (for route-level code-splitting) -----
 // Usage:

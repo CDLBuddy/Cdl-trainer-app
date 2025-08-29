@@ -7,11 +7,11 @@
 // ======================================================================
 
 // Named re-exports (preferred: enables tree-shaking)
+export * from './firestore.js'
 export * from './helpers.js'
+export * from './lists.js'
 export * from './normalize.js'
 export * from './progress.js'
-export * from './firestore.js'
-export * from './lists.js'
 
 // Optional grouped namespaces (ergonomic default import)
 // NOTE: Using the default namespace may pull more code into a given chunk

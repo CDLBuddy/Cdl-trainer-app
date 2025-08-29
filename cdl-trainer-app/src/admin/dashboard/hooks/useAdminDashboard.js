@@ -17,8 +17,8 @@ import { clampPct, expirySoon } from '../utils'
 
 import {
   useAuthSchoolGuard,
-  useUsersQuery, // fetch students/instructors/admins for a school
   useUserMetrics, // studentCount, instructorCount, adminCount, permitSoon, medSoon, incomplete
+  useUsersQuery, // fetch students/instructors/admins for a school
 } from './subhooks'
 
 /* -------------------------------------------------------------------------- */

@@ -1,7 +1,7 @@
 // Path: /src/admin/companies/company-detail/CompanyDetail.jsx
 import React, {
-  Suspense,
   lazy,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -19,7 +19,7 @@ import styles from './CompanyDetail.module.css'
 import { DetailHeader, RosterTable } from './components'
 import useCompanyDetailPage from './hooks/useCompanyDetailPage.js'
 import { exportRosterCsv } from './utils/exportCsv.js'
-import { visuallyHidden, fmtDate } from './utils/format.js'
+import { fmtDate, visuallyHidden } from './utils/format.js'
 
 const preloadRoute = async (...args) =>
   (await import('@/admin/preload.js')).preloadRoute?.(...args)

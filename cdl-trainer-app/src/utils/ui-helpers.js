@@ -6,24 +6,24 @@
 // ===================================================
 
 // --- FIREBASE IMPORTS -------------------------------------------------
+// Prefer aliases to avoid resolver edge cases (configure in vite.config.js)
 import {
+  addDoc,
+  collection,
   doc,
   getDoc,
-  updateDoc,
-  setDoc,
-  collection,
-  addDoc,
-  serverTimestamp,
-  increment,
-  query,
-  orderBy,
-  limit,
   getDocs,
+  increment,
+  limit,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
 } from 'firebase/firestore'
 
-// Prefer aliases to avoid resolver edge cases (configure in vite.config.js)
 import { showToast } from '@components/toast-compat.js'
-import { db, auth } from '@utils/firebase.js'
+import { auth, db } from '@utils/firebase.js'
 
 // Back-compat: several files import the toast hook and helpers from here.
 // Keep these exports so you don’t have to edit every caller at once.

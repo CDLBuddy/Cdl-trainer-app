@@ -5,7 +5,7 @@
 // - Your auth middleware can read these to enforce requirements.
 // ---------------------------------------------------------------------------
 
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 const KEY = 'security'
 

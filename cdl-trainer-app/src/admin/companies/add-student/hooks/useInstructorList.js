@@ -11,10 +11,10 @@ import {
   collection,
   doc,
   getDoc,
+  limit as lim,
   onSnapshot,
   query,
   where,
-  limit as lim,
 } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -69,7 +69,9 @@ export default function useInstructorsList(opts = {}) {
           setSchoolId(sid)
           try {
             localStorage.setItem('schoolId', sid)
-          } catch {}
+          } catch {
+            // Intentionally left blank: localStorage may be unavailable
+          }
         }
       } catch {
         // ignore; we’ll query without school scope

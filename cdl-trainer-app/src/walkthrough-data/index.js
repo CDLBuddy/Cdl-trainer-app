@@ -18,36 +18,35 @@ const IS_DEV =
   import.meta.env.DEV === true
 
 // ---- Loader (async resolver) -----------------------------------------------
-export { resolveWalkthrough } from './loaders/index.js'
+// export { resolveWalkthrough } from './loaders/index.js'
 
 // ---- Utils (helpers for parsing/validation/overlays) -----------------------
 export {
+  // pure overlay applier (handy for tooling)
+  applyOverlays,
+  exportXlsxFile,
+  // power-user XLSX helpers
+  isXlsxAvailable,
   parseCsv,
   parseMarkdown,
   parseXlsx,
-  // power-user XLSX helpers
-  isXlsxAvailable,
   parseXlsxFile,
-  exportXlsxFile,
   // validation
   validateWalkthroughs,
-  validateWalkthroughShape,
-  // pure overlay applier (handy for tooling)
-  applyOverlays,
 } from './utils/index.js'
 
 // ---- Overlays (re-export aggregator & helpers) -----------------------------
 export {
-  // Category namespaces (tree-shakable)
-  restrictions as overlayRestrictions,
-  phases as overlayPhases,
-  school as overlaySchool,
-  common as overlayCommon,
   // Aggregates / lookups
   ALL_OVERLAYS,
-  OVERLAYS_BY_ID,
-  listOverlayIds,
   getOverlayById,
+  listOverlayIds,
+  common as overlayCommon,
+  phases as overlayPhases,
+  // Category namespaces (tree-shakable)
+  restrictions as overlayRestrictions,
+  OVERLAYS_BY_ID,
+  school as overlaySchool,
   overlaysForRestrictions,
   // Also export code → id map so callers can inspect it if needed
   RESTRICTION_ID_BY_CODE,
@@ -55,22 +54,19 @@ export {
 
 // ---- Defaults (datasets + helpers) -----------------------------------------
 import {
-  DEFAULT_WALKTHROUGHS as DEFAULT_DATASETS,
   DEFAULT_WALKTHROUGH_VERSION,
-  listDefaultWalkthroughs,
+  DEFAULT_WALKTHROUGHS as DEFAULT_DATASETS,
   getDefaultWalkthroughByClass,
   getDefaultWalkthroughById,
+  listDefaultWalkthroughs,
   WALKTHROUGHS_BY_CLASS,
   WALKTHROUGHS_BY_ID,
 } from './defaults/index.js'
 
 export {
-  DEFAULT_WALKTHROUGH_VERSION,
-  listDefaultWalkthroughs,
   getDefaultWalkthroughByClass,
   getDefaultWalkthroughById,
-  WALKTHROUGHS_BY_CLASS,
-  WALKTHROUGHS_BY_ID,
+  listDefaultWalkthroughs,
 }
 
 // ---- Labels & token mapping -------------------------------------------------
@@ -134,7 +130,8 @@ export function getWalkthroughLabel(classType) {
 }
 
 // ---- Build token → script map from default datasets ------------------------
-export const DEFAULT_WALKTHROUGHS = (() => {
+// Renamed to avoid redeclaration error
+export const DEFAULT_WALKTHROUGHS_MAP = (() => {
   /** @type {Record<string, WalkthroughScript>} */
   const out = Object.create(null)
   const all = Array.isArray(DEFAULT_DATASETS)
@@ -174,20 +171,27 @@ export const DEFAULT_WALKTHROUGHS = (() => {
  * @param {unknown} classType
  * @returns {WalkthroughScript | null}
  */
-export function getWalkthroughByClass(classType) {
+export function getWalkthroughScript(classType) {
   const tok = toToken(classType)
-  return DEFAULT_WALKTHROUGHS[tok] ?? null
+  return DEFAULT_WALKTHROUGHS_MAP[tok] ?? null
 }
 
-/** @param {unknown} classType */
+/**
+ * Check if a walkthrough exists for a given class token/CDL code.
+ * @param {unknown} classType
+ * @returns {boolean}
+ */
 export function hasWalkthrough(classType) {
   const tok = toToken(classType)
-  return Object.prototype.hasOwnProperty.call(DEFAULT_WALKTHROUGHS, tok)
+  return Object.prototype.hasOwnProperty.call(DEFAULT_WALKTHROUGHS_MAP, tok)
 }
 
-/** @returns {ReadonlyArray<string>} */
+/**
+ * List all available walkthrough tokens.
+ * @returns {ReadonlyArray<string>}
+ */
 export function listWalkthroughTokens() {
-  return Object.freeze(Object.keys(DEFAULT_WALKTHROUGHS))
+  return Object.freeze(Object.keys(DEFAULT_WALKTHROUGHS_MAP))
 }
 
 /** @returns {ReadonlyArray<{token:string,label:string}>} */
@@ -208,10 +212,9 @@ export { DEFAULT_DATASETS }
 // Optional convenience default (kept tiny to avoid accidental heavy imports)
 export default {
   // loader
-  resolveWalkthrough,
   // data
   DEFAULT_DATASETS,
-  DEFAULT_WALKTHROUGHS,
+  DEFAULT_WALKTHROUGHS: DEFAULT_WALKTHROUGHS_MAP,
   DEFAULT_WALKTHROUGH_VERSION,
   // labels/tokens
   toToken,

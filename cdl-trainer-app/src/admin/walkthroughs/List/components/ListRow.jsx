@@ -3,7 +3,7 @@ import React from 'react'
 
 import { getWalkthroughLabel } from '@walkthrough-data'
 
-import { fmtDate, statusTone, sourceFrom } from '../services/listUtils.js'
+import { fmtDate, sourceFrom, statusTone } from '../services/listUtils.js'
 import cls from '../WalkthroughList.module.css'
 
 import Chip from './Chip.jsx'

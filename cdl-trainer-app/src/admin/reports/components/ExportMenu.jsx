@@ -246,6 +246,7 @@ export default function ExportMenu({
           aria-label="Export options"
           ref={menuRef}
           onKeyDown={onMenuKeyDown}
+          tabIndex={-1}
         >
           <button
             ref={el => (itemRefs.current[0] = el)}
@@ -367,5 +368,7 @@ function openPrintableTable(
   w.document.close()
   try {
     w.focus()
-  } catch {}
+  } catch {
+    // Intentionally left blank
+  }
 }

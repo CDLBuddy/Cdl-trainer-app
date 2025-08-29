@@ -11,5 +11,5 @@ export { default as AddCompanyDrawer } from './AddCompanyDrawer.jsx'
 export { default as useAddCompanyForm } from './useAddCompanyForm.js'
 
 // Utils + Services (re-exported fully for convenience)
-export * from './utils'
 export * from './services'
+export * from './utils'

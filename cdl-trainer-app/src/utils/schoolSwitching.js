@@ -1,13 +1,13 @@
 // src/utils/school-switching.js
 import {
   collection,
-  query,
-  where,
-  getDocs,
-  getDoc,
   doc,
-  setDoc,
+  getDoc,
+  getDocs,
+  query,
   serverTimestamp,
+  setDoc,
+  where,
 } from 'firebase/firestore'
 
 import { auth, db } from './firebase.js'

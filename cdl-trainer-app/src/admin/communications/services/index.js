@@ -6,8 +6,8 @@
 // ======================================================================
 
 export {
-  queueMessage,
   listMessages,
   listTemplates,
+  queueMessage,
   upsertTemplate,
 } from './commsApi.js'

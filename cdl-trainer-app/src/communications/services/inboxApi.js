@@ -22,18 +22,18 @@
 
 import { getAuth } from 'firebase/auth'
 import {
-  getFirestore,
   collection,
   doc,
   getDoc,
   getDocs,
+  getFirestore,
+  limit,
   onSnapshot,
   orderBy,
-  limit,
   query,
-  where,
-  updateDoc,
   serverTimestamp,
+  updateDoc,
+  where,
   writeBatch,
 } from 'firebase/firestore'
 

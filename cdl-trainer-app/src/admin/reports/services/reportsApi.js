@@ -6,24 +6,31 @@
 // - Compatible with current hooks (same return signature)
 // ======================================================================
 
-import { fetchUsersForSchool, fetchCompaniesForSchool } from '@utils/admin-data.js'
+import {
+  fetchCompaniesForSchool,
+  fetchUsersForSchool,
+} from '@utils/admin-data.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
 /* ----------------------------- helpers ------------------------------ */
 
-const S = (v) => (v == null ? '' : String(v))
+const S = v => (v == null ? '' : String(v))
 
 function clamp01(n) {
   const x = Number(n)
-  return Number.isFinite(x) ? Math.max(0, Math.min(100, Math.round(x))) : undefined
+  return Number.isFinite(x)
+    ? Math.max(0, Math.min(100, Math.round(x)))
+    : undefined
 }
 
 function normalizeBrand(raw = {}) {
-  const schoolName = S(raw.schoolName || raw.name || raw.displayName || 'Current School')
+  const schoolName = S(
+    raw.schoolName || raw.name || raw.displayName || 'Current School'
+  )
   return { ...raw, schoolName }
 }
 
-function dedupe(list, keyOf = (x) => x?.id ?? x?.uid ?? x?.email ?? '') {
+function dedupe(list, keyOf = x => x?.id ?? x?.uid ?? x?.email ?? '') {
   const seen = new Set()
   const out = []
   for (const item of list) {
@@ -43,19 +50,21 @@ function dedupe(list, keyOf = (x) => x?.id ?? x?.uid ?? x?.email ?? '') {
  * @param {any} u
  */
 export function normalizeUser(u = {}) {
-  const id   = u.id ?? u.uid ?? u.userId ?? u.email ?? null
+  const id = u.id ?? u.uid ?? u.userId ?? u.email ?? null
   const role = S(u.role ?? u.type ?? '').toLowerCase()
 
   const name =
     u.name ??
     u.fullName ??
-    ([(u.firstName ?? u.first_name), (u.lastName ?? u.last_name)].filter(Boolean).join(' ')) ??
+    [u.firstName ?? u.first_name, u.lastName ?? u.last_name]
+      .filter(Boolean)
+      .join(' ') ??
     ''
 
-  const assignedCompany    = u.assignedCompany ?? u.company ?? u.org ?? ''
+  const assignedCompany = u.assignedCompany ?? u.company ?? u.org ?? ''
   const assignedInstructor = u.assignedInstructor ?? u.instructor ?? ''
 
-  const permitExpiry    = u.permitExpiry ?? u.clpExpiry ?? u.permit_expires ?? ''
+  const permitExpiry = u.permitExpiry ?? u.clpExpiry ?? u.permit_expires ?? ''
   const profileProgress = clamp01(u.profileProgress ?? u.profileCompletion)
 
   const email = u.email ?? u.username ?? ''
@@ -78,10 +87,11 @@ export function normalizeUser(u = {}) {
  * @param {any} c
  */
 export function normalizeCompany(c = {}) {
-  const studentCount =
-    Number.isFinite(c.studentCount) ? Number(c.studentCount)
-  : Number.isFinite(c.rosterCount)  ? Number(c.rosterCount)
-  : Number(c.count ?? 0) || 0
+  const studentCount = Number.isFinite(c.studentCount)
+    ? Number(c.studentCount)
+    : Number.isFinite(c.rosterCount)
+      ? Number(c.rosterCount)
+      : Number(c.count ?? 0) || 0
 
   return {
     id: c.id ?? c.companyId ?? c.uid ?? null,
@@ -104,29 +114,44 @@ export function normalizeCompany(c = {}) {
 export async function loadReportsBundle(schoolId, opts = {}) {
   const {
     signal,
-    timeoutMs = 0,           // 0 = no timeout
-    normalize = true,        // UI relies on normalized fields
-    partialOk = false,       // false = fail-fast (current behavior)
+    timeoutMs = 0, // 0 = no timeout
+    normalize = true, // UI relies on normalized fields
+    partialOk = false, // false = fail-fast (current behavior)
   } = opts
 
   const tasks = [
-    wrapMaybe(getCurrentSchoolBranding, [], { label: 'branding', signal, timeoutMs }),
-    wrapMaybe(fetchUsersForSchool,     [schoolId], { label: 'users', signal, timeoutMs }),
-    wrapMaybe(fetchCompaniesForSchool, [schoolId], { label: 'companies', signal, timeoutMs }),
+    wrapMaybe(getCurrentSchoolBranding, [], {
+      label: 'branding',
+      signal,
+      timeoutMs,
+    }),
+    wrapMaybe(fetchUsersForSchool, [schoolId], {
+      label: 'users',
+      signal,
+      timeoutMs,
+    }),
+    wrapMaybe(fetchCompaniesForSchool, [schoolId], {
+      label: 'companies',
+      signal,
+      timeoutMs,
+    }),
   ]
 
   const runAll = partialOk ? allSettledValues(tasks) : allStrict(tasks)
   const [brandRaw, usersRaw, companiesRaw] = await runAll
 
-  const brand     = brandRaw || {}
-  const usersArr  = Array.isArray(usersRaw) ? usersRaw : []
-  const compsArr  = Array.isArray(companiesRaw) ? companiesRaw : []
+  const brand = brandRaw || {}
+  const usersArr = Array.isArray(usersRaw) ? usersRaw : []
+  const compsArr = Array.isArray(companiesRaw) ? companiesRaw : []
 
   if (!normalize) return { brand, users: usersArr, companies: compsArr }
 
   // Normalize + de-dupe (protect against duplicated rows from the backend)
-  const users     = dedupe(usersArr.map(normalizeUser), (u) => u.id ?? u.email ?? u.name)
-  const companies = dedupe(compsArr.map(normalizeCompany), (c) => c.id ?? c.name)
+  const users = dedupe(
+    usersArr.map(normalizeUser),
+    u => u.id ?? u.email ?? u.name
+  )
+  const companies = dedupe(compsArr.map(normalizeCompany), c => c.id ?? c.name)
 
   return {
     brand: normalizeBrand(brand),
@@ -141,7 +166,11 @@ export async function loadReportsBundle(schoolId, opts = {}) {
  * Wrap a function call with optional AbortSignal/timeout without requiring
  * the underlying impl to support either. If it throws, the error rethrows.
  */
-function wrapMaybe(fn, args = [], { label = 'task', signal, timeoutMs = 0 } = {}) {
+function wrapMaybe(
+  fn,
+  args = [],
+  { label = 'task', signal, timeoutMs = 0 } = {}
+) {
   const p = Promise.resolve().then(() => fn(...args))
 
   if (!signal && !timeoutMs) return p
@@ -151,14 +180,18 @@ function wrapMaybe(fn, args = [], { label = 'task', signal, timeoutMs = 0 } = {}
     killers.push(
       new Promise((_, reject) => {
         if (signal.aborted) reject(abortError(label))
-        signal.addEventListener('abort', () => reject(abortError(label)), { once: true })
+        signal.addEventListener('abort', () => reject(abortError(label)), {
+          once: true,
+        })
       })
     )
   }
   if (timeoutMs > 0) {
-    killers.push(new Promise((_, reject) => {
-      setTimeout(() => reject(timeoutError(label, timeoutMs)), timeoutMs)
-    }))
+    killers.push(
+      new Promise((_, reject) => {
+        setTimeout(() => reject(timeoutError(label, timeoutMs)), timeoutMs)
+      })
+    )
   }
 
   return Promise.race([p, ...killers])
@@ -175,8 +208,10 @@ function timeoutError(label, ms) {
   return e
 }
 
-async function allStrict(tasks) { return Promise.all(tasks) }
+async function allStrict(tasks) {
+  return Promise.all(tasks)
+}
 async function allSettledValues(tasks) {
   const settled = await Promise.allSettled(tasks)
-  return settled.map((r) => (r.status === 'fulfilled' ? r.value : undefined))
+  return settled.map(r => (r.status === 'fulfilled' ? r.value : undefined))
 }

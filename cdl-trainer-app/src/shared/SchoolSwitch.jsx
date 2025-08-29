@@ -4,15 +4,15 @@ import { useNavigate } from 'react-router-dom'
 
 import { useToast } from '@/components/useToast.js'
 import {
+  applyBrandingForSchool, // NEW
+  computeAllowedSchools,
+  getCurrentSchoolId,
   getCurrentUserEmail,
   getCurrentUserRole,
-  listAllSchools,
-  getUserAssignedSchoolIds,
-  computeAllowedSchools,
   getDashboardRoute,
+  getUserAssignedSchoolIds,
+  listAllSchools,
   switchSchool,
-  getCurrentSchoolId,
-  applyBrandingForSchool, // NEW
 } from '@/utils/schoolSwitching.js'
 
 export default function SchoolSwitch() {

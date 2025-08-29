@@ -5,8 +5,8 @@
 // - Side-effect free; tree-shakeable
 // -----------------------------------------------------------------------------
 
-export { default as saveStudent } from './saveStudent.js'
 export { getInstructors } from './getInstructors.js'
+export { default as saveStudent } from './saveStudent.js'
 
 // Optional code-splitting helper
 export const lazy = {

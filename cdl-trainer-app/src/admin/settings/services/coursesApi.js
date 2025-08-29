@@ -4,7 +4,7 @@
 // - ELDT/practice/walkthrough feature toggles per school
 // ---------------------------------------------------------------------
 
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
 
 import { db } from '@utils/firebase.js'
 

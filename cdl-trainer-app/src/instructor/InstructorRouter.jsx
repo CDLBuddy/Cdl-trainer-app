@@ -8,8 +8,8 @@
 //   to satisfy react-refresh/only-export-components
 // ======================================================================
 
-import React, { Suspense, lazy, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import React, { lazy, Suspense, useEffect } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
 
 // Optional: warm chunks after mount (idle) for perceived snappiness
 import { preloadInstructorCore } from './preload.js'

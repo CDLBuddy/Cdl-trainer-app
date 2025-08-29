@@ -8,14 +8,14 @@
 
 import {
   collection,
+  getDocs,
+  limit,
+  orderBy,
   query,
   where,
-  orderBy,
-  limit,
-  getDocs,
 } from 'firebase/firestore'
 
-import { db, auth } from '@utils/firebase.js'
+import { db } from '@utils/firebase.js'
 
 /**
  * @param {{ schoolId?: string, max?: number }} [opts]

@@ -1,10 +1,10 @@
 // src/instructor/InstructorDashboard.jsx
-import { collection, query, where, getDocs } from 'firebase/firestore'
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import { collection, getDocs, query, where } from 'firebase/firestore'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
-import { db, auth } from '@utils/firebase.js'
+import { auth, db } from '@utils/firebase.js'
 import { getNextChecklistAlert } from '@utils/ui-helpers.js'
 
 import { useToast } from '@/components/useToast.js'

@@ -291,6 +291,10 @@ export default function useBulkUpload(opts = {}) {
     return out
   }, [])
 
+  /**
+   * @param {File} fileObj
+   * @returns {Promise<({[key: string]: any}[] & {_truncated?: boolean})>}
+   */
   const tinyCsvParse = useCallback(
     async fileObj => {
       const text = await fileObj.text()
@@ -300,6 +304,7 @@ export default function useBulkUpload(opts = {}) {
         .filter((ln, i) => i === 0 || ln.trim() !== '')
       if (!lines.length) return []
       const header = splitCsvLine(lines[0]).map(h => String(h || '').trim())
+      /** @type {Array<any> & {_truncated?: boolean}} */
       const out = []
       for (let i = 1; i < lines.length; i += 1) {
         const cols = splitCsvLine(lines[i])
@@ -384,7 +389,9 @@ export default function useBulkUpload(opts = {}) {
         if (typeof onParsed === 'function') {
           try {
             onParsed(normalized, allIssues)
-          } catch {}
+          } catch {
+            // Intentionally ignore errors from onParsed callback
+          }
         }
         return { rows: normalized, issues: allIssues }
       } catch (e) {
