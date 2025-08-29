@@ -1,0 +1,78 @@
+/* Company Detail • Sortable table header */
+
+.sortable {
+  white-space: nowrap;
+  padding-right: 2px; /* tiny breathing room for caret */
+}
+
+.activeTh .btn {
+  font-weight: 600;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  margin: -4px -6px; /* reclaim space so hit area fills header cell */
+  background: transparent;
+  border: 0;
+  color: inherit;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.btn:focus-visible {
+  outline: 2px solid #6366f1;   /* indigo-500 */
+  outline-offset: 1px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.label {
+  line-height: 1.1;
+}
+
+/* Caret uses a text glyph via ::before so we can rotate for desc */
+.caret {
+  width: 0.9em;
+  height: 1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.caret::before {
+  content: '▲';
+  font-size: 0.82em;
+  line-height: 1;
+  opacity: 0.35;
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+
+.caretActive::before {
+  opacity: 1;
+}
+
+.caretDim::before {
+  opacity: 0.35;
+}
+
+.caret[data-dir="desc"]::before {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret::before {
+    transition: none;
+  }
+}

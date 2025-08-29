@@ -2,37 +2,19 @@
 // ======================================================================
 // ADMIN • Companies (barrel)
 // - Canonical re-exports for screens + components + hooks + services
-// - Side-effect free & tree-shakable (keep JSX/CSS out of here)
-// - Star-exports assume each submodule exposes only values (no side effects)
+// - Side-effect free & tree-shakable
 // ======================================================================
 
 // -- Screens -------------------------------------------------------------
 export { default as AdminCompanies } from './AdminCompanies.jsx'
-export { default as CompanyDetail }  from './CompanyDetail.jsx'
+// Canonical detail screen lives in the new folder:
+export { default as CompanyDetail } from './company-detail/CompanyDetail.jsx'
+
+// Optionally surface the rest of the company-detail submodule (non-defaults)
+export * from './company-detail'
 
 // -- Submodule barrels ---------------------------------------------------
-// Components: CompaniesTable, CompanyRow, CompanyHeader, CompanyFilters, detail cards, …
-export * from './components'
-
-// Hooks: useCompanies, useCompanyDetail, useCompanyDocuments, useCompanyNotes, useDebounced, …
-export * from './hooks'
-
-// Services: listCompaniesBySchool, addCompany, updateCompany, removeCompany, exports, …
-export * from './services'
-
-// Add-Student drawer suite:
-// AddStudentDrawer, DrawerShell, FormFields, OverlayChips, utils (trapFocus, validate, …), services
-export * from './add-student'
-
-// ----------------------------------------------------------------------
-// Usage examples:
-//
-// import { AdminCompanies, CompanyDetail } from '@admin/companies'
-//
-// import { CompaniesTable, CompanyFilters } from '@admin/companies'
-// import { useCompanies } from '@admin/companies'
-// import { listCompaniesBySchool } from '@admin/companies'
-//
-// import { AddStudentDrawer } from '@admin/companies'
-// import { validate } from '@admin/companies' // from add-student/utils
-// ----------------------------------------------------------------------
+export * from './components'   // CompaniesTable, CompanyRow, CompanyHeader, CompanyFilters, detail cards…
+export * from './hooks'        // useCompanies, useCompanyDetail*, useDebounced, etc.
+export * from './services'     // listCompaniesBySchool, exports, etc.
+export * from './add-student'  // AddStudentDrawer + related pieces

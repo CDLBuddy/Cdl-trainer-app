@@ -1,3 +1,4 @@
+// src/walkthrough-data/overlays/school/index.js
 // ======================================================================
 // Overlays — school-specific barrel
 // - Re-exports per-school overlays (branding/policy differences, etc.)
@@ -5,13 +6,15 @@
 // - Immutable + light DEV validation
 // ======================================================================
 
+// @ts-check
+
 import exampleSchool from './example-school.js'
 
 // ----- Named exports for direct importing --------------------------------
 export { exampleSchool }
 
 // ----- Aggregated list ----------------------------------------------------
-/** @type {Array<{id:string, rules?:unknown[]}>} */
+/** @type {Array<{ id: string, rules?: unknown[] }>} */
 const ALL = [exampleSchool]
 
 // ----- Map by id ----------------------------------------------------------
@@ -20,7 +23,7 @@ const BY_ID = Object.freeze(
   ALL.reduce((acc, o) => {
     acc[o.id] = o
     return acc
-  }, /** @type {Record<string, any>} */ ({}))
+  }, /** @type {Record<string, any>} */ (Object.create(null)))
 )
 
 export { ALL, BY_ID }
@@ -50,19 +53,14 @@ if (IS_DEV) {
     ALL.forEach((o, i) => {
       const okId = typeof o?.id === 'string' && o.id.length > 0
       if (!okId) {
-         
         console.warn(`[overlays/school] Missing/invalid id at index ${i}`, o)
       } else if (ids.has(o.id)) {
-         
         console.warn(`[overlays/school] Duplicate id "${o.id}" at index ${i}`)
       } else {
         ids.add(o.id)
       }
       if (o.rules && !Array.isArray(o.rules)) {
-         
-        console.warn(
-          `[overlays/school] "rules" should be an array for id "${o.id}"`
-        )
+        console.warn(`[overlays/school] "rules" should be an array for id "${o.id}"`)
       }
     })
   } catch {

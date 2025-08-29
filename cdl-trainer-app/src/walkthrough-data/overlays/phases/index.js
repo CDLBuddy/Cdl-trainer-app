@@ -1,3 +1,4 @@
+// src/walkthrough-data/overlays/phases/index.js
 // ======================================================================
 // Overlays — phases barrel
 // - Re-exports phase overlays (pre-trip, skills test, etc.)
@@ -5,23 +6,25 @@
 // - Immutable + light DEV validation
 // ======================================================================
 
-import preTrip from './pre-trip.js'
+// @ts-check
+
+import preTrip    from './pre-trip.js'
 import skillsTest from './skills-test.js'
 
 // ----- Named exports for direct importing --------------------------------
 export { preTrip, skillsTest }
 
 // ----- Aggregated list ----------------------------------------------------
-/** @type {Array<{id:string, rules?:unknown[]}>} */
+/** @type {const} */
 const ALL = [preTrip, skillsTest]
 
 // ----- Map by id ----------------------------------------------------------
 /** @type {Record<string, any>} */
 const BY_ID = Object.freeze(
   ALL.reduce((acc, o) => {
-    acc[o.id] = o
+    if (o?.id && !acc[o.id]) acc[o.id] = o
     return acc
-  }, /** @type {Record<string, any>} */ ({}))
+  }, /** @type {Record<string, any>} */ (Object.create(null)))
 )
 
 export { ALL, BY_ID }
@@ -51,23 +54,21 @@ if (IS_DEV) {
     ALL.forEach((o, i) => {
       const okId = typeof o?.id === 'string' && o.id.length > 0
       if (!okId) {
-         
+        // eslint-disable-next-line no-console
         console.warn(`[overlays/phases] Missing/invalid id at index ${i}`, o)
       } else if (ids.has(o.id)) {
-         
+        // eslint-disable-next-line no-console
         console.warn(`[overlays/phases] Duplicate id "${o.id}" at index ${i}`)
       } else {
         ids.add(o.id)
       }
-      if (o.rules && !Array.isArray(o.rules)) {
-         
-        console.warn(
-          `[overlays/phases] "rules" should be an array for id "${o.id}"`
-        )
+      if (o?.rules && !Array.isArray(o.rules)) {
+        // eslint-disable-next-line no-console
+        console.warn(`[overlays/phases] "rules" should be an array for id "${o.id}"`)
       }
     })
   } catch {
-    // swallow — never crash in DEV validation
+    // never crash in DEV validation
   }
 }
 

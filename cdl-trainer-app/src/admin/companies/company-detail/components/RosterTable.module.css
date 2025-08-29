@@ -1,0 +1,70 @@
+/* Company Detail • Roster Table */
+
+.wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+}
+
+/* Base table polish */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb; /* gray-200 */
+  border-radius: 10px;
+}
+
+/* Sticky header for long lists */
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Body cells */
+.table td,
+.table th {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* Zebra rows + hover/focus affordance */
+.table tbody tr:nth-child(even) td {
+  background: #fafafa;
+}
+
+.table tbody tr:hover td,
+.table tbody tr:focus-within td {
+  background: #f5f7ff; /* subtle indigo tint */
+}
+
+/* Monospace email */
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.95em;
+}
+
+/* Readiness bars stack */
+.bars {
+  display: grid;
+  gap: 4px;
+}
+
+/* Actions cluster */
+.actions {
+  white-space: nowrap;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Empty state */
+.empty {
+  padding: 1rem;
+  color: #6b7280; /* slate-500 */
+}

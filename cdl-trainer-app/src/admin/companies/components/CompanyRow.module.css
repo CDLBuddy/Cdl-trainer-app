@@ -1,0 +1,85 @@
+/* ============================================================================
+   CompanyRow.module.css
+   - Inline-edit row styling + subtle states
+   - Keeps your query-selectable classes (we add module classes alongside)
+   - Dark-mode friendly; minimal layout assumptions
+   ============================================================================ */
+
+:root {
+  --brand: #6c5ce7;
+  --field-bg: #fff;
+  --field-bdr: #dcdde2;
+  --field-mute: #9aa1ad;
+  --danger: #b91c1c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --field-bg: #0f1115;
+    --field-bdr: #2a2f3a;
+    --field-mute: #9aa1ad;
+  }
+}
+
+/* Row container ----------------------------------------------------------- */
+.row {
+  transition: background-color .15s ease, opacity .15s ease;
+}
+.row:hover {
+  background: color-mix(in srgb, var(--brand) 6%, transparent);
+}
+.row[aria-busy="true"] {
+  opacity: .7;
+  pointer-events: none;
+}
+
+/* Cells ------------------------------------------------------------------- */
+.check {
+  width: 40px;
+  text-align: center;
+}
+
+/* Text inputs ------------------------------------------------------------- */
+.input {
+  width: 100%;
+  min-width: 140px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--field-bdr);
+  background: var(--field-bg);
+  color: inherit;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.input::placeholder { color: var(--field-mute); }
+.input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 25%, transparent);
+}
+
+/* Status select ----------------------------------------------------------- */
+.status {
+  border-radius: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--field-bdr);
+  background: var(--field-bg);
+}
+.status:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 25%, transparent);
+}
+
+/* Created/by column ------------------------------------------------------- */
+.created { font-size: .93em; }
+.by      { font-size: .87em; color: var(--field-mute); }
+
+/* Actions ----------------------------------------------------------------- */
+.actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.danger {
+  color: var(--danger) !important;
+  border-color: var(--danger) !important;
+}

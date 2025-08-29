@@ -1,4 +1,3 @@
-// Path: /src/admin/AdminRouter.jsx
 // ======================================================================
 // Admin Router (nested under /admin/*)
 // - Lazy-loads admin pages + walkthroughs
@@ -33,7 +32,8 @@ const AdminReports        = lazy(() => import('@admin/reports/AdminReports.jsx')
 
 // Companies suite
 const AdminCompanies      = lazy(() => import('@admin/companies/AdminCompanies.jsx'))
-const CompanyDetail       = lazy(() => import('@admin/companies/CompanyDetail.jsx'))
+// ⬇️ updated path to the new folder (file name unchanged)
+const CompanyDetail       = lazy(() => import('@admin/companies/company-detail/CompanyDetail.jsx'))
 
 // Communications / Billing / Settings
 const AdminCommunications = lazy(() => import('@admin/communications/AdminCommunications.jsx'))
@@ -46,12 +46,7 @@ const WalkthroughManager  = lazy(() => import('@admin/walkthroughs/WalkthroughMa
 // ---------- Local loading UI (accessible) ------------------------------
 const Loading = memo(function Loading({ text = 'Loading admin page…' }) {
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      style={{ textAlign: 'center', marginTop: '4rem' }}
-    >
-      {/* Intentionally keep spinner styling external; text covers no-CSS envs */}
+    <div role="status" aria-live="polite" style={{ textAlign: 'center', marginTop: '4rem' }}>
       <div className="spinner" aria-hidden="true" />
       <p style={{ marginTop: 8 }}>{text}</p>
     </div>
@@ -62,15 +57,11 @@ const Loading = memo(function Loading({ text = 'Loading admin page…' }) {
 function ScrollToTopOnRouteChange() {
   const { pathname } = useLocation()
   useEffect(() => {
-    // Scroll
     try {
-      // Some browsers support 'instant'
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
     } catch {
       window.scrollTo(0, 0)
     }
-
-    // Best-effort focus handoff (no-op if nothing matches)
     const tryFocus = () => {
       const el =
         document.querySelector('[data-route-focus]') ||
@@ -78,7 +69,6 @@ function ScrollToTopOnRouteChange() {
         document.querySelector('main, [role="main"]')
       if (el && typeof el.focus === 'function') el.focus()
     }
-    // Let layout paint first
     const id = window.requestAnimationFrame(tryFocus)
     return () => window.cancelAnimationFrame?.(id)
   }, [pathname])
@@ -106,14 +96,9 @@ class AdminSectionErrorBoundary extends React.Component {
   }
   render() {
     if (this.state.err) {
-      const msg =
-        this.state.err?.message || String(this.state.err) || 'Unknown error.'
+      const msg = this.state.err?.message || String(this.state.err) || 'Unknown error.'
       return (
-        <div
-          role="alert"
-          aria-live="assertive"
-          style={{ padding: '3rem 1rem', textAlign: 'center' }}
-        >
+        <div role="alert" aria-live="assertive" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
           <h2 style={{ margin: 0 }}>Admin area failed to load</h2>
           <p style={{ color: '#b22', marginTop: 8 }}>{msg}</p>
           <div style={{ display: 'inline-flex', gap: 8, marginTop: 16 }}>
@@ -135,19 +120,14 @@ function AdminNotFound() {
 
 // ---------- Router -----------------------------------------------------
 export default function AdminRouter() {
-  // Ensure a portal root for modal components used across the admin (esp. Reports)
   useEffect(() => {
     ensureModalRoot('modal-root')
   }, [])
 
-  // Light idle warm-up of core screens after mount (respect reduced-motion).
-  // Warm Reports’ heavier bundles/services separately without blocking initial render.
   useEffect(() => {
     if (typeof window === 'undefined') return
-
     const prefersReduced =
       !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
-
     const warmCore = () => {
       if (!prefersReduced) _preloadCore().catch(() => {})
     }
@@ -204,12 +184,5 @@ export default function AdminRouter() {
   )
 }
 
-/**
- * Optional: warm *all* admin chunks proactively (e.g., from a hover/guard).
- * Usage:
- *   import AdminRouter from '@admin/AdminRouter.jsx'
- *   AdminRouter.preload?.()
- *   AdminRouter.preloadCore?.()
- */
 AdminRouter.preload = _preloadAll
 AdminRouter.preloadCore = _preloadCore

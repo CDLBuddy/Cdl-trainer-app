@@ -1,0 +1,185 @@
+/*src/admin/companies/AdminCompanies.module.css*/
+/* ============================================================================
+   Admin • Companies -- Page styles (module-scoped)
+   - Goal: full-screen version of the dashboard "Companies" look & feel
+   - Uses design tokens when available; falls back to sensible defaults
+   - Minimal JS changes: apply .page, .headerRow, .title, .addBtn, .errorBanner,
+     .tableRegion wrappers to existing markup.
+   ============================================================================ */
+
+.page {
+  /* Prefer app/global tokens if present */
+  --brand: var(--brand-primary, #6c5ce7);
+  --bg: var(--surface, #0f1220);
+  --card: var(--surface-2, #121629);
+  --card-contrast: var(--surface-3, #171b34);
+  --text: var(--text, #e6e6f0);
+  --muted: var(--muted, #9aa3b2);
+  --border: color-mix(in oklab, var(--text) 14%, #000 86%);
+
+  /* layout */
+  margin: 0 auto;
+  padding: 24px;
+  width: min(1200px, 100%);
+  /* let the page breathe a bit more than the default 960px */
+}
+
+.headerRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 10px 0;
+}
+
+.title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+
+.countMuted {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.96rem;
+}
+
+/* Primary action (matches dashboard "card" vibe) */
+.addBtn {
+  --btn-bg: var(--brand);
+  --btn-fg: white;
+  appearance: none;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 600;
+  line-height: 1;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--btn-bg) 88%, #fff 12%), var(--btn-bg));
+  color: var(--btn-fg);
+  box-shadow: 0 6px 18px rgba(0,0,0,.22), inset 0 0 0 1px color-mix(in oklab, #000 70%, var(--btn-bg) 30%);
+  transition: transform .08s ease-out, box-shadow .18s ease, filter .18s ease;
+}
+.addBtn:hover { transform: translateY(-1px); filter: brightness(1.03); }
+.addBtn:active { transform: translateY(0); filter: brightness(.98); }
+.addBtn[aria-disabled="true"],
+.addBtn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Alert banner (error/warn info) */
+.errorBanner {
+  border: 1px solid color-mix(in oklab, #ff8b8b 70%, #000 30%);
+  background: color-mix(in oklab, #ffdede 40%, #000 60%);
+  color: #ffe3e3;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin: 0 0 12px 0;
+}
+
+/* Toolbar host (CompanyFilters sits inside) */
+.toolbarWrap {
+  /* keep the card rhythm consistent with dashboard widgets */
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px;
+  margin: 8px 0 14px 0;
+  box-shadow: 0 8px 28px rgba(0,0,0,.22);
+}
+
+/* Table region host (CompaniesTable mounts inside) */
+.tableRegion {
+  border-radius: 16px;
+  overflow: clip;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 14px 42px rgba(0,0,0,.28);
+}
+
+/* Give any inner table a "mini-table" vibe without touching its component CSS.
+   Because this is a CSS module, these selectors scope to tables inside .tableRegion. */
+.tableRegion table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+}
+
+.tableRegion thead th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.86rem;
+  letter-spacing: 0.2px;
+  padding: 12px 14px;
+  background: var(--card-contrast);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.tableRegion tbody td {
+  color: var(--text);
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.tableRegion tbody tr:hover {
+  background: color-mix(in oklab, var(--card) 70%, #fff 2%);
+}
+
+/* Selected row accent (when your row component adds [aria-selected="true"]) */
+.tableRegion [aria-selected="true"] td {
+  background: color-mix(in oklab, var(--brand) 14%, var(--card) 86%);
+}
+
+/* Loading row (replaces inline styles for the loading state container) */
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  color: var(--muted);
+}
+
+/* Optional: a slim "footer note" under the table */
+.footerNote {
+  font-size: .96rem;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+/* Back link button (keeps existing .btn outline styles but polishes spacing) */
+.backBtn {
+  margin-top: 1.3rem;
+}
+
+/* Small, reusable skeletons if you need any within this page (not table rows) */
+.skel {
+  display: inline-block;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--card) 80%, #fff 5%) 25%,
+    color-mix(in oklab, var(--card) 60%, #fff 10%) 50%,
+    color-mix(in oklab, var(--card) 80%, #fff 5%) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Responsive tweaks */
+@media (max-width: 880px) {
+  .title { font-size: 18px; }
+  .tableRegion thead th, .tableRegion tbody td { padding: 10px 12px; }
+}

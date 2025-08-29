@@ -1,0 +1,100 @@
+/* Company Detail • Header */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+/* Title block */
+.titleBlock {
+  display: grid;
+  gap: 4px;
+  min-width: 240px;
+}
+
+.name {
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 600;
+  max-width: 560px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subtle {
+  font-size: 13px;
+  color: #6b7280; /* slate-500 */
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Search + clear */
+.searchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search {
+  padding: 6px 30px 6px 11px;
+  border: 1px solid #dcdde2;
+  border-radius: 8px;
+  min-width: 200px;
+  max-width: 320px;
+  outline-offset: 2px;
+  background: #fff;
+}
+
+.clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+/* Select + checkbox */
+.select {
+  padding: 6px 10px;
+  border: 1px solid #dcdde2;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.checkboxWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* Slightly roomier on wider screens */
+@media (min-width: 900px) {
+  .controls {
+    gap: 10px;
+  }
+  .search {
+    min-width: 240px;
+    max-width: 360px;
+  }
+}

@@ -10,6 +10,8 @@
 import PropTypes from 'prop-types'
 import React, { memo, useCallback, useId } from 'react'
 
+import styles from './CompanyFilters.module.css'
+
 const noop = () => {}
 
 function CompanyFilters({

@@ -1,38 +1,61 @@
+// Path: src/walkthrough-data/overlays/restrictions/automatic.js
 // ======================================================================
 // Restriction overlay: Automatic transmission (E restriction)
-// - Remove any clutch/manual-only steps
-// - Add a small note for automatics in the in-cab section
+// - Safely remove clutch/manual-only checks
+// - Optionally append a small automatic-specific note in In-Cab
+// - Pure data (no side effects). Unknown sections are skipped safely.
 // ======================================================================
 
-/** @type {import('@walkthrough-loaders').WalkthroughOverlay} */
+/** @type {import('../../schema').WalkthroughOverlay} */
 export default {
   id: 'restriction:E:automatic',
   rules: [
-    // --- Remove manual/clutch checks in common sections ----------------
-    // If the section title isn’t present in a dataset, this rule is skipped safely.
+    // ------------------------------------------------------------------
+    // Remove manual/clutch checks across common headings.
+    // If a section title does not exist in a dataset, the rule is ignored.
+    // ------------------------------------------------------------------
 
     // In-Cab Inspection – drop clutch/manual gear checks
-    { op: 'removeStep', match: { section: 'In-Cab Inspection', tag: 'clutch' } },
-    { op: 'removeStep', match: { section: 'In-Cab Inspection', tag: 'manual-transmission' } },
-    { op: 'removeStep', match: { section: 'In-Cab Inspection', tag: 'gear-check' } },
+    { op: 'removeStep', match: { section: 'In-Cab Inspection',          tag: 'clutch' } },
+    { op: 'removeStep', match: { section: 'In-Cab Inspection',          tag: 'manual-transmission' } },
+    { op: 'removeStep', match: { section: 'In-Cab Inspection',          tag: 'gear-check' } },
 
-    // Engine Start / In-Cab variations seen in some scripts
-    { op: 'removeStep', match: { section: 'Engine Start', tag: 'clutch' } },
-    { op: 'removeStep', match: { section: 'Cab Check/Start Engine', tag: 'clutch' } },
-    { op: 'removeStep', match: { section: 'Cab Check/Start Engine', tag: 'manual-transmission' } },
+    // Alternate spellings occasionally used by some scripts
+    { op: 'removeStep', match: { section: 'In Cab Inspection',          tag: 'clutch' } },
+    { op: 'removeStep', match: { section: 'In Cab Inspection',          tag: 'manual-transmission' } },
 
-    // Brake Check sections sometimes include a “clutch hold” or similar
-    { op: 'removeStep', match: { section: 'Brake Check', tag: 'clutch' } },
+    // Engine start / cab check variants
+    { op: 'removeStep', match: { section: 'Engine Start',               tag: 'clutch' } },
+    { op: 'removeStep', match: { section: 'Cab Check/Start Engine',     tag: 'clutch' } },
+    { op: 'removeStep', match: { section: 'Cab Check/Start Engine',     tag: 'manual-transmission' } },
 
-    // --- Add a small automatic-specific reminder -----------------------
-    // Creates the section if it doesn't exist; otherwise appends at end.
+    // Brake check sections sometimes include a “clutch hold” step
+    { op: 'removeStep', match: { section: 'Brake Check',                tag: 'clutch' } },
+
+    // ------------------------------------------------------------------
+    // Append a concise automatic-specific reminder (non-destructive).
+    // This is a no-op if the target section title is not present.
+    // ------------------------------------------------------------------
     {
       op: 'appendSteps',
       match: { section: 'In-Cab Inspection' },
       steps: [
         {
           label: 'Transmission (automatic)',
-          script: 'Verify selector in PARK/NEUTRAL, apply service brake, and confirm ready to start.',
+          script:
+            'Verify selector in PARK/NEUTRAL, apply service brake, and confirm ready to start.',
+          tags: ['automatic-transmission'],
+        },
+      ],
+    },
+    {
+      op: 'appendSteps',
+      match: { section: 'In Cab Inspection' }, // alt spelling
+      steps: [
+        {
+          label: 'Transmission (automatic)',
+          script:
+            'Verify selector in PARK/NEUTRAL, apply service brake, and confirm ready to start.',
           tags: ['automatic-transmission'],
         },
       ],

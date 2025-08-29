@@ -12,6 +12,8 @@ import React, { memo, useEffect, useMemo, useRef } from 'react'
 
 import CompanyRow from './CompanyRow.jsx'
 
+import styles from './CompaniesTable.module.css'
+
 /**
  * Props:
  *  - rows: Array<Company>

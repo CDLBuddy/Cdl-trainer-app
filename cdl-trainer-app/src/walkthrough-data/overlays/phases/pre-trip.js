@@ -1,8 +1,11 @@
+// src/walkthrough-data/overlays/phases/pre-trip.js
 // ======================================================================
 // Phase overlay: Pre-trip inspection
 // - Applies adjustments specific to the "pre-trip" exam phase
 // - Plain-data overlay (no side effects), frozen + DEV validation
 // ======================================================================
+
+// @ts-check
 
 /**
  * @typedef {import('@walkthrough-loaders').WalkthroughOverlay} WalkthroughOverlay
@@ -71,13 +74,13 @@ const IS_DEV =
 
 if (IS_DEV) {
   try {
-    if (!(typeof overlay.id === 'string' && overlay.id.length > 0)) {
-       
+    if (!(typeof overlay.id === 'string' && overlay.id.trim().length > 0)) {
+      // eslint-disable-next-line no-console
       console.warn('[overlays/phases:pre-trip] Missing or invalid id')
     }
 
     if (!Array.isArray(overlay.rules)) {
-       
+      // eslint-disable-next-line no-console
       console.warn(
         '[overlays/phases:pre-trip] rules must be an array; got:',
         typeof overlay.rules
@@ -85,33 +88,34 @@ if (IS_DEV) {
     } else {
       overlay.rules.forEach((r, i) => {
         if (!r || typeof r !== 'object') {
-           
+          // eslint-disable-next-line no-console
           console.warn(
             `[overlays/phases:pre-trip] Rule at index ${i} must be an object`
           )
           return
         }
-        const op = r.op
-        const section = r?.match?.section
+
+        const op = /** @type {any} */ (r).op
+        const section = /** @type {any} */ (r)?.match?.section
         const hasSection = typeof section === 'string' && section.length > 0
 
         if (op === 'replaceSectionSteps' || op === 'appendSteps') {
-          const hasSteps = Array.isArray(r.steps)
+          const hasSteps = Array.isArray(/** @type {any} */ (r).steps)
           if (!(hasSection && hasSteps)) {
-             
+            // eslint-disable-next-line no-console
             console.warn(
               `[overlays/phases:pre-trip] Invalid ${op} rule at ${i} — requires match.section and steps[]`
             )
           }
         } else if (op === 'removeSection' || op === 'hideSection') {
           if (!hasSection) {
-             
+            // eslint-disable-next-line no-console
             console.warn(
               `[overlays/phases:pre-trip] Invalid ${op} rule at ${i} — requires match.section`
             )
           }
         } else {
-           
+          // eslint-disable-next-line no-console
           console.warn(
             `[overlays/phases:pre-trip] Unknown op "${op}" at index ${i}`
           )
@@ -119,7 +123,7 @@ if (IS_DEV) {
       })
     }
   } catch {
-    // swallow — never crash in DEV validation
+    // never crash in DEV validation
   }
 }
 

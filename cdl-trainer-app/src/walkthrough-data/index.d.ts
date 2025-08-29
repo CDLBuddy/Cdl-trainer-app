@@ -1,10 +1,18 @@
-// Re-export the canonical walkthrough data types from schema.d.ts.
+// src/walkthrough-data/index.d.ts
+// ======================================================================
+// Type barrel for walkthrough-data
+// - Re-exports canonical types from ./schema
+// - Purely type-level (no value exports)
+// - Avoids duplicate re-exports that can trip TS in some toolchains
+// ======================================================================
 
-/* Prefer path without the .d.ts suffix so TS resolves cleanly */
+/** Prefer path without the .d.ts suffix so TS resolves cleanly. */
 export type * from './schema';
 
-/* (Optional) Explicit named re-exports for older tooling that
-   doesn't fully support `export type *` tree-shaking. */
+/* ----------------------------------------------------------------------
+   If you must support older tooling that doesn’t understand
+   `export type *`, comment the line above and uncomment this block.
+
 export type {
   WalkthroughClassToken,
   CdlClassCode,
@@ -18,3 +26,5 @@ export type {
   ResolvedWalkthrough,
   SchoolId,
 } from './schema';
+
+---------------------------------------------------------------------- */

@@ -1,8 +1,11 @@
+// src/walkthrough-data/overlays/school/example-school.js
 // ======================================================================
 // Example school overlay
 // - Customizes walkthrough content for a specific school
 // - Plain-data overlay (no side effects), frozen + DEV validation
 // ======================================================================
+
+// @ts-check
 
 /**
  * @typedef {import('@walkthrough-loaders').WalkthroughOverlay} WalkthroughOverlay
@@ -56,13 +59,19 @@ const IS_DEV =
 
 if (IS_DEV) {
   try {
-    if (!(typeof overlay.id === 'string' && overlay.id.length > 0)) {
-       
+    const hasId = typeof overlay.id === 'string' && overlay.id.length > 0
+    if (!hasId) {
+      // eslint-disable-next-line no-console
       console.warn('[overlays/school:example-school] Missing or invalid id')
+    } else if (!/^school:/i.test(overlay.id)) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[overlays/school:example-school] Id should start with "school:" — got "${overlay.id}"`
+      )
     }
 
     if (!Array.isArray(overlay.rules)) {
-       
+      // eslint-disable-next-line no-console
       console.warn(
         '[overlays/school:example-school] rules must be an array; got:',
         typeof overlay.rules
@@ -70,35 +79,34 @@ if (IS_DEV) {
     } else {
       overlay.rules.forEach((r, i) => {
         if (!r || typeof r !== 'object') {
-           
+          // eslint-disable-next-line no-console
           console.warn(
             `[overlays/school:example-school] Rule at index ${i} must be an object`
           )
           return
         }
         const op = r.op
+        const section = /** @type {any} */ (r)?.match?.section
+        const hasSection = typeof section === 'string' && section.length > 0
+
         if (op === 'renameSection') {
-          const okMatch =
-            r?.match && typeof r.match.section === 'string' && r.match.section.length > 0
-          const okTo = typeof r.to === 'string' && r.to.length > 0
-          if (!(okMatch && okTo)) {
-             
+          const hasTo = typeof /** @type {any} */ (r).to === 'string' && !!/** @type {any} */ (r).to
+          if (!(hasSection && hasTo)) {
+            // eslint-disable-next-line no-console
             console.warn(
-              `[overlays/school:example-school] Invalid renameSection rule at ${i}`
+              `[overlays/school:example-school] Invalid renameSection rule at ${i} — requires match.section and to`
             )
           }
         } else if (op === 'replaceSectionSteps') {
-          const okMatch =
-            r?.match && typeof r.match.section === 'string' && r.match.section.length > 0
-          const okSteps = Array.isArray(r.steps)
-          if (!(okMatch && okSteps)) {
-             
+          const hasSteps = Array.isArray(/** @type {any} */ (r).steps)
+          if (!(hasSection && hasSteps)) {
+            // eslint-disable-next-line no-console
             console.warn(
-              `[overlays/school:example-school] Invalid replaceSectionSteps rule at ${i}`
+              `[overlays/school:example-school] Invalid replaceSectionSteps rule at ${i} — requires match.section and steps[]`
             )
           }
         } else {
-           
+          // eslint-disable-next-line no-console
           console.warn(
             `[overlays/school:example-school] Unknown op "${op}" at index ${i}`
           )

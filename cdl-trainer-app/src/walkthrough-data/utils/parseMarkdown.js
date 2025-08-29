@@ -1,19 +1,21 @@
-// =============================================================================
+// Path: src/walkthrough-data/utils/parseMarkdown.js
+// ============================================================================
 // Markdown → Walkthrough parser (no deps).
 //
-// Syntax (friendly & forgiving):
-// - Section headings:      ## Engine Compartment
-// - Optional section flags:## Brakes [critical]   or   ## In-Cab [passfail]
-// - Steps as bullets:      - **Label:** Script text here [must] [required] [pf] [skip]
-//                          - Script with no label is fine too
-// - Optional step tags:    - … [tags: air, brake]   or   - … [tag: safety]
+// Friendly syntax (for authors):
+//  - Section:  ## Engine Compartment [critical] [pf]
+//  - Steps:    - **Label:** Script text [must] [required] [pf] [skip] [tags: air, brake]
+//              1. Script is fine with no label
+//              (indent continuation lines under a bullet to extend its script)
+//  - Tag forms: [tags: a,b|c]  or  [tag: a]
 //
-// Recognized inline flags (case-insensitive):
-//   Step flags:    [must], [required]/[req], [pf]/[passfail], [skip], [tags: a,b], [tag: a]
-//   Section flags: [critical], [passfail]/[pf]
-//
-// Pass meta = { id, label, classCode, version } to normalize result.
-// =============================================================================
+// Notes:
+//  - Case-insensitive flags
+//  - Numbered lists (1. …) or bullets (-,*,+) are accepted
+//  - Continuation lines are appended to the current bullet until the next bullet
+//    (of the same or lesser indent) or a heading appears
+//  - Normalizes to canonical walkthrough shape and deep-freezes the result
+// ============================================================================
 
 /** @typedef {import('../schema').WalkthroughScript} WalkthroughScript */
 
@@ -22,124 +24,164 @@ const IS_DEV =
   import.meta.env &&
   import.meta.env.DEV === true
 
-/** Public API */
+// Capture [anything] tokens (greedy-safe per bracket)
+const FLAG_RE = /\[([^\]\n]+)\]/g
+
+// Bullet detector: -, *, +, or numbered "1."
+const BULLET_RE = /^(\s*)(?:[-*+]|\d+\.)\s+(.+)$/
+const HEADING_RE = /^(#{2,6})\s+(.+)$/
+
+// ----------------------------------------------------------------------------
+// Public API
+// ----------------------------------------------------------------------------
 export function parseMarkdownToWalkthrough(md, meta = {}) {
-  const lines = (md || '')
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n')
-    .split('\n')
+  const lines = normalizeLines(md)
 
   /** @type {Array<{section:string,critical:boolean,passFail:boolean,steps:any[]}>} */
   const sections = []
-  let cur = null
+  let curSection = null
+  /** @type {null | {label?:string, script:string, mustSay?:boolean, required?:boolean, passFail?:boolean, skip?:boolean, tags?:string[]}} */
+  let curStep = null
+  let curIndent = 0
 
-  for (const raw of lines) {
+  const flushStep = () => {
+    if (curSection && curStep && curStep.script.trim()) {
+      // Collapse internal whitespace a bit, preserve user newlines sensibly
+      curStep.script = curStep.script.replace(/[ \t]+\n/g, '\n').trim()
+      curSection.steps.push(curStep)
+    }
+    curStep = null
+  }
+
+  const openDefaultSectionIfNeeded = () => {
+    if (!curSection) {
+      curSection = { section: 'General', critical: false, passFail: false, steps: [] }
+      sections.push(curSection)
+    }
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i]
     const line = raw.trim()
-    if (!line) continue
 
-    // Heading → section
-    const h = parseHeading(line)
-    if (h) {
-      cur = {
-        section: h.title || 'Untitled',
-        critical: !!h.critical,
-        passFail: !!h.passFail,
-        steps: [],
-      }
-      sections.push(cur)
+    if (!line) {
+      // blank → treat as soft separator inside a multi-line step
+      if (curStep) curStep.script += '\n'
       continue
     }
 
-    // Step bullet under a section
-    if (!cur) {
-      // create a default section if author forgot a heading
-      cur = { section: 'General', critical: false, passFail: false, steps: [] }
-      sections.push(cur)
+    // --- Heading?
+    const h = HEADING_RE.exec(raw)
+    if (h) {
+      flushStep()
+      const full = h[2].trim()
+      const { text, flags } = stripFlags(full)
+      const lower = flags.map(f => f.toLowerCase())
+
+      curSection = {
+        section: text || 'Untitled',
+        critical: lower.includes('critical'),
+        passFail: lower.includes('passfail') || lower.includes('pf'),
+        steps: [],
+      }
+      sections.push(curSection)
+      continue
     }
 
-    const step = parseBullet(line)
-    if (step) cur.steps.push(step)
+    // --- Bullet?
+    const b = BULLET_RE.exec(raw)
+    if (b) {
+      // new bullet starts → flush previous step
+      flushStep()
+      openDefaultSectionIfNeeded()
+
+      curIndent = b[1].length
+      const bulletText = b[2]
+
+      // Extract a **Label:** if present
+      let work = bulletText
+      let label = null
+      const boldLabel = /^\*\*(.+?)\*\*\s*:\s*/.exec(work)
+      if (boldLabel) {
+        label = boldLabel[1].trim()
+        work = work.slice(boldLabel[0].length)
+      }
+
+      const { text: scriptMaybe, flags } = stripFlags(work)
+      const lower = flags.map(f => f.toLowerCase())
+      const tags = collectTags(flags)
+
+      /** @type {any} */
+      curStep = { script: scriptMaybe.trim() }
+      if (label) curStep.label = label
+      if (hasFlag(lower, 'must')) curStep.mustSay = true
+      if (hasFlag(lower, 'required') || hasFlag(lower, 'req')) curStep.required = true
+      if (hasFlag(lower, 'passfail') || hasFlag(lower, 'pf')) curStep.passFail = true
+      if (hasFlag(lower, 'skip')) curStep.skip = true
+      if (tags.length) curStep.tags = tags
+
+      // If script started empty but flags existed, keep step open for continuation text
+      if (!curStep.script) curStep.script = ''
+      continue
+    }
+
+    // --- Continuation line?
+    if (curStep) {
+      // If this physical line looks like a deeper sub-bullet (indented more),
+      // treat it as part of the same step’s script.
+      curStep.script += (curStep.script ? '\n' : '') + raw.slice(Math.min(raw.length, curIndent)).trim()
+      continue
+    }
+
+    // --- Text without a section/bullet: start default section and add as a step
+    openDefaultSectionIfNeeded()
+    const { text, flags } = stripFlags(raw)
+    if (text) {
+      const lower = flags.map(f => f.toLowerCase())
+      const tags = collectTags(flags)
+      /** @type {any} */
+      curStep = { script: text }
+      if (hasFlag(lower, 'must')) curStep.mustSay = true
+      if (hasFlag(lower, 'required') || hasFlag(lower, 'req')) curStep.required = true
+      if (hasFlag(lower, 'passfail') || hasFlag(lower, 'pf')) curStep.passFail = true
+      if (hasFlag(lower, 'skip')) curStep.skip = true
+      if (tags.length) curStep.tags = tags
+      flushStep()
+    }
   }
+
+  // End of document
+  flushStep()
 
   const result = normalizeWalkthrough({ sections }, meta)
 
-  // DEV sanity checks (non-fatal)
   if (IS_DEV) {
     try {
       if (!Array.isArray(result.sections) || result.sections.length === 0) {
-         
         console.warn('[parseMarkdown] Produced walkthrough has no sections')
       }
-    } catch {
-      // intentionally empty: non-fatal check
-    }
+    } catch {}
   }
 
   return result
 }
 
-/* -------------------------------------------------------------------------- */
-/* Parsers                                                                    */
-/* -------------------------------------------------------------------------- */
+// ----------------------------------------------------------------------------
+// Parsers / helpers
+// ----------------------------------------------------------------------------
 
-// Matches [something] tokens; capture inner text.
-const FLAG_RE = /\[([^\]]+)\]/gi
-
-function parseHeading(line) {
-  // ## Title [critical] [passfail]
-  const m = /^(#{2,6})\s+(.+)$/.exec(line)
-  if (!m) return null
-  const titleWithFlags = m[2].trim()
-
-  const { text, flags } = stripFlags(titleWithFlags)
-  const lower = flags.map(f => f.toLowerCase())
-  return {
-    title: text.trim(),
-    critical: lower.includes('critical'),
-    passFail: lower.includes('passfail') || lower.includes('pf'),
-  }
+function normalizeLines(md) {
+  return String(md || '')
+    .replace(/^\uFEFF/, '') // BOM
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
 }
 
-function parseBullet(line) {
-  // - **Label:** Script [must] [required] ...
-  if (!/^[-*]\s/.test(line)) return null
-
-  let text = line.replace(/^[-*]\s+/, '')
-
-  // Try to extract "**Label:**"
-  let label = null
-  const boldLabel = /^\*\*(.+?)\*\*\s*:\s*/.exec(text)
-  if (boldLabel) {
-    label = boldLabel[1].trim()
-    text = text.slice(boldLabel[0].length)
-  }
-
-  const { text: scriptMaybe, flags } = stripFlags(text)
-  const script = scriptMaybe.trim()
-  if (!script) return null
-
-  const lower = flags.map(f => f.toLowerCase())
-
-  const step = {
-    script,
-  }
-  if (label) step.label = label
-  if (hasFlag(lower, 'must')) step.mustSay = true
-  if (hasFlag(lower, 'required') || hasFlag(lower, 'req')) step.required = true
-  if (hasFlag(lower, 'passfail') || hasFlag(lower, 'pf')) step.passFail = true
-  if (hasFlag(lower, 'skip')) step.skip = true
-
-  // Tags: [tags: a,b] or [tag: a]
-  const tags = collectTags(flags)
-  if (tags.length) step.tags = tags
-
-  return step
-}
-
+/** Remove `[flag]` tokens; return { text, flags[] } */
 function stripFlags(s) {
   /** @type {string[]} */
   const flags = []
-  const text = s.replace(FLAG_RE, (_, f) => {
+  const text = String(s || '').replace(FLAG_RE, (_, f) => {
     const inside = String(f || '').trim()
     if (inside) flags.push(inside)
     return ''
@@ -149,43 +191,40 @@ function stripFlags(s) {
 
 function hasFlag(flags, name) {
   const n = String(name).toLowerCase()
-  return flags.some(f => f === n)
+  return flags.some(f => f.toLowerCase() === n)
 }
 
+/** Accepts `[tags: a,b|c]` or `[tag: a]` (case-insensitive). */
 function collectTags(flagsRaw) {
   /** @type {string[]} */
   const tags = []
   for (const f of flagsRaw) {
-    // Accept "tags: a,b|c" or "tag: a"
-    const m = /^tags?\s*:\s*(.+)$/i.exec(f)
-    if (m && m[1]) {
-      const items = String(m[1])
-        .split(/[|,]/g)
-        .map(s => s.trim())
-        .filter(Boolean)
-      tags.push(...items)
-    }
+    const m = /^tags?\s*:\s*(.+)$/i.exec(String(f))
+    if (!m || !m[1]) continue
+    const parts = String(m[1])
+      .split(/[|,]/g)
+      .map(s => s.trim())
+      .filter(Boolean)
+    if (parts.length) tags.push(...parts)
   }
-  // de-dupe
   return Array.from(new Set(tags))
 }
 
-/* -------------------------------------------------------------------------- */
-/* Normalizer (shared with CSV util shape)                                    */
-/* -------------------------------------------------------------------------- */
-
+// ----------------------------------------------------------------------------
+// Normalizer (shared shape with CSV util)
+// ----------------------------------------------------------------------------
 export function normalizeWalkthrough(w = {}, meta = {}) {
-  const id = strOrU(meta.id ?? w.id)
-  const label = strOrU(meta.label ?? w.label)
+  const id        = strOrU(meta.id ?? w.id)
+  const label     = strOrU(meta.label ?? w.label)
   const classCode = strOrU(meta.classCode ?? w.classCode)
-  const version = Number(meta.version ?? w.version ?? 1) || 1
+  const version   = Number(meta.version ?? w.version ?? 1) || 1
 
   const sections = Array.isArray(w.sections) ? w.sections : []
   const cleaned = sections
     .map(s => {
       const sectionName = String(s.section ?? '').trim() || 'Untitled'
-      const critical = !!s.critical
-      const passFail = !!s.passFail
+      const critical    = !!s.critical
+      const passFail    = !!s.passFail
 
       const steps = Array.isArray(s.steps)
         ? s.steps
@@ -194,12 +233,12 @@ export function normalizeWalkthrough(w = {}, meta = {}) {
               if (!script) return null
               /** @type {any} */
               const out = { script }
-              const label = String(st.label ?? st.stepLabel ?? '').trim()
-              if (label) out.label = label
-              if (st.mustSay != null) out.mustSay = !!st.mustSay
+              const lbl = String(st.label ?? st.stepLabel ?? '').trim()
+              if (lbl) out.label = lbl
+              if (st.mustSay  != null) out.mustSay  = !!st.mustSay
               if (st.required != null) out.required = !!st.required
               if (st.passFail != null) out.passFail = !!st.passFail
-              if (st.skip != null) out.skip = !!st.skip
+              if (st.skip     != null) out.skip     = !!st.skip
               const tags = Array.isArray(st.tags)
                 ? st.tags.map(t => String(t).trim()).filter(Boolean)
                 : []
@@ -213,13 +252,7 @@ export function normalizeWalkthrough(w = {}, meta = {}) {
     })
     .filter(s => s.steps.length > 0)
 
-  return deepFreeze({
-    id,
-    label,
-    classCode,
-    version,
-    sections: cleaned,
-  })
+  return deepFreeze({ id, label, classCode, version, sections: cleaned })
 }
 
 function strOrU(v) {
@@ -237,7 +270,6 @@ function deepFreeze(o) {
   return o
 }
 
-// Maintain compatibility with callers that import { parseMarkdown } from utils.
+// Compatibility alias for legacy imports
 export const parseMarkdown = parseMarkdownToWalkthrough
-
 export default parseMarkdownToWalkthrough

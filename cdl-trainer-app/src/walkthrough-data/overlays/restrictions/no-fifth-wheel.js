@@ -1,15 +1,19 @@
+// Path: src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js
 // ======================================================================
 // Restriction overlay: No fifth-wheel (O restriction)
-// - Removes fifth-wheel specific coupling/uncoupling checks
-// - Leaves straight-truck / pintle / ball / drawbar notes in place
-// - All rules are tolerant: if a section/step/tag doesn't exist, it's ignored
+// - Removes fifth-wheel–specific coupling/uncoupling checks
+// - Leaves straight-truck / pintle / ball / drawbar notes intact
+// - Pure data; unknown sections are skipped without error
 // ======================================================================
 
-/** @type {import('@walkthrough-loaders').WalkthroughOverlay} */
+/** @type {import('../../schema').WalkthroughOverlay} */
 export default {
   id: 'restriction:O:no-fifth-wheel',
   rules: [
-    // ---- Replace dedicated sections with a short notice ----------------
+    // ------------------------------------------------------------------
+    // Replace dedicated coupling sections with a concise notice.
+    // Include a couple of common title variants.
+    // ------------------------------------------------------------------
     {
       op: 'replaceSectionSteps',
       match: { section: 'Coupling System' },
@@ -34,11 +38,27 @@ export default {
         },
       ],
     },
+    {
+      op: 'replaceSectionSteps',
+      match: { section: 'Coupling & Uncoupling' }, // alt punctuation
+      steps: [
+        {
+          label: 'Skip Fifth-Wheel Coupling/Uncoupling',
+          script:
+            'Fifth-wheel procedures are not applicable. Use pintle/ball/drawbar checks as appropriate.',
+          tags: ['no-fifth-wheel', 'info'],
+        },
+      ],
+    },
 
-    // ---- Remove fifth-wheel specific steps baked into broader sections ----
-    // Common places where fifth-wheel checks are embedded
+    // ------------------------------------------------------------------
+    // Remove fifth-wheel specific steps embedded in broader sections.
+    // Tags are matched; missing tags/sections are safely ignored.
+    // ------------------------------------------------------------------
     { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'fifth-wheel' } },
+    { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'fifthwheel' } }, // alt tag
     { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'kingpin' } },
+    { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'king-pin' } },
     { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'locking-jaws' } },
     { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'apron' } },
     { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'skid-plate' } },
@@ -47,7 +67,7 @@ export default {
     { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'gap-check' } },
 
     { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'fifth-wheel' } },
-    { op: 'removeStep', match: { section: 'Pre-Trip Inspection',  tag: 'fifth-wheel' } }, // alt punctuation
+    { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'fifthwheel' } },
     { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'kingpin' } },
     { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'locking-jaws' } },
     { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'apron' } },
@@ -56,12 +76,15 @@ export default {
     { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'platform' } },
     { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'gap-check' } },
 
-    // Some scripts include coupling notes in “In-Cab” or “Vehicle Overview”
-    { op: 'removeStep', match: { section: 'Vehicle Overview', tag: 'fifth-wheel' } },
-    { op: 'removeStep', match: { section: 'In-Cab Inspection', tag: 'fifth-wheel' } },
-    { op: 'removeStep', match: { section: 'In-Cab Inspection', tag: 'fifth-wheel' } },
+    // Some scripts tuck coupling notes under “In-Cab / Vehicle Overview”
+    { op: 'removeStep', match: { section: 'Vehicle Overview',    tag: 'fifth-wheel' } },
+    { op: 'removeStep', match: { section: 'In-Cab Inspection',   tag: 'fifth-wheel' } },
+    { op: 'removeStep', match: { section: 'In Cab Inspection',   tag: 'fifth-wheel' } }, // alt spelling
 
-    // ---- Add a small reminder where a generic trailer section still exists --
+    // ------------------------------------------------------------------
+    // Add a small reminder where a generic trailer section exists.
+    // (No-op if the target section title isn’t present.)
+    // ------------------------------------------------------------------
     {
       op: 'appendSteps',
       match: { section: 'Trailer Inspection' },
@@ -70,6 +93,18 @@ export default {
           label: 'Non-Fifth-Wheel Reminder',
           script:
             'If towing with a pintle/ball/drawbar, inspect hitch hardware, safety chains/cables, breakaway device, electrical connector, and safety latch per manufacturer instructions.',
+          tags: ['no-fifth-wheel', 'trailer', 'safety'],
+        },
+      ],
+    },
+    {
+      op: 'appendSteps',
+      match: { section: 'Pre-Trip Inspection' },
+      steps: [
+        {
+          label: 'Non-Fifth-Wheel Reminder',
+          script:
+            'Confirm correct hitch type and perform pintle/ball/drawbar checks (hitch secure, safety chains/cables crossed and attached, breakaway device connected, electrical working).',
           tags: ['no-fifth-wheel', 'trailer', 'safety'],
         },
       ],

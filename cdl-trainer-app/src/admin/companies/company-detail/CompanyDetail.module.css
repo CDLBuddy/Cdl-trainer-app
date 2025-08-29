@@ -1,0 +1,81 @@
+/* Company Detail -- page-scoped layout + roster card polish */
+
+/* ----- Top grid (Overview + Billing) ---------------------------------- */
+.topGrid {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+  grid-template-columns: 1fr;            /* stack on mobile */
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .topGrid {
+    grid-template-columns: 1fr minmax(280px, 420px); /* content + slim summary */
+  }
+}
+
+/* ----- Roster card container ------------------------------------------- */
+.card {
+  /* dashboard-card provides surface/border/shadow; we handle layout */
+  padding: 0;                  /* roster table owns its own padding */
+  overflow-x: auto;            /* allow wide tables to scroll horizontally */
+  border-radius: 12px;         /* keep consistent with dashboard-card rounding */
+}
+
+/* Make the internal table feel airy without breaking module boundaries */
+.card :global(table) {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.card :global(thead th) {
+  position: sticky;
+  top: 0;
+  background: var(--card-header-bg, #fafafa);
+  z-index: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .card :global(thead th) {
+    background: var(--card-header-bg-dark, rgba(255,255,255,0.04));
+  }
+}
+
+/* Subtle top/bottom table chrome within the card */
+.card :global(thead th),
+.card :global(tbody td) {
+  padding: 10px 12px;
+}
+
+.card :global(tbody tr + tr td) {
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+@media (prefers-color-scheme: dark) {
+  .card :global(tbody tr + tr td) {
+    border-top-color: rgba(255,255,255,0.08);
+  }
+}
+
+/* ----- Loading row ------------------------------------------------------ */
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  color: #6b7280; /* gray-500 */
+  font-size: 0.95rem;
+}
+
+.loading :global(.spinner) {
+  width: 16px;
+  height: 16px;
+}
+
+/* Prefer reduced motion: keep things instant */
+@media (prefers-reduced-motion: reduce) {
+  .card :global(thead th),
+  .card :global(tbody td) {
+    transition: none;
+  }
+}

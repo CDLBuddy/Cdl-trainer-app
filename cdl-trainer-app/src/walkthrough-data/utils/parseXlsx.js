@@ -1,10 +1,16 @@
+// Path: src/walkthrough-data/utils/parseXlsx.js
+// ============================================================================
 // Robust Excel helpers using exceljs (read + write) with safety guards.
 // - Browser-first; Node-safe fallbacks behind feature checks.
 // - Guards: file type/size, max rows/cols, null-prototype + key sanitization.
-// - Sheet selection by name or index.
-// - Optional header mapping (return objects keyed by header row).
-// - Lazy loads exceljs to avoid bloating initial bundles.
+// - Sheet selection by index/name/regex/predicate.
+// - Optional header mapping (return objects keyed by header row) with transforms.
+// - Value coercion: strings, dates → ISO, custom mapper.
+// - Lazy-load exceljs to keep initial bundles light.
+// - Auto column widths on export (configurable).
+// ============================================================================
 
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 const BLOCKED_KEYS = new Set(['__proto__', 'prototype', 'constructor'])
 const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
 
@@ -14,6 +20,10 @@ const DEFAULT_LIMITS = Object.freeze({
   maxRows: 20000,
   maxCols: 256,
 })
+
+/* ------------------------------------------------------------------ */
+/* Small utilities                                                     */
+/* ------------------------------------------------------------------ */
 
 /** Create a null-prototype object and copy safe keys */
 function createSafeObject(entries) {
@@ -77,23 +87,87 @@ async function toArrayBuffer(input) {
 
 /** Lazy-load exceljs so it doesn’t inflate your initial bundles */
 async function loadExcelJS() {
-  // exceljs has both CJS/ESM builds; dynamic import keeps it on-demand
   const m = await import('exceljs')
-  // Some bundlers put the class on default, some on the module
   return m.default ?? m
 }
+
+/** Normalize header key per chosen transform */
+function transformHeader(key, mode, trimHeader) {
+  let k = key == null ? '' : String(key)
+  if (trimHeader) k = k.trim()
+  if (!k) k = 'col_' + Math.random().toString(36).slice(2, 8)
+  switch (mode) {
+    case 'lower': k = k.toLowerCase(); break
+    case 'camel': k = toCamel(k); break
+    case 'slug':  k = toSlug(k); break
+    default: /* preserve */ break
+  }
+  if (BLOCKED_KEYS.has(k)) k = `_${k}`
+  return k
+}
+function toCamel(s) {
+  const t = String(s).replace(/[_\s-]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ''))
+  const head = t.charAt(0).toLowerCase()
+  return head + t.slice(1)
+}
+function toSlug(s) {
+  return String(s).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+/** Convert exceljs cell.value to a plain JS value */
+function coerceValue(v, { coerceStrings, dateAsISO, valueMapper }) {
+  if (valueMapper) {
+    const mapped = valueMapper(v)
+    if (mapped !== undefined) return mapped
+  }
+  // Rich text object → plain text
+  if (v && typeof v === 'object') {
+    if (v.text != null) v = v.text
+    else if (Array.isArray(v.richText)) v = v.richText.map(x => x?.text || '').join('')
+    else if (v.result != null) v = v.result // formula result
+    else if (v.hyperlink && v.text) v = v.text
+  }
+  if (v instanceof Date) return dateAsISO ? v.toISOString() : v
+  if (coerceStrings) return v == null ? '' : String(v)
+  return v
+}
+
+/** Resolve a worksheet by index/name/regex/predicate */
+function resolveWorksheet(workbook, selector) {
+  if (typeof selector === 'number') {
+    return workbook.worksheets?.[selector] || workbook.worksheets?.[0] || null
+  }
+  if (typeof selector === 'string') {
+    return workbook.getWorksheet(selector) || null
+  }
+  if (selector instanceof RegExp) {
+    return workbook.worksheets?.find(ws => selector.test(String(ws?.name))) || null
+  }
+  if (typeof selector === 'function') {
+    return workbook.worksheets?.find(ws => !!selector(ws)) || null
+  }
+  return workbook.worksheets?.[0] || null
+}
+
+/* ------------------------------------------------------------------ */
+/* Reader                                                              */
+/* ------------------------------------------------------------------ */
 
 /**
  * Parse an .xlsx into rows or objects.
  * @param {File|Blob|ArrayBuffer|Buffer|Uint8Array} file
  * @param {{
- *   sheet?: number|string,          // index (0-based) or sheet name (default: first sheet)
+ *   sheet?: number|string|RegExp|((ws:any)=>boolean), // index (0-based), name, regex, or predicate
  *   hasHeader?: boolean,            // if true, map rows to objects using first row as headers
+ *   headerCase?: 'preserve'|'lower'|'camel'|'slug',
+ *   trimHeader?: boolean,           // trim header cell text
+ *   coerceStrings?: boolean,        // coerce non-string cell types to string
+ *   dateAsISO?: boolean,            // when encountering Date, convert to ISO string
+ *   valueMapper?: (raw:any)=>any,   // last-chance value coercion hook
+ *   includeEmptyRows?: boolean,     // include empty rows (exceljs eachRow option)
  *   maxBytes?: number,              // hard size cap
  *   maxRows?: number,               // hard row cap
  *   maxCols?: number,               // hard column cap
- *   trimHeader?: boolean,           // trim header cell text
- *   coerceStrings?: boolean,        // coerce non-string cell types to string
  * }=} options
  * @returns {Promise<Array<Array<any>>|Array<Record<string, any>>>}
  */
@@ -101,18 +175,20 @@ export async function parseXlsxFile(file, options = {}) {
   const {
     sheet = 0,
     hasHeader = false,
+    headerCase = 'camel',
+    trimHeader = true,
+    coerceStrings = false,
+    dateAsISO = false,
+    valueMapper = null,
+    includeEmptyRows = false,
     maxBytes = DEFAULT_LIMITS.maxBytes,
     maxRows = DEFAULT_LIMITS.maxRows,
     maxCols = DEFAULT_LIMITS.maxCols,
-    trimHeader = true,
-    coerceStrings = false,
   } = options
 
   // Basic type/size checks (browser only)
   if (isBrowser && typeof File !== 'undefined' && file instanceof File) {
-    const okType =
-      file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-      file.name?.toLowerCase().endsWith('.xlsx')
+    const okType = file.type === XLSX_MIME || file.name?.toLowerCase().endsWith('.xlsx')
     if (!okType) {
       throw new Error(`parseXlsxFile: expected .xlsx file, got "${file.type || file.name}"`)
     }
@@ -131,15 +207,8 @@ export async function parseXlsxFile(file, options = {}) {
     throw new Error(`parseXlsxFile: failed to read workbook — ${String(err?.message || err)}`)
   }
 
-  // Select worksheet
-  let worksheet
-  if (typeof sheet === 'string') {
-    worksheet = workbook.getWorksheet(sheet)
-    if (!worksheet) throw new Error(`parseXlsxFile: sheet "${sheet}" not found`)
-  } else {
-    worksheet = workbook.worksheets?.[sheet] || workbook.worksheets?.[0]
-    if (!worksheet) throw new Error('parseXlsxFile: no worksheets found')
-  }
+  const worksheet = resolveWorksheet(workbook, sheet)
+  if (!worksheet) throw new Error('parseXlsxFile: no worksheet resolved')
 
   // Hard caps based on sheet metadata (quick fail)
   const metaRows = worksheet?.rowCount ?? 0
@@ -151,33 +220,32 @@ export async function parseXlsxFile(file, options = {}) {
     throw new Error(`parseXlsxFile: too many columns (${metaCols} > ${maxCols})`)
   }
 
+  /** @type {any[]} */
   const out = []
   let rowCount = 0
+  /** @type {string[]|null} */
   let headers = null
 
-  worksheet.eachRow((row) => {
-    // exceljs row.values is 1-based; index 0 is undefined
-    const arr = row.values.slice(1)
-
-    if (arr.length > maxCols) {
-      throw new Error(`parseXlsxFile: too many columns in a row (${arr.length} > ${maxCols})`)
+  worksheet.eachRow({ includeEmpty: !!includeEmptyRows }, (row) => {
+    // Build a normalized flat array using actualCellCount or columnCount cap
+    const colCount = Math.min(Math.max(row.cellCount || row.actualCellCount || 0, 0), maxCols)
+    const arr = []
+    for (let c = 1; c <= colCount; c++) {
+      const cell = row.getCell(c)
+      arr.push(coerceValue(cell?.value, { coerceStrings, dateAsISO, valueMapper }))
     }
 
-    const normalized = coerceStrings ? arr.map((v) => (v == null ? '' : String(v))) : arr
+    // If the row is entirely empty and we don't want empties → skip
+    const allEmpty = arr.every((v) => v == null || (typeof v === 'string' && v.trim() === ''))
+    if (allEmpty && !includeEmptyRows) return
 
     if (hasHeader && rowCount === 0) {
-      headers = normalized.map((h) => {
-        let key = h == null ? '' : String(h)
-        if (trimHeader) key = key.trim()
-        if (!key) key = 'col_' + Math.random().toString(36).slice(2, 8)
-        if (BLOCKED_KEYS.has(key)) key = `_${key}`
-        return key
-      })
+      headers = arr.map((h) => transformHeader(h, headerCase, trimHeader))
     } else if (hasHeader && headers) {
-      const pairs = headers.map((k, i) => [k, normalized[i]])
+      const pairs = headers.map((k, i) => [k, arr[i]])
       out.push(createSafeObject(pairs))
     } else {
-      out.push(normalized)
+      out.push(arr)
     }
 
     rowCount++
@@ -189,6 +257,10 @@ export async function parseXlsxFile(file, options = {}) {
   return out
 }
 
+/* ------------------------------------------------------------------ */
+/* Writer                                                              */
+/* ------------------------------------------------------------------ */
+
 /**
  * Create an .xlsx from rows or objects and trigger a download (browser),
  * or return a Buffer/Uint8Array (Node).
@@ -198,12 +270,21 @@ export async function parseXlsxFile(file, options = {}) {
  *   sheetName?: string,
  *   fromObjects?: boolean,     // if true, treat input as objects; headers auto-generated
  *   headers?: string[],        // optional explicit header order when fromObjects=true
+ *   autoWidth?: boolean,       // auto-fit columns based on content
+ *   maxColWidth?: number,      // cap for auto width (chars)
  * }} options
  * @returns {Promise<void|Uint8Array|Buffer>}
  */
 export async function exportXlsxFile(
   data,
-  { filename = 'export.xlsx', sheetName = 'Sheet1', fromObjects = false, headers = null } = {}
+  {
+    filename = 'export.xlsx',
+    sheetName = 'Sheet1',
+    fromObjects = false,
+    headers = null,
+    autoWidth = true,
+    maxColWidth = 50,
+  } = {}
 ) {
   const ExcelJS = await loadExcelJS()
   const workbook = new ExcelJS.Workbook()
@@ -234,11 +315,33 @@ export async function exportXlsxFile(
     for (const row of data) worksheet.addRow(Array.isArray(row) ? row : [row])
   }
 
+  // Auto width (rough heuristic by char length)
+  if (autoWidth) {
+    const colCount = worksheet.columnCount
+    for (let c = 1; c <= colCount; c++) {
+      let maxLen = 8
+      worksheet.eachRow((row) => {
+        const cell = row.getCell(c)
+        const v = cell?.value
+        const s =
+          v == null
+            ? ''
+            : typeof v === 'string'
+            ? v
+            : v?.text != null
+            ? String(v.text)
+            : Array.isArray(v?.richText)
+            ? v.richText.map((x) => x?.text || '').join('')
+            : String(v)
+        if (s.length > maxLen) maxLen = s.length
+      })
+      worksheet.getColumn(c).width = Math.min(maxLen + 2, maxColWidth)
+    }
+  }
+
   if (isBrowser) {
     const buffer = await workbook.xlsx.writeBuffer()
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    })
+    const blob = new Blob([buffer], { type: XLSX_MIME })
     const url = URL.createObjectURL(blob)
     try {
       const a = document.createElement('a')

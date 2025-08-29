@@ -28,10 +28,6 @@ export * from './utils'
 // ---------- Preload helpers (canonical top-level access) -------------------
 export * from './preload.js'
 
-// ---------- Legacy UI controls (safe no-ops if unused) ---------------------
-export { default as ExportUsersControls }     from './ExportUsersControls.jsx'
-export { default as ExportCompaniesControls } from './ExportCompaniesControls.jsx'
-
 // ---------- Optional conveniences (opt-in) ---------------------------------
 // Uncomment as needed during migrations.
 // export { default as AdminRouter } from './AdminRouter.jsx' // Router (code-split host)

@@ -58,7 +58,8 @@ const entries = {
   dashboard:      () => import('@admin/dashboard/AdminDashboard.jsx'),
   profile:        () => import('@admin/AdminProfile.jsx'),
   companies:      () => import('@admin/companies/AdminCompanies.jsx'),
-  companyDetail:  () => import('@admin/companies/CompanyDetail.jsx'), // /companies/:id
+  // ⬇️ UPDATED PATH
+  companyDetail:  () => import('@admin/companies/company-detail/CompanyDetail.jsx'), // /companies/:id
   communications: () => import('@admin/communications/AdminCommunications.jsx'),
   billing:        () => import('@admin/billing/Billing.jsx'),
   settings:       () => import('@admin/settings/AdminSettings.jsx'),

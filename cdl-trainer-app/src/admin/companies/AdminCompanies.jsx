@@ -28,6 +28,9 @@ import { CompaniesTable, CompanyFilters, CompanyHeader } from './components'
 import { useCompanies } from './hooks'
 import { exportCompaniesToCSV } from './services' // bulk-export of selected set
 
+// Page styles
+import styles from './AdminCompanies.module.css'
+
 // ---- Lazy, non-route overlay ---------------------------------------------
 const AddCompanyDrawer = lazy(() => import('./add-company/AddCompanyDrawer.jsx'))
 
@@ -126,25 +129,16 @@ function AdminCompanies() {
 
   return (
     <div
-      className="screen-wrapper fade-in admin-companies-page"
-      style={{ padding: 24, maxWidth: 960, margin: '0 auto' }}
+      className={`screen-wrapper fade-in admin-companies-page ${styles.page}`}
+      // expose brand to children via CSS var (CompaniesTable/Filters can use var(--brand))
+      style={{ '--brand': brandPrimary }}
     >
       <CompanyHeader brand={brand} />
 
-      <div
-        style={{
-          marginTop: 0,
-          marginBottom: 8,
-          display: 'flex',
-          alignItems: 'baseline',
-          gap: 8,
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-        }}
-      >
-        <h2 style={{ margin: 0, display: 'flex', alignItems: 'baseline', gap: 8 }}>
+      <div className={styles.topBar}>
+        <h2 className={styles.titleRow}>
           <span>🏢 Manage Companies</span>
-          <small style={{ color: '#6b7280', fontWeight: 500 }}>
+          <small className={styles.eyebrow}>
             {loading ? 'Loading…' : `${totalCount} result${totalCount === 1 ? '' : 's'}`}
             {selectedCount ? ` • ${selectedCount} selected` : ''}
           </small>
@@ -165,19 +159,7 @@ function AdminCompanies() {
 
       {/* Error banner (non-blocking) */}
       {error ? (
-        <div
-          id={errorId}
-          role="status"
-          aria-live="polite"
-          style={{
-            border: '1px solid #fecaca',
-            background: '#fef2f2',
-            color: '#991b1b',
-            padding: '10px 12px',
-            borderRadius: 10,
-            marginBottom: 12,
-          }}
-        >
+        <div id={errorId} role="status" aria-live="polite" className={styles.errorBanner}>
           {error}
         </div>
       ) : null}
@@ -200,7 +182,7 @@ function AdminCompanies() {
       {/* Table / Loading state */}
       <div role="region" aria-label="Companies table region" aria-busy={loading}>
         {loading ? (
-          <div style={{ padding: '1rem', color: '#6b7280' }} aria-live="polite">
+          <div className={styles.loadingRow} aria-live="polite">
             <span className="spinner" aria-hidden="true" style={{ marginRight: 8 }} />
             Loading companies…
           </div>
@@ -219,17 +201,15 @@ function AdminCompanies() {
         )}
       </div>
 
-      <div style={{ fontSize: '0.96em', color: '#888', marginTop: 7 }}>
+      <div className={styles.hint}>
         Bulk import supports columns: <b>name</b>, <b>contact</b>, <b>address</b>, <b>status</b> (first row is a header).
       </div>
 
-      <button
-        className="btn outline wide"
-        style={{ marginTop: '1.3rem' }}
-        onClick={() => navigate('/admin-dashboard')}
-      >
-        ⬅ Back to Dashboard
-      </button>
+      <div className={styles.backBtnWrap}>
+        <button className="btn outline wide" onClick={() => navigate('/admin-dashboard')}>
+          ⬅ Back to Dashboard
+        </button>
+      </div>
 
       {/* Drawer mount (lazy + isolated) */}
       <Suspense fallback={null}>
@@ -248,10 +228,9 @@ function AdminCompanies() {
               if (result.id) {
                 if (result.openAddStudent) {
                   navigate(`/admin/companies/${encodeURIComponent(result.id)}`, {
-                    state: { openAddStudent: true }, // CompanyDetail can read and open AddStudentDrawer
+                    state: { openAddStudent: true },
                   })
                 } else {
-                  // Or just open the new company’s detail
                   navigate(`/admin/companies/${encodeURIComponent(result.id)}`)
                 }
               }

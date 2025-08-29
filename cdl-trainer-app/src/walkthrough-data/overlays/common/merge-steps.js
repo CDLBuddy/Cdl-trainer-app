@@ -1,7 +1,9 @@
+// src/walkthrough-data/overlays/common/merge-steps.js
 // ======================================================================
 // Common overlay helper: merge similar steps
 // - Plain-data overlay object (no side effects)
 // - Use replace/remove/hide rules to consolidate duplicate steps
+// - Supports matching by stepLabel OR tag (optionally narrow by section)
 // - Frozen (immutable) + light DEV validation
 // ======================================================================
 
@@ -10,13 +12,13 @@
  *
  * @typedef {{
  *   op: 'replaceStepText',
- *   match: { stepLabel: string },
+ *   match: { stepLabel?: string, tag?: string, section?: string },
  *   to: string
  * }} ReplaceStepTextRule
  *
  * @typedef {{
  *   op: 'removeStep' | 'hideStep',
- *   match: { stepLabel: string }
+ *   match: { stepLabel?: string, tag?: string, section?: string }
  * }} RemoveOrHideStepRule
  */
 
@@ -31,12 +33,12 @@ const overlay = {
   },
   rules: [
     // --- Examples (left commented for guidance) ------------------------
-    // Combine two brake checks into one unified step:
+    // Combine two brake checks into one unified step (all sections):
     // { op: 'replaceStepText', match: { stepLabel: 'Brake Check' }, to: 'Full brake system check' },
-    // Hide a redundant step that your school doesn’t teach separately:
-    // { op: 'hideStep', match: { stepLabel: 'Secondary Brake Check' } },
-    // Remove a duplicate step that appears twice in the source:
-    // { op: 'removeStep', match: { stepLabel: 'Mirror Adjustment' } },
+    // Narrow match to a specific section only:
+    // { op: 'hideStep', match: { section: 'In-Cab Inspection', stepLabel: 'Secondary Brake Check' } },
+    // Remove duplicates by tag across sections:
+    // { op: 'removeStep', match: { tag: 'duplicate' } },
   ],
 }
 
@@ -52,12 +54,10 @@ const IS_DEV =
 if (IS_DEV) {
   try {
     if (!(typeof overlay.id === 'string' && overlay.id.length > 0)) {
-       
       console.warn('[overlays/common:merge-steps] Missing or invalid id')
     }
 
     if (!Array.isArray(overlay.rules)) {
-       
       console.warn(
         '[overlays/common:merge-steps] rules must be an array; got:',
         typeof overlay.rules
@@ -65,42 +65,36 @@ if (IS_DEV) {
     } else {
       overlay.rules.forEach((r, i) => {
         if (!r || typeof r !== 'object') {
-           
-          console.warn(
-            `[overlays/common:merge-steps] Rule at index ${i} must be an object`
-          )
+          console.warn(`[overlays/common:merge-steps] Rule at index ${i} must be an object`)
           return
         }
 
         const op = r.op
-        const matchLabel = r?.match?.stepLabel
-        const hasMatchLabel = typeof matchLabel === 'string' && matchLabel.length > 0
+        const m = r.match || {}
+        const hasIdentifier =
+          (typeof m.stepLabel === 'string' && m.stepLabel.length > 0) ||
+          (typeof m.tag === 'string' && m.tag.length > 0)
 
         if (op === 'replaceStepText') {
           const hasTo = typeof r.to === 'string' && r.to.length > 0
-          if (!(hasMatchLabel && hasTo)) {
-             
+          if (!(hasIdentifier && hasTo)) {
             console.warn(
-              `[overlays/common:merge-steps] Invalid replaceStepText rule at ${i} — requires match.stepLabel and to`
+              `[overlays/common:merge-steps] Invalid replaceStepText rule at ${i} — requires match.stepLabel or match.tag AND "to"`
             )
           }
         } else if (op === 'removeStep' || op === 'hideStep') {
-          if (!hasMatchLabel) {
-             
+          if (!hasIdentifier) {
             console.warn(
-              `[overlays/common:merge-steps] Invalid ${op} rule at ${i} — requires match.stepLabel`
+              `[overlays/common:merge-steps] Invalid ${op} rule at ${i} — requires match.stepLabel or match.tag`
             )
           }
         } else {
-           
-          console.warn(
-            `[overlays/common:merge-steps] Unknown op "${op}" at index ${i}`
-          )
+          console.warn(`[overlays/common:merge-steps] Unknown op "${op}" at index ${i}`)
         }
       })
     }
   } catch {
-    // swallow — never crash in DEV validation
+    // never crash in DEV validation
   }
 }
 

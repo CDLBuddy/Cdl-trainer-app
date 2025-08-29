@@ -1,0 +1,178 @@
+/* ============================================================================
+   CompaniesTable.module.css
+   - Full-screen table that mirrors the dashboard widget vibe
+   - A11y-first: large hit targets, clear focus, sticky header
+   - Dark-mode aware via prefers-color-scheme (and optional [data-theme="dark"])
+   ============================================================================ */
+
+/* Design tokens (light) */
+:root {
+  --tbl-bg:            #ffffff;
+  --tbl-border:        #e5e7eb; /* gray-200 */
+  --tbl-head-bg:       #fafafa;
+  --tbl-head-fg:       #111827; /* gray-900 */
+  --tbl-row:           #ffffff;
+  --tbl-row-alt:       #fbfbfb;
+  --tbl-hover:         #f5f7ff;
+  --tbl-focus:         #6366f1; /* indigo-500 */
+  --tbl-shadow:        0 1px 0 rgba(17, 24, 39, 0.04), 0 8px 24px rgba(17, 24, 39, 0.06);
+  --tbl-radius:        12px;
+  --tbl-pad-y:         10px;
+  --tbl-pad-x:         12px;
+}
+
+/* Design tokens (dark) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tbl-bg:      #0f172a;  /* slate-900 */
+    --tbl-border:  #243042;  /* slate-800 */
+    --tbl-head-bg: #111a2e;  /* slightly lighter than bg */
+    --tbl-head-fg: #e5e7eb;  /* gray-200 */
+    --tbl-row:     #0f172a;
+    --tbl-row-alt: #0e1526;
+    --tbl-hover:   #13203a;
+    --tbl-shadow:  0 1px 0 rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.35);
+  }
+}
+/* Optional explicit theme hook */
+:where([data-theme="dark"]) {
+  --tbl-bg:      #0f172a;
+  --tbl-border:  #243042;
+  --tbl-head-bg: #111a2e;
+  --tbl-head-fg: #e5e7eb;
+  --tbl-row:     #0f172a;
+  --tbl-row-alt: #0e1526;
+  --tbl-hover:   #13203a;
+  --tbl-shadow:  0 1px 0 rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.35);
+}
+
+/* Wrapper: card-like container with horizontal scroll if needed */
+.tableWrap {
+  background: var(--tbl-bg);
+  border: 1px solid var(--tbl-border);
+  border-radius: var(--tbl-radius);
+  box-shadow: var(--tbl-shadow);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optional nicer scrollbar */
+.tableWrap::-webkit-scrollbar { height: 10px; }
+.tableWrap::-webkit-scrollbar-thumb {
+  background: var(--tbl-border);
+  border-radius: 999px;
+}
+
+/* Table base */
+.table {
+  width: 100%;
+  min-width: 760px;          /* matches component inline fallback */
+  border-collapse: separate; /* allow sticky header shadow */
+  border-spacing: 0;
+}
+
+/* Caption is visually hidden by component inline styles; nothing needed here */
+
+/* Header */
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--tbl-head-bg);
+  color: var(--tbl-head-fg);
+  text-align: left;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-transform: none;
+  padding: calc(var(--tbl-pad-y) + 2px) var(--tbl-pad-x);
+  border-bottom: 1px solid var(--tbl-border);
+  white-space: nowrap;
+}
+
+/* Subtle shadow under sticky header */
+.table thead::after {
+  content: "";
+  position: sticky;
+  top: 0;
+  display: block;
+  height: 0;
+  box-shadow: inset 0 -1px 0 var(--tbl-border), 0 6px 8px -6px rgba(0,0,0,.15);
+}
+
+/* Checkbox column */
+.table thead th:first-child,
+.table tbody td:first-child {
+  width: 40px;
+  text-align: center;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+/* Body cells */
+.table tbody td {
+  padding: var(--tbl-pad-y) var(--tbl-pad-x);
+  border-bottom: 1px solid var(--tbl-border);
+  vertical-align: middle;
+  color: inherit;
+  background: transparent;
+}
+
+/* Zebra rows (very subtle) */
+.table tbody tr:nth-child(even) td {
+  background: var(--tbl-row-alt);
+}
+
+/* Hover row */
+@media (hover: hover) {
+  .table tbody tr:hover td {
+    background: var(--tbl-hover);
+  }
+}
+
+/* Last row border cleanup */
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Actions column (keeps buttons from wrapping weirdly) */
+.actionsCell {
+  width: 260px;
+  white-space: nowrap;
+}
+.actionsCell :where(button, a) + :where(button, a) {
+  margin-left: 8px;
+}
+
+/* Checkbox sizing + focus */
+.table input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--tbl-focus);
+}
+.table input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--tbl-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Make links/buttons inside table show a strong focus ring */
+.table :where(a, button):focus-visible {
+  outline: 2px solid var(--tbl-focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Utility: right-aligned numeric cells if you need them later */
+.num {
+  text-align: right;
+}
+
+/* Utility: visually-hidden (for a11y if needed) */
+.srOnly {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}

@@ -12,6 +12,8 @@
 import PropTypes from 'prop-types'
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import styles from './CompanyRow.module.css'
+
 const inputStyle = { width: '97%', padding: '2px 7px' }
 const NAME_RE = /^[\w\s\-'.&]+$/
 

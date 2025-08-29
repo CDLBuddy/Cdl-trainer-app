@@ -1,3 +1,4 @@
+// src/walkthrough-data/index.js
 // ============================================================================
 // Global Walkthrough Data API (single public entry point)
 // - Re-exports loader + utils
@@ -7,6 +8,8 @@
 // - Pure, treeshake-friendly module (top-level maps are frozen)
 // ============================================================================
 
+// @ts-check
+
 /** @typedef {import('@walkthrough-loaders').WalkthroughScript} WalkthroughScript */
 
 const IS_DEV =
@@ -15,14 +18,22 @@ const IS_DEV =
   import.meta.env.DEV === true
 
 // ---- Loader (async resolver) -----------------------------------------------
+export { resolveWalkthrough } from './loaders/index.js'
 
-// ---- Utils (helpers for parsing/validation) --------------------------------
+// ---- Utils (helpers for parsing/validation/overlays) -----------------------
 export {
   parseCsv,
   parseMarkdown,
   parseXlsx,
+  // power-user XLSX helpers
+  isXlsxAvailable,
+  parseXlsxFile,
+  exportXlsxFile,
+  // validation
   validateWalkthroughs,
   validateWalkthroughShape,
+  // pure overlay applier (handy for tooling)
+  applyOverlays,
 } from './utils/index.js'
 
 // ---- Overlays (re-export aggregator & helpers) -----------------------------
@@ -49,13 +60,11 @@ import {
   listDefaultWalkthroughs,
   getDefaultWalkthroughByClass,
   getDefaultWalkthroughById,
-  validateWalkthroughShape as _validateWalkthroughShape, // local use if needed
   WALKTHROUGHS_BY_CLASS,
   WALKTHROUGHS_BY_ID,
 } from './defaults/index.js'
 
 export {
-  DEFAULT_DATASETS,
   DEFAULT_WALKTHROUGH_VERSION,
   listDefaultWalkthroughs,
   getDefaultWalkthroughByClass,
@@ -65,14 +74,17 @@ export {
 }
 
 // ---- Labels & token mapping -------------------------------------------------
-/** @type {Readonly<Record<string, string>>} */
-const CODE_TO_TOKEN = Object.freeze({
-  A: 'class-a',
-  'A-WO-AIR-ELEC': 'class-a',
-  'A-WO-HYD-ELEC': 'class-a',
-  B: 'class-b',
-  'PASSENGER-BUS': 'passenger-bus',
-})
+// Note: our BASE datasets cover the primary classes. “WO-…” variants alias
+// to the base token; restrictions/phases are applied as overlays.
+const CODE_TO_TOKEN = Object.freeze(
+  /** @type {Readonly<Record<string, string>>} */ ({
+    A: 'class-a',
+    'A-WO-AIR-ELEC': 'class-a',
+    'A-WO-HYD-ELEC': 'class-a',
+    B: 'class-b',
+    'PASSENGER-BUS': 'passenger-bus',
+  })
+)
 
 /** @type {Readonly<Record<string, string>>} */
 export const WALKTHROUGH_LABELS = Object.freeze({
@@ -83,6 +95,8 @@ export const WALKTHROUGH_LABELS = Object.freeze({
 
 /**
  * Normalize any input (CDL code or token-like or human label) to our canonical token.
+ * - Uppercase codes like "A" / "A-WO-AIR-ELEC" map via CODE_TO_TOKEN.
+ * - Otherwise we kebab-case and strip non-alphanumerics (defensive).
  * @param {unknown} input
  * @returns {string}
  */
@@ -106,7 +120,7 @@ export function toToken(input) {
 }
 
 /**
- * Safe label lookup for UI (falls back to readable version of the input).
+ * Safe label lookup for UI (falls back to a readable version of the input).
  * @param {unknown} classType
  * @returns {string}
  */
@@ -141,24 +155,33 @@ export const DEFAULT_WALKTHROUGHS = (() => {
       console.warn('[walkthrough-data] Duplicate dataset for token (first kept):', token)
     }
   }
+
   return Object.freeze(out)
 })()
 
 // ---- Convenience getters ----------------------------------------------------
+/**
+ * Get the base (default) script for a given class token/CDL code.
+ * @param {unknown} classType
+ * @returns {WalkthroughScript | null}
+ */
 export function getWalkthroughByClass(classType) {
   const tok = toToken(classType)
   return DEFAULT_WALKTHROUGHS[tok] ?? null
 }
 
+/** @param {unknown} classType */
 export function hasWalkthrough(classType) {
   const tok = toToken(classType)
   return Object.prototype.hasOwnProperty.call(DEFAULT_WALKTHROUGHS, tok)
 }
 
+/** @returns {ReadonlyArray<string>} */
 export function listWalkthroughTokens() {
   return Object.freeze(Object.keys(DEFAULT_WALKTHROUGHS))
 }
 
+/** @returns {ReadonlyArray<{token:string,label:string}>} */
 export function listLabeledWalkthroughs() {
   return listWalkthroughTokens().map(t => ({
     token: t,
@@ -166,6 +189,30 @@ export function listLabeledWalkthroughs() {
   }))
 }
 
+// ---- Public re-exports for defaults map (nice to have under @walkthrough-data)
+export { DEFAULT_DATASETS }
+
 // ============================================================================
 // NOTE: schema.d.ts sits beside this file to provide IntelliSense/types.
 // ============================================================================
+
+// Optional convenience default (kept tiny to avoid accidental heavy imports)
+export default {
+  // loader
+  resolveWalkthrough,
+  // data
+  DEFAULT_DATASETS,
+  DEFAULT_WALKTHROUGHS,
+  DEFAULT_WALKTHROUGH_VERSION,
+  // labels/tokens
+  toToken,
+  getWalkthroughLabel,
+  hasWalkthrough,
+  listWalkthroughTokens,
+  listLabeledWalkthroughs,
+  // overlays
+  overlayRestrictions: undefined, // re-exported as named above
+  overlayPhases: undefined,
+  overlaySchool: undefined,
+  overlayCommon: undefined,
+}
