@@ -13,11 +13,16 @@
  */
 
 // Central lists — edit here to add/remove statuses
-export const EMPLOYER_STATUSES   = Object.freeze(['paid', 'partial', 'unpaid'])
-export const INDIVIDUAL_STATUSES = Object.freeze(['paid', 'partial', 'pending', 'waived'])
+export const EMPLOYER_STATUSES = Object.freeze(['paid', 'partial', 'unpaid'])
+export const INDIVIDUAL_STATUSES = Object.freeze([
+  'paid',
+  'partial',
+  'pending',
+  'waived',
+])
 
 // Fast lookup Sets (internal)
-const EMPLOYER_SET   = new Set(EMPLOYER_STATUSES)
+const EMPLOYER_SET = new Set(EMPLOYER_STATUSES)
 const INDIVIDUAL_SET = new Set(INDIVIDUAL_STATUSES)
 
 // Friendly alias map so small wording changes don’t break UI
@@ -33,14 +38,16 @@ const ALIASES = Object.freeze({
 
   // common phrases
   'partially paid': 'partial',
-  'incomplete': 'pending',
+  incomplete: 'pending',
   'not paid': 'unpaid',
   'fully paid': 'paid',
 })
 
 /** Normalize any input → canonical token (lowercase), or '' if none. */
 export function normalizeStatus(value) {
-  const v = String(value ?? '').trim().toLowerCase()
+  const v = String(value ?? '')
+    .trim()
+    .toLowerCase()
   if (!v) return ''
   return ALIASES[v] || v
 }
@@ -56,7 +63,9 @@ export function getAllowedStatuses(scopeOrBool) {
   const scope =
     typeof scopeOrBool === 'string'
       ? scopeOrBool
-      : scopeOrBool ? 'individual' : 'employer'
+      : scopeOrBool
+        ? 'individual'
+        : 'employer'
   return scope === 'individual' ? INDIVIDUAL_STATUSES : EMPLOYER_STATUSES
 }
 
@@ -71,13 +80,17 @@ export function isAllowedStatus(value, scopeOrBool) {
   const scope =
     typeof scopeOrBool === 'string'
       ? scopeOrBool
-      : scopeOrBool ? 'individual' : 'employer'
-  return scope === 'individual' ? INDIVIDUAL_SET.has(token) : EMPLOYER_SET.has(token)
+      : scopeOrBool
+        ? 'individual'
+        : 'employer'
+  return scope === 'individual'
+    ? INDIVIDUAL_SET.has(token)
+    : EMPLOYER_SET.has(token)
 }
 
 /** Scope-specific predicates (nice for guards / TS inference in JSdoc). */
-export const isEmployerStatus   = (v) => EMPLOYER_SET.has(normalizeStatus(v))
-export const isIndividualStatus = (v) => INDIVIDUAL_SET.has(normalizeStatus(v))
+export const isEmployerStatus = v => EMPLOYER_SET.has(normalizeStatus(v))
+export const isIndividualStatus = v => INDIVIDUAL_SET.has(normalizeStatus(v))
 
 /** Export aliases in case you want to display friendly synonyms in UIs. */
 export { ALIASES as STATUS_ALIASES }

@@ -24,15 +24,17 @@ import { useToast } from '@components/useToast.js'
 import { auth } from '@utils/firebase.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
+import styles from './AdminCompanies.module.css'
 import { CompaniesTable, CompanyFilters, CompanyHeader } from './components'
 import { useCompanies } from './hooks'
 import { exportCompaniesToCSV } from './services' // bulk-export of selected set
 
 // Page styles
-import styles from './AdminCompanies.module.css'
 
 // ---- Lazy, non-route overlay ---------------------------------------------
-const AddCompanyDrawer = lazy(() => import('./add-company/AddCompanyDrawer.jsx'))
+const AddCompanyDrawer = lazy(
+  () => import('./add-company/AddCompanyDrawer.jsx')
+)
 
 function AdminCompanies() {
   const navigate = useNavigate()
@@ -52,28 +54,39 @@ function AdminCompanies() {
 
   const {
     // status
-    loading, error,
+    loading,
+    error,
 
     // search/filter
-    search, setSearch,
+    search,
+    setSearch,
 
     // list
-    filtered, selected, allChecked,
+    filtered,
+    selected,
+    allChecked,
 
     // misc refs
     importRef,
 
     // actions
-    saveOne, removeOne, bulkDelete,
-    exportCSV, exportPDF, downloadTemplate,
-    toggleRow, toggleAll,
+    saveOne,
+    removeOne,
+    bulkDelete,
+    exportCSV,
+    exportPDF,
+    downloadTemplate,
+    toggleRow,
+    toggleAll,
   } = useCompanies({ schoolId, userEmail, showToast })
 
   // Title (SSR-safe)
   useEffect(() => {
     const prev = typeof document !== 'undefined' ? document.title : ''
     if (typeof document !== 'undefined') document.title = 'Admin • Companies'
-    return () => { if (typeof document !== 'undefined') document.title = prev }
+    return () => {
+      if (typeof document !== 'undefined') document.title = prev
+    }
   }, [])
 
   // Branding
@@ -87,17 +100,19 @@ function AdminCompanies() {
         // non-fatal; silently ignore
       }
     })()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [])
 
   const openDetail = useCallback(
-    (id) => navigate(`/admin/companies/${encodeURIComponent(id)}`),
+    id => navigate(`/admin/companies/${encodeURIComponent(id)}`),
     [navigate]
   )
 
   // Selected rows (for exporting only those selected)
   const selectedRows = useMemo(
-    () => filtered.filter((c) => selected.has(c.id)),
+    () => filtered.filter(c => selected.has(c.id)),
     [filtered, selected]
   )
 
@@ -139,7 +154,9 @@ function AdminCompanies() {
         <h2 className={styles.titleRow}>
           <span>🏢 Manage Companies</span>
           <small className={styles.eyebrow}>
-            {loading ? 'Loading…' : `${totalCount} result${totalCount === 1 ? '' : 's'}`}
+            {loading
+              ? 'Loading…'
+              : `${totalCount} result${totalCount === 1 ? '' : 's'}`}
             {selectedCount ? ` • ${selectedCount} selected` : ''}
           </small>
         </h2>
@@ -148,7 +165,9 @@ function AdminCompanies() {
         <button
           className="btn"
           onClick={openAddCompany}
-          onMouseEnter={() => import('./add-company/AddCompanyDrawer.jsx').catch(() => {})}
+          onMouseEnter={() =>
+            import('./add-company/AddCompanyDrawer.jsx').catch(() => {})
+          }
           style={{ background: brandPrimary, border: 'none' }}
           aria-haspopup="dialog"
           aria-expanded={drawerOpen ? 'true' : 'false'}
@@ -159,7 +178,12 @@ function AdminCompanies() {
 
       {/* Error banner (non-blocking) */}
       {error ? (
-        <div id={errorId} role="status" aria-live="polite" className={styles.errorBanner}>
+        <div
+          id={errorId}
+          role="status"
+          aria-live="polite"
+          className={styles.errorBanner}
+        >
           {error}
         </div>
       ) : null}
@@ -172,7 +196,13 @@ function AdminCompanies() {
         onExportPDF={exportPDF}
         onDownloadTemplate={downloadTemplate}
         importInputRef={importRef}
-        onImportCSV={() => showToast('Bulk import is not yet implemented in this demo.', 3000, 'info')}
+        onImportCSV={() =>
+          showToast(
+            'Bulk import is not yet implemented in this demo.',
+            3000,
+            'info'
+          )
+        }
         canBulkDelete={selectedCount > 0}
         onBulkDelete={bulkDelete}
         canBulkExport={selectedCount > 0}
@@ -180,10 +210,18 @@ function AdminCompanies() {
       />
 
       {/* Table / Loading state */}
-      <div role="region" aria-label="Companies table region" aria-busy={loading}>
+      <div
+        role="region"
+        aria-label="Companies table region"
+        aria-busy={loading}
+      >
         {loading ? (
           <div className={styles.loadingRow} aria-live="polite">
-            <span className="spinner" aria-hidden="true" style={{ marginRight: 8 }} />
+            <span
+              className="spinner"
+              aria-hidden="true"
+              style={{ marginRight: 8 }}
+            />
             Loading companies…
           </div>
         ) : (
@@ -202,11 +240,15 @@ function AdminCompanies() {
       </div>
 
       <div className={styles.hint}>
-        Bulk import supports columns: <b>name</b>, <b>contact</b>, <b>address</b>, <b>status</b> (first row is a header).
+        Bulk import supports columns: <b>name</b>, <b>contact</b>,{' '}
+        <b>address</b>, <b>status</b> (first row is a header).
       </div>
 
       <div className={styles.backBtnWrap}>
-        <button className="btn outline wide" onClick={() => navigate('/admin-dashboard')}>
+        <button
+          className="btn outline wide"
+          onClick={() => navigate('/admin-dashboard')}
+        >
           ⬅ Back to Dashboard
         </button>
       </div>
@@ -216,20 +258,27 @@ function AdminCompanies() {
         {drawerOpen && (
           <AddCompanyDrawer
             open={drawerOpen}
-            onClose={(result) => {
+            onClose={result => {
               // result: false (cancel) OR { id, name, billingMode, contactEmail?, openAddStudent? }
               closeAddCompany()
               if (!result || typeof result !== 'object') return
 
               // Toast success
-              showToast(`Company “${result.name || 'New Company'}” added.`, 2200, 'success')
+              showToast(
+                `Company “${result.name || 'New Company'}” added.`,
+                2200,
+                'success'
+              )
 
               // Optional: navigate to detail + auto-open Add Student
               if (result.id) {
                 if (result.openAddStudent) {
-                  navigate(`/admin/companies/${encodeURIComponent(result.id)}`, {
-                    state: { openAddStudent: true },
-                  })
+                  navigate(
+                    `/admin/companies/${encodeURIComponent(result.id)}`,
+                    {
+                      state: { openAddStudent: true },
+                    }
+                  )
                 } else {
                   navigate(`/admin/companies/${encodeURIComponent(result.id)}`)
                 }

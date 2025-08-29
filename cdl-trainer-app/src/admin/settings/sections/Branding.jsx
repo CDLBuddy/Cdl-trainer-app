@@ -13,7 +13,8 @@ import { useBrandingSettings } from '../hooks/subhooks/useBrandingSettings.js'
 import styles from './Section.module.css'
 
 // simple hex color guard (#RGB / #RRGGBB)
-const isHex = (v) => /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(v || '').trim())
+const isHex = v =>
+  /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(v || '').trim())
 
 export default function Branding({ vm }) {
   const b = useBrandingSettings({ vm })
@@ -36,18 +37,21 @@ export default function Branding({ vm }) {
 
   const isDirty = useMemo(
     () =>
-      JSON.stringify({ schoolName: b.schoolName || '', primaryColor: b.primaryColor || '#005f73', logoUrl: b.logoUrl || '' }) !==
-      JSON.stringify(form),
+      JSON.stringify({
+        schoolName: b.schoolName || '',
+        primaryColor: b.primaryColor || '#005f73',
+        logoUrl: b.logoUrl || '',
+      }) !== JSON.stringify(form),
     [b.schoolName, b.primaryColor, b.logoUrl, form]
   )
 
-  const onChange = (e) => {
+  const onChange = e => {
     const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+    setForm(prev => ({ ...prev, [name]: value }))
   }
 
-  const onPickColor = (e) => {
-    setForm((prev) => ({ ...prev, primaryColor: e.target.value }))
+  const onPickColor = e => {
+    setForm(prev => ({ ...prev, primaryColor: e.target.value }))
   }
 
   const onSave = async () => {
@@ -67,14 +71,18 @@ export default function Branding({ vm }) {
 
   return (
     <section className={styles.section} aria-labelledby="branding-heading">
-      <h2 id="branding-heading" className={styles.heading}>Branding</h2>
+      <h2 id="branding-heading" className={styles.heading}>
+        Branding
+      </h2>
       <p className={styles.description}>
         Customize how your school appears in the app and on documents.
       </p>
 
       {/* School name */}
       <div className={styles.fieldGroup}>
-        <label htmlFor="branding-school" className={styles.label}>School Name</label>
+        <label htmlFor="branding-school" className={styles.label}>
+          School Name
+        </label>
         <input
           id="branding-school"
           name="schoolName"
@@ -88,7 +96,9 @@ export default function Branding({ vm }) {
 
       {/* Primary color with live swatch + color picker */}
       <div className={styles.fieldGroup}>
-        <label htmlFor="branding-color" className={styles.label}>Primary Color</label>
+        <label htmlFor="branding-color" className={styles.label}>
+          Primary Color
+        </label>
         <div className={styles.row} style={{ alignItems: 'center', gap: 8 }}>
           <input
             id="branding-color"
@@ -122,13 +132,17 @@ export default function Branding({ vm }) {
           />
         </div>
         {!colorValid && (
-          <small className={styles.errorText}>Enter a valid hex color like #0ea5e9 or #0ae.</small>
+          <small className={styles.errorText}>
+            Enter a valid hex color like #0ea5e9 or #0ae.
+          </small>
         )}
       </div>
 
       {/* Logo URL preview */}
       <div className={styles.fieldGroup}>
-        <label htmlFor="branding-logo" className={styles.label}>Logo URL</label>
+        <label htmlFor="branding-logo" className={styles.label}>
+          Logo URL
+        </label>
         <input
           id="branding-logo"
           name="logoUrl"
@@ -144,11 +158,15 @@ export default function Branding({ vm }) {
               src={form.logoUrl}
               alt="School logo preview"
               style={{ height: 60, marginTop: 8, borderRadius: 8 }}
-              onError={(e) => { e.currentTarget.style.opacity = 0.5 }}
+              onError={e => {
+                e.currentTarget.style.opacity = 0.5
+              }}
             />
           </div>
         ) : (
-          <small className={styles.help}>Tip: paste an image URL to preview your logo.</small>
+          <small className={styles.help}>
+            Tip: paste an image URL to preview your logo.
+          </small>
         )}
       </div>
 
@@ -170,7 +188,13 @@ export default function Branding({ vm }) {
           onClick={onSave}
           disabled={!isDirty || !colorValid}
           aria-disabled={!isDirty || !colorValid}
-          title={!isDirty ? 'No changes to save' : (colorValid ? 'Save changes' : 'Fix color first')}
+          title={
+            !isDirty
+              ? 'No changes to save'
+              : colorValid
+                ? 'Save changes'
+                : 'Fix color first'
+          }
         >
           Save Branding
         </button>

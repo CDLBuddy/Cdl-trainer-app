@@ -24,37 +24,67 @@ import { updateProfileProgress } from './progress.js'
 /** Whitelisted fields allowed to be written (defense-in-depth). */
 export const FIELD_WHITELIST = new Set([
   // basic
-  'name', 'dob', 'profilePicUrl',
+  'name',
+  'dob',
+  'profilePicUrl',
   // CDL / overlays
-  'cdlClass', 'overlays', 'endorsements', 'restrictions', 'experience',
+  'cdlClass',
+  'overlays',
+  'endorsements',
+  'restrictions',
+  'experience',
   // assignments + org
-  'assignedCompany', 'assignedInstructor', 'assignedInstructorId', // ⬅ added
-  'companyId', 'schoolId',
+  'assignedCompany',
+  'assignedInstructor',
+  'assignedInstructorId', // ⬅ added
+  'companyId',
+  'schoolId',
   // contact (optional for legacy profile)
-  'email', 'phone', // ⬅ added
+  'email',
+  'phone', // ⬅ added
   // permit
-  'cdlPermit', 'permitPhotoUrl', 'permitExpiry',
+  'cdlPermit',
+  'permitPhotoUrl',
+  'permitExpiry',
   // license
-  'driverLicenseUrl', 'licenseExpiry',
+  'driverLicenseUrl',
+  'licenseExpiry',
   // medical
-  'medicalCardUrl', 'medCardExpiry',
+  'medicalCardUrl',
+  'medCardExpiry',
   // vehicle
-  'vehicleQualified', 'truckPlateUrl', 'trailerPlateUrl',
+  'vehicleQualified',
+  'truckPlateUrl',
+  'trailerPlateUrl',
   // emergency
-  'emergencyName', 'emergencyPhone', 'emergencyRelation',
+  'emergencyName',
+  'emergencyPhone',
+  'emergencyRelation',
   // waiver
-  'waiverSigned', 'waiverSignature', 'waiverSignatureDate',
+  'waiverSigned',
+  'waiverSignature',
+  'waiverSignatureDate',
   // course / schedule
-  'course', 'schedulePref', 'scheduleNotes',
+  'course',
+  'schedulePref',
+  'scheduleNotes',
   // payment
-  'paymentStatus', 'paymentProofUrl',
+  'paymentStatus',
+  'paymentProofUrl',
   // verification + billing
-  'verified', 'billing',
+  'verified',
+  'billing',
   // accessibility + notes
-  'accommodation', 'studentNotes',
+  'accommodation',
+  'studentNotes',
   // system/meta
-  'status', 'role', 'uid',
-  'createdAt', 'profileProgress', 'profileUpdatedAt', 'lastUpdatedBy',
+  'status',
+  'role',
+  'uid',
+  'createdAt',
+  'profileProgress',
+  'profileUpdatedAt',
+  'lastUpdatedBy',
 ])
 
 /**
@@ -86,9 +116,10 @@ export function sanitizeFields(fields = {}) {
 
     // billing snapshot
     if (k === 'billing') {
-      out[k] = typeof raw === 'object' && raw !== null
-        ? raw
-        : { mode: String(raw || '').trim() || '—' }
+      out[k] =
+        typeof raw === 'object' && raw !== null
+          ? raw
+          : { mode: String(raw || '').trim() || '—' }
       continue
     }
 
@@ -129,9 +160,13 @@ export async function getUserProfile(email) {
  * Create/merge a full profile and recompute progress.
  * @returns {Promise<{success:true,data:any}|{success:false,error:any}>}
  */
-export async function saveUserProfileToFirestore(profile = {}, updatedBy = 'system') {
+export async function saveUserProfileToFirestore(
+  profile = {},
+  updatedBy = 'system'
+) {
   const email = normalizeEmail(profile?.email)
-  if (!isEmail(email)) throw new Error('Cannot save profile without a valid email.')
+  if (!isEmail(email))
+    throw new Error('Cannot save profile without a valid email.')
 
   const ref = doc(db, 'users', email)
   const snap = await getDoc(ref)
@@ -158,7 +193,11 @@ export async function saveUserProfileToFirestore(profile = {}, updatedBy = 'syst
  * Partial update with progress recompute + write coalescing.
  * @returns {Promise<{success:true,data:any,skipped?:boolean,created?:boolean}|{success:false,error:any}>}
  */
-export async function updateUserProfileFields(email, fields = {}, updatedBy = 'system') {
+export async function updateUserProfileFields(
+  email,
+  fields = {},
+  updatedBy = 'system'
+) {
   const id = normalizeEmail(email)
   if (!isEmail(id)) throw new Error('Email is required to update profile.')
 
@@ -180,8 +219,10 @@ export async function updateUserProfileFields(email, fields = {}, updatedBy = 's
   const next = updateProfileProgress(merged, updatedBy)
 
   // Shallow equality check (ignore server timestamp churn)
-  const c0 = { ...current }; delete c0.profileUpdatedAt
-  const n0 = { ...next };     delete n0.profileUpdatedAt
+  const c0 = { ...current }
+  delete c0.profileUpdatedAt
+  const n0 = { ...next }
+  delete n0.profileUpdatedAt
   if (shallowEqual(c0, n0)) {
     return { success: true, data: current, skipped: true }
   }

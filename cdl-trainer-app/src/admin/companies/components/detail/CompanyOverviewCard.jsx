@@ -14,11 +14,15 @@ import styles from './CompanyCards.module.css'
 
 function Pill({ tone = 'default', children, title }) {
   const palette =
-    tone === 'success' ? { bg: '#ecfdf5', fg: '#065f46' } :
-    tone === 'warn'    ? { bg: '#fff7ed', fg: '#9a3412' } :
-    tone === 'error'   ? { bg: '#fef2f2', fg: '#991b1b' } :
-    tone === 'muted'   ? { bg: '#f3f4f6', fg: '#374151' } :
-    { bg: '#eef2ff', fg: '#4338ca' }
+    tone === 'success'
+      ? { bg: '#ecfdf5', fg: '#065f46' }
+      : tone === 'warn'
+        ? { bg: '#fff7ed', fg: '#9a3412' }
+        : tone === 'error'
+          ? { bg: '#fef2f2', fg: '#991b1b' }
+          : tone === 'muted'
+            ? { bg: '#f3f4f6', fg: '#374151' }
+            : { bg: '#eef2ff', fg: '#4338ca' }
   return (
     <span
       className={styles.meta}
@@ -64,14 +68,21 @@ export default function CompanyOverviewCard({ company, stats, loading }) {
     return 'muted'
   }, [status])
 
-  const kpis = useMemo(() => ({
-    active: stats?.activeStudents ?? 0,
-    open: stats?.openEnrollments ?? 0,
-    last: stats?.lastActivityLabel || '—',
-  }), [stats])
+  const kpis = useMemo(
+    () => ({
+      active: stats?.activeStudents ?? 0,
+      open: stats?.openEnrollments ?? 0,
+      last: stats?.lastActivityLabel || '—',
+    }),
+    [stats]
+  )
 
   return (
-    <section className={styles.card} aria-label="Company overview" aria-busy={!!loading}>
+    <section
+      className={styles.card}
+      aria-label="Company overview"
+      aria-busy={!!loading}
+    >
       <header className={styles.header}>
         <h3 className={styles.title}>Overview</h3>
 
@@ -84,8 +95,12 @@ export default function CompanyOverviewCard({ company, stats, loading }) {
             </>
           ) : (
             <>
-              <Pill tone={statusTone} title="Company status">{status}</Pill>
-              <Pill tone="default" title="Default billing mode">{modeLabel(billingMode)}</Pill>
+              <Pill tone={statusTone} title="Company status">
+                {status}
+              </Pill>
+              <Pill tone="default" title="Default billing mode">
+                {modeLabel(billingMode)}
+              </Pill>
             </>
           )}
         </div>
@@ -98,7 +113,12 @@ export default function CompanyOverviewCard({ company, stats, loading }) {
         ) : (
           <>
             <strong>{name}</strong>
-            {company?.id ? <> • <span className={styles.meta}>ID: {company.id}</span></> : null}
+            {company?.id ? (
+              <>
+                {' '}
+                • <span className={styles.meta}>ID: {company.id}</span>
+              </>
+            ) : null}
           </>
         )}
       </div>
@@ -108,19 +128,31 @@ export default function CompanyOverviewCard({ company, stats, loading }) {
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>Active Students</div>
           <div className={styles.kpiValue}>
-            {loading ? <span className={styles.skeleton} style={{ width: 28 }} /> : kpis.active}
+            {loading ? (
+              <span className={styles.skeleton} style={{ width: 28 }} />
+            ) : (
+              kpis.active
+            )}
           </div>
         </div>
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>Open Enrollments</div>
           <div className={styles.kpiValue}>
-            {loading ? <span className={styles.skeleton} style={{ width: 28 }} /> : kpis.open}
+            {loading ? (
+              <span className={styles.skeleton} style={{ width: 28 }} />
+            ) : (
+              kpis.open
+            )}
           </div>
         </div>
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>Last Activity</div>
           <div className={styles.kpiValue}>
-            {loading ? <span className={styles.skeleton} style={{ width: 120 }} /> : kpis.last}
+            {loading ? (
+              <span className={styles.skeleton} style={{ width: 120 }} />
+            ) : (
+              kpis.last
+            )}
           </div>
         </div>
       </div>

@@ -10,25 +10,23 @@
   background: color-mix(in oklab, var(--body-bg, #0b1117), #000 35%);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
-  padding:
-    max(16px, env(safe-area-inset-top))
-    max(16px, env(safe-area-inset-right))
-    max(16px, env(safe-area-inset-bottom))
+  padding: max(16px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom))
     max(16px, env(safe-area-inset-left));
-  animation: bulkFadeIn .14s ease-out;
+  animation: bulkFadeIn 0.14s ease-out;
 }
 
 .panel {
   --bulk-ring: color-mix(in oklab, var(--brand-light, #4e91ad), #fff 16%);
   --bulk-border: color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
   width: min(640px, 92vw);
-  background: var(--card-bg, rgba(255,255,255,.06));
+  background: var(--card-bg, rgba(255, 255, 255, 0.06));
   color: var(--text-light, #fff);
   border: 1px solid var(--bulk-border);
   border-radius: var(--radius-md, 10px);
-  box-shadow: var(--shadow-2, 0 12px 40px rgba(0,0,0,.35));
+  box-shadow: var(--shadow-2, 0 12px 40px rgba(0, 0, 0, 0.35));
   padding: 16px;
-  animation: bulkSlideIn .18s ease-out;
+  animation: bulkSlideIn 0.18s ease-out;
 }
 
 .header {
@@ -36,15 +34,15 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  border-bottom: 1px solid rgba(255,255,255,.10);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 8px;
   margin-bottom: 10px;
 }
 
 .kicker {
   font-size: 12px;
-  opacity: .75;
-  letter-spacing: .08em;
+  opacity: 0.75;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -52,7 +50,7 @@
   margin: 0;
   line-height: 1.25;
   font-weight: 800;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
 }
 
 .close {
@@ -65,9 +63,13 @@
   cursor: pointer;
   padding: 4px;
   border-radius: 8px;
-  transition: background-color .12s ease, box-shadow .12s ease;
+  transition:
+    background-color 0.12s ease,
+    box-shadow 0.12s ease;
 }
-.close:hover { background: rgba(255,255,255,.08); }
+.close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
 .close:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--bulk-ring);
@@ -79,18 +81,21 @@
 }
 
 .dropArea {
-  border: 2px dashed rgba(255,255,255,.20);
+  border: 2px dashed rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   padding: 16px;
   text-align: center;
-  background: rgba(255,255,255,.04);
-  transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
+  background: rgba(255, 255, 255, 0.04);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.dropArea[data-dragging="true"] {
+.dropArea[data-dragging='true'] {
   border-color: color-mix(in oklab, var(--brand-light, #4e91ad), #fff 30%);
-  background: rgba(255,255,255,.08);
-  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
 }
 
 .dropTitle {
@@ -99,30 +104,39 @@
 }
 
 .dropSub {
-  opacity: .8;
+  opacity: 0.8;
   font-size: 13px;
   margin-bottom: 8px;
 }
 
-.inputHidden { display: none; }
+.inputHidden {
+  display: none;
+}
 
 .pickBtn {
   -webkit-tap-highlight-color: transparent;
-  border: 1px solid rgba(255,255,255,.15);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   background: transparent;
   color: inherit;
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
-  transition: background .15s ease, box-shadow .15s ease, border-color .15s ease, opacity .12s ease;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.12s ease;
 }
-.pickBtn:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.25); }
+.pickBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+}
 .pickBtn:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--bulk-ring);
 }
 .pickBtn[disabled] {
-  opacity: .6;
+  opacity: 0.6;
   cursor: not-allowed;
   box-shadow: none !important;
 }
@@ -130,11 +144,13 @@
 .fileMeta {
   padding: 6px 8px;
   border-radius: 8px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.fileParsed { opacity: .8; }
+.fileParsed {
+  opacity: 0.8;
+}
 
 .error {
   padding: 8px 10px;
@@ -152,10 +168,12 @@
   margin-top: 2px;
 }
 
-.flexFill { flex: 1 1 auto; }
+.flexFill {
+  flex: 1 1 auto;
+}
 
 .hint {
-  opacity: .75;
+  opacity: 0.75;
   font-size: 12px;
   display: block;
   margin-top: 6px;
@@ -163,8 +181,8 @@
 }
 
 .code {
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 2px 6px;
   border-radius: 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -174,16 +192,35 @@
 }
 
 /* Keyframes */
-@keyframes bulkFadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes bulkFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 @keyframes bulkSlideIn {
-  from { transform: translateY(6px); opacity: .98 }
-  to   { transform: translateY(0);   opacity: 1 }
+  from {
+    transform: translateY(6px);
+    opacity: 0.98;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .overlay, .panel { animation: none; }
-  .dropArea, .pickBtn { transition: none; }
+  .overlay,
+  .panel {
+    animation: none;
+  }
+  .dropArea,
+  .pickBtn {
+    transition: none;
+  }
 }
 
 /* High contrast / forced colors */
@@ -198,10 +235,12 @@
     background: Canvas !important;
     border-color: ButtonText !important;
   }
-  .pickBtn, .close {
+  .pickBtn,
+  .close {
     border-color: ButtonText !important;
   }
-  .pickBtn:focus-visible, .close:focus-visible {
+  .pickBtn:focus-visible,
+  .close:focus-visible {
     outline: 1px solid ButtonText !important;
     box-shadow: none !important;
   }

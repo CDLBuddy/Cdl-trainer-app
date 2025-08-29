@@ -7,8 +7,6 @@
 // - Returns { instructors, loading, error }
 // ============================================================================
 
-import { useEffect, useMemo, useState } from 'react'
-import { auth, db } from '@utils/firebase.js'
 import {
   collection,
   doc,
@@ -18,6 +16,9 @@ import {
   where,
   limit as lim,
 } from 'firebase/firestore'
+import { useEffect, useMemo, useState } from 'react'
+
+import { auth, db } from '@utils/firebase.js'
 
 /**
  * @param {{
@@ -63,18 +64,21 @@ export default function useInstructorsList(opts = {}) {
         const email = auth?.currentUser?.email
         if (!email) return
         const snap = await getDoc(doc(db, 'users', email))
-        const sid = snap.exists() ? (snap.data()?.schoolId || '') : ''
+        const sid = snap.exists() ? snap.data()?.schoolId || '' : ''
         if (!cancelled && sid) {
           setSchoolId(sid)
-          try { localStorage.setItem('schoolId', sid) } catch {}
+          try {
+            localStorage.setItem('schoolId', sid)
+          } catch {}
         }
       } catch {
         // ignore; we’ll query without school scope
       }
     }
     resolveSchool()
-    return () => { cancelled = true }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true
+    }
   }, [schoolId, schoolIdProp])
 
   // Live query instructors (role === 'instructor', plus filters)
@@ -91,7 +95,7 @@ export default function useInstructorsList(opts = {}) {
 
     const unsub = onSnapshot(
       q,
-      (snap) => {
+      snap => {
         const data = snap.docs.map(d => {
           const u = d.data() || {}
           const name = (u.name || '').trim()
@@ -104,15 +108,19 @@ export default function useInstructorsList(opts = {}) {
 
         // Sort by name/label, then email — case-insensitive
         data.sort((a, b) => {
-          const byLabel = a.label.localeCompare(b.label, undefined, { sensitivity: 'base' })
+          const byLabel = a.label.localeCompare(b.label, undefined, {
+            sensitivity: 'base',
+          })
           if (byLabel !== 0) return byLabel
-          return (a.email || '').localeCompare(b.email || '', undefined, { sensitivity: 'base' })
+          return (a.email || '').localeCompare(b.email || '', undefined, {
+            sensitivity: 'base',
+          })
         })
 
         setRows(data)
         setLoading(false)
       },
-      (err) => {
+      err => {
         setError(err?.message || 'Failed to load instructors.')
         setRows([])
         setLoading(false)

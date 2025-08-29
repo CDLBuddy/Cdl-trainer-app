@@ -39,10 +39,15 @@ import { downloadCsv } from '../../utils'
  *     'success'|'error'|'info'|'warning') => void
  * }} params
  */
-export default function useIndividualBilling({ schoolId, showToast = () => {} } = {}) {
+export default function useIndividualBilling({
+  schoolId,
+  showToast = () => {},
+} = {}) {
   const [loading, setLoading] = useState(true)
   /** @type {[IndividualPayment[], (rows:IndividualPayment[])=>void]} */
-  const [rows, setRows] = useState(() => (USE_BILLING_MOCKS ? mockIndividualPayments() : []))
+  const [rows, setRows] = useState(() =>
+    USE_BILLING_MOCKS ? mockIndividualPayments() : []
+  )
   const [search, setSearch] = useState('')
   /** @type {[('all'|PaymentStatus), (v:'all'|PaymentStatus)=>void]} */
   const [status, setStatus] = useState('all') // all|pending|partial|paid|waived
@@ -76,9 +81,15 @@ export default function useIndividualBilling({ schoolId, showToast = () => {} } 
     const out = rows.filter(r => {
       const termOk =
         !term ||
-        String(r.name || '').toLowerCase().includes(term) ||
-        String(r.email || '').toLowerCase().includes(term) ||
-        String(r.course || '').toLowerCase().includes(term)
+        String(r.name || '')
+          .toLowerCase()
+          .includes(term) ||
+        String(r.email || '')
+          .toLowerCase()
+          .includes(term) ||
+        String(r.course || '')
+          .toLowerCase()
+          .includes(term)
       const statusOk = status === 'all' || r.paymentStatus === status
       const recOk = !onlyUnreconciled || !r.reconciled
       return termOk && statusOk && recOk
@@ -95,7 +106,8 @@ export default function useIndividualBilling({ schoolId, showToast = () => {} } 
   const countsByStatus = useMemo(() => {
     /** @type {Record<PaymentStatus, number>} */
     const counts = { pending: 0, partial: 0, paid: 0, waived: 0 }
-    for (const r of rows) counts[r.paymentStatus] = (counts[r.paymentStatus] || 0) + 1
+    for (const r of rows)
+      counts[r.paymentStatus] = (counts[r.paymentStatus] || 0) + 1
     return counts
   }, [rows])
 
@@ -103,13 +115,16 @@ export default function useIndividualBilling({ schoolId, showToast = () => {} } 
     () => rows.reduce((n, r) => n + (r.reconciled ? 1 : 0), 0),
     [rows]
   )
-  const unreconciledCount = useMemo(() => rows.length - reconciledCount, [rows.length, reconciledCount])
+  const unreconciledCount = useMemo(
+    () => rows.length - reconciledCount,
+    [rows.length, reconciledCount]
+  )
 
   // Actions
   const toggleReconciled = useCallback(
-    async (idOrEmail) => {
+    async idOrEmail => {
       // Resolve target row by id (preferred) or fallback to email
-      const findIndex = (arr) => {
+      const findIndex = arr => {
         let idx = arr.findIndex(r => r.id === idOrEmail)
         if (idx === -1) idx = arr.findIndex(r => r.email === idOrEmail)
         return idx
@@ -118,7 +133,8 @@ export default function useIndividualBilling({ schoolId, showToast = () => {} } 
       setRows(prev => {
         const next = [...prev]
         const idx = findIndex(next)
-        if (idx !== -1) next[idx] = { ...next[idx], reconciled: !next[idx].reconciled }
+        if (idx !== -1)
+          next[idx] = { ...next[idx], reconciled: !next[idx].reconciled }
         return next
       })
       showToast('Reconciliation updated.', 'success')
@@ -127,7 +143,11 @@ export default function useIndividualBilling({ schoolId, showToast = () => {} } 
         try {
           const current = rows[findIndex(rows)]
           if (current) {
-            await setPaymentReconciled({ paymentId: current.id, next: !current.reconciled, schoolId })
+            await setPaymentReconciled({
+              paymentId: current.id,
+              next: !current.reconciled,
+              schoolId,
+            })
           }
         } catch (err) {
           console.error('[useIndividualBilling] toggleReconciled failed', err)
@@ -139,7 +159,15 @@ export default function useIndividualBilling({ schoolId, showToast = () => {} } 
   )
 
   const exportCsv = useCallback(() => {
-    const headers = ['Name', 'Email', 'Course', 'Class', 'Payment Status', 'Reconciled', 'Receipt']
+    const headers = [
+      'Name',
+      'Email',
+      'Course',
+      'Class',
+      'Payment Status',
+      'Reconciled',
+      'Receipt',
+    ]
     const lines = filtered.map(r => [
       r.name || '',
       r.email,

@@ -8,15 +8,9 @@
 // - Section status plumbing for headers
 // ============================================================================
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-import { useNavigate } from 'react-router-dom'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/useToast.js'
@@ -26,8 +20,10 @@ import {
   markStudentPermitUploaded,
   markStudentVehicleUploaded,
 } from '@utils/ui-helpers.js'
-import { subscribeUserProfile, updateUserProfileFields } from '@user-profile'
+
 import { getWalkthroughLabel } from '@walkthrough-data'
+
+import { subscribeUserProfile, updateUserProfileFields } from '@user-profile'
 
 import styles from './Profile.module.css'
 import {
@@ -35,7 +31,6 @@ import {
   getBTWReadiness,
   getSectionStatus,
 } from './schema/calculators.js'
-
 // Sections via barrel
 import {
   BasicInfoSection,
@@ -89,29 +84,46 @@ export default function Profile() {
   // Unified profile state (safe initial shape)
   const [p, setP] = useState({
     // basic
-    name: '', dob: '', profilePicUrl: '',
+    name: '',
+    dob: '',
+    profilePicUrl: '',
     // cdl / admin-owned
-    cdlClass: '', overlays: [],
+    cdlClass: '',
+    overlays: [],
     // assignments
-    assignedCompany: '', assignedInstructor: '',
+    assignedCompany: '',
+    assignedInstructor: '',
     // permit
-    cdlPermit: '', permitPhotoUrl: '', permitExpiry: '',
+    cdlPermit: '',
+    permitPhotoUrl: '',
+    permitExpiry: '',
     // license
-    driverLicenseUrl: '', licenseExpiry: '',
+    driverLicenseUrl: '',
+    licenseExpiry: '',
     // medical
-    medicalCardUrl: '', medCardExpiry: '',
+    medicalCardUrl: '',
+    medCardExpiry: '',
     // vehicle
-    vehicleQualified: '', truckPlateUrl: '', trailerPlateUrl: '',
+    vehicleQualified: '',
+    truckPlateUrl: '',
+    trailerPlateUrl: '',
     // emergency
-    emergencyName: '', emergencyPhone: '', emergencyRelation: '',
+    emergencyName: '',
+    emergencyPhone: '',
+    emergencyRelation: '',
     // waiver
-    waiverSigned: false, waiverSignature: '',
+    waiverSigned: false,
+    waiverSignature: '',
     // course / billing (admin)
-    course: '', billing: { mode: '' },
+    course: '',
+    billing: { mode: '' },
     // payment (student only when individual)
-    paymentStatus: '', paymentProofUrl: '',
+    paymentStatus: '',
+    paymentProofUrl: '',
     // meta
-    status: 'active', role: 'student', verified: {},
+    status: 'active',
+    role: 'student',
+    verified: {},
   })
 
   const [loading, setLoading] = useState(true)
@@ -119,10 +131,10 @@ export default function Profile() {
 
   // Refs for live-sync/autosave behavior
   const mountedRef = useRef(true)
-  const serverRef = useRef(/** @type {null|object} */(null))
+  const serverRef = useRef(/** @type {null|object} */ (null))
   const dirtyRef = useRef(false)
-  const autosaveTimer = useRef(/** @type {any} */(null))
-  const unsubRef = useRef(/** @type {null|(() => void)} */(null))
+  const autosaveTimer = useRef(/** @type {any} */ (null))
+  const unsubRef = useRef(/** @type {null|(() => void)} */ (null))
 
   /* ----------------------------- Derived flags --------------------------- */
   const isEmployerPaid =
@@ -136,15 +148,15 @@ export default function Profile() {
   // Per-section status for SectionHeader chips
   const sectionStatus = useMemo(
     () => ({
-      basicInfo:   getSectionStatus('basicInfo',   p, verified),
-      cdlInfo:     getSectionStatus('cdlInfo',     p, verified),
-      permit:      getSectionStatus('permit',      p, verified),
-      license:     getSectionStatus('license',     p, verified),
-      medical:     getSectionStatus('medical',     p, verified),
-      vehicle:     getSectionStatus('vehicle',     p, verified),
-      emergency:   getSectionStatus('emergency',   p, verified),
-      waiver:      getSectionStatus('waiver',      p, verified),
-      payment:     getSectionStatus('payment',     p, verified),
+      basicInfo: getSectionStatus('basicInfo', p, verified),
+      cdlInfo: getSectionStatus('cdlInfo', p, verified),
+      permit: getSectionStatus('permit', p, verified),
+      license: getSectionStatus('license', p, verified),
+      medical: getSectionStatus('medical', p, verified),
+      vehicle: getSectionStatus('vehicle', p, verified),
+      emergency: getSectionStatus('emergency', p, verified),
+      waiver: getSectionStatus('waiver', p, verified),
+      payment: getSectionStatus('payment', p, verified),
       assignments: getSectionStatus('assignments', p, verified),
     }),
     [p, verified]
@@ -159,10 +171,11 @@ export default function Profile() {
       return
     }
 
-    unsubRef.current = subscribeUserProfile(email, (data) => {
+    unsubRef.current = subscribeUserProfile(email, data => {
       if (!mountedRef.current) return
       const incoming = data || {}
-      const role = incoming.role || localStorage.getItem('userRole') || 'student'
+      const role =
+        incoming.role || localStorage.getItem('userRole') || 'student'
       if (role !== 'student') {
         showToast('Access denied: Student profile only.', 'error')
         navigate('/student/dashboard', { replace: true })
@@ -170,26 +183,30 @@ export default function Profile() {
       }
 
       serverRef.current = incoming
-      setP((prev) => ({ ...prev, ...incoming }))
+      setP(prev => ({ ...prev, ...incoming }))
       dirtyRef.current = false
       setLoading(false)
     })
 
     return () => {
       mountedRef.current = false
-      try { unsubRef.current?.() } catch {}
+      try {
+        unsubRef.current?.()
+      } catch {
+        // intentionally ignored
+      }
     }
   }, [email, navigate, showToast])
 
   /* ------------------------------- Mutators ------------------------------- */
   const setField = useCallback((key, val) => {
     dirtyRef.current = true
-    setP((prev) => ({ ...prev, [key]: val }))
+    setP(prev => ({ ...prev, [key]: val }))
   }, [])
 
   const toggleInArray = useCallback((key, val) => {
     dirtyRef.current = true
-    setP((prev) => {
+    setP(prev => {
       const set = new Set(prev[key] || [])
       set.has(val) ? set.delete(val) : set.add(val)
       return { ...prev, [key]: Array.from(set) }
@@ -217,7 +234,7 @@ export default function Profile() {
       const isPdf = file.type === 'application/pdf'
 
       const mustBeImage = IMAGE_ONLY_FIELDS.has(field)
-      const pdfAllowed  = PDF_OK_FIELDS.has(field)
+      const pdfAllowed = PDF_OK_FIELDS.has(field)
 
       const mimeOk =
         (mustBeImage && isImg) ||
@@ -271,8 +288,11 @@ export default function Profile() {
   /* ---------------------------- Debounced Save ---------------------------- */
   const computeDiff = useCallback((prevObj, nextObj) => {
     const diff = {}
-    const keys = new Set([...Object.keys(prevObj || {}), ...Object.keys(nextObj || {})])
-    keys.forEach((k) => {
+    const keys = new Set([
+      ...Object.keys(prevObj || {}),
+      ...Object.keys(nextObj || {}),
+    ])
+    keys.forEach(k => {
       const pv = prevObj ? prevObj[k] : undefined
       const nv = nextObj ? nextObj[k] : undefined
       if (pv !== nv) diff[k] = nv
@@ -316,7 +336,7 @@ export default function Profile() {
 
   // Flush on tab close / route unload
   useEffect(() => {
-    const beforeUnload = (e) => {
+    const beforeUnload = e => {
       if (dirtyRef.current) {
         e.preventDefault()
         e.returnValue = ''
@@ -342,7 +362,9 @@ export default function Profile() {
       <Shell title="Student Profile">
         <div className={styles.loading}>
           <div className="spinner" aria-hidden="true" />
-          <p role="status" aria-live="polite">Loading profile…</p>
+          <p role="status" aria-live="polite">
+            Loading profile…
+          </p>
         </div>
       </Shell>
     )
@@ -372,8 +394,13 @@ export default function Profile() {
           aria-valuemax={100}
           aria-valuenow={enrollmentPct}
         >
-          <div className={styles.progressFill} style={{ width: `${enrollmentPct}%` }} />
-          <span className={styles.progressLabel}>Enrollment: {enrollmentPct}%</span>
+          <div
+            className={styles.progressFill}
+            style={{ width: `${enrollmentPct}%` }}
+          />
+          <span className={styles.progressLabel}>
+            Enrollment: {enrollmentPct}%
+          </span>
         </div>
 
         <div
@@ -384,12 +411,19 @@ export default function Profile() {
           aria-valuemax={100}
           aria-valuenow={btwPct}
         >
-          <div className={styles.progressFill} style={{ width: `${btwPct}%` }} />
+          <div
+            className={styles.progressFill}
+            style={{ width: `${btwPct}%` }}
+          />
           <span className={styles.progressLabel}>BTW: {btwPct}%</span>
         </div>
       </div>
 
-      <form className={styles.form} onSubmit={(e) => e.preventDefault()} autoComplete="off">
+      <form
+        className={styles.form}
+        onSubmit={e => e.preventDefault()}
+        autoComplete="off"
+      >
         {/* Each section renders its own SectionHeader using status + verified */}
         <BasicInfoSection
           value={p}
@@ -484,7 +518,9 @@ export default function Profile() {
 
       <div className={styles.afterNote}>
         <strong>Your assigned CDL Class:</strong>{' '}
-        <span>{getWalkthroughLabel?.(p.cdlClass) || <i>Not set by admin</i>}</span>
+        <span>
+          {getWalkthroughLabel?.(p.cdlClass) || <i>Not set by admin</i>}
+        </span>
       </div>
     </Shell>
   )

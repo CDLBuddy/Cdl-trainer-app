@@ -14,10 +14,10 @@ import { normalizeEmail, stripUndefined } from './helpers.js'
 
 /* ----------------------------- helpers -------------------------------- */
 
-const S = (x) => (x == null ? '' : String(x).trim())
+const S = x => (x == null ? '' : String(x).trim())
 
-const lower = (x) => S(x).toLowerCase()
-const upper = (x) => S(x).toUpperCase()
+const lower = x => S(x).toLowerCase()
+const upper = x => S(x).toUpperCase()
 
 /** If value is a valid date/string, return YYYY-MM-DD; else return original ('' stays ''). */
 function toISODateOr(value) {
@@ -107,24 +107,27 @@ export function normalizeProfile(profile = {}) {
   const p = { ...profile }
 
   // Arrays
-  p.overlays      = normStringArray(p.overlays)
-  p.endorsements  = normStringArray(p.endorsements)
-  p.restrictions  = normStringArray(p.restrictions)
+  p.overlays = normStringArray(p.overlays)
+  p.endorsements = normStringArray(p.endorsements)
+  p.restrictions = normStringArray(p.restrictions)
 
   // Booleans
   if (p.waiverSigned != null) p.waiverSigned = !!p.waiverSigned
 
   // Canonical enums / class
-  if (p.cdlClass != null)         p.cdlClass = normCdlClass(p.cdlClass)
-  if (p.cdlPermit != null)        p.cdlPermit = normYesNo(p.cdlPermit)
-  if (p.vehicleQualified != null) p.vehicleQualified = normYesNo(p.vehicleQualified)
-  if (p.paymentStatus != null)    p.paymentStatus = normPaymentStatus(p.paymentStatus)
+  if (p.cdlClass != null) p.cdlClass = normCdlClass(p.cdlClass)
+  if (p.cdlPermit != null) p.cdlPermit = normYesNo(p.cdlPermit)
+  if (p.vehicleQualified != null)
+    p.vehicleQualified = normYesNo(p.vehicleQualified)
+  if (p.paymentStatus != null)
+    p.paymentStatus = normPaymentStatus(p.paymentStatus)
 
   // Dates (kept simple & safe)
-  if (p.permitExpiry != null)  p.permitExpiry  = toISODateOr(p.permitExpiry)
+  if (p.permitExpiry != null) p.permitExpiry = toISODateOr(p.permitExpiry)
   if (p.licenseExpiry != null) p.licenseExpiry = toISODateOr(p.licenseExpiry)
   if (p.medCardExpiry != null) p.medCardExpiry = toISODateOr(p.medCardExpiry)
-  if (p.waiverSignatureDate != null) p.waiverSignatureDate = toISODateOr(p.waiverSignatureDate)
+  if (p.waiverSignatureDate != null)
+    p.waiverSignatureDate = toISODateOr(p.waiverSignatureDate)
 
   // Strings we routinely trim (non-destructive)
   for (const key of [
@@ -157,14 +160,14 @@ export function normalizeProfile(profile = {}) {
   }
 
   // Billing & verified
-  if (p.billing != null)  p.billing  = normBilling(p.billing)
+  if (p.billing != null) p.billing = normBilling(p.billing)
   const v2 = normVerified(p.verified)
   if (v2 !== undefined) p.verified = v2
   else delete p.verified
 
   // Email / role / status
   if (p.email) p.email = normalizeEmail(p.email)
-  if (p.role != null)   p.role = normRole(p.role)
+  if (p.role != null) p.role = normRole(p.role)
   p.status = normStatus(p.status)
 
   // Final pass: remove undefined entries we might’ve introduced

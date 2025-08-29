@@ -15,8 +15,7 @@
 .block {
   display: grid;
   gap: 8px;
-  background:
-    color-mix(in oklab, var(--card-bg, #fff), transparent 0%);
+  background: color-mix(in oklab, var(--card-bg, #fff), transparent 0%);
   border: 1px solid
     color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 70%);
   border-radius: var(--radius-md, 10px);
@@ -47,10 +46,8 @@
 /* Inline error region (alert) */
 .error {
   color: var(--error, #e53e3e);
-  background:
-    color-mix(in oklab, var(--error, #e53e3e), #ffffff 92%);
-  border: 1px solid
-    color-mix(in oklab, var(--error, #e53e3e), #ffffff 55%);
+  background: color-mix(in oklab, var(--error, #e53e3e), #ffffff 92%);
+  border: 1px solid color-mix(in oklab, var(--error, #e53e3e), #ffffff 55%);
   padding: 10px 12px;
   border-radius: var(--radius-md, 10px);
 }
@@ -67,14 +64,15 @@
 /* Make any inputs inside the form feel consistent, but defer to local styles */
 .form :where(input, select, textarea) {
   border-radius: var(--radius-sm, 8px);
-  border: 1px solid color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 75%);
+  border: 1px solid
+    color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 75%);
   background: var(--card-bg, #ffffff0f);
   color: var(--text-light, #e0e0e0);
 }
 
 .form :where(input:focus, select:focus, textarea:focus) {
   outline: none;
-  box-shadow: var(--ring, 0 0 0 3px rgba(78,145,173,.25));
+  box-shadow: var(--ring, 0 0 0 3px rgba(78, 145, 173, 0.25));
   border-color: var(--brand-light, #4e91ad);
 }
 
@@ -89,6 +87,10 @@
 
 /* Narrow screens: tighten vertical rhythm a bit */
 @media (max-width: 480px) {
-  .form { gap: 12px; }
-  .block { padding: 10px; }
+  .form {
+    gap: 12px;
+  }
+  .block {
+    padding: 10px;
+  }
 }

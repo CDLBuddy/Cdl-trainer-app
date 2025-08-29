@@ -22,8 +22,8 @@ export default function TypePhraseDrill({
   const normalize = useMemo(
     () =>
       strict
-        ? (s) => s.trim().replace(/\s+/g, ' ').toLowerCase()
-        : (s) =>
+        ? s => s.trim().replace(/\s+/g, ' ').toLowerCase()
+        : s =>
             s
               .toLowerCase()
               .replace(/[^\p{L}\p{N}\s]/gu, '') // drop punctuation in lenient mode
@@ -35,13 +35,17 @@ export default function TypePhraseDrill({
   function check(e) {
     e?.preventDefault?.()
     const ok = normalize(val) === normalize(phrase)
-    setResult(ok ? '✅ Perfect! You memorized it.' : '❌ Not quite right. Try again!')
+    setResult(
+      ok ? '✅ Perfect! You memorized it.' : '❌ Not quite right. Try again!'
+    )
     if (ok && !alreadyComplete) onComplete?.()
   }
 
   return (
     <form onSubmit={check}>
-      <h3 style={{ margin: '0 0 6px' }}>Type the Pass/Fail Phrase Word-for-Word</h3>
+      <h3 style={{ margin: '0 0 6px' }}>
+        Type the Pass/Fail Phrase Word-for-Word
+      </h3>
       <textarea
         rows={4}
         style={{
@@ -56,13 +60,15 @@ export default function TypePhraseDrill({
         aria-label="Type phrase"
         value={val}
         disabled={alreadyComplete}
-        onChange={(e) => setVal(e.target.value)}
+        onChange={e => setVal(e.target.value)}
       />
-      <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center' }}>
+      <div
+        style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center' }}
+      >
         <button className="btn" type="submit" disabled={alreadyComplete}>
           Check
         </button>
-        <span style={{ fontSize: '.95em', opacity: .65 }}>
+        <span style={{ fontSize: '.95em', opacity: 0.65 }}>
           Hint: <em>{phrase}</em>
           {!strict && ' (lenient mode)'}
         </span>

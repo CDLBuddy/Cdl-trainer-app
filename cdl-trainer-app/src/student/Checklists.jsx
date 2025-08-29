@@ -58,7 +58,8 @@ const studentChecklistSectionsTemplate = [
         label: 'Practice Test Passed',
         key: 'practiceTestPassed',
         link: '/student/practice-tests',
-        details: 'Score at least 80% on any practice test to unlock the next step.',
+        details:
+          'Score at least 80% on any practice test to unlock the next step.',
         readonly: false,
       },
       {
@@ -128,11 +129,15 @@ export default function StudentChecklists() {
       let profile = {}
       let userRole = 'student'
       try {
-        const snap = await getDocs(query(collection(db, 'users'), where('email', '==', email)))
+        const snap = await getDocs(
+          query(collection(db, 'users'), where('email', '==', email))
+        )
         if (!snap.empty) {
           profile = snap.docs[0].data()
           userRole = String(profile.role || 'student').toLowerCase()
-          try { localStorage.setItem('userRole', userRole) } catch {
+          try {
+            localStorage.setItem('userRole', userRole)
+          } catch {
             // Ignore errors from localStorage (e.g., quota exceeded)
           }
         }
@@ -162,7 +167,9 @@ export default function StudentChecklists() {
       } = profile
 
       // Deep clone template so we can annotate
-      const checklistSections = JSON.parse(JSON.stringify(studentChecklistSectionsTemplate))
+      const checklistSections = JSON.parse(
+        JSON.stringify(studentChecklistSectionsTemplate)
+      )
 
       // Personal Info
       const profItem = checklistSections[0].items[0]
@@ -175,8 +182,10 @@ export default function StudentChecklists() {
       permitItem.notify = cdlPermit === 'yes' && !permitPhotoUrl
 
       const vehicleItem = checklistSections[1].items[1]
-      vehicleItem.done = vehicleQualified === 'yes' && !!truckPlateUrl && !!trailerPlateUrl
-      vehicleItem.notify = vehicleQualified === 'yes' && (!truckPlateUrl || !trailerPlateUrl)
+      vehicleItem.done =
+        vehicleQualified === 'yes' && !!truckPlateUrl && !!trailerPlateUrl
+      vehicleItem.notify =
+        vehicleQualified === 'yes' && (!truckPlateUrl || !trailerPlateUrl)
       if (vehicleItem.substeps) {
         vehicleItem.substeps[0].done = !!truckPlateUrl
         vehicleItem.substeps[1].done = !!trailerPlateUrl
@@ -198,11 +207,15 @@ export default function StudentChecklists() {
 
       if (!alive) return
       setSections(checklistSections)
-      setNotifyItems(checklistSections.flatMap(s => s.items).filter(i => i.notify))
+      setNotifyItems(
+        checklistSections.flatMap(s => s.items).filter(i => i.notify)
+      )
       setLoading(false)
     })()
 
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [navigate, showToast])
 
   if (loading) {
@@ -222,7 +235,8 @@ export default function StudentChecklists() {
 
       {notifyItems.length > 0 && (
         <div className="checklist-alert-banner" role="alert" aria-live="polite">
-          ⚠️ You have steps that need attention before you can complete your training.
+          ⚠️ You have steps that need attention before you can complete your
+          training.
         </div>
       )}
 
@@ -256,7 +270,10 @@ export default function StudentChecklists() {
         </div>
       ))}
 
-      <button className="btn wide" onClick={() => navigate('/student/dashboard')}>
+      <button
+        className="btn wide"
+        onClick={() => navigate('/student/dashboard')}
+      >
         ⬅ Back to Dashboard
       </button>
     </div>
@@ -269,10 +286,14 @@ function ChecklistItem({ item, onAction, sectionIdx, itemIdx }) {
   return (
     <li
       className={`checklist-item${item.done ? ' done' : ''}${item.readonly ? ' readonly' : ''}${expanded ? ' expanded' : ''}`}
-      aria-current={item.notify && !item.done && !item.readonly ? 'step' : undefined}
+      aria-current={
+        item.notify && !item.done && !item.readonly ? 'step' : undefined
+      }
     >
       {item.notify && !item.done && !item.readonly && (
-        <span className="notify-bubble" title="This step needs attention">!</span>
+        <span className="notify-bubble" title="This step needs attention">
+          !
+        </span>
       )}
 
       <div
@@ -293,9 +314,16 @@ function ChecklistItem({ item, onAction, sectionIdx, itemIdx }) {
         <span className="chevron">{expanded ? '▾' : '▸'}</span>
 
         {item.done ? (
-          <span className="badge badge-success" aria-label="Complete">✔</span>
+          <span className="badge badge-success" aria-label="Complete">
+            ✔
+          </span>
         ) : item.readonly ? (
-          <span className="badge badge-waiting" title="Instructor must complete">🔒</span>
+          <span
+            className="badge badge-waiting"
+            title="Instructor must complete"
+          >
+            🔒
+          </span>
         ) : (
           <button
             className="btn outline btn-sm"
@@ -309,7 +337,11 @@ function ChecklistItem({ item, onAction, sectionIdx, itemIdx }) {
         )}
       </div>
 
-      <div id={`details-${sectionIdx}-${itemIdx}`} className="checklist-details" aria-hidden={!expanded}>
+      <div
+        id={`details-${sectionIdx}-${itemIdx}`}
+        className="checklist-details"
+        aria-hidden={!expanded}
+      >
         {item.details}
         {item.substeps && (
           <ul className="substeps">

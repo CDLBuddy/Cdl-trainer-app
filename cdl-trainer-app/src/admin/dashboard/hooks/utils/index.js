@@ -72,7 +72,7 @@ export function expirySoon(dateish, opts = {}) {
   const { withinDays = 30, includePast = true } = opts
   const d = daysUntil(dateish)
   if (!Number.isFinite(d)) return false
-  return includePast ? d <= withinDays : (d >= 0 && d <= withinDays)
+  return includePast ? d <= withinDays : d >= 0 && d <= withinDays
 }
 
 /* --------------------------------------------------------------------------

@@ -26,13 +26,15 @@ const clampTemplate = t =>
     ? String(t)
     : DEFAULTS.inviteEmailTemplate
 
-const toBool = (v, fb = false) =>
-  typeof v === 'boolean' ? v : !!fb
+const toBool = (v, fb = false) => (typeof v === 'boolean' ? v : !!fb)
 
 const normalizeDraft = (d = {}) => ({
   inviteEmailTemplate: clampTemplate(d.inviteEmailTemplate),
   defaultRole: clampRole(d.defaultRole),
-  requireProfileBeforeEnroll: toBool(d.requireProfileBeforeEnroll, DEFAULTS.requireProfileBeforeEnroll),
+  requireProfileBeforeEnroll: toBool(
+    d.requireProfileBeforeEnroll,
+    DEFAULTS.requireProfileBeforeEnroll
+  ),
 })
 
 const shallowEq = (a, b) =>
@@ -49,11 +51,13 @@ export function useUsersSettings({ vm } = {}) {
   )
 
   const [draft, setDraft] = useState(initial)
-  useEffect(() => { setDraft(initial) }, [initial])
+  useEffect(() => {
+    setDraft(initial)
+  }, [initial])
 
   // Mutators
   const update = useCallback(
-    (patch) => setDraft(d => normalizeDraft({ ...d, ...patch })),
+    patch => setDraft(d => normalizeDraft({ ...d, ...patch })),
     []
   )
   const reset = useCallback(() => setDraft(initial), [initial])
@@ -76,7 +80,7 @@ export function useUsersSettings({ vm } = {}) {
 
   // Persistence
   const save = useCallback(
-    async (partial) => {
+    async partial => {
       const payload = normalizeDraft(partial ? { ...draft, ...partial } : draft)
       if (!vm?.actions?.save) {
         return { ok: false, error: 'Save action is unavailable.' }
@@ -85,7 +89,10 @@ export function useUsersSettings({ vm } = {}) {
         await vm.actions.save({ [KEY]: payload })
         return { ok: true }
       } catch (err) {
-        return { ok: false, error: err?.message || 'Failed to save user settings.' }
+        return {
+          ok: false,
+          error: err?.message || 'Failed to save user settings.',
+        }
       }
     },
     [draft, vm?.actions]

@@ -10,24 +10,26 @@
   border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
   border-radius: var(--radius-md, 10px);
   padding: 14px;
-  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
-  transition: border-color .15s ease, box-shadow .15s ease;
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
   backdrop-filter: var(--blur, saturate(1.1) blur(6px));
 }
 
 .card:hover,
 .card:focus-within {
   border-color: color-mix(in oklab, var(--accent, #c4dbe8), #fff 16%);
-  box-shadow: var(--shadow-2, 0 10px 30px rgba(0,0,0,.25));
+  box-shadow: var(--shadow-2, 0 10px 30px rgba(0, 0, 0, 0.25));
 }
 
 /* Attribute hooks for tiny UX details */
-.card[data-expanded="true"] {
+.card[data-expanded='true'] {
   /* leave room if the list grows */
   padding-bottom: 16px;
 }
-.card[data-count="0"] {
-  opacity: .92;
+.card[data-count='0'] {
+  opacity: 0.92;
 }
 
 .cardHeader {
@@ -40,7 +42,7 @@
 
 .cardTitle {
   font-weight: 800;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
 }
 
 .cardActions {
@@ -49,14 +51,14 @@
 }
 
 /* Show a spinner when the Download button is busy (aria-busy=true) */
-.cardActions [aria-busy="true"] {
+.cardActions [aria-busy='true'] {
   cursor: progress;
   position: relative;
-  opacity: .9;
+  opacity: 0.9;
 }
 
-.cardActions [aria-busy="true"]::after {
-  content: "";
+.cardActions [aria-busy='true']::after {
+  content: '';
   position: absolute;
   right: 10px;
   top: 50%;
@@ -66,10 +68,12 @@
   border-radius: 50%;
   border: 2px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 35%);
   border-top-color: color-mix(in oklab, var(--accent, #c4dbe8), #fff 10%);
-  animation: checklist-spin .7s linear infinite;
+  animation: checklist-spin 0.7s linear infinite;
 }
 @keyframes checklist-spin {
-  to { transform: translateY(-50%) rotate(360deg); }
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
 }
 
 /* Body */
@@ -83,11 +87,11 @@
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: start;
-  column-gap: .4rem;
+  column-gap: 0.4rem;
   padding: 2px 0;
 }
 .list li > [aria-hidden] {
-  opacity: .9;
+  opacity: 0.9;
   width: 1.25em;
   text-align: center;
 }
@@ -105,16 +109,16 @@
 
 .tip {
   margin-left: auto;
-  font-size: .85rem;
+  font-size: 0.85rem;
   color: color-mix(in oklab, var(--text-light, #fff), #000 55%);
-  opacity: .9;
+  opacity: 0.9;
 }
 
 /* Helpers */
 .muted {
-  font-size: .9rem;
+  font-size: 0.9rem;
   color: color-mix(in oklab, var(--text-light, #fff), #000 50%);
-  opacity: .9;
+  opacity: 0.9;
 }
 
 /* Focus visibility for keyboard users inside the card */
@@ -129,9 +133,9 @@
   .card:hover,
   .card:focus-within {
     border-color: color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
-    box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+    box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
   }
-  .cardActions [aria-busy="true"]::after {
+  .cardActions [aria-busy='true']::after {
     animation: none;
   }
 }

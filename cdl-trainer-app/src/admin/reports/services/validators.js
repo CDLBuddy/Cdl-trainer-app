@@ -13,15 +13,15 @@ import { pathGet } from './fieldMaps.js'
 // ---- Allowed domains ----------------------------------------------------
 
 const PROGRAM_TYPES = new Set(['theory', 'btw', 'both'])
-const CLASS_TYPES   = new Set(['A', 'B', 'C'])
+const CLASS_TYPES = new Set(['A', 'B', 'C'])
 const ENDORSE_CODES = new Set(['N', 'P', 'S', 'T', 'H', 'X', 'NONE'])
 
 // ---- Tiny utils ---------------------------------------------------------
 
-const isNonEmpty = (v) => v != null && String(v).trim() !== ''
-const isISODate  = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)
-const isState2   = (v) => typeof v === 'string' && /^[A-Z]{2}$/.test(v)
-const uniq       = (arr = []) => Array.from(new Set(arr))
+const isNonEmpty = v => v != null && String(v).trim() !== ''
+const isISODate = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)
+const isState2 = v => typeof v === 'string' && /^[A-Z]{2}$/.test(v)
+const uniq = (arr = []) => Array.from(new Set(arr))
 
 const pickFirst = (...vals) => {
   for (const v of vals) if (isNonEmpty(v)) return v
@@ -45,36 +45,47 @@ export function validateTPRPayload(payload) {
 
   // Pull common fields with mirrors/fallbacks
   const fullName = pathGet(payload, 'trainee.fullName')
-  const dob      = pathGet(payload, 'trainee.dob')
+  const dob = pathGet(payload, 'trainee.dob')
 
-  const licNum   = pathGet(payload, 'trainee.licenseNumber')
-  const clpNum   = pathGet(payload, 'trainee.clpNumber')
-  const anyNum   = pickFirst(licNum, clpNum)
+  const licNum = pathGet(payload, 'trainee.licenseNumber')
+  const clpNum = pathGet(payload, 'trainee.clpNumber')
+  const anyNum = pickFirst(licNum, clpNum)
 
-  const licSt    = pathGet(payload, 'trainee.licenseState')
-  const clpSt    = pathGet(payload, 'trainee.clpState')
-  const state    = pickFirst(licSt, clpSt, pathGet(payload, 'trainee.state'))
+  const licSt = pathGet(payload, 'trainee.licenseState')
+  const clpSt = pathGet(payload, 'trainee.clpState')
+  const state = pickFirst(licSt, clpSt, pathGet(payload, 'trainee.state'))
 
   const topCompleted = pathGet(payload, 'completedAt')
-  const tCompleted   = pathGet(payload, 'training.completedAt')
-  const theoryAt     = pathGet(payload, 'training.theory.completedAt')
-  const btwAt        = pathGet(payload, 'training.btw.completedAt')
+  const tCompleted = pathGet(payload, 'training.completedAt')
+  const theoryAt = pathGet(payload, 'training.theory.completedAt')
+  const btwAt = pathGet(payload, 'training.btw.completedAt')
   const anyCompleted = pickFirst(topCompleted, tCompleted, theoryAt, btwAt)
 
-  const classType    = String(pathGet(payload, 'training.classType') || '').toUpperCase()
-  const endorsement  = String(pathGet(payload, 'training.endorsement') || '').toUpperCase()
-  const programType  = String(pathGet(payload, 'programType') || '').toLowerCase()
+  const classType = String(
+    pathGet(payload, 'training.classType') || ''
+  ).toUpperCase()
+  const endorsement = String(
+    pathGet(payload, 'training.endorsement') || ''
+  ).toUpperCase()
+  const programType = String(
+    pathGet(payload, 'programType') || ''
+  ).toLowerCase()
 
-  const tprId        = pathGet(payload, 'provider.tprId')
+  const tprId = pathGet(payload, 'provider.tprId')
 
   // 1) Presence (aligns with tprClient.normalizeCompletion and mapper output)
   if (!isNonEmpty(fullName)) errors.push('Missing trainee.fullName')
-  if (!isNonEmpty(dob))      errors.push('Missing trainee.dob')
-  if (!isNonEmpty(anyNum))   errors.push('Missing trainee.licenseNumber or trainee.clpNumber')
-  if (!isNonEmpty(state))    errors.push('Missing trainee.licenseState or trainee.clpState')
-  if (!isNonEmpty(classType))errors.push('Missing training.classType')
-  if (!isNonEmpty(anyCompleted)) errors.push('Missing completion date (completedAt/training.completedAt/theory.btw)') // friendly, covers all
-  if (!isNonEmpty(tprId))    errors.push('Missing provider.tprId')
+  if (!isNonEmpty(dob)) errors.push('Missing trainee.dob')
+  if (!isNonEmpty(anyNum))
+    errors.push('Missing trainee.licenseNumber or trainee.clpNumber')
+  if (!isNonEmpty(state))
+    errors.push('Missing trainee.licenseState or trainee.clpState')
+  if (!isNonEmpty(classType)) errors.push('Missing training.classType')
+  if (!isNonEmpty(anyCompleted))
+    errors.push(
+      'Missing completion date (completedAt/training.completedAt/theory.btw)'
+    ) // friendly, covers all
+  if (!isNonEmpty(tprId)) errors.push('Missing provider.tprId')
 
   // 2) Formats / domains
   if (isNonEmpty(dob) && !isISODate(dob)) {
@@ -98,13 +109,17 @@ export function validateTPRPayload(payload) {
   }
 
   if (isNonEmpty(programType) && !PROGRAM_TYPES.has(programType)) {
-    errors.push(`programType must be one of: ${Array.from(PROGRAM_TYPES).join(', ')}`)
+    errors.push(
+      `programType must be one of: ${Array.from(PROGRAM_TYPES).join(', ')}`
+    )
   }
   if (isNonEmpty(classType) && !CLASS_TYPES.has(classType)) {
     errors.push('training.classType must be A, B, or C')
   }
   if (isNonEmpty(endorsement) && !ENDORSE_CODES.has(endorsement)) {
-    errors.push(`training.endorsement must be one of: ${Array.from(ENDORSE_CODES).join(', ')}`)
+    errors.push(
+      `training.endorsement must be one of: ${Array.from(ENDORSE_CODES).join(', ')}`
+    )
   }
 
   // Light sanity
@@ -117,33 +132,58 @@ export function validateTPRPayload(payload) {
   }
 
   // 3) Cross-field consistency (warnings, not hard errors)
-  if (isNonEmpty(topCompleted) && isNonEmpty(tCompleted) && topCompleted !== tCompleted) {
-    warnings.push('completedAt and training.completedAt differ; consumers may prefer them to match')
+  if (
+    isNonEmpty(topCompleted) &&
+    isNonEmpty(tCompleted) &&
+    topCompleted !== tCompleted
+  ) {
+    warnings.push(
+      'completedAt and training.completedAt differ; consumers may prefer them to match'
+    )
   }
-  if (isNonEmpty(licSt) && isNonEmpty(clpSt) && String(licSt).toUpperCase() !== String(clpSt).toUpperCase()) {
-    warnings.push('licenseState and clpState differ; ensure issuing state is correct')
+  if (
+    isNonEmpty(licSt) &&
+    isNonEmpty(clpSt) &&
+    String(licSt).toUpperCase() !== String(clpSt).toUpperCase()
+  ) {
+    warnings.push(
+      'licenseState and clpState differ; ensure issuing state is correct'
+    )
   }
 
   const theoryDone = !!pathGet(payload, 'training.theory.completed')
-  const btwDone    = !!pathGet(payload, 'training.btw.completed')
+  const btwDone = !!pathGet(payload, 'training.btw.completed')
   if (PROGRAM_TYPES.has(programType)) {
-    if (programType === 'theory' && !theoryDone) warnings.push('programType is "theory" but training.theory.completed is false')
-    if (programType === 'btw'    && !btwDone)    warnings.push('programType is "btw" but training.btw.completed is false')
-    if (programType === 'both'   && !(theoryDone && btwDone)) {
-      warnings.push('programType is "both" but theory/btw completed flags are not both true')
+    if (programType === 'theory' && !theoryDone)
+      warnings.push(
+        'programType is "theory" but training.theory.completed is false'
+      )
+    if (programType === 'btw' && !btwDone)
+      warnings.push('programType is "btw" but training.btw.completed is false')
+    if (programType === 'both' && !(theoryDone && btwDone)) {
+      warnings.push(
+        'programType is "both" but theory/btw completed flags are not both true'
+      )
     }
   }
 
   // Categories shape
   const categories = pathGet(payload, 'categories')
   if (Array.isArray(categories)) {
-    const bad = categories.filter((c) => typeof c !== 'string' || !isNonEmpty(c))
-    if (bad.length) warnings.push('categories contains empty or non-string entries (ignored by some consumers)')
+    const bad = categories.filter(c => typeof c !== 'string' || !isNonEmpty(c))
+    if (bad.length)
+      warnings.push(
+        'categories contains empty or non-string entries (ignored by some consumers)'
+      )
   } else if (categories != null) {
     warnings.push('categories should be an array of strings')
   }
 
-  return { ok: errors.length === 0, errors: uniq(errors), warnings: uniq(warnings) }
+  return {
+    ok: errors.length === 0,
+    errors: uniq(errors),
+    warnings: uniq(warnings),
+  }
 }
 
 /**
@@ -173,7 +213,9 @@ export function assertValidTPRPayload(payload) {
   const r = validateTPRPayload(payload)
   if (!r.ok) {
     const msg = r.errors.join('; ')
-    const warn = r.warnings.length ? ` (warnings: ${r.warnings.join('; ')})` : ''
+    const warn = r.warnings.length
+      ? ` (warnings: ${r.warnings.join('; ')})`
+      : ''
     throw new Error(`Invalid TPR payload: ${msg}${warn}`)
   }
 }

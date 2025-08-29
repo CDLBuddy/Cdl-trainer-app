@@ -71,7 +71,12 @@ function SchoolSelectorModal({ open, onSelect, onClose }) {
       />
       <div
         className="modal-card school-select-modal"
-        style={{ maxWidth: 410, margin: '10% auto', position: 'relative', zIndex: 1 }}
+        style={{
+          maxWidth: 410,
+          margin: '10% auto',
+          position: 'relative',
+          zIndex: 1,
+        }}
       >
         <h2>Select Your School</h2>
         <div style={{ marginBottom: '1.2rem' }}>

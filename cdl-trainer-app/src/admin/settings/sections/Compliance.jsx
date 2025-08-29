@@ -26,17 +26,23 @@ export default function Compliance({ vm }) {
 
   // mirror subhook draft into a local form for snappy typing
   const [form, setForm] = useState(() => ({
-    requiredDocs: Array.isArray(c.draft.requiredDocs) ? c.draft.requiredDocs : [],
-    notifyBeforeDays:
-      Number.isFinite(c.draft.notifyBeforeDays) ? c.draft.notifyBeforeDays : 30,
+    requiredDocs: Array.isArray(c.draft.requiredDocs)
+      ? c.draft.requiredDocs
+      : [],
+    notifyBeforeDays: Number.isFinite(c.draft.notifyBeforeDays)
+      ? c.draft.notifyBeforeDays
+      : 30,
   }))
 
   // keep local form in sync when prefs reload externally
   useEffect(() => {
     setForm({
-      requiredDocs: Array.isArray(c.draft.requiredDocs) ? c.draft.requiredDocs : [],
-      notifyBeforeDays:
-        Number.isFinite(c.draft.notifyBeforeDays) ? c.draft.notifyBeforeDays : 30,
+      requiredDocs: Array.isArray(c.draft.requiredDocs)
+        ? c.draft.requiredDocs
+        : [],
+      notifyBeforeDays: Number.isFinite(c.draft.notifyBeforeDays)
+        ? c.draft.notifyBeforeDays
+        : 30,
     })
   }, [c.draft.requiredDocs, c.draft.notifyBeforeDays])
 
@@ -46,7 +52,12 @@ export default function Compliance({ vm }) {
       notifyBeforeDays: Number(form.notifyBeforeDays) || 0,
     })
     const b = JSON.stringify({
-      requiredDocs: (Array.isArray(c.draft.requiredDocs) ? c.draft.requiredDocs : []).slice().sort(),
+      requiredDocs: (Array.isArray(c.draft.requiredDocs)
+        ? c.draft.requiredDocs
+        : []
+      )
+        .slice()
+        .sort(),
       notifyBeforeDays: Number(c.draft.notifyBeforeDays) || 0,
     })
     return a !== b
@@ -59,8 +70,8 @@ export default function Compliance({ vm }) {
 
   // ---------- handlers ---------------------------------------------------
 
-  const toggleDoc = (docKey) => {
-    setForm((prev) => {
+  const toggleDoc = docKey => {
+    setForm(prev => {
       const set = new Set(prev.requiredDocs || [])
       if (set.has(docKey)) set.delete(docKey)
       else set.add(docKey)
@@ -72,7 +83,7 @@ export default function Compliance({ vm }) {
   const addCustomDoc = () => {
     const key = customDoc.trim()
     if (!key) return
-    setForm((prev) => {
+    setForm(prev => {
       const set = new Set(prev.requiredDocs || [])
       set.add(key)
       return { ...prev, requiredDocs: Array.from(set) }
@@ -80,23 +91,31 @@ export default function Compliance({ vm }) {
     setCustomDoc('')
   }
 
-  const onChangeDays = (e) => {
+  const onChangeDays = e => {
     const val = e.target.value
     // allow empty string while typing; clamp later on save
-    setForm((prev) => ({ ...prev, notifyBeforeDays: val }))
+    setForm(prev => ({ ...prev, notifyBeforeDays: val }))
   }
 
   const onReset = () =>
     setForm({
-      requiredDocs: Array.isArray(c.draft.requiredDocs) ? c.draft.requiredDocs : [],
-      notifyBeforeDays:
-        Number.isFinite(c.draft.notifyBeforeDays) ? c.draft.notifyBeforeDays : 30,
+      requiredDocs: Array.isArray(c.draft.requiredDocs)
+        ? c.draft.requiredDocs
+        : [],
+      notifyBeforeDays: Number.isFinite(c.draft.notifyBeforeDays)
+        ? c.draft.notifyBeforeDays
+        : 30,
     })
 
   const onSave = async () => {
     // sanitize before saving
-    const cleanDays = Math.max(0, Math.min(365, Number(form.notifyBeforeDays) || 0))
-    const uniqDocs = Array.from(new Set((form.requiredDocs || []).map(String))).filter(Boolean)
+    const cleanDays = Math.max(
+      0,
+      Math.min(365, Number(form.notifyBeforeDays) || 0)
+    )
+    const uniqDocs = Array.from(
+      new Set((form.requiredDocs || []).map(String))
+    ).filter(Boolean)
     const payload = { requiredDocs: uniqDocs, notifyBeforeDays: cleanDays }
     c.update(payload)
     await c.save(payload)
@@ -106,10 +125,12 @@ export default function Compliance({ vm }) {
 
   return (
     <section className={styles.section} aria-labelledby="compliance-heading">
-      <h2 id="compliance-heading" className={styles.heading}>Compliance</h2>
+      <h2 id="compliance-heading" className={styles.heading}>
+        Compliance
+      </h2>
       <p className={styles.description}>
-        Choose which documents are required for your school and when admins should be reminded
-        before they expire.
+        Choose which documents are required for your school and when admins
+        should be reminded before they expire.
       </p>
 
       {/* Required documents */}
@@ -125,7 +146,7 @@ export default function Compliance({ vm }) {
           Required Documents
         </label>
         <div className={styles.listGrid}>
-          {allDocOptions.map((doc) => {
+          {allDocOptions.map(doc => {
             const id = `doc-${doc.replace(/\s+/g, '-').toLowerCase()}`
             const checked = (form.requiredDocs || []).includes(doc)
             return (
@@ -147,12 +168,16 @@ export default function Compliance({ vm }) {
           <input
             type="text"
             value={customDoc}
-            onChange={(e) => setCustomDoc(e.target.value)}
+            onChange={e => setCustomDoc(e.target.value)}
             placeholder="Add custom requirement (e.g., MVR pull)"
             className={styles.input}
             aria-label="Custom document name"
           />
-          <button type="button" className={`btn ${styles.actionBtn}`} onClick={addCustomDoc}>
+          <button
+            type="button"
+            className={`btn ${styles.actionBtn}`}
+            onClick={addCustomDoc}
+          >
             Add
           </button>
         </div>
@@ -178,7 +203,8 @@ export default function Compliance({ vm }) {
           style={{ maxWidth: 140 }}
         />
         <small className={styles.help}>
-          We’ll flag items expiring within this window in dashboards and exports.
+          We’ll flag items expiring within this window in dashboards and
+          exports.
         </small>
       </div>
 

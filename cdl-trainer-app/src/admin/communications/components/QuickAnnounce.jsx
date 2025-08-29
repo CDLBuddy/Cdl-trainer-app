@@ -1,7 +1,9 @@
 // Path: src/admin/communications/components/QuickAnnounce.jsx
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
+
 import { useComposeMessage } from '../hooks'
+
 import cls from './QuickAnnounce.module.css'
 
 /**
@@ -13,9 +15,9 @@ import cls from './QuickAnnounce.module.css'
  */
 export default function QuickAnnounce({
   role = 'admin',
-  scope = {},                    // { schoolId?, companyId? }
-  defaultChannels = ['inapp'],   // 'inapp' | 'email' (add more later)
-  persistKey = null,             // e.g. 'admin:quick-announce'
+  scope = {}, // { schoolId?, companyId? }
+  defaultChannels = ['inapp'], // 'inapp' | 'email' (add more later)
+  persistKey = null, // e.g. 'admin:quick-announce'
   onSent,
 }) {
   const subjectId = useId()
@@ -48,14 +50,21 @@ export default function QuickAnnounce({
         if (saved && typeof saved === 'object') {
           setDraft(d => ({
             ...d,
-            channels: Array.isArray(saved.channels) && saved.channels.length ? saved.channels : d.channels,
-            subject: typeof saved.subject === 'string' ? saved.subject : d.subject,
-            bodyHtml: typeof saved.bodyHtml === 'string' ? saved.bodyHtml : d.bodyHtml,
+            channels:
+              Array.isArray(saved.channels) && saved.channels.length
+                ? saved.channels
+                : d.channels,
+            subject:
+              typeof saved.subject === 'string' ? saved.subject : d.subject,
+            bodyHtml:
+              typeof saved.bodyHtml === 'string' ? saved.bodyHtml : d.bodyHtml,
           }))
         }
       }
-    } catch { /* ignore */ }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey])
 
   // Save on changes (debounced)
@@ -67,10 +76,16 @@ export default function QuickAnnounce({
       saveTimer.current = setTimeout(() => {
         sessionStorage.setItem(
           storageKey,
-          JSON.stringify({ channels: draft.channels, subject: draft.subject, bodyHtml: draft.bodyHtml })
+          JSON.stringify({
+            channels: draft.channels,
+            subject: draft.subject,
+            bodyHtml: draft.bodyHtml,
+          })
         )
       }, 250)
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return () => clearTimeout(saveTimer.current)
   }, [storageKey, draft.channels, draft.subject, draft.bodyHtml])
 
@@ -81,7 +96,7 @@ export default function QuickAnnounce({
   const trimmedSubject = String(draft.subject || '').trim()
   const trimmedBody = String(draft.bodyHtml || '').trim()
 
-  const toggleChannel = (ch) => {
+  const toggleChannel = ch => {
     setDraft(d => {
       const set = new Set(d.channels || [])
       set.has(ch) ? set.delete(ch) : set.add(ch)
@@ -90,10 +105,17 @@ export default function QuickAnnounce({
   }
 
   const canSend = useMemo(() => {
-    const hasChannel = Array.isArray(draft.channels) && draft.channels.length > 0
-    const hasContent = (trimmedSubject.length > 0) || (trimmedBody.length > 0)
+    const hasChannel =
+      Array.isArray(draft.channels) && draft.channels.length > 0
+    const hasContent = trimmedSubject.length > 0 || trimmedBody.length > 0
     return !sending && hasChannel && hasContent && valid
-  }, [sending, draft.channels, valid, trimmedSubject.length, trimmedBody.length])
+  }, [
+    sending,
+    draft.channels,
+    valid,
+    trimmedSubject.length,
+    trimmedBody.length,
+  ])
 
   async function onSubmit(e) {
     e?.preventDefault?.()
@@ -110,7 +132,9 @@ export default function QuickAnnounce({
 
       // clear persisted content after successful send
       if (storageKey) {
-        try { sessionStorage.removeItem(storageKey) } catch {}
+        try {
+          sessionStorage.removeItem(storageKey)
+        } catch {}
       }
     } catch (err) {
       setAck({ type: 'err', msg: err?.message || 'Failed to send.' })
@@ -122,7 +146,7 @@ export default function QuickAnnounce({
     }
   }
 
-  const onEditorKeyDown = (e) => {
+  const onEditorKeyDown = e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       onSubmit(e)
     }
@@ -131,9 +155,15 @@ export default function QuickAnnounce({
   return (
     <section className={cls.card} aria-labelledby="qa-title">
       <header className={cls.header}>
-        <h3 id="qa-title" className={cls.title}>🚀 Quick Announce</h3>
+        <h3 id="qa-title" className={cls.title}>
+          🚀 Quick Announce
+        </h3>
 
-        <div className={cls.channels} role="group" aria-label="Delivery channels">
+        <div
+          className={cls.channels}
+          role="group"
+          aria-label="Delivery channels"
+        >
           <label className={cls.chip}>
             <input
               type="checkbox"
@@ -155,7 +185,9 @@ export default function QuickAnnounce({
 
       <form className={cls.body} onSubmit={onSubmit}>
         <div className={cls.field}>
-          <label htmlFor={subjectId} className={cls.label}>Subject</label>
+          <label htmlFor={subjectId} className={cls.label}>
+            Subject
+          </label>
           <div className={cls.inputWrap}>
             <input
               id={subjectId}
@@ -163,7 +195,12 @@ export default function QuickAnnounce({
               type="text"
               placeholder="Short, clear subject"
               value={draft.subject || ''}
-              onChange={(e) => setDraft(d => ({ ...d, subject: e.target.value.slice(0, SUBJECT_MAX) }))}
+              onChange={e =>
+                setDraft(d => ({
+                  ...d,
+                  subject: e.target.value.slice(0, SUBJECT_MAX),
+                }))
+              }
               maxLength={SUBJECT_MAX}
               data-testid="qa-subject"
             />
@@ -174,15 +211,20 @@ export default function QuickAnnounce({
         </div>
 
         <div className={cls.field}>
-          <label htmlFor={bodyId} className={cls.label}>Message</label>
+          <label htmlFor={bodyId} className={cls.label}>
+            Message
+          </label>
           <div className={cls.inputWrap}>
             <textarea
               id={bodyId}
               className={`${cls.input} ${cls.textarea}`}
               placeholder="Write a quick announcement…"
               value={draft.bodyHtml || ''}
-              onChange={(e) =>
-                setDraft(d => ({ ...d, bodyHtml: e.target.value.slice(0, BODY_MAX) }))
+              onChange={e =>
+                setDraft(d => ({
+                  ...d,
+                  bodyHtml: e.target.value.slice(0, BODY_MAX),
+                }))
               }
               rows={4}
               onKeyDown={onEditorKeyDown}
@@ -198,7 +240,12 @@ export default function QuickAnnounce({
         </div>
 
         <div className={cls.actions}>
-          <button type="submit" className={cls.primary} disabled={!canSend} data-testid="qa-send">
+          <button
+            type="submit"
+            className={cls.primary}
+            disabled={!canSend}
+            data-testid="qa-send"
+          >
             {sending ? 'Sending…' : 'Send Now'}
           </button>
           <span

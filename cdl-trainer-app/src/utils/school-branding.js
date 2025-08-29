@@ -8,6 +8,7 @@
 // ======================================================================
 
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore'
+
 import { db } from './firebase.js'
 
 /** Event name emitted when branding is updated. */
@@ -15,15 +16,16 @@ export const BRAND_EVENT = 'branding:updated'
 
 /** LocalStorage keys */
 export const LS_KEYS = {
-  SCHOOL_ID:   'schoolId',
-  BRAND_JSON:  'schoolBrand',
-  BRAND_LOGO:  'branding.logoUrl',
-  BRAND_NAME:  'branding.schoolName',
+  SCHOOL_ID: 'schoolId',
+  BRAND_JSON: 'schoolBrand',
+  BRAND_LOGO: 'branding.logoUrl',
+  BRAND_NAME: 'branding.schoolName',
   BRAND_COLOR: 'branding.primaryColor',
-  BRAND_AT:    'branding.lastUpdatedAt',
+  BRAND_AT: 'branding.lastUpdatedAt',
 }
 
-const IS_BROWSER = typeof window !== 'undefined' && typeof document !== 'undefined'
+const IS_BROWSER =
+  typeof window !== 'undefined' && typeof document !== 'undefined'
 
 /* ---------------------------------------------------------------------- */
 /* Demo fallback brands (used offline or if Firestore fails)              */
@@ -55,15 +57,23 @@ const DEMO_SCHOOLS = [
 
 function getLS(key, fallback = null) {
   if (!IS_BROWSER) return fallback
-  try { return window.localStorage.getItem(key) ?? fallback } catch { return fallback }
+  try {
+    return window.localStorage.getItem(key) ?? fallback
+  } catch {
+    return fallback
+  }
 }
 function setLS(key, value) {
   if (!IS_BROWSER) return
-  try { window.localStorage.setItem(key, value) } catch {}
+  try {
+    window.localStorage.setItem(key, value)
+  } catch {}
 }
 function setCSSVar(name, value) {
   if (!IS_BROWSER) return
-  try { document.documentElement.style.setProperty(name, value) } catch {}
+  try {
+    document.documentElement.style.setProperty(name, value)
+  } catch {}
 }
 
 function normalizeBrand(raw = {}, id = '') {
@@ -86,7 +96,7 @@ function applyBrand(brand) {
     setCSSVar('--brand-primary', brand.primaryColor)
     setLS(LS_KEYS.BRAND_COLOR, brand.primaryColor)
   }
-  if (brand.logoUrl)   setLS(LS_KEYS.BRAND_LOGO, brand.logoUrl)
+  if (brand.logoUrl) setLS(LS_KEYS.BRAND_LOGO, brand.logoUrl)
   if (brand.schoolName) setLS(LS_KEYS.BRAND_NAME, brand.schoolName)
   if (IS_BROWSER) setLS(LS_KEYS.BRAND_AT, String(Date.now()))
 
@@ -135,7 +145,10 @@ export async function getCurrentSchoolBranding() {
   }
 
   // 2) Fallback demo
-  const demo = normalizeBrand(DEMO_SCHOOLS.find(s => s.id === id) || DEMO_SCHOOLS[0], id)
+  const demo = normalizeBrand(
+    DEMO_SCHOOLS.find(s => s.id === id) || DEMO_SCHOOLS[0],
+    id
+  )
   setLS(LS_KEYS.BRAND_JSON, JSON.stringify(demo))
   applyBrand(demo)
   return demo
@@ -200,7 +213,7 @@ export function getCachedBrandingSummary() {
 /** Subscribe to branding updates (returns unsubscribe). */
 export function subscribeBrandingUpdated(cb) {
   if (!IS_BROWSER) return () => {}
-  const handler = (e) => cb?.(e?.detail || {})
+  const handler = e => cb?.(e?.detail || {})
   window.addEventListener(BRAND_EVENT, handler)
   return () => window.removeEventListener(BRAND_EVENT, handler)
 }

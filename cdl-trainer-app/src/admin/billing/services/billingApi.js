@@ -26,8 +26,7 @@ import { db } from '@utils/firebase.js'
 // --------------------------------- Config -----------------------------------
 
 /** Flip to false when you wire Firestore (or via VITE_BILLING_MOCKS) */
-export const USE_BILLING_MOCKS =
-  (ENV.VITE_BILLING_MOCKS ?? 'true') !== 'false'
+export const USE_BILLING_MOCKS = (ENV.VITE_BILLING_MOCKS ?? 'true') !== 'false'
 
 // --------------------------------- Helpers ----------------------------------
 
@@ -157,7 +156,9 @@ export async function fetchEmployerInvoices({ schoolId, _signal } = {}) {
  * @param {{invoiceId:string, schoolId?:string, signal?:AbortSignal}} params
  * @returns {Promise<true>}
  */
-export async function markEmployerInvoicePaid({ invoiceId /*, schoolId, signal*/ }) {
+export async function markEmployerInvoicePaid({
+  invoiceId /*, schoolId, signal*/,
+}) {
   if (USE_BILLING_MOCKS) return true
 
   const ref = doc(db, 'employerInvoices', String(invoiceId))
@@ -204,7 +205,10 @@ export async function fetchIndividualPayments({ schoolId, _signal } = {}) {
  * @param {{paymentId:string, next?:boolean, schoolId?:string, signal?:AbortSignal}} params
  * @returns {Promise<true>}
  */
-export async function setPaymentReconciled({ paymentId, next /*, schoolId, signal*/ }) {
+export async function setPaymentReconciled({
+  paymentId,
+  next /*, schoolId, signal*/,
+}) {
   if (USE_BILLING_MOCKS) return true
 
   const ref = doc(db, 'individualPayments', String(paymentId))

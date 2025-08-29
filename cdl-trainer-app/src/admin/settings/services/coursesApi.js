@@ -8,10 +8,11 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 
 import { db } from '@utils/firebase.js'
 
-const PATH = (schoolId) => doc(db, 'schools', schoolId)
+const PATH = schoolId => doc(db, 'schools', schoolId)
 
 export async function getCoursesPrefs(schoolId) {
-  if (!schoolId) return { enableELDT: true, enablePractice: true, enableWalkthrough: true }
+  if (!schoolId)
+    return { enableELDT: true, enablePractice: true, enableWalkthrough: true }
   const snap = await getDoc(PATH(schoolId))
   const data = snap.exists() ? snap.data() : {}
   const p = data.adminPrefs?.courses || {}
@@ -32,7 +33,10 @@ export async function saveCoursesPrefs(schoolId, partial = {}) {
 
   await setDoc(
     PATH(schoolId),
-    { adminPrefs: { ...adminPrefs, courses: next }, updatedAt: serverTimestamp() },
+    {
+      adminPrefs: { ...adminPrefs, courses: next },
+      updatedAt: serverTimestamp(),
+    },
     { merge: true }
   )
   return next

@@ -6,7 +6,12 @@
 // - Mirrors programType & completedAt at both top-level and training.*
 // ---------------------------------------------------------------------------
 
-import type { TPRCompletion, ClassType, Endorsement, ProgramType } from '@/types/eldt'
+import type {
+  TPRCompletion,
+  ClassType,
+  Endorsement,
+  ProgramType,
+} from '@/types/eldt'
 import {
   toISODate,
   normalizeClassType,
@@ -19,16 +24,24 @@ type AnyRecord = Record<string, unknown>
 const S = (v: unknown) => (v == null ? '' : String(v).trim())
 
 function coalesce(...vals: unknown[]) {
-  for (const v of vals) { const s = S(v); if (s) return s }
+  for (const v of vals) {
+    const s = S(v)
+    if (s) return s
+  }
   return ''
 }
 function coalesceDate(...vals: unknown[]) {
-  for (const v of vals) { const iso = toISODate(v); if (iso) return iso }
+  for (const v of vals) {
+    const iso = toISODate(v)
+    if (iso) return iso
+  }
   return ''
 }
 function pathGet(obj: AnyRecord | null | undefined, path: string): unknown {
   if (!obj) return undefined
-  return path.split('.').reduce((acc: any, key) => (acc == null ? undefined : acc[key]), obj as any)
+  return path
+    .split('.')
+    .reduce((acc: any, key) => (acc == null ? undefined : acc[key]), obj as any)
 }
 
 export interface BuildArgs {
@@ -39,15 +52,36 @@ export interface BuildArgs {
 }
 
 /** Build the normalized TPRCompletion payload. */
-export function buildCert({ student = {}, training = {}, provider = {}, schoolId = '' }: BuildArgs): TPRCompletion {
+export function buildCert({
+  student = {},
+  training = {},
+  provider = {},
+  schoolId = '',
+}: BuildArgs): TPRCompletion {
   // ---- trainee -----------------------------------------------------------
-  const first = coalesce(student['firstName'], student['first_name'], student['givenName'])
-  const last  = coalesce(student['lastName'], student['last_name'], student['familyName'])
-  const full  = coalesce(student['fullName'], student['name'], `${first} ${last}`.trim())
+  const first = coalesce(
+    student['firstName'],
+    student['first_name'],
+    student['givenName']
+  )
+  const last = coalesce(
+    student['lastName'],
+    student['last_name'],
+    student['familyName']
+  )
+  const full = coalesce(
+    student['fullName'],
+    student['name'],
+    `${first} ${last}`.trim()
+  )
 
   const trainee = {
     fullName: full,
-    dob: coalesceDate(student['dob'], student['dateOfBirth'], student['birthDate']),
+    dob: coalesceDate(
+      student['dob'],
+      student['dateOfBirth'],
+      student['birthDate']
+    ),
     licenseNumber: coalesce(student['licenseNumber'], student['cdlNumber']),
     licenseState: coalesce(student['licenseState'], student['cdlState']),
     clpNumber: S(student['clpNumber']),
@@ -58,20 +92,32 @@ export function buildCert({ student = {}, training = {}, provider = {}, schoolId
 
   // ---- provider ----------------------------------------------------------
   const prov = {
-    tprId: coalesce(provider['tprId'], provider['TPR_ID'], (typeof window !== 'undefined' && (window as any).__TPR_ID__) || ''),
+    tprId: coalesce(
+      provider['tprId'],
+      provider['TPR_ID'],
+      (typeof window !== 'undefined' && (window as any).__TPR_ID__) || ''
+    ),
     name: coalesce(provider['name'], provider['providerName']),
     tin: S(provider['tin'] ?? provider['TIN'] ?? ''),
   }
 
   // ---- training ----------------------------------------------------------
   // detect program type from flags if not explicitly present
-  const theoryCompleted = !!(pathGet(training, 'theory.completed') ?? training['theoryCompleted'])
-  const btwCompleted    = !!(pathGet(training, 'btw.completed')    ?? training['btwCompleted'])
+  const theoryCompleted = !!(
+    pathGet(training, 'theory.completed') ?? training['theoryCompleted']
+  )
+  const btwCompleted = !!(
+    pathGet(training, 'btw.completed') ?? training['btwCompleted']
+  )
 
   const inferredProgram: ProgramType =
-    theoryCompleted && btwCompleted ? 'both' :
-    theoryCompleted ? 'theory' :
-    btwCompleted ? 'btw' : 'both'
+    theoryCompleted && btwCompleted
+      ? 'both'
+      : theoryCompleted
+        ? 'theory'
+        : btwCompleted
+          ? 'btw'
+          : 'both'
 
   const programType = normalizeProgramType(
     coalesce(training['programType'], training['trainingType']),
@@ -79,11 +125,16 @@ export function buildCert({ student = {}, training = {}, provider = {}, schoolId
   )
 
   const classType: ClassType = normalizeClassType(
-    coalesce(training['classType'], training['class'], training['cdlClass']) || 'A'
+    coalesce(training['classType'], training['class'], training['cdlClass']) ||
+      'A'
   )
 
   const endorsement: Endorsement | undefined = normalizeEndorsement(
-    coalesce(training['endorsement'], training['endorse'], training['endorsements'])
+    coalesce(
+      training['endorsement'],
+      training['endorse'],
+      training['endorsements']
+    )
   )
 
   const completedAt = coalesceDate(
@@ -100,14 +151,20 @@ export function buildCert({ student = {}, training = {}, provider = {}, schoolId
     training['btwCompletedAt']
   )
 
-  const rangeHours = Number(pathGet(training, 'btw.rangeHours') ?? training['rangeHours'] ?? 0) || 0
-  const publicRoadHours = Number(pathGet(training, 'btw.publicRoadHours') ?? training['roadHours'] ?? 0) || 0
+  const rangeHours =
+    Number(
+      pathGet(training, 'btw.rangeHours') ?? training['rangeHours'] ?? 0
+    ) || 0
+  const publicRoadHours =
+    Number(
+      pathGet(training, 'btw.publicRoadHours') ?? training['roadHours'] ?? 0
+    ) || 0
 
   const categories = Array.isArray(training['categories'])
     ? (training['categories'] as string[]).filter(Boolean)
     : Array.isArray(training['endorsements'])
-    ? (training['endorsements'] as string[]).filter(Boolean)
-    : []
+      ? (training['endorsements'] as string[]).filter(Boolean)
+      : []
 
   // ---- final payload -----------------------------------------------------
   const payload: TPRCompletion = {
@@ -118,8 +175,16 @@ export function buildCert({ student = {}, training = {}, provider = {}, schoolId
       endorsement,
       programType,
       completedAt,
-      theory: { completed: theoryCompleted || undefined, completedAt: theoryCompletedAt || undefined },
-      btw:    { completed: btwCompleted || undefined, completedAt: btwCompletedAt || undefined, rangeHours, publicRoadHours },
+      theory: {
+        completed: theoryCompleted || undefined,
+        completedAt: theoryCompletedAt || undefined,
+      },
+      btw: {
+        completed: btwCompleted || undefined,
+        completedAt: btwCompletedAt || undefined,
+        rangeHours,
+        publicRoadHours,
+      },
       categories,
     },
     // mirror fields for consumers that read top-level
@@ -130,7 +195,7 @@ export function buildCert({ student = {}, training = {}, provider = {}, schoolId
       schoolId: S(schoolId),
       recordId:
         S((training as AnyRecord).recordId) ||
-        `cert_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,7)}`,
+        `cert_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
     },
   }
 

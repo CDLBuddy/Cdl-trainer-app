@@ -58,33 +58,23 @@ export default function SessionProvider({
   // Dev-time safety: warn when no value passed or unexpected keys found
   if (__DEV__) {
     if (value == null) {
-       
       console.warn('[SessionProvider] No value passed. Using DEFAULT_SESSION.')
     } else {
       const allowed = new Set(['loading', 'isLoggedIn', 'role', 'user'])
       for (const k of Object.keys(value)) {
         if (!allowed.has(k)) {
-           
           console.warn(
             `[SessionProvider] Unexpected key "${k}" in value. Allowed keys: loading, isLoggedIn, role, user.`
           )
         }
       }
-      if (
-        value.loading != null &&
-        typeof value.loading !== 'boolean'
-      ) {
-         
+      if (value.loading != null && typeof value.loading !== 'boolean') {
         console.warn(
           '[SessionProvider] "loading" should be a boolean; received:',
           typeof value.loading
         )
       }
-      if (
-        value.isLoggedIn != null &&
-        typeof value.isLoggedIn !== 'boolean'
-      ) {
-         
+      if (value.isLoggedIn != null && typeof value.isLoggedIn !== 'boolean') {
         console.warn(
           '[SessionProvider] "isLoggedIn" should be a boolean; received:',
           typeof value.isLoggedIn

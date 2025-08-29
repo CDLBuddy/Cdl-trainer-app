@@ -41,6 +41,6 @@ export async function loadStudentTraining(studentId, _opts = {}) {
 
 // ---- Optional lazy helpers (for code-splitting) ----------------------------
 export const lazy = {
-  profileApi:  () => import('./profileApi.js'),
+  profileApi: () => import('./profileApi.js'),
   certBuilder: () => import('@/utils/cert-builder'),
 }

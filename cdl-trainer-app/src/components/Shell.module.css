@@ -13,7 +13,9 @@
   background: var(--card-bg);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
   border-radius: var(--radius-lg, 14px);
-  box-shadow: var(--shadow-2, 0 20px 60px #0008), inset 0 1px 0 #ffffff12;
+  box-shadow:
+    var(--shadow-2, 0 20px 60px #0008),
+    inset 0 1px 0 #ffffff12;
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
 }
@@ -21,12 +23,19 @@
 /* Clear, consistent focus ring */
 :where(.railBtn, .logoutBtn, .fab, .brandBtn, .rail a, button):focus-visible {
   outline: none;
-  box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 10%));
+  box-shadow: var(
+    --ring,
+    0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 10%)
+  );
 }
 
 /* If blur unsupported, keep it readable */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glasslike { background: color-mix(in oklab, var(--card-bg), #000 8%); }
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .glasslike {
+    background: color-mix(in oklab, var(--card-bg), #000 8%);
+  }
 }
 
 /* ---------- Page wrapper ------------------------------------------------ */
@@ -62,7 +71,10 @@
 }
 
 .brandBtn:focus-visible {
-  box-shadow: var(--ring-strong, 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 20%));
+  box-shadow: var(
+    --ring-strong,
+    0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 20%)
+  );
 }
 
 .logo {
@@ -132,12 +144,20 @@
 .railBtn:hover,
 .railBtn:focus-visible {
   transform: translateY(-1px);
-  background: linear-gradient(120deg, var(--brand-light) 30%, var(--brand-mid) 100%);
+  background: linear-gradient(
+    120deg,
+    var(--brand-light) 30%,
+    var(--brand-mid) 100%
+  );
   box-shadow: 0 6px 16px #0005;
 }
 
 .railActive {
-  background: linear-gradient(120deg, var(--brand-light) 30%, var(--brand-mid) 100%);
+  background: linear-gradient(
+    120deg,
+    var(--brand-light) 30%,
+    var(--brand-mid) 100%
+  );
   color: var(--text-light);
 }
 
@@ -153,7 +173,9 @@
   color: #ffd8d8;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.14s ease, background 0.14s ease;
+  transition:
+    transform 0.14s ease,
+    background 0.14s ease;
 }
 
 .logoutBtn:hover,
@@ -192,11 +214,20 @@
   place-items: center;
   border-radius: 50%;
   border: 1px solid color-mix(in oklab, var(--accent), #000 25%);
-  background: radial-gradient(120% 120% at 50% 10%, var(--brand-light), var(--brand-mid));
+  background: radial-gradient(
+    120% 120% at 50% 10%,
+    var(--brand-light),
+    var(--brand-mid)
+  );
   color: #fff;
-  box-shadow: 0 10px 30px #0007, 0 0 0 3px #ffffff10 inset;
+  box-shadow:
+    0 10px 30px #0007,
+    0 0 0 3px #ffffff10 inset;
   cursor: pointer;
-  transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease,
+    filter 0.14s ease;
   z-index: var(--z-modal, 1400);
 }
 
@@ -204,7 +235,9 @@
 .fab:focus-visible {
   transform: translateY(-2px);
   filter: brightness(1.03);
-  box-shadow: 0 14px 36px #0008, 0 0 0 3px #ffffff18 inset;
+  box-shadow:
+    0 14px 36px #0008,
+    0 0 0 3px #ffffff18 inset;
 }
 
 /* ---------- Footer ------------------------------------------------------ */

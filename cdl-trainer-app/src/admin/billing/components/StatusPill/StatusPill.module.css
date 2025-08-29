@@ -57,8 +57,14 @@
 }
 
 /* Size variants */
-.sm { padding: 2px 8px; font-size: 12px; }
-.md { padding: 4px 10px; font-size: 13px; }
+.sm {
+  padding: 2px 8px;
+  font-size: 12px;
+}
+.md {
+  padding: 4px 10px;
+  font-size: 13px;
+}
 
 /* Optional status dot (used when `showDot` is true) */
 .dot {
@@ -78,38 +84,50 @@
   background: var(--pill-paid-bg, #dcfce7);
   color: var(--pill-paid-fg, #166534);
 }
-.paid .dot { background: currentColor; }
+.paid .dot {
+  background: currentColor;
+}
 
 .partial {
   background: var(--pill-partial-bg, #fffbeb);
   color: var(--pill-partial-fg, #92400e);
 }
-.partial .dot { background: currentColor; }
+.partial .dot {
+  background: currentColor;
+}
 
 .unpaid {
   background: var(--pill-unpaid-bg, #fee2e2);
   color: var(--pill-unpaid-fg, #991b1b);
 }
-.unpaid .dot { background: currentColor; }
+.unpaid .dot {
+  background: currentColor;
+}
 
 .pending {
   background: var(--pill-pending-bg, #fee2e2);
   color: var(--pill-pending-fg, #991b1b);
 }
-.pending .dot { background: currentColor; }
+.pending .dot {
+  background: currentColor;
+}
 
 .waived {
   background: var(--pill-waived-bg, #e0e7ff);
   color: var(--pill-waived-fg, #3730a3);
 }
-.waived .dot { background: currentColor; }
+.waived .dot {
+  background: currentColor;
+}
 
 /* Unknown / fallback */
 .unknown {
   background: var(--pill-unknown-bg, #e5e7eb);
   color: var(--pill-unknown-fg, #374151);
 }
-.unknown .dot { background: currentColor; }
+.unknown .dot {
+  background: currentColor;
+}
 
 /* High-contrast / forced colors (Windows HC): rely on system colors for max legibility */
 @media (forced-colors: active) {

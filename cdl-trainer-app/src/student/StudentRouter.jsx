@@ -15,27 +15,30 @@ import { preloadStudentCore } from '@student/preload.js'
 
 /* ---------- Lazy loaders (explicit so we can warm them) ---------- */
 // NOTE: dashboard lives under src/student/dashboard/
-const loadDashboard       = () => import('@student/dashboard/StudentDashboard.jsx')
-const loadProfile         = () => import('@student-profile/Profile.jsx')
-const loadChecklists      = () => import('@student/Checklists.jsx')
-const loadPracticeTests   = () => import('@student/PracticeTests.jsx')
-const loadWalkthrough     = () => import('@student-walkthrough/Walkthrough.jsx')
-const loadFlashcards      = () => import('@student/Flashcards.jsx')
+const loadDashboard = () => import('@student/dashboard/StudentDashboard.jsx')
+const loadProfile = () => import('@student-profile/Profile.jsx')
+const loadChecklists = () => import('@student/Checklists.jsx')
+const loadPracticeTests = () => import('@student/PracticeTests.jsx')
+const loadWalkthrough = () => import('@student-walkthrough/Walkthrough.jsx')
+const loadFlashcards = () => import('@student/Flashcards.jsx')
 
-const loadTestEngineWrap  = () => import('@student-components/TestEngineWrapper.jsx')
-const loadTestReviewWrap  = () => import('@student-components/TestReviewWrapper.jsx')
-const loadTestResultsWrap = () => import('@student-components/TestResultsWrapper.jsx')
+const loadTestEngineWrap = () =>
+  import('@student-components/TestEngineWrapper.jsx')
+const loadTestReviewWrap = () =>
+  import('@student-components/TestReviewWrapper.jsx')
+const loadTestResultsWrap = () =>
+  import('@student-components/TestResultsWrapper.jsx')
 
 /* ---------- Lazy components ---------- */
-const StudentDashboard  = lazy(loadDashboard)
-const Profile           = lazy(loadProfile)
-const Checklists        = lazy(loadChecklists)
-const PracticeTests     = lazy(loadPracticeTests)
-const Walkthrough       = lazy(loadWalkthrough)
-const Flashcards        = lazy(loadFlashcards)
+const StudentDashboard = lazy(loadDashboard)
+const Profile = lazy(loadProfile)
+const Checklists = lazy(loadChecklists)
+const PracticeTests = lazy(loadPracticeTests)
+const Walkthrough = lazy(loadWalkthrough)
+const Flashcards = lazy(loadFlashcards)
 
-const TestEngineWrapper  = lazy(loadTestEngineWrap)
-const TestReviewWrapper  = lazy(loadTestReviewWrap)
+const TestEngineWrapper = lazy(loadTestEngineWrap)
+const TestReviewWrapper = lazy(loadTestReviewWrap)
 const TestResultsWrapper = lazy(loadTestResultsWrap)
 
 /* ---------- Local loading UI ---------- */
@@ -76,10 +79,11 @@ class StudentSectionError extends React.Component {
     super(props)
     this.state = { err: null }
   }
-  static getDerivedStateFromError(err) { return { err } }
+  static getDerivedStateFromError(err) {
+    return { err }
+  }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
       console.error('[StudentRouter] render error:', error, info)
     }
   }
@@ -119,10 +123,14 @@ export default function StudentRouter() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const prefersReduced =
-      !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+    const prefersReduced = !!window.matchMedia?.(
+      '(prefers-reduced-motion: reduce)'
+    )?.matches
 
-    const conn = navigator.connection || navigator.webkitConnection || navigator.mozConnection
+    const conn =
+      navigator.connection ||
+      navigator.webkitConnection ||
+      navigator.mozConnection
     const saveData = !!conn?.saveData
     const isSlow = ['slow-2g', '2g'].includes(conn?.effectiveType || '')
 
@@ -145,7 +153,12 @@ export default function StudentRouter() {
       ]
 
       preloads.forEach((fn, i) => {
-        setTimeout(() => { fn().catch(() => {}) }, 150 * (i + 1))
+        setTimeout(
+          () => {
+            fn().catch(() => {})
+          },
+          150 * (i + 1)
+        )
       })
     }
 

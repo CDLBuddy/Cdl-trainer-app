@@ -17,6 +17,8 @@ import { showToast } from '@/components/toast-compat.js'
 /* =========================
    Helpers
 ========================= */
+;
+
 ``
 function tsToMs(t) {
   // Firestore Timestamp | number | string -> ms

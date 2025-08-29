@@ -30,7 +30,9 @@ export function useWebhooksSettings({ vm }) {
   )
 
   const [draft, setDraft] = useState(initial)
-  useEffect(() => { setDraft(initial) }, [initial])
+  useEffect(() => {
+    setDraft(initial)
+  }, [initial])
 
   const update = useCallback(patch => setDraft(d => ({ ...d, ...patch })), [])
 
@@ -40,7 +42,10 @@ export function useWebhooksSettings({ vm }) {
     next.endpoints = Array.isArray(next.endpoints)
       ? next.endpoints
           .map(ep => ({
-            url: typeof ep?.url === 'string' && /^https?:\/\/.+/i.test(ep.url) ? ep.url.trim() : '',
+            url:
+              typeof ep?.url === 'string' && /^https?:\/\/.+/i.test(ep.url)
+                ? ep.url.trim()
+                : '',
             events: Array.isArray(ep?.events)
               ? ep.events.filter(e => KNOWN_EVENTS.includes(e))
               : [],

@@ -10,7 +10,14 @@
 // ============================================================================
 
 import PropTypes from 'prop-types'
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import styles from './CompanyRow.module.css'
 
@@ -24,8 +31,8 @@ function fmtDate(val) {
       typeof val === 'string'
         ? new Date(val)
         : typeof val?.toDate === 'function'
-        ? val.toDate()
-        : new Date(val)
+          ? val.toDate()
+          : new Date(val)
     return Number.isNaN(d?.getTime?.()) ? '' : d.toLocaleDateString()
   } catch {
     return ''
@@ -69,7 +76,10 @@ function CompanyRow({
   const companyName = useMemo(() => c?.name || '', [c?.name])
   const companyContact = useMemo(() => c?.contact || '', [c?.contact])
   const companyAddress = useMemo(() => c?.address || '', [c?.address])
-  const statusDefault = useMemo(() => (c?.status ? 'active' : 'inactive'), [c?.status])
+  const statusDefault = useMemo(
+    () => (c?.status ? 'active' : 'inactive'),
+    [c?.status]
+  )
 
   const handleToggle = useCallback(() => {
     if (typeof toggleSelect === 'function') return toggleSelect()
@@ -79,9 +89,13 @@ function CompanyRow({
   const readInputs = useCallback(() => {
     const root = rowRef.current
     const name = root?.querySelector('.company-name-input')?.value?.trim() || ''
-    const contact = root?.querySelector('.company-contact-input')?.value?.trim() || ''
-    const address = root?.querySelector('.company-address-input')?.value?.trim() || ''
-    const status = (root?.querySelector('.company-status-input')?.value || 'active') === 'active'
+    const contact =
+      root?.querySelector('.company-contact-input')?.value?.trim() || ''
+    const address =
+      root?.querySelector('.company-address-input')?.value?.trim() || ''
+    const status =
+      (root?.querySelector('.company-status-input')?.value || 'active') ===
+      'active'
     return { name, contact, address, status }
   }, [])
 
@@ -92,7 +106,11 @@ function CompanyRow({
         return false
       }
       if (!NAME_RE.test(name)) {
-        showToast('Invalid company name. Allowed: letters, numbers, spaces, - \' . &', 4200, 'error')
+        showToast(
+          "Invalid company name. Allowed: letters, numbers, spaces, - ' . &",
+          4200,
+          'error'
+        )
         return false
       }
       return true
@@ -108,7 +126,6 @@ function CompanyRow({
       await onSave?.(c.id, payload, rowRef)
       showToast('Company saved.', 2000, 'success')
     } catch (e) {
-       
       console.error('[CompanyRow] save failed', e)
       showToast('Failed to save company.', 3000, 'error')
     } finally {
@@ -118,7 +135,9 @@ function CompanyRow({
 
   const onRemoveClick = useCallback(async () => {
     if (confirmRemove) {
-      const ok = window.confirm(`Remove “${c?.name || 'this company'}”? This cannot be undone.`)
+      const ok = window.confirm(
+        `Remove “${c?.name || 'this company'}”? This cannot be undone.`
+      )
       if (!ok) return
     }
     try {
@@ -126,7 +145,6 @@ function CompanyRow({
       await onRemove?.(c?.id)
       showToast('Company removed.', 2000, 'success')
     } catch (e) {
-       
       console.error('[CompanyRow] remove failed', e)
       showToast('Failed to remove company.', 3000, 'error')
     } finally {
@@ -138,8 +156,9 @@ function CompanyRow({
   useEffect(() => {
     const el = rowRef.current
     if (!el) return
-    const onKey = (e) => {
-      const isModS = (e.key === 's' || e.key === 'S') && (e.metaKey || e.ctrlKey)
+    const onKey = e => {
+      const isModS =
+        (e.key === 's' || e.key === 'S') && (e.metaKey || e.ctrlKey)
       const isEnter = e.key === 'Enter'
       if (isModS || isEnter) {
         e.preventDefault()
@@ -207,13 +226,20 @@ function CompanyRow({
       <td>
         <span style={{ fontSize: '.93em' }}>{fmtDate(c?.createdAt)}</span>
         <br />
-        <span style={{ fontSize: '.87em', color: '#999' }}>{c?.createdBy || ''}</span>
+        <span style={{ fontSize: '.87em', color: '#999' }}>
+          {c?.createdBy || ''}
+        </span>
       </td>
 
       {/* Actions */}
       <td>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button className="btn outline" onClick={onSaveClick} disabled={busy} title="Save (Enter or ⌘/Ctrl+S)">
+          <button
+            className="btn outline"
+            onClick={onSaveClick}
+            disabled={busy}
+            title="Save (Enter or ⌘/Ctrl+S)"
+          >
             {busy ? 'Saving…' : 'Save'}
           </button>
           <button
@@ -235,7 +261,13 @@ function CompanyRow({
           </button>
           <button
             className="btn outline"
-            onClick={() => showToast(`Viewing users for company: ${c?.name || c?.id}`, 3500, 'info')}
+            onClick={() =>
+              showToast(
+                `Viewing users for company: ${c?.name || c?.id}`,
+                3500,
+                'info'
+              )
+            }
             disabled={busy}
             title="View users"
           >

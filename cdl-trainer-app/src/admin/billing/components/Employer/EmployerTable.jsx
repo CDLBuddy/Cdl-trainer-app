@@ -51,7 +51,7 @@ function EmployerTableBase({ rows = [], onMarkPaid = () => {} }) {
               </td>
             </tr>
           ) : (
-            rows.map((r) => {
+            rows.map(r => {
               const isPaid = String(r?.status ?? '').toLowerCase() === 'paid'
               const company = r?.companyName || '—'
               const po = r?.poNumber || '—'
@@ -63,10 +63,15 @@ function EmployerTableBase({ rows = [], onMarkPaid = () => {} }) {
               return (
                 <tr key={r.id}>
                   {/* Use scope="row" so screen readers anchor the row by company */}
-                  <th scope="row" style={{ fontWeight: 600 }}>{company}</th>
+                  <th scope="row" style={{ fontWeight: 600 }}>
+                    {company}
+                  </th>
 
                   <td
-                    style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}
+                    style={{
+                      fontFamily:
+                        'ui-monospace, SFMono-Regular, Menlo, monospace',
+                    }}
                     title={po !== '—' ? `PO: ${po}` : undefined}
                   >
                     {po !== '—' ? <code>{po}</code> : '—'}
@@ -95,7 +100,9 @@ function EmployerTableBase({ rows = [], onMarkPaid = () => {} }) {
                       className="btn small"
                       disabled={isPaid}
                       aria-disabled={isPaid ? 'true' : 'false'}
-                      title={isPaid ? 'Already paid' : 'Mark this invoice as paid'}
+                      title={
+                        isPaid ? 'Already paid' : 'Mark this invoice as paid'
+                      }
                       onClick={() => handleMarkPaid(r.id, isPaid)}
                       data-status={r?.status || 'unknown'}
                     >

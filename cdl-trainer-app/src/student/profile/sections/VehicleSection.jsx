@@ -27,7 +27,7 @@ export default function VehicleSection({ value, onChange, onUpload }) {
   const setField = useCallback((k, val) => onChange?.(k, val), [onChange])
 
   const handleQualifiedChange = useCallback(
-    (val) => {
+    val => {
       setField('vehicleQualified', val)
       // If switching away from "Yes", clear dependent fields
       if (String(val).toLowerCase() !== 'yes') {
@@ -39,7 +39,7 @@ export default function VehicleSection({ value, onChange, onUpload }) {
   )
 
   const upTruck = useCallback(
-    async (file) => {
+    async file => {
       if (!file) return
       if (typeof onUpload === 'function') {
         await onUpload(file, 'students/vehicle', 'truckPlateUrl')
@@ -53,7 +53,7 @@ export default function VehicleSection({ value, onChange, onUpload }) {
   )
 
   const upTrailer = useCallback(
-    async (file) => {
+    async file => {
       if (!file) return
       if (typeof onUpload === 'function') {
         await onUpload(file, 'students/vehicle', 'trailerPlateUrl')
@@ -83,7 +83,9 @@ export default function VehicleSection({ value, onChange, onUpload }) {
         verifiedAt={verifiedAt}
       />
 
-      <h3 id={titleId} className="visually-hidden">Vehicle (If Applicable)</h3>
+      <h3 id={titleId} className="visually-hidden">
+        Vehicle (If Applicable)
+      </h3>
       <div id={hintId} className={styles.sub}>
         Required before Behind-the-Wheel only if you will use your own vehicle.
       </div>
@@ -108,7 +110,11 @@ export default function VehicleSection({ value, onChange, onUpload }) {
           <div className={styles.grid2} aria-describedby={hintId}>
             <div>
               <UploadField
-                label={v.truckPlateUrl ? 'Replace Truck Data Plate' : 'Truck Data Plate'}
+                label={
+                  v.truckPlateUrl
+                    ? 'Replace Truck Data Plate'
+                    : 'Truck Data Plate'
+                }
                 currentUrl={v.truckPlateUrl}
                 accept="image/*"
                 maxSizeMB={8}
@@ -132,7 +138,11 @@ export default function VehicleSection({ value, onChange, onUpload }) {
 
             <div>
               <UploadField
-                label={v.trailerPlateUrl ? 'Replace Trailer Data Plate' : 'Trailer Data Plate'}
+                label={
+                  v.trailerPlateUrl
+                    ? 'Replace Trailer Data Plate'
+                    : 'Trailer Data Plate'
+                }
                 currentUrl={v.trailerPlateUrl}
                 accept="image/*"
                 maxSizeMB={8}
@@ -156,7 +166,8 @@ export default function VehicleSection({ value, onChange, onUpload }) {
           </div>
 
           <p className={styles.subtle} role="note">
-            Tip: Stand square to the plate and fill the frame. If your photo is blurry, try again in brighter light.
+            Tip: Stand square to the plate and fill the frame. If your photo is
+            blurry, try again in brighter light.
           </p>
         </>
       )}

@@ -17,13 +17,15 @@
   border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
   border-radius: var(--radius-md, 10px);
   padding: 14px;
-  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
-  transition: border-color .15s ease, box-shadow .15s ease;
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .wrap :global(.dashboard-card:hover),
 .wrap :global(.dashboard-card:focus-within) {
   border-color: color-mix(in oklab, var(--accent, #c4dbe8), #fff 16%);
-  box-shadow: var(--shadow-2, 0 10px 30px rgba(0,0,0,.25));
+  box-shadow: var(--shadow-2, 0 10px 30px rgba(0, 0, 0, 0.25));
 }
 
 /* ---------- Header ---------- */
@@ -33,25 +35,25 @@
   justify-content: space-between;
   gap: 12px;
   padding: 4px 2px 8px;
-  border-bottom: 1px dashed rgba(255,255,255,.10);
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
 }
 .scope {
-  font-size: .9rem;
+  font-size: 0.9rem;
   color: color-mix(in oklab, var(--text-light, #fff), #000 35%);
   background: color-mix(in oklab, var(--accent, #c4dbe8), #000 80%);
   border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
   padding: 6px 10px;
   border-radius: 999px;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 /* ---------- Section title (global helper used by JSX) ---------- */
 :global(.section-title) {
   font-weight: 800;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
   margin: -2px 0 10px;
   color: var(--text-light, #fff);
-  opacity: .95;
+  opacity: 0.95;
 }
 
 /* ---------- Company chips row ---------- */
@@ -75,43 +77,53 @@
   padding: 8px 12px;
   border-radius: 999px;
   color: var(--text-light, #fff);
-  background: rgba(255,255,255,.06);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 55%);
-  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
-  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease, transform .05s ease;
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.05s ease;
   cursor: pointer;
   user-select: none;
   scroll-snap-align: start;
 }
 .chip:hover,
 .chip:focus-visible {
-  background: rgba(255,255,255,.10);
+  background: rgba(255, 255, 255, 0.1);
   border-color: color-mix(in oklab, var(--accent, #c4dbe8), #fff 12%);
-  box-shadow: var(--shadow-2, 0 10px 30px rgba(0,0,0,.25));
+  box-shadow: var(--shadow-2, 0 10px 30px rgba(0, 0, 0, 0.25));
   outline: none;
 }
-.chip:active { transform: translateY(1px); }
+.chip:active {
+  transform: translateY(1px);
+}
 
 .chipActive {
   background: color-mix(in oklab, var(--brand-dark, #0b1a22), #fff 6%);
   border-color: color-mix(in oklab, var(--brand-light, #4e91ad), #fff 18%);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light, #4e91ad), #fff 10%);
+  box-shadow: 0 0 0 3px
+    color-mix(in oklab, var(--brand-light, #4e91ad), #fff 10%);
 }
 
 /* Chip content parts */
-.chipLabel { font-weight: 700; letter-spacing: .01em; }
+.chipLabel {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
 .chipCount {
   display: inline-grid;
   place-items: center;
   min-width: 1.6em;
   height: 1.6em;
-  padding: 0 .45em;
+  padding: 0 0.45em;
   border-radius: 999px;
-  font-size: .8rem;
+  font-size: 0.8rem;
   line-height: 1;
   color: #fff;
   background: color-mix(in oklab, var(--accent, #c4dbe8), #000 20%);
-  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
 }
 .chipPill {
   display: inline-flex;
@@ -121,15 +133,21 @@
 
 /* ---------- Small muted text ---------- */
 .muted {
-  font-size: .9rem;
+  font-size: 0.9rem;
   color: color-mix(in oklab, var(--text-light, #fff), #000 50%);
-  opacity: .9;
+  opacity: 0.9;
 }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 720px) {
-  .head { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .scope { font-size: .85rem; }
+  .head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .scope {
+    font-size: 0.85rem;
+  }
 }
 
 /* ---------- Reduced motion ---------- */

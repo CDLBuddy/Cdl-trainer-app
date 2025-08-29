@@ -122,7 +122,10 @@ select {
   font-size: 0.92rem;
   color: var(--text-light, #fff);
   background: color-mix(in oklab, var(--card-bg), #000 6%);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 input::placeholder {
@@ -179,19 +182,31 @@ select:focus-visible {
 
 /* Animations */
 @keyframes fadeIn {
-  from { background: rgba(0, 0, 0, 0); }
-  to   { background: rgba(0, 0, 0, 0.55); }
+  from {
+    background: rgba(0, 0, 0, 0);
+  }
+  to {
+    background: rgba(0, 0, 0, 0.55);
+  }
 }
 
 @keyframes slideIn {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .overlay { animation: none; }
-  .drawer  { animation: none; }
+  .overlay {
+    animation: none;
+  }
+  .drawer {
+    animation: none;
+  }
 }
 
 /* Responsive: full screen on very narrow */

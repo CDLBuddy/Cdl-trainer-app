@@ -10,7 +10,14 @@
 // ======================================================================
 
 import { onAuthStateChanged, getIdTokenResult } from 'firebase/auth'
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
@@ -23,8 +30,8 @@ import { preloadRoutesForRole } from '@utils/route-preload.js'
 
 /** Resolution order for role lookups (override via props if needed). */
 const DEFAULT_ROLE_SOURCES = /** @type {const} */ ([
-  'customClaims',   // token.claims.role OR token.claims.roles[0]
-  'userDocByUid',   // Firestore: users/<uid> { role }
+  'customClaims', // token.claims.role OR token.claims.roles[0]
+  'userDocByUid', // Firestore: users/<uid> { role }
   'userDocByEmail', // Firestore: users where email == currentUser.email
 ])
 
@@ -33,8 +40,15 @@ const CACHE_KEY = 'roleCache_v1'
 
 /** Normalize to one of our known roles, else null. */
 function normalizeRole(role) {
-  const r = String(role ?? '').trim().toLowerCase()
-  return r === 'student' || r === 'instructor' || r === 'admin' || r === 'superadmin' ? r : null
+  const r = String(role ?? '')
+    .trim()
+    .toLowerCase()
+  return r === 'student' ||
+    r === 'instructor' ||
+    r === 'admin' ||
+    r === 'superadmin'
+    ? r
+    : null
 }
 
 /* -------------------------------- Hook ----------------------------------- */
@@ -50,8 +64,8 @@ export function useUserRole(options = {}) {
   const {
     sources = DEFAULT_ROLE_SOURCES,
     cacheTtlSec = 300, // 5 min
-    onResolved,        // (user, role) => void
-    onRoleChange,      // (prev, next) => void
+    onResolved, // (user, role) => void
+    onRoleChange, // (prev, next) => void
   } = options
 
   const [state, setState] = useState(() => ({
@@ -66,8 +80,12 @@ export function useUserRole(options = {}) {
   // their identity (fixes update-depth loops).
   const onResolvedRef = useRef(onResolved)
   const onRoleChangeRef = useRef(onRoleChange)
-  useEffect(() => { onResolvedRef.current = onResolved }, [onResolved])
-  useEffect(() => { onRoleChangeRef.current = onRoleChange }, [onRoleChange])
+  useEffect(() => {
+    onResolvedRef.current = onResolved
+  }, [onResolved])
+  useEffect(() => {
+    onRoleChangeRef.current = onRoleChange
+  }, [onRoleChange])
 
   // Stable key for sources (arrays often change identity).
   const sourcesKey = useMemo(() => {
@@ -79,13 +97,19 @@ export function useUserRole(options = {}) {
   useEffect(() => {
     let mounted = true
 
-    const unsub = onAuthStateChanged(auth, async (user) => {
+    const unsub = onAuthStateChanged(auth, async user => {
       if (!mounted) return
       try {
         if (!user) {
           sessionStorage.removeItem(CACHE_KEY)
           prevRoleRef.current = null
-          setState({ loading: false, error: null, user: null, role: null, email: null })
+          setState({
+            loading: false,
+            error: null,
+            user: null,
+            role: null,
+            email: null,
+          })
           onResolvedRef.current?.(null, null)
           return
         }
@@ -114,18 +138,31 @@ export function useUserRole(options = {}) {
           try {
             window.currentUserRole = role
             localStorage.setItem('userRole', role)
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
 
         maybeNotifyRoleChange(prevRoleRef, role, onRoleChangeRef.current)
         setState({ loading: false, error: null, user, role, email })
         onResolvedRef.current?.(user, role)
       } catch (err) {
-        setState((s) => ({ ...s, loading: false, error: err || new Error('Role check failed') }))
+        setState(s => ({
+          ...s,
+          loading: false,
+          error: err || new Error('Role check failed'),
+        }))
       }
     })
 
-    return () => { mounted = false; try { unsub() } catch { /* ignore */ } }
+    return () => {
+      mounted = false
+      try {
+        unsub()
+      } catch {
+        /* ignore */
+      }
+    }
     // IMPORTANT: do NOT depend on function props here — we use refs above.
   }, [cacheTtlSec, sourcesKey, sources])
 
@@ -162,7 +199,11 @@ export function RequireRole({
   const location = useLocation()
   const preloadedRef = useRef(new Set()) // once-per-role guard
 
-  const { loading, user, role: currentRole } = useUserRole({
+  const {
+    loading,
+    user,
+    role: currentRole,
+  } = useUserRole({
     sources,
     onResolved: (u, r) => {
       if (!u || !r) return
@@ -172,7 +213,11 @@ export function RequireRole({
           preloadRoutesForRole?.(r)?.catch?.(() => {})
         }
       } else if (typeof preload === 'function') {
-        try { preload(r) } catch { /* ignore */ }
+        try {
+          preload(r)
+        } catch {
+          /* ignore */
+        }
       }
     },
   })
@@ -185,7 +230,8 @@ export function RequireRole({
   const allowed = useMemo(() => {
     if (!required) return true // only requires sign-in
     if (typeof required === 'function') return !!required(normalizedCurrent)
-    if (Array.isArray(required)) return required.map(normalizeRole).includes(normalizedCurrent)
+    if (Array.isArray(required))
+      return required.map(normalizeRole).includes(normalizedCurrent)
     return normalizeRole(required) === normalizedCurrent
   }, [required, normalizedCurrent])
 
@@ -199,7 +245,10 @@ export function RequireRole({
 
   // 3) Signed in, but role is not yet resolved → WAIT here (no redirects / no deny)
   if (user && !normalizedCurrent) {
-    if (__DEV__) console.warn('[RequireRole] user authenticated, role not resolved yet — holding.')
+    if (__DEV__)
+      console.warn(
+        '[RequireRole] user authenticated, role not resolved yet — holding.'
+      )
     return <DefaultLoader text="Finalizing your role…" />
   }
 
@@ -231,7 +280,10 @@ export function DefaultLoader({ text = 'Loading…' }) {
 
 export function DefaultAccessDenied() {
   return (
-    <div className="dashboard-card" style={{ maxWidth: 560, margin: '2em auto', textAlign: 'center' }}>
+    <div
+      className="dashboard-card"
+      style={{ maxWidth: 560, margin: '2em auto', textAlign: 'center' }}
+    >
       <h2>Access Denied</h2>
       <p style={{ opacity: 0.85 }}>
         Your account doesn’t have permission to view this page.
@@ -313,7 +365,10 @@ function safeSetCache(uid, email, role, ttlSeconds = 300) {
     if (!key) return
     const raw = sessionStorage.getItem(CACHE_KEY)
     const data = raw ? JSON.parse(raw) : {}
-    data[key] = { role: normalizeRole(role), exp: Date.now() + ttlSeconds * 1000 }
+    data[key] = {
+      role: normalizeRole(role),
+      exp: Date.now() + ttlSeconds * 1000,
+    }
     sessionStorage.setItem(CACHE_KEY, JSON.stringify(data))
   } catch {
     // ignore
@@ -325,7 +380,11 @@ function maybeNotifyRoleChange(ref, next, cb) {
   if (prev !== next) {
     ref.current = next
     if (typeof cb === 'function') {
-      try { cb(prev, next) } catch { /* ignore */ }
+      try {
+        cb(prev, next)
+      } catch {
+        /* ignore */
+      }
     }
   }
 }

@@ -8,13 +8,13 @@
 export * from '@user-profile'
 
 import * as UserProfile from '@user-profile'
+
 export default UserProfile
 
 // DEV-only, one-time deprecation notice (relies on vite define: __DEV__)
-if (typeof __DEV__ !== 'undefined' && __DEV__) {
-  // eslint-disable-next-line no-console
+if (import.meta.env && import.meta.env.DEV) {
   console.warn(
     '[deprecate] Import from "@user-profile" instead of "@utils/userProfile". ' +
-    'The shim will be removed in a future release.'
+      'The shim will be removed in a future release.'
   )
 }

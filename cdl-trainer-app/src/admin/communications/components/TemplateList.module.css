@@ -9,7 +9,9 @@
   background: var(--card-bg);
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
   border-radius: var(--radius-lg, 14px);
-  box-shadow: var(--shadow-3, 0 14px 40px rgba(0,0,0,.31)), inset 0 1px 0 #ffffff12;
+  box-shadow:
+    var(--shadow-3, 0 14px 40px rgba(0, 0, 0, 0.31)),
+    inset 0 1px 0 #ffffff12;
   overflow: hidden;
 }
 
@@ -17,13 +19,13 @@
 .cardHeader {
   display: flex;
   align-items: center;
-  gap: .75rem;
-  padding: .8rem 1rem;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
   border-bottom: 1px solid color-mix(in oklab, var(--accent), transparent 55%);
   background: linear-gradient(
     120deg,
     color-mix(in oklab, var(--brand-dark), #000 4%),
-    color-mix(in oklab, var(--brand-mid),  #000 8%) 100%
+    color-mix(in oklab, var(--brand-mid), #000 8%) 100%
   );
 }
 
@@ -31,14 +33,14 @@
   margin: 0;
   color: var(--text-light);
   font-weight: 800;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
 }
 
 .headerActions {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
 }
 
 /* ----- Search ------------------------------------------------------------ */
@@ -50,10 +52,14 @@
 
 .srOnly {
   position: absolute !important;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0, 0, 0, 0);
-  white-space: nowrap; border: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .search {
@@ -62,11 +68,16 @@
   background: color-mix(in oklab, var(--brand-mid), #000 78%);
   color: var(--text-light);
   border-radius: 10px;
-  padding: .5rem .65rem;
+  padding: 0.5rem 0.65rem;
   min-width: 200px;
-  transition: box-shadow .12s ease, border-color .12s ease, background .12s ease;
+  transition:
+    box-shadow 0.12s ease,
+    border-color 0.12s ease,
+    background 0.12s ease;
 }
-.search::placeholder { color: color-mix(in oklab, var(--text-light), transparent 40%); }
+.search::placeholder {
+  color: color-mix(in oklab, var(--text-light), transparent 40%);
+}
 .search:focus-visible {
   outline: none;
   box-shadow: var(--ring);
@@ -87,9 +98,13 @@
   background: color-mix(in oklab, var(--brand-mid), #000 78%);
   color: var(--text-light);
   border-radius: 10px;
-  padding: .45rem .6rem;
+  padding: 0.45rem 0.6rem;
   cursor: pointer;
-  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    border-color 0.12s ease,
+    background 0.12s ease;
 }
 @media (hover: hover) and (pointer: fine) {
   .refresh:hover {
@@ -98,7 +113,10 @@
     box-shadow: 0 8px 18px #0005;
   }
 }
-.refresh:focus-visible { outline: none; box-shadow: var(--ring); }
+.refresh:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
 
 .primary {
   appearance: none;
@@ -106,44 +124,66 @@
   background: color-mix(in oklab, var(--brand-light), #000 8%);
   color: var(--text-light);
   border-radius: 10px;
-  padding: .5rem .8rem;
+  padding: 0.5rem 0.8rem;
   font-weight: 700;
   cursor: pointer;
   min-height: 40px;
   box-shadow: 0 8px 18px color-mix(in oklab, var(--brand-light), #000 40%);
-  transition: transform .12s ease, filter .12s ease, background .14s ease, border-color .14s ease;
+  transition:
+    transform 0.12s ease,
+    filter 0.12s ease,
+    background 0.14s ease,
+    border-color 0.14s ease;
 }
 @media (hover: hover) and (pointer: fine) {
-  .primary:hover { transform: translateY(-1px); filter: brightness(1.05); }
+  .primary:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+  }
 }
-.primary:focus-visible { outline: none; box-shadow: var(--ring); }
+.primary:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
 
 /* ----- Body & skeletons -------------------------------------------------- */
 .body {
-  padding: .8rem 1rem;
+  padding: 0.8rem 1rem;
   display: grid;
-  gap: .5rem;
+  gap: 0.5rem;
 }
 
-.skelList { display: grid; gap: .45rem; }
+.skelList {
+  display: grid;
+  gap: 0.45rem;
+}
 
 .skel {
   height: 12px;
   width: 92%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #ffffff0a 25%, #ffffff22 37%, #ffffff0a 63%);
+  background: linear-gradient(
+    90deg,
+    #ffffff0a 25%,
+    #ffffff22 37%,
+    #ffffff0a 63%
+  );
   background-size: 400% 100%;
   animation: shimmer 1100ms ease-in-out infinite;
   margin: 6px 0;
 }
 @keyframes shimmer {
-  0% { background-position: 100% 0 }
-  100% { background-position: 0% 0 }
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0% 0;
+  }
 }
 
 .empty {
   color: color-mix(in oklab, var(--text-light), transparent 30%);
-  margin: .2rem 0 .4rem;
+  margin: 0.2rem 0 0.4rem;
 }
 
 .linkBtn {
@@ -159,7 +199,7 @@
 /* ----- List & rows ------------------------------------------------------- */
 .list {
   display: grid;
-  gap: .5rem;
+  gap: 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -169,12 +209,16 @@
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
   border: 1px solid color-mix(in oklab, var(--accent), transparent 60%);
   border-radius: 12px;
   background: color-mix(in oklab, var(--brand-mid), #000 78%);
-  padding: .25rem;
-  transition: border-color .14s ease, background .14s ease, box-shadow .14s ease, transform .12s ease;
+  padding: 0.25rem;
+  transition:
+    border-color 0.14s ease,
+    background 0.14s ease,
+    box-shadow 0.14s ease,
+    transform 0.12s ease;
 }
 @media (hover: hover) and (pointer: fine) {
   .row:hover {
@@ -191,20 +235,29 @@
   background: transparent;
   color: var(--text-light);
   text-align: left;
-  padding: .55rem .6rem;
+  padding: 0.55rem 0.6rem;
   border-radius: 10px;
   cursor: pointer;
 }
-.item:focus-visible { outline: none; box-shadow: var(--ring); }
-.name { font-weight: 700; }
-.meta { opacity: .8; font-size: .9rem; margin-left: .5rem; }
+.item:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.name {
+  font-weight: 700;
+}
+.meta {
+  opacity: 0.8;
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+}
 
 /* Row action buttons (e.g., edit) */
 .rowActions {
   display: inline-flex;
   align-items: center;
-  gap: .35rem;
-  padding-right: .2rem;
+  gap: 0.35rem;
+  padding-right: 0.2rem;
 }
 
 .iconBtn {
@@ -213,9 +266,13 @@
   background: color-mix(in oklab, var(--brand-mid), #000 78%);
   color: var(--text-light);
   border-radius: 10px;
-  padding: .4rem .55rem;
+  padding: 0.4rem 0.55rem;
   cursor: pointer;
-  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    border-color 0.12s ease,
+    background 0.12s ease;
 }
 @media (hover: hover) and (pointer: fine) {
   .iconBtn:hover {
@@ -224,13 +281,22 @@
     box-shadow: 0 8px 18px #0005;
   }
 }
-.iconBtn:focus-visible { outline: none; box-shadow: var(--ring); }
+.iconBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
 
 /* ----- Responsive -------------------------------------------------------- */
 @media (max-width: 720px) {
-  .cardHeader { flex-wrap: wrap; }
-  .search { min-width: 160px; }
-  .row { grid-template-columns: 1fr auto; }
+  .cardHeader {
+    flex-wrap: wrap;
+  }
+  .search {
+    min-width: 160px;
+  }
+  .row {
+    grid-template-columns: 1fr auto;
+  }
 }
 
 /* ----- Reduced motion ---------------------------------------------------- */
@@ -242,7 +308,9 @@
   .iconBtn {
     transition: none !important;
   }
-  .skel { animation: none !important; }
+  .skel {
+    animation: none !important;
+  }
 }
 
 /* ----- High contrast / forced colors ----------------------------------- */
@@ -258,5 +326,7 @@
     color: CanvasText !important;
     box-shadow: none !important;
   }
-  .search::placeholder { color: GrayText !important; }
+  .search::placeholder {
+    color: GrayText !important;
+  }
 }

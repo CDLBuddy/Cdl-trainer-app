@@ -29,7 +29,10 @@ import {
  * }}
  */
 export function useBillingDashboard({ schoolId, onToast } = {}) {
-  const toast = useCallback((msg, tone = 'info') => onToast?.(msg, tone), [onToast])
+  const toast = useCallback(
+    (msg, tone = 'info') => onToast?.(msg, tone),
+    [onToast]
+  )
 
   const [loadingInv, setLoadingInv] = useState(false)
   const [loadingPay, setLoadingPay] = useState(false)
@@ -42,7 +45,12 @@ export function useBillingDashboard({ schoolId, onToast } = {}) {
   )
 
   const aliveRef = useRef(true)
-  useEffect(() => () => { aliveRef.current = false }, [])
+  useEffect(
+    () => () => {
+      aliveRef.current = false
+    },
+    []
+  )
 
   const refreshEmployerInvoices = useCallback(async () => {
     if (!schoolId && !USE_BILLING_MOCKS) return
@@ -85,33 +93,39 @@ export function useBillingDashboard({ schoolId, onToast } = {}) {
     refreshIndividualPayments()
   }, [refreshEmployerInvoices, refreshIndividualPayments])
 
-  const handleMarkInvoicePaid = useCallback(async (invoiceId) => {
-    if (!invoiceId) return
-    try {
-      if (!USE_BILLING_MOCKS) {
-        await markEmployerInvoicePaid({ invoiceId, schoolId })
+  const handleMarkInvoicePaid = useCallback(
+    async invoiceId => {
+      if (!invoiceId) return
+      try {
+        if (!USE_BILLING_MOCKS) {
+          await markEmployerInvoicePaid({ invoiceId, schoolId })
+        }
+        toast('Invoice marked paid.', 'success')
+        await refreshEmployerInvoices()
+      } catch (e) {
+        console.error('[useBillingDashboard] mark paid failed', e)
+        toast('Error marking invoice paid.', 'error')
       }
-      toast('Invoice marked paid.', 'success')
-      await refreshEmployerInvoices()
-    } catch (e) {
-      console.error('[useBillingDashboard] mark paid failed', e)
-      toast('Error marking invoice paid.', 'error')
-    }
-  }, [schoolId, refreshEmployerInvoices, toast])
+    },
+    [schoolId, refreshEmployerInvoices, toast]
+  )
 
-  const handleToggleReconciled = useCallback(async (paymentId, next) => {
-    if (!paymentId) return
-    try {
-      if (!USE_BILLING_MOCKS) {
-        await setPaymentReconciled({ paymentId, next, schoolId })
+  const handleToggleReconciled = useCallback(
+    async (paymentId, next) => {
+      if (!paymentId) return
+      try {
+        if (!USE_BILLING_MOCKS) {
+          await setPaymentReconciled({ paymentId, next, schoolId })
+        }
+        toast(next ? 'Payment reconciled.' : 'Payment unreconciled.', 'success')
+        await refreshIndividualPayments()
+      } catch (e) {
+        console.error('[useBillingDashboard] reconcile failed', e)
+        toast('Error updating reconciliation.', 'error')
       }
-      toast(next ? 'Payment reconciled.' : 'Payment unreconciled.', 'success')
-      await refreshIndividualPayments()
-    } catch (e) {
-      console.error('[useBillingDashboard] reconcile failed', e)
-      toast('Error updating reconciliation.', 'error')
-    }
-  }, [schoolId, refreshIndividualPayments, toast])
+    },
+    [schoolId, refreshIndividualPayments, toast]
+  )
 
   return {
     loading: loadingInv || loadingPay,

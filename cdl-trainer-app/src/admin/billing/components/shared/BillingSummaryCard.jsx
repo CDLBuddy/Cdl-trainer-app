@@ -16,7 +16,7 @@ import styles from './BillingSummaryCard.module.css'
 
 const MODE_OPTIONS = [
   { value: 'employer', label: 'Employer-billed' },
-  { value: 'student',  label: 'Student-paid' },
+  { value: 'student', label: 'Student-paid' },
 ]
 
 const BillingSummaryCard = memo(function BillingSummaryCard({
@@ -28,7 +28,10 @@ const BillingSummaryCard = memo(function BillingSummaryCard({
   showOpenButton = true,
 }) {
   // Bridge returns a safe, normalized shape
-  const { summary, setBillingMode, loading, error } = useBillingSummary({ schoolId, companyId })
+  const { summary, setBillingMode, loading, error } = useBillingSummary({
+    schoolId,
+    companyId,
+  })
 
   const handleOpen = () => {
     if (onOpenBilling) onOpenBilling({ schoolId, companyId })
@@ -37,7 +40,12 @@ const BillingSummaryCard = memo(function BillingSummaryCard({
   // --- Render states ---------------------------------------------------------
   if (loading) {
     return (
-      <div className={`${styles.card} ${className}`.trim()} role="region" aria-label="Billing summary" aria-busy="true">
+      <div
+        className={`${styles.card} ${className}`.trim()}
+        role="region"
+        aria-label="Billing summary"
+        aria-busy="true"
+      >
         <header className={styles.header}>
           <h3 className={styles.title}>{title}</h3>
           <div className={styles.mode}>
@@ -45,13 +53,24 @@ const BillingSummaryCard = memo(function BillingSummaryCard({
           </div>
         </header>
         <ul className={styles.kpis}>
-          <li><span>Balance</span><strong className={styles.skeleton}>$0</strong></li>
-          <li><span>Open Invoices</span><strong className={styles.skeleton}>0</strong></li>
-          <li><span>Last Payment</span><strong className={styles.skeleton}>—</strong></li>
+          <li>
+            <span>Balance</span>
+            <strong className={styles.skeleton}>$0</strong>
+          </li>
+          <li>
+            <span>Open Invoices</span>
+            <strong className={styles.skeleton}>0</strong>
+          </li>
+          <li>
+            <span>Last Payment</span>
+            <strong className={styles.skeleton}>—</strong>
+          </li>
         </ul>
         {showOpenButton && (
           <div className={styles.actions}>
-            <button className="btn" disabled>Open in Billing</button>
+            <button className="btn" disabled>
+              Open in Billing
+            </button>
           </div>
         )}
       </div>
@@ -60,20 +79,25 @@ const BillingSummaryCard = memo(function BillingSummaryCard({
 
   if (!summary) {
     return (
-      <div className={`${styles.card} ${className}`.trim()} role="region" aria-label="Billing summary">
+      <div
+        className={`${styles.card} ${className}`.trim()}
+        role="region"
+        aria-label="Billing summary"
+      >
         <header className={styles.header}>
           <h3 className={styles.title}>{title}</h3>
         </header>
         <p className={styles.empty}>
-          {error ? 'Unable to load billing data.' : 'No billing data.'}
-          {' '}
+          {error ? 'Unable to load billing data.' : 'No billing data.'}{' '}
           <small className={styles.muted}>
             {error ? String(error) : 'Configure billing to see a summary.'}
           </small>
         </p>
         {showOpenButton && (
           <div className={styles.actions}>
-            <button className="btn" onClick={handleOpen}>Open in Billing</button>
+            <button className="btn" onClick={handleOpen}>
+              Open in Billing
+            </button>
           </div>
         )}
       </div>
@@ -82,7 +106,11 @@ const BillingSummaryCard = memo(function BillingSummaryCard({
 
   // --- Normal render ---------------------------------------------------------
   return (
-    <div className={`${styles.card} ${className}`.trim()} role="region" aria-label="Billing summary">
+    <div
+      className={`${styles.card} ${className}`.trim()}
+      role="region"
+      aria-label="Billing summary"
+    >
       <header className={styles.header}>
         <h3 className={styles.title}>{title}</h3>
 
@@ -95,7 +123,9 @@ const BillingSummaryCard = memo(function BillingSummaryCard({
             aria-label="Billing mode"
           >
             {MODE_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         </label>
@@ -122,10 +152,13 @@ const BillingSummaryCard = memo(function BillingSummaryCard({
             Open in Billing
           </button>
           {/* Optional deep link (kept subtle, useful in drawers) */}
-          <Link className={`btn outline ${styles.secondaryLink}`} to={`/admin/billing?${new URLSearchParams({
-            ...(schoolId ? { schoolId } : {}),
-            ...(companyId ? { companyId } : {}),
-          }).toString()}`}>
+          <Link
+            className={`btn outline ${styles.secondaryLink}`}
+            to={`/admin/billing?${new URLSearchParams({
+              ...(schoolId ? { schoolId } : {}),
+              ...(companyId ? { companyId } : {}),
+            }).toString()}`}
+          >
             Full view
           </Link>
         </div>
@@ -137,7 +170,7 @@ const BillingSummaryCard = memo(function BillingSummaryCard({
 BillingSummaryCard.propTypes = {
   schoolId: PropTypes.string,
   companyId: PropTypes.string,
-  onOpenBilling: PropTypes.func,     // ({ schoolId?, companyId? }) => void
+  onOpenBilling: PropTypes.func, // ({ schoolId?, companyId? }) => void
   className: PropTypes.string,
   title: PropTypes.string,
   showOpenButton: PropTypes.bool,

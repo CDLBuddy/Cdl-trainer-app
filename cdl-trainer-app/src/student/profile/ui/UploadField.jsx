@@ -113,7 +113,7 @@ export default function UploadField({
     () =>
       (accept || '*/*')
         .split(',')
-        .map((s) => s.trim().toLowerCase())
+        .map(s => s.trim().toLowerCase())
         .filter(Boolean),
     [accept]
   )
@@ -129,18 +129,18 @@ export default function UploadField({
     }
   }, [localPreview])
 
-  const announce = useCallback((msg) => {
+  const announce = useCallback(msg => {
     if (statusRef.current) statusRef.current.textContent = msg
   }, [])
 
-  const formatMB = (bytes) => `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+  const formatMB = bytes => `${(bytes / (1024 * 1024)).toFixed(2)} MB`
 
   // Strict-ish accept check: matches exact MIME or family (image/*) or extension (.png)
   const mimeAllowed = useCallback(
-    (file) => {
+    file => {
       if (!acceptList.length || acceptList.includes('*/*')) return true
       const t = (file.type || '').toLowerCase()
-      return acceptList.some((a) => {
+      return acceptList.some(a => {
         if (a.endsWith('/*')) {
           const fam = a.slice(0, a.indexOf('/'))
           return t.startsWith(`${fam}/`)
@@ -153,7 +153,7 @@ export default function UploadField({
   )
 
   const validate = useCallback(
-    (file) => {
+    file => {
       if (!file) return new Error('No file selected.')
       if (imageOnly && !file.type.startsWith('image/')) {
         return new Error('Please select an image file.')
@@ -170,7 +170,7 @@ export default function UploadField({
   )
 
   const setPreviewFor = useCallback(
-    (file) => {
+    file => {
       if (localPreview) URL.revokeObjectURL(localPreview)
       if (file.type.startsWith('image/')) {
         const url = URL.createObjectURL(file)
@@ -183,7 +183,7 @@ export default function UploadField({
   )
 
   const handleChosen = useCallback(
-    (file) => {
+    file => {
       const vErr = validate(file)
       if (vErr) {
         setErr(vErr.message)
@@ -202,7 +202,7 @@ export default function UploadField({
   )
 
   const onFile = useCallback(
-    (e) => {
+    e => {
       const files = Array.from(e.target.files || [])
       if (!files.length) return
       handleChosen(files[0])
@@ -224,7 +224,7 @@ export default function UploadField({
 
   // DnD handlers
   const onDrop = useCallback(
-    (e) => {
+    e => {
       e.preventDefault()
       e.stopPropagation()
       setDragOver(false)
@@ -236,7 +236,7 @@ export default function UploadField({
   )
 
   const onDragOver = useCallback(
-    (e) => {
+    e => {
       e.preventDefault()
       if (disabled) return
       setDragOver(true)
@@ -244,7 +244,7 @@ export default function UploadField({
     [disabled]
   )
 
-  const onDragLeave = useCallback((e) => {
+  const onDragLeave = useCallback(e => {
     e.preventDefault()
     setDragOver(false)
   }, [])
@@ -254,10 +254,10 @@ export default function UploadField({
     if (!allowPaste) return
     const el = dropRef.current
     if (!el) return
-    const onPaste = (e) => {
+    const onPaste = e => {
       if (disabled) return
       const items = Array.from(e.clipboardData?.items || [])
-      const fileItem = items.find((i) => i.kind === 'file')
+      const fileItem = items.find(i => i.kind === 'file')
       const file = fileItem?.getAsFile()
       if (file) handleChosen(file)
     }
@@ -320,7 +320,7 @@ export default function UploadField({
         onDragLeave={onDragLeave}
         role="button"
         tabIndex={disabled ? -1 : 0}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (disabled) return
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
@@ -332,12 +332,11 @@ export default function UploadField({
         }}
         aria-disabled={disabled || undefined}
         aria-label={`${label}: drag and drop, paste, or press Enter to choose a file`}
-        aria-describedby={[
-          hint ? `${id}_hint` : null,
-          err ? `${id}_err` : null,
-        ]
-          .filter(Boolean)
-          .join(' ') || undefined}
+        aria-describedby={
+          [hint ? `${id}_hint` : null, err ? `${id}_err` : null]
+            .filter(Boolean)
+            .join(' ') || undefined
+        }
         data-has-file={!!(fileMeta || previewUrl)}
       >
         <span className={cls.dropIcon} aria-hidden>
@@ -375,7 +374,11 @@ export default function UploadField({
       )}
 
       {/* Hints + errors */}
-      {hint && <div id={`${id}_hint`} className={cls.hint}>{hint}</div>}
+      {hint && (
+        <div id={`${id}_hint`} className={cls.hint}>
+          {hint}
+        </div>
+      )}
       {err && (
         <div id={`${id}_err`} className={cls.error} role="alert">
           {err}

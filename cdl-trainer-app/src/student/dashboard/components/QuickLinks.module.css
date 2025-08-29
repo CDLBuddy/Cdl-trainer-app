@@ -14,14 +14,29 @@
 }
 
 /* alignment variants */
-.a_left   { justify-content: flex-start; }
-.a_center { justify-content: center; }
-.a_right  { justify-content: flex-end; }
+.a_left {
+  justify-content: flex-start;
+}
+.a_center {
+  justify-content: center;
+}
+.a_right {
+  justify-content: flex-end;
+}
 
 /* size variants adjust button padding & font */
-.s_sm .btn { padding: 6px 10px; font-size: .92rem; }
-.s_md .btn { padding: 8px 12px; font-size: 1rem; }
-.s_lg .btn { padding: 10px 14px; font-size: 1.05rem; }
+.s_sm .btn {
+  padding: 6px 10px;
+  font-size: 0.92rem;
+}
+.s_md .btn {
+  padding: 8px 12px;
+  font-size: 1rem;
+}
+.s_lg .btn {
+  padding: 10px 14px;
+  font-size: 1.05rem;
+}
 
 /* button */
 .btn {
@@ -35,7 +50,11 @@
   text-decoration: none;
   font-weight: 700;
   line-height: 1;
-  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, background .12s ease;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.12s ease;
   padding: 8px 12px; /* default for s_md */
   will-change: transform;
 }
@@ -56,8 +75,8 @@
 /* disabled/inert style */
 .isDisabled {
   cursor: not-allowed;
-  opacity: .6;
-  filter: grayscale(.1);
+  opacity: 0.6;
+  filter: grayscale(0.1);
   transform: none !important;
   box-shadow: none !important;
 }
@@ -75,10 +94,12 @@
 /* external mark (↗) */
 .externalMark {
   margin-left: 2px;
-  opacity: .9;
+  opacity: 0.9;
 }
 
 /* reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .btn { transition: none !important; }
+  .btn {
+    transition: none !important;
+  }
 }

@@ -17,11 +17,14 @@ import styles from './CompanyCards.module.css'
  */
 
 function StatusPill({ status = 'ok' }) {
-  const label = status === 'expired' ? 'Expired' : status === 'missing' ? 'Missing' : 'OK'
+  const label =
+    status === 'expired' ? 'Expired' : status === 'missing' ? 'Missing' : 'OK'
   const tone =
-    status === 'expired' ? { bg: '#fef2f2', fg: '#b91c1c' } :
-    status === 'missing' ? { bg: '#fff7ed', fg: '#c2410c' } :
-    { bg: '#ecfdf5', fg: '#065f46' }
+    status === 'expired'
+      ? { bg: '#fef2f2', fg: '#b91c1c' }
+      : status === 'missing'
+        ? { bg: '#fff7ed', fg: '#c2410c' }
+        : { bg: '#ecfdf5', fg: '#065f46' }
   return (
     <span
       className={styles.meta}
@@ -45,29 +48,41 @@ export default function CompanyDocumentsCard({
   loading = false,
   error = '',
   onUpload,
-  onOpen,       // (doc) => void
-  onDownload,   // (doc) => void
-  onDelete,     // (doc) => void
+  onOpen, // (doc) => void
+  onDownload, // (doc) => void
+  onDelete, // (doc) => void
 }) {
   const counts = useMemo(() => {
     const c = { ok: 0, missing: 0, expired: 0 }
-    for (const d of docs) c[(d.status || 'ok')] = (c[d.status || 'ok'] || 0) + 1
+    for (const d of docs) c[d.status || 'ok'] = (c[d.status || 'ok'] || 0) + 1
     return c
   }, [docs])
 
   return (
-    <section className={styles.card} aria-label="Company documents" aria-busy={!!loading}>
+    <section
+      className={styles.card}
+      aria-label="Company documents"
+      aria-busy={!!loading}
+    >
       <header className={styles.header}>
         <h3 className={styles.title}>Documents</h3>
         <div className={styles.actions}>
           <small className={styles.meta} style={{ marginRight: 8 }}>
-            {loading ? <span className={styles.skeleton} style={{ width: 42 }} /> : (
+            {loading ? (
+              <span className={styles.skeleton} style={{ width: 42 }} />
+            ) : (
               <>
-                {docs.length} total • {counts.expired} expired • {counts.missing} missing
+                {docs.length} total • {counts.expired} expired •{' '}
+                {counts.missing} missing
               </>
             )}
           </small>
-          <button className="btn outline" onClick={onUpload} disabled={loading} aria-label="Upload document">
+          <button
+            className="btn outline"
+            onClick={onUpload}
+            disabled={loading}
+            aria-label="Upload document"
+          >
             Upload
           </button>
         </div>
@@ -86,19 +101,28 @@ export default function CompanyDocumentsCard({
           </div>
         </div>
       ) : error ? (
-        <p className={styles.empty} role="alert">Unable to load documents. {String(error)}</p>
+        <p className={styles.empty} role="alert">
+          Unable to load documents. {String(error)}
+        </p>
       ) : docs.length === 0 ? (
         <div>
           <p className={styles.empty}>No documents on file.</p>
           <div className={styles.actions}>
-            <button className="btn" onClick={onUpload}>Upload a document</button>
+            <button className="btn" onClick={onUpload}>
+              Upload a document
+            </button>
           </div>
           <p className={styles.meta} style={{ marginTop: 6 }}>
-            Tip: You can upload items like Agreements, COI, and W-9s. Expiration will be shown here.
+            Tip: You can upload items like Agreements, COI, and W-9s. Expiration
+            will be shown here.
           </p>
         </div>
       ) : (
-        <ul className={styles.list} style={{ listStyle: 'none', padding: 0, margin: 0 }} aria-label="Documents">
+        <ul
+          className={styles.list}
+          style={{ listStyle: 'none', padding: 0, margin: 0 }}
+          aria-label="Documents"
+        >
           {docs.map(d => (
             <li key={d.id || d.name} className={styles.row}>
               <div style={{ display: 'grid', gap: 2 }}>
@@ -107,19 +131,29 @@ export default function CompanyDocumentsCard({
                   <span className={styles.meta}>({d.type || 'file'})</span>
                 </div>
                 <div className={styles.meta}>
-                  {d.expiresAtLabel ? `Expires ${d.expiresAtLabel}` : 'No expiry'}
+                  {d.expiresAtLabel
+                    ? `Expires ${d.expiresAtLabel}`
+                    : 'No expiry'}
                 </div>
               </div>
 
               <div className={styles.actions} style={{ alignItems: 'center' }}>
                 <StatusPill status={d.status} />
                 {onOpen && (
-                  <button className="btn small outline" onClick={() => onOpen(d)} aria-label={`Open ${d.name}`}>
+                  <button
+                    className="btn small outline"
+                    onClick={() => onOpen(d)}
+                    aria-label={`Open ${d.name}`}
+                  >
                     Open
                   </button>
                 )}
                 {onDownload && (
-                  <button className="btn small outline" onClick={() => onDownload(d)} aria-label={`Download ${d.name}`}>
+                  <button
+                    className="btn small outline"
+                    onClick={() => onDownload(d)}
+                    aria-label={`Download ${d.name}`}
+                  >
                     Download
                   </button>
                 )}
@@ -144,13 +178,15 @@ export default function CompanyDocumentsCard({
 
 CompanyDocumentsCard.propTypes = {
   /** Array of documents to render */
-  docs: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string,
-    name: PropTypes.string.isRequired,
-    type: PropTypes.string,
-    status: PropTypes.oneOf(['ok', 'missing', 'expired']),
-    expiresAtLabel: PropTypes.string,
-  })),
+  docs: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string.isRequired,
+      type: PropTypes.string,
+      status: PropTypes.oneOf(['ok', 'missing', 'expired']),
+      expiresAtLabel: PropTypes.string,
+    })
+  ),
   /** Loading state for skeletons */
   loading: PropTypes.bool,
   /** Optional error text for error state */

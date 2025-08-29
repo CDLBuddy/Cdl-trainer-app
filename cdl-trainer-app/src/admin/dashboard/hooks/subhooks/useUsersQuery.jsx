@@ -96,11 +96,12 @@ export function useUsersQuery({ schoolId }) {
       const rows = await fetchUsersOnce(schoolId)
       // stable alpha sort by name (case-insensitive)
       rows.sort((a, b) =>
-        String(a.name).localeCompare(String(b.name), undefined, { sensitivity: 'base' })
+        String(a.name).localeCompare(String(b.name), undefined, {
+          sensitivity: 'base',
+        })
       )
       setUsers(rows)
     } catch (err) {
-       
       console.error('[useUsersQuery] fetch error:', err)
       const msg = 'Error fetching users.'
       setError(msg)
@@ -118,7 +119,9 @@ export function useUsersQuery({ schoolId }) {
       if (!alive) return
       await reload()
     })()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [reload])
 
   // Small derived helpers (optional to consume)

@@ -1,5 +1,6 @@
 // src/admin/companies/add-student/components/FormFields.jsx
 import React, { useId, useMemo } from 'react'
+
 import styles from './FormFields.module.css'
 
 /**
@@ -28,19 +29,19 @@ export default function FormFields({
   instructorsLoading = false,
 }) {
   // Stable, unique IDs for hint/inputs (improves SR experience in drawers)
-  const emailId      = useId()
-  const phoneId      = useId()
-  const nameId       = useId()
-  const courseId     = useId()
-  const classId      = useId()
-  const billingId    = useId()
+  const emailId = useId()
+  const phoneId = useId()
+  const nameId = useId()
+  const courseId = useId()
+  const classId = useId()
+  const billingId = useId()
   const instructorId = useId()
 
-  const contactHintId   = `${emailId}-contact-hint`
-  const courseHintId    = `${courseId}-hint`
-  const classHint       = `${classId}-hint`
-  const billingHint     = `${billingId}-hint`
-  const instructorHint  = `${instructorId}-hint`
+  const contactHintId = `${emailId}-contact-hint`
+  const courseHintId = `${courseId}-hint`
+  const classHint = `${classId}-hint`
+  const billingHint = `${billingId}-hint`
+  const instructorHint = `${instructorId}-hint`
 
   // Normalize instructor option labels defensively
   const instructorOptions = useMemo(
@@ -57,7 +58,7 @@ export default function FormFields({
   )
 
   // When selecting an instructor, store BOTH id and display name (student-facing)
-  const onSelectInstructor = (id) => {
+  const onSelectInstructor = id => {
     const found = instructorOptions.find(o => o.value === id)
     const display = found?.label || ''
     set('assignedInstructorId', id || '')
@@ -72,7 +73,9 @@ export default function FormFields({
           Contact <span className={styles.req}>*</span>
         </span>
 
-        <label htmlFor={emailId} className={styles.subLabel}>Email (recommended)</label>
+        <label htmlFor={emailId} className={styles.subLabel}>
+          Email (recommended)
+        </label>
         <input
           id={emailId}
           ref={firstFieldRef}
@@ -81,11 +84,13 @@ export default function FormFields({
           autoComplete="email"
           placeholder="student@example.com"
           value={form.email || ''}
-          onChange={(e) => set('email', e.target.value)}
+          onChange={e => set('email', e.target.value)}
           className={styles.input}
         />
 
-        <label htmlFor={phoneId} className={styles.subLabel}>or Phone</label>
+        <label htmlFor={phoneId} className={styles.subLabel}>
+          or Phone
+        </label>
         <input
           id={phoneId}
           type="tel"
@@ -94,7 +99,7 @@ export default function FormFields({
           pattern="[0-9+\-() ]{7,}"
           autoComplete="tel"
           value={form.phone || ''}
-          onChange={(e) => set('phone', e.target.value)}
+          onChange={e => set('phone', e.target.value)}
           className={styles.input}
         />
 
@@ -113,7 +118,7 @@ export default function FormFields({
           autoCapitalize="words"
           placeholder="e.g., Alex Johnson"
           value={form.name || ''}
-          onChange={(e) => set('name', e.target.value)}
+          onChange={e => set('name', e.target.value)}
           className={styles.input}
         />
       </label>
@@ -126,7 +131,7 @@ export default function FormFields({
           type="text"
           placeholder="e.g., ELDT Class A – Standard"
           value={form.course || ''}
-          onChange={(e) => set('course', e.target.value)}
+          onChange={e => set('course', e.target.value)}
           className={styles.input}
           aria-describedby={courseHintId}
         />
@@ -145,7 +150,7 @@ export default function FormFields({
           required
           aria-required="true"
           value={form.cdlClass || ''}
-          onChange={(e) => set('cdlClass', e.target.value)}
+          onChange={e => set('cdlClass', e.target.value)}
           className={styles.select}
           aria-describedby={classHint}
         >
@@ -165,7 +170,7 @@ export default function FormFields({
         <select
           id={billingId}
           value={form.billing || 'employer'}
-          onChange={(e) => set('billing', e.target.value)}
+          onChange={e => set('billing', e.target.value)}
           className={styles.select}
           aria-describedby={billingHint}
         >
@@ -173,7 +178,8 @@ export default function FormFields({
           <option value="individual">Individual</option>
         </select>
         <small id={billingHint} className={styles.hint}>
-          If employer-paid, the Payment section is hidden in the student profile.
+          If employer-paid, the Payment section is hidden in the student
+          profile.
         </small>
       </label>
 
@@ -183,7 +189,7 @@ export default function FormFields({
         <select
           id={instructorId}
           value={form.assignedInstructorId || ''}
-          onChange={(e) => onSelectInstructor(e.target.value)}
+          onChange={e => onSelectInstructor(e.target.value)}
           className={styles.select}
           aria-describedby={instructorHint}
           disabled={instructorsLoading}
@@ -198,7 +204,8 @@ export default function FormFields({
           ))}
         </select>
         <small id={instructorHint} className={styles.hint}>
-          Stored as both <code>assignedInstructorId</code> and a display string students can see.
+          Stored as both <code>assignedInstructorId</code> and a display string
+          students can see.
         </small>
       </label>
     </>

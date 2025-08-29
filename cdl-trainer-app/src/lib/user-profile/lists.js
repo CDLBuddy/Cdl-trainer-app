@@ -18,12 +18,13 @@ import {
   query,
   where,
 } from 'firebase/firestore'
+
 import { db } from '@utils/firebase.js'
 
 /* ----------------------------- tiny utils ----------------------------- */
 
-const norm = (s) => (s == null ? '' : String(s).trim())
-const normEmail = (e) => norm(e).toLowerCase()
+const norm = s => (s == null ? '' : String(s).trim())
+const normEmail = e => norm(e).toLowerCase()
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n))
 const byNameThenEmail = (a, b) => {
   const an = norm(a.name).toLocaleLowerCase()
@@ -62,7 +63,10 @@ function mapDocToStudent(d) {
     companyId: norm(u.companyId || ''),
     course: norm(u.course || ''),
     cdlClass: norm(u.cdlClass || ''),
-    billing: typeof u.billing === 'object' && u.billing !== null ? u.billing : { mode: norm(u.billing || '') },
+    billing:
+      typeof u.billing === 'object' && u.billing !== null
+        ? u.billing
+        : { mode: norm(u.billing || '') },
     assignedInstructor: norm(u.assignedInstructor || ''),
     assignedInstructorId: norm(u.assignedInstructorId || ''),
   }
@@ -92,7 +96,9 @@ export async function listInstructors(opts = {}) {
 
     // Deduplicate by email (defense-in-depth if multi-doc anomalies exist)
     const seen = new Set()
-    const deduped = list.filter((x) => (seen.has(x.email) ? false : (seen.add(x.email), true)))
+    const deduped = list.filter(x =>
+      seen.has(x.email) ? false : (seen.add(x.email), true)
+    )
 
     return deduped
   } catch (err) {
@@ -103,8 +109,11 @@ export async function listInstructors(opts = {}) {
 }
 
 /** Convenience: map instructors to { value, label } (id by default). */
-export function instructorsToOptions(instructors, { valueKey = 'id', labelKey = 'name' } = {}) {
-  return (Array.isArray(instructors) ? instructors : []).map((i) => ({
+export function instructorsToOptions(
+  instructors,
+  { valueKey = 'id', labelKey = 'name' } = {}
+) {
+  return (Array.isArray(instructors) ? instructors : []).map(i => ({
     value: i?.[valueKey] || i?.id || i?.email || '',
     label: norm(i?.[labelKey] || i?.name || i?.email || '(unnamed)'),
     // you can attach metadata if your select component supports it:
@@ -126,7 +135,10 @@ export async function listStudentsByCompany(companyId, opts = {}) {
   if (!companyId) return []
   try {
     const col = collection(db, 'users')
-    const clauses = [where('role', '==', 'student'), where('companyId', '==', companyId)]
+    const clauses = [
+      where('role', '==', 'student'),
+      where('companyId', '==', companyId),
+    ]
     if (schoolId) clauses.push(where('schoolId', '==', schoolId))
     if (activeOnly) clauses.push(where('status', '==', 'active'))
 
@@ -155,18 +167,21 @@ export function subscribeStudentsByCompany(companyId, cb, opts = {}) {
   if (!companyId || typeof cb !== 'function') return () => {}
   try {
     const col = collection(db, 'users')
-    const clauses = [where('role', '==', 'student'), where('companyId', '==', companyId)]
+    const clauses = [
+      where('role', '==', 'student'),
+      where('companyId', '==', companyId),
+    ]
     if (schoolId) clauses.push(where('schoolId', '==', schoolId))
     if (activeOnly) clauses.push(where('status', '==', 'active'))
 
     const q = query(col, ...clauses, limit(clamp(max, 1, 1000)))
     return onSnapshot(
       q,
-      (snap) => {
+      snap => {
         const list = snap.docs.map(mapDocToStudent).sort(byNameThenEmail)
         cb(list)
       },
-      (err) => {
+      err => {
         console.error('[subscribeStudentsByCompany] error:', err)
         onError?.(err)
       }
@@ -180,8 +195,11 @@ export function subscribeStudentsByCompany(companyId, cb, opts = {}) {
 
 /* ------------------------------- Extras ---------------------------------- */
 /** Convenience: students -> { value, label } options (value=email by default). */
-export function studentsToOptions(students, { valueKey = 'email', labelKey = 'name' } = {}) {
-  return (Array.isArray(students) ? students : []).map((s) => ({
+export function studentsToOptions(
+  students,
+  { valueKey = 'email', labelKey = 'name' } = {}
+) {
+  return (Array.isArray(students) ? students : []).map(s => ({
     value: s?.[valueKey] || s?.email || s?.id || '',
     label: norm(s?.[labelKey] || s?.name || s?.email || '(unnamed)'),
     meta: { companyId: s.companyId, cdlClass: s.cdlClass, status: s.status },

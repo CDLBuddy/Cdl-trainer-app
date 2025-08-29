@@ -32,7 +32,7 @@ export async function prefetchReports() {
       import('./components/SubmitToTPRDialog.jsx'),
 
       // Student drawer + its helper bundle (barrel)
-      import('./StudentReportDrawer.jsx').catch(() => {}),
+      import('./student-reports/index.js').catch(() => {}),
       import('./student-reports/index.js').catch(() => {}),
 
       // Direct-load helpers too (in case the barrel isn’t present in some builds)
@@ -56,7 +56,9 @@ export async function prefetchReports() {
  */
 export function prefetchOnIdle() {
   if (typeof window === 'undefined') return () => {}
-  const run = () => { void prefetchReports() }
+  const run = () => {
+    void prefetchReports()
+  }
   if ('requestIdleCallback' in window) {
     const id = window.requestIdleCallback(run, { timeout: 1200 })
     return () => window.cancelIdleCallback?.(id)

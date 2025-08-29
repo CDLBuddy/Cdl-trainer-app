@@ -23,7 +23,6 @@ class TestEngineBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-       
       console.error('[TestEngineWrapper] render error:', error, info)
     }
   }
@@ -31,10 +30,21 @@ class TestEngineBoundary extends React.Component {
     const { err } = this.state
     if (err) {
       return (
-        <div className="screen-wrapper" role="alert" aria-live="assertive" style={{ padding: 20, maxWidth: 720, margin: '0 auto' }}>
+        <div
+          className="screen-wrapper"
+          role="alert"
+          aria-live="assertive"
+          style={{ padding: 20, maxWidth: 720, margin: '0 auto' }}
+        >
           <h2>Test couldn’t load</h2>
-          <p style={{ color: '#b12' }}>{String(err?.message || err || 'Unknown error')}</p>
-          <Link className="btn outline" to="/student/practice-tests" style={{ marginTop: 10 }}>
+          <p style={{ color: '#b12' }}>
+            {String(err?.message || err || 'Unknown error')}
+          </p>
+          <Link
+            className="btn outline"
+            to="/student/practice-tests"
+            style={{ marginTop: 10 }}
+          >
             Back to Practice Tests
           </Link>
         </div>
@@ -52,7 +62,10 @@ class TestEngineBoundary extends React.Component {
  *   4) ?test=<name>
  *   5) "General Knowledge"
  */
-export default function TestEngineWrapper({ testName: propName, passedUserEmail: propEmail }) {
+export default function TestEngineWrapper({
+  testName: propName,
+  passedUserEmail: propEmail,
+}) {
   const { testName: paramName } = useParams()
   const [qs] = useSearchParams()
   const location = useLocation()
@@ -72,7 +85,12 @@ export default function TestEngineWrapper({ testName: propName, passedUserEmail:
     <TestEngineBoundary>
       <Suspense
         fallback={
-          <div className="screen-wrapper" role="status" aria-live="polite" style={{ padding: 20, maxWidth: 720, margin: '0 auto' }}>
+          <div
+            className="screen-wrapper"
+            role="status"
+            aria-live="polite"
+            style={{ padding: 20, maxWidth: 720, margin: '0 auto' }}
+          >
             <div className="spinner" />
             <p>Loading test…</p>
           </div>

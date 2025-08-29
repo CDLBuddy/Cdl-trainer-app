@@ -40,8 +40,7 @@ export default function Courses({ vm }) {
   }, [form, c.draft])
 
   // Handlers
-  const toggle = (key) =>
-    setForm((prev) => ({ ...prev, [key]: !prev[key] }))
+  const toggle = key => setForm(prev => ({ ...prev, [key]: !prev[key] }))
 
   const onReset = () =>
     setForm({
@@ -62,7 +61,9 @@ export default function Courses({ vm }) {
 
   return (
     <section className={styles.section} aria-labelledby="courses-heading">
-      <h2 id="courses-heading" className={styles.heading}>Courses</h2>
+      <h2 id="courses-heading" className={styles.heading}>
+        Courses
+      </h2>
       <p className={styles.description}>
         Choose which learning experiences are available to your students.
       </p>

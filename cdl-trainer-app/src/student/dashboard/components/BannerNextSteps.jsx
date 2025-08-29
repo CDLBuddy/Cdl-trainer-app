@@ -1,9 +1,10 @@
 // src/student/dashboard/components/BannerNextSteps.jsx
-import React, { memo, useMemo } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 import { StudentRoutes } from '@navigation/navigation.js'
+
 import cls from './BannerNextSteps.module.css'
 
 /**
@@ -16,7 +17,7 @@ function BannerNextSteps({
   allSet = false,
   nextActions = [],
   onOpenProfile = () => {},
-  max = 5,                      // cap list to avoid clutter
+  max = 5, // cap list to avoid clutter
   ctaText = 'Open Profile',
   className = '',
   'data-testid': testId,
@@ -27,14 +28,12 @@ function BannerNextSteps({
   const items = useMemo(() => {
     if (!Array.isArray(nextActions)) return []
     return nextActions
-      .filter(
-        (x) => x && typeof x === 'object' && x.section && x.label
-      )
+      .filter(x => x && typeof x === 'object' && x.section && x.label)
       .slice(0, Math.max(1, max))
   }, [nextActions, max])
 
   // Stable key + safe hash for anchors
-  const toAnchor = (section) =>
+  const toAnchor = section =>
     `${profileUrl}#${encodeURIComponent(String(section).trim())}`
   const keyFor = (section, label, i) =>
     `${String(section).trim()}__${String(label).trim()}__${i}`
@@ -51,7 +50,9 @@ function BannerNextSteps({
     >
       {allSet ? (
         <div className={cls.row}>
-          <span className={cls.badge} aria-hidden>✅</span>
+          <span className={cls.badge} aria-hidden>
+            ✅
+          </span>
           <p className={cls.label}>
             All set! Contact your instructor to schedule behind-the-wheel.
           </p>
@@ -59,7 +60,9 @@ function BannerNextSteps({
       ) : (
         <>
           <div className={cls.row}>
-            <span className={cls.badge} aria-hidden>➡️</span>
+            <span className={cls.badge} aria-hidden>
+              ➡️
+            </span>
             <p className={cls.label}>Next up:</p>
           </div>
 
@@ -69,13 +72,17 @@ function BannerNextSteps({
           >
             {items.length === 0 ? (
               <li className={cls.item}>
-                <span className={cls.badge} aria-hidden>•</span>
+                <span className={cls.badge} aria-hidden>
+                  •
+                </span>
                 <span className={cls.label}>Review your profile details.</span>
               </li>
             ) : (
               items.map(({ section, label }, i) => (
                 <li key={keyFor(section, label, i)} className={cls.item}>
-                  <span className={cls.badge} aria-hidden>{i + 1}</span>
+                  <span className={cls.badge} aria-hidden>
+                    {i + 1}
+                  </span>
                   <Link className={cls.label} to={toAnchor(section)}>
                     {label}
                   </Link>

@@ -9,7 +9,9 @@
   align-items: start;
 }
 
-.left { min-width: 0; }
+.left {
+  min-width: 0;
+}
 
 .right {
   display: grid;
@@ -24,7 +26,7 @@
   border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
   border-radius: var(--radius-lg, 14px);
   box-shadow:
-    var(--shadow-3, 0 14px 40px rgba(0,0,0,.31)),
+    var(--shadow-3, 0 14px 40px rgba(0, 0, 0, 0.31)),
     inset 0 1px 0 #ffffff12;
   overflow: hidden;
 }
@@ -35,7 +37,7 @@
   background: linear-gradient(
     120deg,
     color-mix(in oklab, var(--brand-dark), #000 4%),
-    color-mix(in oklab, var(--brand-mid),  #000 8%) 100%
+    color-mix(in oklab, var(--brand-mid), #000 8%) 100%
   );
 }
 
@@ -43,25 +45,36 @@
   margin: 0;
   color: var(--text-light);
   font-weight: 800;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
 }
 
-.cardBody { padding: 0.9rem 1rem 1rem; }
+.cardBody {
+  padding: 0.9rem 1rem 1rem;
+}
 
 /* ---------- Skeleton shimmer ---------- */
 .skel {
   height: 12px;
   width: 92%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #ffffff0a 25%, #ffffff22 37%, #ffffff0a 63%);
+  background: linear-gradient(
+    90deg,
+    #ffffff0a 25%,
+    #ffffff22 37%,
+    #ffffff0a 63%
+  );
   background-size: 400% 100%;
   animation: shimmer 1100ms ease-in-out infinite;
   margin: 8px 0;
 }
 
 @keyframes shimmer {
-  0%   { background-position: 100% 0; }
-  100% { background-position:   0% 0; }
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0% 0;
+  }
 }
 
 /* ---------- A11y: focus rings for interactive children ---------- */
@@ -72,10 +85,14 @@
 
 /* ---------- Respect reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .skel { animation: none !important; }
+  .skel {
+    animation: none !important;
+  }
 }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1080px) {
-  .grid { grid-template-columns: 1fr; }
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }

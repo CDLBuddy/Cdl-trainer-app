@@ -14,11 +14,70 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import a11y from 'eslint-plugin-jsx-a11y'
 import importPlugin from 'eslint-plugin-import'
-import ts from '@typescript-eslint/eslint-plugin'
+
+// Use the meta package for flat-config TypeScript presets
+import tseslint from 'typescript-eslint'
+import tsPlugin from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
+
 import { FlatCompat } from '@eslint/eslintrc'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import { fileURLToPath } from 'node:url'
+
+// ----------------------------------------------------------------------------
+// Shared alias map (single source of truth for both JS and TS sections)
+// ----------------------------------------------------------------------------
+const ALIAS_MAP = [
+  // Root & core
+  ['@', './src'],
+  ['@types', './src/types'],
+  ['@/types', './src/types'],
+  ['@utils', './src/utils'],
+  ['@components', './src/components'],
+  ['@navigation', './src/navigation'],
+  ['@pages', './src/pages'],
+  ['@styles', './src/styles'],
+  ['@assets', './src/assets'],
+  ['@shared', './src/shared'],
+  ['@session', './src/session'],
+  ['@setup', './src/setup'],
+  ['@data', './src/data'],            // present in your tree
+  ['@communications', './src/communications'],
+
+  // lib / user-profile module + common direct subpaths
+  ['@lib', './src/lib'],
+  ['@user-profile', './src/lib/user-profile'],
+  ['@user-profile/helpers', './src/lib/user-profile/helpers.js'],
+  ['@user-profile/normalize', './src/lib/user-profile/normalize.js'],
+  ['@user-profile/progress', './src/lib/user-profile/progress.js'],
+  ['@user-profile/firestore', './src/lib/user-profile/firestore.js'],
+  ['@user-profile/lists', './src/lib/user-profile/lists.js'],
+
+  // Walkthrough data (authoritative folders exist)
+  ['@walkthrough-data', './src/walkthrough-data'],
+  ['@walkthrough-defaults', './src/walkthrough-data/defaults'],
+  ['@walkthrough-loaders', './src/walkthrough-data/loaders'],
+  ['@walkthrough-utils', './src/walkthrough-data/utils'],
+  ['@walkthrough-overlays', './src/walkthrough-data/overlays'],
+  ['@walkthrough-restriction-automatic', './src/walkthrough-data/overlays/restrictions/automatic.js'],
+  ['@walkthrough-restriction-no-air', './src/walkthrough-data/overlays/restrictions/no-air.js'],
+  ['@walkthrough-restriction-no-fifth-wheel', './src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'],
+
+  // Roles
+  ['@student', './src/student'],
+  ['@student-components', './src/student/components'],
+  ['@student-profile', './src/student/profile'],
+  ['@student-profile-sections', './src/student/profile/sections'],
+  ['@student-profile-ui', './src/student/profile/ui'],
+  ['@student-walkthrough', './src/student/walkthrough'],
+
+  ['@instructor', './src/instructor'],
+
+  ['@admin', './src/admin'],
+  ['@admin-walkthroughs', './src/admin/walkthroughs'],
+
+  ['@superadmin', './src/superadmin'],
+]
 
 // ----------------------------------------------------------------------------
 // Compat shim (for legacy shareable configs)
@@ -94,31 +153,11 @@ export default defineConfig([
         'warn',
         {
           paths: [
-            {
-              name: '@utils/ui-helpers',
-              importNames: ['showToast'],
-              message: 'Use ToastContext: const { showToast } = useToast().',
-            },
-            {
-              name: '@utils/ui-helpers.js',
-              importNames: ['showToast'],
-              message: 'Use ToastContext: const { showToast } = useToast().',
-            },
-            {
-              name: '../utils/ui-helpers',
-              importNames: ['showToast'],
-              message: 'Use ToastContext: const { showToast } = useToast().',
-            },
-            {
-              name: '../../utils/ui-helpers',
-              importNames: ['showToast'],
-              message: 'Use ToastContext: const { showToast } = useToast().',
-            },
-            {
-              name: '../../../utils/ui-helpers',
-              importNames: ['showToast'],
-              message: 'Use ToastContext: const { showToast } = useToast().',
-            },
+            { name: '@utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+            { name: '@utils/ui-helpers.js', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+            { name: '../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+            { name: '../../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
+            { name: '../../../utils/ui-helpers', importNames: ['showToast'], message: 'Use ToastContext: const { showToast } = useToast().' },
           ],
           patterns: [
             {
@@ -132,16 +171,8 @@ export default defineConfig([
       'no-restricted-globals': ['warn', 'showToast'],
       'no-restricted-properties': [
         'warn',
-        {
-          object: 'window',
-          property: 'showToast',
-          message: 'Use ToastContext: const { showToast } = useToast().',
-        },
-        {
-          object: 'globalThis',
-          property: 'showToast',
-          message: 'Use ToastContext: const { showToast } = useToast().',
-        },
+        { object: 'window', property: 'showToast', message: 'Use ToastContext: const { showToast } = useToast().' },
+        { object: 'globalThis', property: 'showToast', message: 'Use ToastContext: const { showToast } = useToast().' },
       ],
 
       // React
@@ -157,20 +188,14 @@ export default defineConfig([
       'import/order': [
         'warn',
         {
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            'parent',
-            'sibling',
-            'index',
-            'object',
-            'type',
-          ],
+          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'type'],
           pathGroups: [
             { pattern: 'react', group: 'external', position: 'before' },
 
+            // Core & shared
             { pattern: '@{,**/*}', group: 'internal', position: 'before' },
+            { pattern: '@setup{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@data{,/**}', group: 'internal', position: 'before' },
             { pattern: '@types{,/**}', group: 'internal', position: 'before' },
             { pattern: '@/types{,/**}', group: 'internal', position: 'before' },
             { pattern: '@utils/**', group: 'internal', position: 'before' },
@@ -181,6 +206,8 @@ export default defineConfig([
             { pattern: '@shared/**', group: 'internal', position: 'before' },
             { pattern: '@navigation/**', group: 'internal', position: 'before' },
             { pattern: '@session/**', group: 'internal', position: 'before' },
+            { pattern: '@communications/**', group: 'internal', position: 'before' },
+            { pattern: '@lib/**', group: 'internal', position: 'before' },
 
             // Walkthrough system
             { pattern: '@walkthrough-data{,/**}', group: 'internal', position: 'before' },
@@ -226,61 +253,8 @@ export default defineConfig([
       react: { version: 'detect' },
       'import/resolver': {
         node: { extensions: ['.js', '.jsx', '.json', '.css', '.ts', '.tsx'] },
-        alias: {
-          map: [
-            ['@', './src'],
-            ['@lib', './src/lib'],
-            ['@setup', './src/setup'],
-
-            // user-profile module + common direct subpaths
-            ['@user-profile', './src/lib/user-profile'],
-            ['@user-profile/helpers', './src/lib/user-profile/helpers.js'],
-            ['@user-profile/normalize', './src/lib/user-profile/normalize.js'],
-            ['@user-profile/progress', './src/lib/user-profile/progress.js'],
-            ['@user-profile/firestore', './src/lib/user-profile/firestore.js'],
-            ['@user-profile/lists', './src/lib/user-profile/lists.js'],
-
-            ['@types', './src/types'],
-            ['@/types', './src/types'],
-            ['@communications', './src/communications'],
-            ['@components', './src/components'],
-            ['@utils', './src/utils'],
-            ['@navigation', './src/navigation'],
-            ['@pages', './src/pages'],
-            ['@styles', './src/styles'],
-            ['@assets', './src/assets'],
-            ['@shared', './src/shared'],
-            ['@session', './src/session'],
-
-            ['@walkthrough-data', './src/walkthrough-data'],
-            ['@walkthrough-defaults', './src/walkthrough-data/defaults'],
-            ['@walkthrough-loaders', './src/walkthrough-data/loaders'],
-            ['@walkthrough-utils', './src/walkthrough-data/utils'],
-            ['@walkthrough-overlays', './src/walkthrough-data/overlays'],
-            ['@walkthrough-restriction-automatic', './src/walkthrough-data/overlays/restrictions/automatic.js'],
-            ['@walkthrough-restriction-no-air', './src/walkthrough-data/overlays/restrictions/no-air.js'],
-            ['@walkthrough-restriction-no-fifth-wheel', './src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'],
-
-            // Roles
-            ['@student', './src/student'],
-            ['@student-components', './src/student/components'],
-            ['@student-profile', './src/student/profile'],
-            ['@student-profile-sections', './src/student/profile/sections'],
-            ['@student-profile-ui', './src/student/profile/ui'],
-            ['@student-walkthrough', './src/student/walkthrough'],
-
-            ['@instructor', './src/instructor'],
-            ['@admin', './src/admin'],
-            ['@admin-walkthroughs', './src/admin/walkthroughs'],
-            ['@superadmin', './src/superadmin'],
-          ],
-          extensions: ['.js', '.jsx', '.json', '.css', '.ts', '.tsx'],
-        },
-        // Make import/no-unresolved TS-aware
-        typescript: {
-          alwaysTryTypes: true,
-          project: ['./tsconfig.json', './jsconfig.json'],
-        },
+        alias: { map: ALIAS_MAP, extensions: ['.js', '.jsx', '.json', '.css', '.ts', '.tsx'] },
+        typescript: { alwaysTryTypes: true, project: ['./tsconfig.json', './jsconfig.json'] },
       },
     },
   },
@@ -295,14 +269,13 @@ export default defineConfig([
       parser: tsParser,
       parserOptions: {
         ecmaFeatures: { jsx: true },
-        // Add project for type-aware rules if you want stricter checking:
-        // project: ['./tsconfig.json'],
+        // project: ['./tsconfig.json'], // enable for type-aware linting
         // tsconfigRootDir: __dirname,
       },
       globals: { ...globals.browser, ...globals.node },
     },
     plugins: {
-      '@typescript-eslint': ts,
+      '@typescript-eslint': tsPlugin,
       react,
       'react-hooks': reactHooks,
       'jsx-a11y': a11y,
@@ -310,7 +283,7 @@ export default defineConfig([
     },
     extends: [
       js.configs.recommended,
-      ...ts.configs.recommended, // light, not type-checked
+      ...tseslint.configs.recommended, // light, not type-checked
       reactRefresh.configs.vite,
     ],
     rules: {
@@ -339,18 +312,11 @@ export default defineConfig([
       'import/order': [
         'warn',
         {
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            'parent',
-            'sibling',
-            'index',
-            'object',
-            'type',
-          ],
+          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'type'],
           pathGroups: [
             { pattern: 'react', group: 'external', position: 'before' },
+            { pattern: '@setup{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@data{,/**}', group: 'internal', position: 'before' },
             { pattern: '@types{,/**}', group: 'internal', position: 'before' },
             { pattern: '@/types{,/**}', group: 'internal', position: 'before' },
           ],
@@ -374,22 +340,8 @@ export default defineConfig([
       react: { version: 'detect' },
       'import/resolver': {
         node: { extensions: ['.js', '.jsx', '.json', '.css', '.ts', '.tsx'] },
-        alias: {
-          map: [
-            ['@', './src'],
-            ['@lib', './src/lib'],
-            ['@setup', './src/setup'],
-            ['@user-profile', './src/lib/user-profile'],
-            ['@types', './src/types'],
-            ['@/types', './src/types'],
-            ['@/utils', './src/utils'],
-          ],
-          extensions: ['.js', '.jsx', '.json', '.css', '.ts', '.tsx'],
-        },
-        typescript: {
-          alwaysTryTypes: true,
-          project: ['./tsconfig.json', './jsconfig.json'],
-        },
+        alias: { map: ALIAS_MAP, extensions: ['.js', '.jsx', '.json', '.css', '.ts', '.tsx'] },
+        typescript: { alwaysTryTypes: true, project: ['./tsconfig.json', './jsconfig.json'] },
       },
     },
   },

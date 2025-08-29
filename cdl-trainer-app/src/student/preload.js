@@ -10,54 +10,55 @@
 // ======================================================================
 
 // ---------- Dynamic import fns (run only when called) ------------------
-const loadDashboard       = () => import('@student/StudentDashboard.jsx')
-const loadProfile         = () => import('@student-profile/Profile.jsx')
-const loadChecklists      = () => import('@student/Checklists.jsx')
-const loadPracticeTests   = () => import('@student/PracticeTests.jsx')
-const loadWalkthrough     = () => import('@student-walkthrough/Walkthrough.jsx')
-const loadFlashcards      = () => import('@student/Flashcards.jsx')
+const loadDashboard = () => import('@student/StudentDashboard.jsx')
+const loadProfile = () => import('@student-profile/Profile.jsx')
+const loadChecklists = () => import('@student/Checklists.jsx')
+const loadPracticeTests = () => import('@student/PracticeTests.jsx')
+const loadWalkthrough = () => import('@student-walkthrough/Walkthrough.jsx')
+const loadFlashcards = () => import('@student/Flashcards.jsx')
 
 // Test flow wrappers
-const loadTestEngineWrap  = () => import('@student-components/TestEngineWrapper.jsx')
-const loadTestReviewWrap  = () => import('@student-components/TestReviewWrapper.jsx')
-const loadTestResultsWrap = () => import('@student-components/TestResultsWrapper.jsx')
+const loadTestEngineWrap = () =>
+  import('@student-components/TestEngineWrapper.jsx')
+const loadTestReviewWrap = () =>
+  import('@student-components/TestReviewWrapper.jsx')
+const loadTestResultsWrap = () =>
+  import('@student-components/TestResultsWrapper.jsx')
 
 // ---------- Route key → loader map ------------------------------------
 const LOADERS = {
-  dashboard:   loadDashboard,
-  profile:     loadProfile,
-  checklists:  loadChecklists,
-  practice:    loadPracticeTests,
+  dashboard: loadDashboard,
+  profile: loadProfile,
+  checklists: loadChecklists,
+  practice: loadPracticeTests,
   walkthrough: loadWalkthrough,
-  flashcards:  loadFlashcards,
+  flashcards: loadFlashcards,
 
-  'test:engine':  loadTestEngineWrap,
-  'test:review':  loadTestReviewWrap,
+  'test:engine': loadTestEngineWrap,
+  'test:review': loadTestReviewWrap,
   'test:results': loadTestResultsWrap,
 }
 
 // Small helper to swallow prefetch failures (best-effort)
-const warm = (fn) => {
+const warm = fn => {
   try {
     const p = fn?.()
     // allow both promise and non-promise returns (for safety)
     if (p && typeof p.then === 'function') p.catch(() => {})
-  } catch {/* ignore */}
+  } catch {
+    /* ignore */
+  }
 }
 
 // ---------- Above-the-fold (light set) ---------------------------------
 export async function preloadAboveTheFold() {
-  await Promise.allSettled([
-    loadDashboard(),
-    loadProfile(),
-    loadChecklists(),
-  ])
+  await Promise.allSettled([loadDashboard(), loadProfile(), loadChecklists()])
 }
 
 // ---------- Full warm (everything student) -----------------------------
 export async function preloadAll() {
   // Call all known loaders; Promise.allSettled keeps it resilient
-  await Promise.allSettled(Object.values(LOADERS).map((fn) => fn()))
+  await Promise.allSettled(Object.values(LOADERS).map(fn => fn()))
 }
 
 // ---------- Targeted route warmer --------------------------------------

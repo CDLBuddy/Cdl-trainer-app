@@ -3,8 +3,8 @@ import React, { useId, useMemo, useState, useCallback } from 'react'
 
 import { getSectionStatus } from '../schema/calculators.js'
 import Field from '../ui/Field.jsx'
-import UploadField from '../ui/UploadField.jsx'
 import ui from '../ui/fields.module.css'
+import UploadField from '../ui/UploadField.jsx'
 
 import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
@@ -33,7 +33,7 @@ export default function LicenseSection({ value, onChange, onUpload }) {
   const setField = useCallback((k, val) => onChange?.(k, val), [onChange])
 
   const handleSelect = useCallback(
-    (file) => {
+    file => {
       if (!file) return
       // Parent handler persists to storage + sets driverLicenseUrl
       onUpload?.(file, 'students/licenses', 'driverLicenseUrl')
@@ -42,7 +42,7 @@ export default function LicenseSection({ value, onChange, onUpload }) {
   )
 
   const handleExpiryChange = useCallback(
-    (e) => {
+    e => {
       const val = e.target.value
       const invalid = !!val && val < today
       setExpiryInvalid(invalid)
@@ -66,16 +66,23 @@ export default function LicenseSection({ value, onChange, onUpload }) {
         verifiedAt={verifiedAt}
       />
 
-      <h3 id={titleId} className="visually-hidden">Driver License</h3>
+      <h3 id={titleId} className="visually-hidden">
+        Driver License
+      </h3>
       <div id={hintId} className={styles.sub}>
-        Required before Behind-the-Wheel • Upload a clear photo of your current license and set its expiration date.
+        Required before Behind-the-Wheel • Upload a clear photo of your current
+        license and set its expiration date.
       </div>
 
       <div className={styles.grid2}>
         {/* License image upload */}
         <div className={styles.fieldGroup}>
           <UploadField
-            label={v.driverLicenseUrl ? 'Replace License Image' : 'Upload License Image'}
+            label={
+              v.driverLicenseUrl
+                ? 'Replace License Image'
+                : 'Upload License Image'
+            }
             currentUrl={v.driverLicenseUrl}
             accept="image/*"
             maxSizeMB={8}
@@ -96,7 +103,9 @@ export default function LicenseSection({ value, onChange, onUpload }) {
               </button>
             </div>
           ) : null}
-          <small className={styles.subtle}>JPG/PNG/WebP • Max 8&nbsp;MB • Make sure all text is readable.</small>
+          <small className={styles.subtle}>
+            JPG/PNG/WebP • Max 8&nbsp;MB • Make sure all text is readable.
+          </small>
         </div>
 
         {/* License expiration */}
@@ -111,10 +120,15 @@ export default function LicenseSection({ value, onChange, onUpload }) {
             required
             aria-describedby={`${hintId} ${helpId}`}
             aria-invalid={expiryInvalid || undefined}
-            onInput={(e) => e.currentTarget.setCustomValidity('')}
+            onInput={e => e.currentTarget.setCustomValidity('')}
           />
-          <small id={helpId} className={expiryInvalid ? styles.errorText : styles.subtle}>
-            {expiryInvalid ? 'Expiration must be in the future.' : 'Must be a future date.'}
+          <small
+            id={helpId}
+            className={expiryInvalid ? styles.errorText : styles.subtle}
+          >
+            {expiryInvalid
+              ? 'Expiration must be in the future.'
+              : 'Must be a future date.'}
           </small>
         </Field>
       </div>

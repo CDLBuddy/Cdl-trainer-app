@@ -7,13 +7,12 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 
 import { useToast } from '@components/useToast.js'
-// Reuse Admin preview so the “student view” matches what admins see
 import * as WTValidate from '@walkthrough-utils/validateWalkthroughs.js'
 
-import WalkthroughPreview from '@admin/walkthroughs/WalkthroughPreview.jsx'
+// Reuse Admin preview so the “student view” matches what admins see
+import WalkthroughPreview from '@admin/walkthroughs/Preview/WalkthroughPreview.jsx'
 
 // Prefer shared validator; fall back gracefully if export names differ
-
 
 import {
   getSubmission,
@@ -57,7 +56,8 @@ function coerceDate(x) {
   try {
     if (!x) return null
     if (typeof x === 'number') return new Date(x)
-    if (typeof x === 'object' && typeof x.toDate === 'function') return x.toDate()
+    if (typeof x === 'object' && typeof x.toDate === 'function')
+      return x.toDate()
     return new Date(x)
   } catch {
     return null
@@ -88,7 +88,10 @@ export default function SAReviewDetail() {
         setItem(doc || null)
 
         if (doc?.token && doc?.schoolId) {
-          const live = await getCurrentPublishedForToken(doc.schoolId, doc.token)
+          const live = await getCurrentPublishedForToken(
+            doc.schoolId,
+            doc.token
+          )
           if (alive) setPublished(live || null)
         } else if (alive) {
           setPublished(null)
@@ -101,7 +104,9 @@ export default function SAReviewDetail() {
         if (alive) setLoading(false)
       }
     })()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [schoolId, submissionId, showToast])
 
   const validation = useMemo(() => runValidation(item), [item])
@@ -113,7 +118,8 @@ export default function SAReviewDetail() {
   if (!item) {
     return (
       <div className={styles.placeholder}>
-        Submission not found. <Link to="/superadmin/walkthroughs/review">Back to queue</Link>
+        Submission not found.{' '}
+        <Link to="/superadmin/walkthroughs/review">Back to queue</Link>
       </div>
     )
   }
@@ -179,7 +185,8 @@ export default function SAReviewDetail() {
         <div>
           <h1>Review: {item.label}</h1>
           <p className={styles.meta}>
-            School: <b>{item.schoolId || '—'}</b> • Class: <b>{item.classCode || '—'}</b> • Version:{' '}
+            School: <b>{item.schoolId || '—'}</b> • Class:{' '}
+            <b>{item.classCode || '—'}</b> • Version:{' '}
             <b>{item.version ?? '—'}</b>
           </p>
         </div>
@@ -217,7 +224,11 @@ export default function SAReviewDetail() {
       {!validation.ok && (
         <div className={styles.alert} role="alert">
           <strong>Validation issues:</strong>
-          <ul>{validation.errors.map((e, i) => <li key={i}>{e}</li>)}</ul>
+          <ul>
+            {validation.errors.map((e, i) => (
+              <li key={i}>{e}</li>
+            ))}
+          </ul>
         </div>
       )}
 

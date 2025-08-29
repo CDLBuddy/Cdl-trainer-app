@@ -1,8 +1,9 @@
 // src/admin/communications/components/TemplateList.jsx
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { listTemplates } from '../services'
+
 import cls from './TemplateList.module.css'
 
 /* ----------------------------- small helpers ----------------------------- */
@@ -11,7 +12,9 @@ function toDate(v) {
   try {
     if (!v) return null
     return v?.toDate ? v.toDate() : new Date(v)
-  } catch { return null }
+  } catch {
+    return null
+  }
 }
 
 function fmtWhen(v) {
@@ -66,7 +69,9 @@ function TemplateList({ onSelect, onEdit, onCreate, showSearch = true }) {
         if (alive) setLoading(false)
       }
     })()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [refreshTick])
 
   const filtered = useMemo(() => {
@@ -74,21 +79,33 @@ function TemplateList({ onSelect, onEdit, onCreate, showSearch = true }) {
     if (!q) return items
     return items.filter(t => {
       const name = String(t.name || '').toLowerCase()
-      const chans = Array.isArray(t.channels) ? t.channels.join(',').toLowerCase() : ''
+      const chans = Array.isArray(t.channels)
+        ? t.channels.join(',').toLowerCase()
+        : ''
       const subj = String(t.subjectTpl || '').toLowerCase()
       return name.includes(q) || chans.includes(q) || subj.includes(q)
     })
   }, [items, query])
 
-  const choose = useCallback((tpl) => {
-    if (onSelect) return onSelect(tpl)
-    window.dispatchEvent(new CustomEvent('comms:templateSelected', { detail: tpl }))
-  }, [onSelect])
+  const choose = useCallback(
+    tpl => {
+      if (onSelect) return onSelect(tpl)
+      window.dispatchEvent(
+        new CustomEvent('comms:templateSelected', { detail: tpl })
+      )
+    },
+    [onSelect]
+  )
 
-  const edit = useCallback((tpl) => {
-    if (onEdit) return onEdit(tpl)
-    window.dispatchEvent(new CustomEvent('comms:templateEdit', { detail: tpl }))
-  }, [onEdit])
+  const edit = useCallback(
+    tpl => {
+      if (onEdit) return onEdit(tpl)
+      window.dispatchEvent(
+        new CustomEvent('comms:templateEdit', { detail: tpl })
+      )
+    },
+    [onEdit]
+  )
 
   const refresh = useCallback(() => setRefreshTick(t => t + 1), [])
 
@@ -97,7 +114,9 @@ function TemplateList({ onSelect, onEdit, onCreate, showSearch = true }) {
   return (
     <section className={cls.card} aria-labelledby="templates-title">
       <header className={cls.cardHeader}>
-        <h3 id="templates-title" className={cls.cardTitle}>Templates</h3>
+        <h3 id="templates-title" className={cls.cardTitle}>
+          Templates
+        </h3>
 
         <div className={cls.headerActions}>
           {showSearch && (
@@ -108,7 +127,7 @@ function TemplateList({ onSelect, onEdit, onCreate, showSearch = true }) {
                 type="search"
                 placeholder="Search…"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={e => setQuery(e.target.value)}
               />
             </label>
           )}
@@ -125,11 +144,7 @@ function TemplateList({ onSelect, onEdit, onCreate, showSearch = true }) {
           </button>
 
           {onCreate && (
-            <button
-              type="button"
-              className={cls.primary}
-              onClick={onCreate}
-            >
+            <button type="button" className={cls.primary} onClick={onCreate}>
               New Template
             </button>
           )}
@@ -140,7 +155,9 @@ function TemplateList({ onSelect, onEdit, onCreate, showSearch = true }) {
         {/* Loading skeletons */}
         {loading && (
           <div role="status" aria-live="polite" className={cls.skelList}>
-            {Array.from({ length: 4 }).map((_, i) => <div key={i} className={cls.skel} />)}
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className={cls.skel} />
+            ))}
           </div>
         )}
 
@@ -148,7 +165,9 @@ function TemplateList({ onSelect, onEdit, onCreate, showSearch = true }) {
         {error && !loading && (
           <p className={cls.empty}>
             Couldn’t load templates.{' '}
-            <button type="button" className={cls.linkBtn} onClick={load}>Retry</button>
+            <button type="button" className={cls.linkBtn} onClick={load}>
+              Retry
+            </button>
           </p>
         )}
 
@@ -162,12 +181,21 @@ function TemplateList({ onSelect, onEdit, onCreate, showSearch = true }) {
         {/* List */}
         {!loading && !error && filtered.length > 0 && (
           <ul className={cls.list} role="listbox" aria-label="Saved templates">
-            {filtered.map((t) => {
-              const channels = Array.isArray(t.channels) ? t.channels.join(', ') : '—'
-              const varsCount = Array.isArray(t.variables) ? t.variables.length : 0
+            {filtered.map(t => {
+              const channels = Array.isArray(t.channels)
+                ? t.channels.join(', ')
+                : '—'
+              const varsCount = Array.isArray(t.variables)
+                ? t.variables.length
+                : 0
               const when = t.updatedAt || t.createdAt
               return (
-                <li key={t.id} role="option" aria-selected="false" className={cls.row}>
+                <li
+                  key={t.id}
+                  role="option"
+                  aria-selected="false"
+                  className={cls.row}
+                >
                   <button
                     type="button"
                     className={cls.item}

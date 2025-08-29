@@ -36,8 +36,11 @@ function toDate(value) {
 function formatTimeAbsolute(d) {
   try {
     return new Intl.DateTimeFormat(undefined, {
-      year: 'numeric', month: 'short', day: '2-digit',
-      hour: '2-digit', minute: '2-digit'
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
     }).format(d)
   } catch {
     return d.toLocaleString?.() || String(d)
@@ -51,7 +54,7 @@ function formatTimeRelative(d) {
     const mins = Math.round(ms / 60000)
     const hours = Math.round(ms / 3600000)
     const days = Math.round(ms / 86400000)
-    if (Math.abs(mins) < 60)  return rtf.format(mins, 'minute')
+    if (Math.abs(mins) < 60) return rtf.format(mins, 'minute')
     if (Math.abs(hours) < 24) return rtf.format(hours, 'hour')
     return rtf.format(days, 'day')
   } catch {
@@ -115,7 +118,7 @@ function ActivityFeed({
         <p className={styles.empty}>{emptyText}</p>
       ) : (
         <ul className={styles.list}>
-          {list.map((item) => {
+          {list.map(item => {
             const isValidDate = Number.isFinite(item.date.getTime())
             const absolute = isValidDate ? formatTimeAbsolute(item.date) : ''
             const relative = isValidDate ? formatTimeRelative(item.date) : ''
@@ -154,8 +157,8 @@ function ActivityFeed({
                   <button
                     type="button"
                     className={styles.itemBtn}
-                    onClick={(e) => handleActivate(e, item)}
-                    onKeyDown={(e) => handleActivate(e, item)}
+                    onClick={e => handleActivate(e, item)}
+                    onKeyDown={e => handleActivate(e, item)}
                     aria-label="Open activity detail"
                   >
                     ↗

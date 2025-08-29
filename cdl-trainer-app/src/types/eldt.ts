@@ -8,7 +8,8 @@
 // ======================================================================
 
 /** YYYY-MM-DD (UTC, no time zone) */
-export type ISODate = `${number}${number}${number}${number}-${number}${number}-${number}${number}`
+export type ISODate =
+  `${number}${number}${number}${number}-${number}${number}-${number}${number}`
 
 /* ------------------------------ Domains ---------------------------------- */
 
@@ -23,7 +24,7 @@ export type Endorsement = (typeof ENDORSE_CODES)[number]
 
 /** Runtime sets (handy for validation without importing validators.js) */
 export const ProgramTypeSet = new Set(PROGRAM_TYPES)
-export const ClassTypeSet   = new Set(CLASS_TYPES)
+export const ClassTypeSet = new Set(CLASS_TYPES)
 export const EndorsementSet = new Set(ENDORSE_CODES)
 
 /* ---------------------------- Provider block ----------------------------- */
@@ -87,7 +88,7 @@ export interface BtwPart {
 
 export interface Training {
   classType: ClassType
-  endorsement: Endorsement | ''        // '' = none
+  endorsement: Endorsement | '' // '' = none
   programType: ProgramType
   theory?: TheoryPart
   btw?: BtwPart
@@ -138,11 +139,11 @@ export interface TprCsvRow {
   ProviderTPRID: string
   ProviderName: string
   CDLClass: ClassType
-  Endorsement: Endorsement | ''  // '' allowed by importer
+  Endorsement: Endorsement | '' // '' allowed by importer
   TraineeFullName: string
   TraineeDOB: ISODate
   CLPNumber: string
-  CLPIssuingState: string        // 2-letter
+  CLPIssuingState: string // 2-letter
   CompletionDate: ISODate
   TheoryCompleted: 'Y' | 'N'
   BTWCompleted: 'Y' | 'N'
@@ -166,5 +167,5 @@ export function isEndorsement(v: unknown): v is Endorsement {
 /* ----------------------------- Re-exports (nice) -------------------------- */
 /** Useful at call sites that want both list + type */
 export const PROGRAM_TYPES_LIST = PROGRAM_TYPES
-export const CLASS_TYPES_LIST   = CLASS_TYPES
-export const ENDORSEMENTS_LIST  = ENDORSE_CODES
+export const CLASS_TYPES_LIST = CLASS_TYPES
+export const ENDORSEMENTS_LIST = ENDORSE_CODES

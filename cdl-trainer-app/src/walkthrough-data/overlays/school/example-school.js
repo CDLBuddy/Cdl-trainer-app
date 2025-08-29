@@ -61,17 +61,14 @@ if (IS_DEV) {
   try {
     const hasId = typeof overlay.id === 'string' && overlay.id.length > 0
     if (!hasId) {
-      // eslint-disable-next-line no-console
       console.warn('[overlays/school:example-school] Missing or invalid id')
     } else if (!/^school:/i.test(overlay.id)) {
-      // eslint-disable-next-line no-console
       console.warn(
         `[overlays/school:example-school] Id should start with "school:" — got "${overlay.id}"`
       )
     }
 
     if (!Array.isArray(overlay.rules)) {
-      // eslint-disable-next-line no-console
       console.warn(
         '[overlays/school:example-school] rules must be an array; got:',
         typeof overlay.rules
@@ -79,7 +76,6 @@ if (IS_DEV) {
     } else {
       overlay.rules.forEach((r, i) => {
         if (!r || typeof r !== 'object') {
-          // eslint-disable-next-line no-console
           console.warn(
             `[overlays/school:example-school] Rule at index ${i} must be an object`
           )
@@ -90,9 +86,10 @@ if (IS_DEV) {
         const hasSection = typeof section === 'string' && section.length > 0
 
         if (op === 'renameSection') {
-          const hasTo = typeof /** @type {any} */ (r).to === 'string' && !!/** @type {any} */ (r).to
+          const hasTo =
+            typeof (/** @type {any} */ (r).to) === 'string' &&
+            !!(/** @type {any} */ (r).to)
           if (!(hasSection && hasTo)) {
-            // eslint-disable-next-line no-console
             console.warn(
               `[overlays/school:example-school] Invalid renameSection rule at ${i} — requires match.section and to`
             )
@@ -100,13 +97,11 @@ if (IS_DEV) {
         } else if (op === 'replaceSectionSteps') {
           const hasSteps = Array.isArray(/** @type {any} */ (r).steps)
           if (!(hasSection && hasSteps)) {
-            // eslint-disable-next-line no-console
             console.warn(
               `[overlays/school:example-school] Invalid replaceSectionSteps rule at ${i} — requires match.section and steps[]`
             )
           }
         } else {
-          // eslint-disable-next-line no-console
           console.warn(
             `[overlays/school:example-school] Unknown op "${op}" at index ${i}`
           )

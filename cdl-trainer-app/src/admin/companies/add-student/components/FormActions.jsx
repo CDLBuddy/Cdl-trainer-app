@@ -27,11 +27,7 @@ export default function FormActions({
     <footer className={styles.footer}>
       {/* Left side: error message (if any) */}
       {error ? (
-        <div
-          role="alert"
-          aria-live="polite"
-          className={styles.alert}
-        >
+        <div role="alert" aria-live="polite" className={styles.alert}>
           {error}
         </div>
       ) : (

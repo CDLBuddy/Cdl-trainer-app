@@ -9,7 +9,7 @@ import {
   getDoc,
   updateDoc,
   setDoc,
-  serverTimestamp
+  serverTimestamp,
 } from 'firebase/firestore'
 import React, { useEffect, useRef, useState } from 'react'
 

@@ -10,6 +10,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { createPortal } from 'react-dom'
+
 import styles from './SubmitToTPRDialog.module.css'
 
 export default function SubmitToTPRDialog({
@@ -20,12 +21,13 @@ export default function SubmitToTPRDialog({
   isSubmitting: isSubmittingProp,
   summary,
   methodLabel = 'via Training Provider Registry',
-  result,                         // when present => Results mode
-  progress = null,                // { processed, total, ok, failed } (optional)
+  result, // when present => Results mode
+  progress = null, // { processed, total, ok, failed } (optional)
 }) {
   // Portal target
   const target =
-    (typeof document !== 'undefined' && document.getElementById('modal-root')) ||
+    (typeof document !== 'undefined' &&
+      document.getElementById('modal-root')) ||
     (typeof document !== 'undefined' && document.body) ||
     null
 
@@ -43,8 +45,11 @@ export default function SubmitToTPRDialog({
   // Derived caution (confirm mode only)
   const caution =
     !isResultsMode &&
-    (count >= 50 ? 'This is a large submission and may take a moment.' :
-     count >= 10 ? 'This may take a few seconds.' : null)
+    (count >= 50
+      ? 'This is a large submission and may take a moment.'
+      : count >= 10
+        ? 'This may take a few seconds.'
+        : null)
 
   // Close helpers (block while submitting)
   const safeClose = React.useCallback(() => {
@@ -56,7 +61,11 @@ export default function SubmitToTPRDialog({
     if (!onConfirm) return
     try {
       const p = onConfirm()
-      if (p && typeof p.then === 'function' && typeof isSubmittingProp !== 'boolean') {
+      if (
+        p &&
+        typeof p.then === 'function' &&
+        typeof isSubmittingProp !== 'boolean'
+      ) {
         setLocalSubmitting(true)
         await p
         setLocalSubmitting(false)
@@ -68,14 +77,16 @@ export default function SubmitToTPRDialog({
   }, [onConfirm, isSubmittingProp])
 
   // Backdrop click closes (unless submitting)
-  const onBackdropMouseDown = (e) => {
+  const onBackdropMouseDown = e => {
     if (e.target === overlayRef.current) safeClose()
   }
 
   // ESC to close
   React.useEffect(() => {
     if (!open) return
-    const onKey = (e) => { if (e.key === 'Escape') safeClose() }
+    const onKey = e => {
+      if (e.key === 'Escape') safeClose()
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open, safeClose])
@@ -84,18 +95,32 @@ export default function SubmitToTPRDialog({
   React.useEffect(() => {
     if (!open || !panelRef.current) return
     const panel = panelRef.current
-    const sel = 'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'
-    const getFocusables = () => Array.from(panel.querySelectorAll(sel)).filter(n => !n.hasAttribute('disabled'))
+    const sel =
+      'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'
+    const getFocusables = () =>
+      Array.from(panel.querySelectorAll(sel)).filter(
+        n => !n.hasAttribute('disabled')
+      )
     const focusables = getFocusables()
     focusables[0]?.focus({ preventScroll: true })
 
-    const trap = (e) => {
+    const trap = e => {
       if (e.key !== 'Tab') return
       const f = getFocusables()
-      if (!f.length) { e.preventDefault(); panel.focus(); return }
-      const first = f[0], last = f[f.length - 1]
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+      if (!f.length) {
+        e.preventDefault()
+        panel.focus()
+        return
+      }
+      const first = f[0],
+        last = f[f.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
     panel.addEventListener('keydown', trap)
     return () => panel.removeEventListener('keydown', trap)
@@ -103,7 +128,7 @@ export default function SubmitToTPRDialog({
 
   // IDs for a11y
   const titleId = React.useId()
-  const descId  = React.useId()
+  const descId = React.useId()
 
   if (!open || !target) return null
 
@@ -195,8 +220,11 @@ export default function SubmitToTPRDialog({
 /* ------------------------------ Subsections ------------------------------ */
 
 function ConfirmBody({ count, methodLabel, summary, caution, progress }) {
-  const showProgress = !!progress && Number.isFinite(progress.total) && progress.total > 0
-  const fraction = showProgress ? Math.max(0, Math.min(1, (progress.processed || 0) / progress.total)) : 0
+  const showProgress =
+    !!progress && Number.isFinite(progress.total) && progress.total > 0
+  const fraction = showProgress
+    ? Math.max(0, Math.min(1, (progress.processed || 0) / progress.total))
+    : 0
 
   return (
     <>
@@ -209,7 +237,10 @@ function ConfirmBody({ count, methodLabel, summary, caution, progress }) {
       ) : (
         <ul className={styles.list}>
           <li>Trainee identity (name, DOB, CLP/CDL &amp; issuing state)</li>
-          <li>Program details (Class/endorsements, Theory/BTW status, completion date)</li>
+          <li>
+            Program details (Class/endorsements, Theory/BTW status, completion
+            date)
+          </li>
           <li>Provider info (name, TPR ID + required fields)</li>
         </ul>
       )}
@@ -223,7 +254,8 @@ function ConfirmBody({ count, methodLabel, summary, caution, progress }) {
           aria-label="Submission progress"
         >
           <div style={{ fontSize: 12, color: '#667085', marginBottom: 6 }}>
-            {progress.processed}/{progress.total} processed • {progress.ok} ok • {progress.failed} failed
+            {progress.processed}/{progress.total} processed • {progress.ok} ok •{' '}
+            {progress.failed} failed
           </div>
           <div
             className={styles.progressBar || ''}
@@ -264,9 +296,14 @@ ConfirmBody.propTypes = {
 
 function ResultsBody({ result }) {
   const ok = !!result?.ok
-  const msg = result?.message || (ok ? 'Submission completed.' : 'Submission failed.')
+  const msg =
+    result?.message || (ok ? 'Submission completed.' : 'Submission failed.')
   const mode = result?.mode ? String(result.mode) : ''
-  const count = Number.isFinite(result?.count) ? result.count : (Number.isFinite(result?.total) ? result.total : undefined)
+  const count = Number.isFinite(result?.count)
+    ? result.count
+    : Number.isFinite(result?.total)
+      ? result.total
+      : undefined
   const failed = Number.isFinite(result?.failed) ? result.failed : undefined
   const warn = !ok || (failed && failed > 0)
 
@@ -279,7 +316,8 @@ function ResultsBody({ result }) {
       >
         <strong>{ok && !warn ? 'Success' : 'Completed with issues'}</strong>
         <span className={styles.resultMeta}>
-          {mode ? ` • mode: ${mode}` : ''}{count != null ? ` • records: ${count}` : ''}
+          {mode ? ` • mode: ${mode}` : ''}
+          {count != null ? ` • records: ${count}` : ''}
           {failed != null ? ` • failed: ${failed}` : ''}
         </span>
         <div className={styles.resultMsg}>{msg}</div>
@@ -289,7 +327,7 @@ function ResultsBody({ result }) {
       <details className={styles.details}>
         <summary>View raw response</summary>
         <pre className={styles.pre} aria-label="Raw submission response">
-{JSON.stringify(result, null, 2)}
+          {JSON.stringify(result, null, 2)}
         </pre>
       </details>
     </>
@@ -300,10 +338,14 @@ ResultsBody.propTypes = { result: PropTypes.any }
 
 function ResultsActions({ result }) {
   const handleCopy = async () => {
-    try { await navigator.clipboard.writeText(JSON.stringify(result ?? {}, null, 2)) } catch {}
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(result ?? {}, null, 2))
+    } catch {}
   }
   const handleDownload = () => {
-    const blob = new Blob([JSON.stringify(result ?? {}, null, 2)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(result ?? {}, null, 2)], {
+      type: 'application/json',
+    })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -315,8 +357,16 @@ function ResultsActions({ result }) {
   }
   return (
     <>
-      <button type="button" className={styles.btnGhost} onClick={handleCopy}>Copy JSON</button>
-      <button type="button" className={styles.btnPrimary} onClick={handleDownload}>Download JSON</button>
+      <button type="button" className={styles.btnGhost} onClick={handleCopy}>
+        Copy JSON
+      </button>
+      <button
+        type="button"
+        className={styles.btnPrimary}
+        onClick={handleDownload}
+      >
+        Download JSON
+      </button>
     </>
   )
 }

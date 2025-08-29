@@ -7,9 +7,9 @@ export const LS_KEYS = Object.freeze({
 
 export const FIRESTORE = Object.freeze({
   // where your settings live today
-  SCHOOL_DOC: (schoolId) => ['schools', schoolId],
+  SCHOOL_DOC: schoolId => ['schools', schoolId],
   // if you later move prefs to a dedicated doc:
-  SETTINGS_DOC: (schoolId) => ['settings', schoolId],
+  SETTINGS_DOC: schoolId => ['settings', schoolId],
 })
 
 export const BRAND_FALLBACK = Object.freeze({

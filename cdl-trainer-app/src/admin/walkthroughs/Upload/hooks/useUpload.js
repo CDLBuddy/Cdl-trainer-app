@@ -1,5 +1,6 @@
 //src/admin/walkthroughs/Upload/hooks/useUpload.js
 import { useMemo, useRef, useState } from 'react'
+
 import {
   parseMarkdownAny,
   parseCsvAny,
@@ -32,7 +33,9 @@ export function useUpload({ onImported, parseXlsx }) {
 
   const stats = useMemo(() => {
     const s = Array.isArray(sections) ? sections : []
-    let steps = 0, required = 0, passFail = 0
+    let steps = 0,
+      required = 0,
+      passFail = 0
     for (const sec of s) {
       const arr = Array.isArray(sec?.steps) ? sec.steps : []
       steps += arr.length
@@ -101,7 +104,9 @@ export function useUpload({ onImported, parseXlsx }) {
     if (!file) return
     setXlsxName(file.name)
     if (!parseXlsx) {
-      setErrors(['XLSX parsing not wired yet. Provide a parseXlsx prop that returns rows[] or { sections }.'])
+      setErrors([
+        'XLSX parsing not wired yet. Provide a parseXlsx prop that returns rows[] or { sections }.',
+      ])
       return
     }
     setBusy(true)
@@ -113,7 +118,9 @@ export function useUpload({ onImported, parseXlsx }) {
       } else if (Array.isArray(out)) {
         secs = ensureScriptShape(rowsToSections(out))
       } else {
-        throw new Error('Unexpected XLSX parse result (expected rows[] or {sections}).')
+        throw new Error(
+          'Unexpected XLSX parse result (expected rows[] or {sections}).'
+        )
       }
       setSections(secs)
       if (!label && out?.label) setLabel(String(out.label))
@@ -121,7 +128,9 @@ export function useUpload({ onImported, parseXlsx }) {
       setErrors([`XLSX parse error: ${e?.message || e}`])
     } finally {
       setBusy(false)
-      try { if (fileInputRef.current) fileInputRef.current.value = '' } catch {}
+      try {
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      } catch {}
     }
   }
 
@@ -138,7 +147,8 @@ export function useUpload({ onImported, parseXlsx }) {
     }
 
     const shape = validateShape(dataset)
-    if (!shape.ok) return setErrors(shape.errors || ['Dataset failed validation.'])
+    if (!shape.ok)
+      return setErrors(shape.errors || ['Dataset failed validation.'])
 
     onImported?.({
       label: dataset.label,
@@ -150,11 +160,33 @@ export function useUpload({ onImported, parseXlsx }) {
 
   return {
     // meta
-    label, setLabel, classCode, setClassCode, version, setVersion,
+    label,
+    setLabel,
+    classCode,
+    setClassCode,
+    version,
+    setVersion,
     // state
-    tab, setTab, rawMd, setRawMd, rawCsv, setRawCsv, rawJson, setRawJson,
-    xlsxName, busy, sections, errors, stats, canImport, fileInputRef,
+    tab,
+    setTab,
+    rawMd,
+    setRawMd,
+    rawCsv,
+    setRawCsv,
+    rawJson,
+    setRawJson,
+    xlsxName,
+    busy,
+    sections,
+    errors,
+    stats,
+    canImport,
+    fileInputRef,
     // actions
-    handleParseMarkdown, handleParseCsv, handleParseJson, handleXlsxChange, handleImport,
+    handleParseMarkdown,
+    handleParseCsv,
+    handleParseJson,
+    handleXlsxChange,
+    handleImport,
   }
 }

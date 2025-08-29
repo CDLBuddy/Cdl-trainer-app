@@ -31,7 +31,11 @@ function cloneStep(step) {
   return {
     ...step,
     // Keep common flags; copy tags defensively
-    tags: Array.isArray(step?.tags) ? [...step.tags] : (typeof step?.tags === 'string' ? [step.tags] : undefined),
+    tags: Array.isArray(step?.tags)
+      ? [...step.tags]
+      : typeof step?.tags === 'string'
+        ? [step.tags]
+        : undefined,
   }
 }
 
@@ -144,9 +148,13 @@ function applyRule(script, rule) {
     case 'hideStep': {
       let changed = false
       const nextSteps = steps.map(st => {
-        const byLabel = match.stepLabel && getStepLabelLike(st) === match.stepLabel
-        const byTag   = match.tag && stepHasTag(st, match.tag)
-        if (byLabel || byTag) { changed = true; return { ...st, hidden: true } }
+        const byLabel =
+          match.stepLabel && getStepLabelLike(st) === match.stepLabel
+        const byTag = match.tag && stepHasTag(st, match.tag)
+        if (byLabel || byTag) {
+          changed = true
+          return { ...st, hidden: true }
+        }
         return st
       })
       if (changed) out[secIdx] = { ...sec, steps: nextSteps }
@@ -157,7 +165,10 @@ function applyRule(script, rule) {
       const idx = matchStepIndexByLabel(steps, match.stepLabel)
       if (idx >= 0) {
         const next = steps.slice()
-        next[idx] = { ...next[idx], script: String(rule.to ?? next[idx].script ?? '') }
+        next[idx] = {
+          ...next[idx],
+          script: String(rule.to ?? next[idx].script ?? ''),
+        }
         out[secIdx] = { ...sec, steps: next }
       }
       return out

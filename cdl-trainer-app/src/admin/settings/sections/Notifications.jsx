@@ -39,7 +39,7 @@ export default function Notifications({ vm }) {
     )
   }, [form, n.draft])
 
-  const toggle = (key) => setForm(prev => ({ ...prev, [key]: !prev[key] }))
+  const toggle = key => setForm(prev => ({ ...prev, [key]: !prev[key] }))
 
   const onReset = () => {
     setForm({
@@ -61,7 +61,9 @@ export default function Notifications({ vm }) {
 
   return (
     <section className={styles.section} aria-labelledby="notifications-heading">
-      <h2 id="notifications-heading" className={styles.heading}>Notifications</h2>
+      <h2 id="notifications-heading" className={styles.heading}>
+        Notifications
+      </h2>
       <p className={styles.description}>
         Choose how your school receives important updates and summaries.
       </p>
@@ -90,7 +92,8 @@ export default function Notifications({ vm }) {
           <span>SMS alerts</span>
         </label>
         <small className={styles.help}>
-          Requires a verified texting number (Twilio/other). Carrier fees may apply.
+          Requires a verified texting number (Twilio/other). Carrier fees may
+          apply.
         </small>
       </div>
 

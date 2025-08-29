@@ -10,9 +10,8 @@
 import PropTypes from 'prop-types'
 import React, { memo, useEffect, useMemo, useRef } from 'react'
 
-import CompanyRow from './CompanyRow.jsx'
-
 import styles from './CompaniesTable.module.css'
+import CompanyRow from './CompanyRow.jsx'
 
 /**
  * Props:
@@ -64,8 +63,20 @@ function CompaniesTable({
       aria-label="Companies table region"
       data-testid="companies-table-region"
     >
-      <table className="companies-table" style={{ width: '100%', minWidth: 760 }}>
-        <caption style={{ position: 'absolute', left: -9999, top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>
+      <table
+        className="companies-table"
+        style={{ width: '100%', minWidth: 760 }}
+      >
+        <caption
+          style={{
+            position: 'absolute',
+            left: -9999,
+            top: 'auto',
+            width: 1,
+            height: 1,
+            overflow: 'hidden',
+          }}
+        >
           {captionText}
         </caption>
 
@@ -77,7 +88,7 @@ function CompaniesTable({
                 aria-label="Select all companies"
                 type="checkbox"
                 checked={allChecked}
-                onChange={(e) => onToggleAll?.(e.target.checked)}
+                onChange={e => onToggleAll?.(e.target.checked)}
               />
             </th>
             <th scope="col">Name</th>
@@ -85,19 +96,28 @@ function CompaniesTable({
             <th scope="col">Address</th>
             <th scope="col">Status</th>
             <th scope="col">Created / By</th>
-            <th scope="col" style={{ width: 260 }}>Actions</th>
+            <th scope="col" style={{ width: 260 }}>
+              Actions
+            </th>
           </tr>
         </thead>
 
         <tbody>
           {!hasRows ? (
             <tr>
-              <td colSpan={colSpan} style={{ textAlign: 'center', color: '#6b7280', padding: '12px 8px' }}>
+              <td
+                colSpan={colSpan}
+                style={{
+                  textAlign: 'center',
+                  color: '#6b7280',
+                  padding: '12px 8px',
+                }}
+              >
                 No companies found for this school.
               </td>
             </tr>
           ) : (
-            rows.map((c) => (
+            rows.map(c => (
               <CompanyRow
                 key={c.id}
                 company={c}
@@ -118,7 +138,8 @@ function CompaniesTable({
 }
 
 CompaniesTable.propTypes = {
-  rows: PropTypes.arrayOf(PropTypes.shape({ id: PropTypes.string.isRequired })).isRequired,
+  rows: PropTypes.arrayOf(PropTypes.shape({ id: PropTypes.string.isRequired }))
+    .isRequired,
   allChecked: PropTypes.bool,
   onToggleAll: PropTypes.func,
   selectedSet: PropTypes.instanceOf(Set),

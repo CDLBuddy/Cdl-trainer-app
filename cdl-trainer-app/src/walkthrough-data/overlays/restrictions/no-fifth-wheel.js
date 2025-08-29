@@ -55,31 +55,97 @@ export default {
     // Remove fifth-wheel specific steps embedded in broader sections.
     // Tags are matched; missing tags/sections are safely ignored.
     // ------------------------------------------------------------------
-    { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'fifth-wheel' } },
-    { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'fifthwheel' } }, // alt tag
-    { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'kingpin' } },
-    { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'king-pin' } },
-    { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'locking-jaws' } },
-    { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'apron' } },
-    { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'skid-plate' } },
-    { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'release-arm' } },
-    { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'platform' } },
-    { op: 'removeStep', match: { section: 'Trailer Inspection', tag: 'gap-check' } },
+    {
+      op: 'removeStep',
+      match: { section: 'Trailer Inspection', tag: 'fifth-wheel' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Trailer Inspection', tag: 'fifthwheel' },
+    }, // alt tag
+    {
+      op: 'removeStep',
+      match: { section: 'Trailer Inspection', tag: 'kingpin' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Trailer Inspection', tag: 'king-pin' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Trailer Inspection', tag: 'locking-jaws' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Trailer Inspection', tag: 'apron' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Trailer Inspection', tag: 'skid-plate' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Trailer Inspection', tag: 'release-arm' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Trailer Inspection', tag: 'platform' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Trailer Inspection', tag: 'gap-check' },
+    },
 
-    { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'fifth-wheel' } },
-    { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'fifthwheel' } },
-    { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'kingpin' } },
-    { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'locking-jaws' } },
-    { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'apron' } },
-    { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'skid-plate' } },
-    { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'release-arm' } },
-    { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'platform' } },
-    { op: 'removeStep', match: { section: 'Pre-Trip Inspection', tag: 'gap-check' } },
+    {
+      op: 'removeStep',
+      match: { section: 'Pre-Trip Inspection', tag: 'fifth-wheel' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Pre-Trip Inspection', tag: 'fifthwheel' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Pre-Trip Inspection', tag: 'kingpin' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Pre-Trip Inspection', tag: 'locking-jaws' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Pre-Trip Inspection', tag: 'apron' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Pre-Trip Inspection', tag: 'skid-plate' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Pre-Trip Inspection', tag: 'release-arm' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Pre-Trip Inspection', tag: 'platform' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Pre-Trip Inspection', tag: 'gap-check' },
+    },
 
     // Some scripts tuck coupling notes under “In-Cab / Vehicle Overview”
-    { op: 'removeStep', match: { section: 'Vehicle Overview',    tag: 'fifth-wheel' } },
-    { op: 'removeStep', match: { section: 'In-Cab Inspection',   tag: 'fifth-wheel' } },
-    { op: 'removeStep', match: { section: 'In Cab Inspection',   tag: 'fifth-wheel' } }, // alt spelling
+    {
+      op: 'removeStep',
+      match: { section: 'Vehicle Overview', tag: 'fifth-wheel' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'In-Cab Inspection', tag: 'fifth-wheel' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'In Cab Inspection', tag: 'fifth-wheel' },
+    }, // alt spelling
 
     // ------------------------------------------------------------------
     // Add a small reminder where a generic trailer section exists.

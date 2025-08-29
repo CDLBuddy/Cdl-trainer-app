@@ -27,11 +27,41 @@ async function loadDashboardApi() {
 function mockCompaniesSnapshot({ limit = 5 }) {
   const now = Date.now()
   const sample = [
-    { id: 'acme', name: 'ACME Logistics', studentCount: 42, active: true, trend: 'up' },
-    { id: 'roadstar', name: 'RoadStar Freight', studentCount: 31, active: true, trend: 'flat' },
-    { id: 'midwest', name: 'Midwest Carriers', studentCount: 18, active: false, trend: 'down' },
-    { id: 'north', name: 'North Haul LLC', studentCount: 11, active: true, trend: 'up' },
-    { id: 'swift', name: 'Swift & Sons', studentCount: 8, active: true, trend: 'flat' },
+    {
+      id: 'acme',
+      name: 'ACME Logistics',
+      studentCount: 42,
+      active: true,
+      trend: 'up',
+    },
+    {
+      id: 'roadstar',
+      name: 'RoadStar Freight',
+      studentCount: 31,
+      active: true,
+      trend: 'flat',
+    },
+    {
+      id: 'midwest',
+      name: 'Midwest Carriers',
+      studentCount: 18,
+      active: false,
+      trend: 'down',
+    },
+    {
+      id: 'north',
+      name: 'North Haul LLC',
+      studentCount: 11,
+      active: true,
+      trend: 'up',
+    },
+    {
+      id: 'swift',
+      name: 'Swift & Sons',
+      studentCount: 8,
+      active: true,
+      trend: 'flat',
+    },
   ]
   return Promise.resolve(
     sample.slice(0, Math.max(1, limit)).map((r, i) => ({
@@ -45,7 +75,11 @@ function mockCompaniesSnapshot({ limit = 5 }) {
  * useCompaniesSnapshot
  * @param {{ schoolId?: string, limit?: number, sortBy?: 'name'|'students' }} params
  */
-export function useCompaniesSnapshot({ schoolId, limit = 5, sortBy = 'name' } = {}) {
+export function useCompaniesSnapshot({
+  schoolId,
+  limit = 5,
+  sortBy = 'name',
+} = {}) {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -56,7 +90,9 @@ export function useCompaniesSnapshot({ schoolId, limit = 5, sortBy = 'name' } = 
   const fetchOnce = useCallback(async () => {
     // reset when no school selected
     if (!schoolId) {
-      try { abortRef.current?.abort() } catch {
+      try {
+        abortRef.current?.abort()
+      } catch {
         // intentionally ignored
       }
       setRows([])
@@ -66,7 +102,9 @@ export function useCompaniesSnapshot({ schoolId, limit = 5, sortBy = 'name' } = 
     }
 
     // cancel any in-flight request
-    try { abortRef.current?.abort() } catch {
+    try {
+      abortRef.current?.abort()
+    } catch {
       // intentionally ignored
     }
     const ac = new AbortController()
@@ -82,7 +120,11 @@ export function useCompaniesSnapshot({ schoolId, limit = 5, sortBy = 'name' } = 
 
       let list = []
       if (api?.companies?.getSnapshot) {
-        list = await api.companies.getSnapshot({ schoolId, limit, signal: ac.signal })
+        list = await api.companies.getSnapshot({
+          schoolId,
+          limit,
+          signal: ac.signal,
+        })
       } else {
         list = await mockCompaniesSnapshot({ limit })
       }
@@ -90,7 +132,7 @@ export function useCompaniesSnapshot({ schoolId, limit = 5, sortBy = 'name' } = 
       if (ac.signal.aborted) return
 
       // Defensive mapping (shape normalization)
-      const mapped = (Array.isArray(list) ? list : []).map((c) => ({
+      const mapped = (Array.isArray(list) ? list : []).map(c => ({
         id:
           c.id ??
           c.companyId ??
@@ -114,7 +156,8 @@ export function useCompaniesSnapshot({ schoolId, limit = 5, sortBy = 'name' } = 
 
       // Client-side sort for tiny lists
       mapped.sort((a, b) => {
-        if (sortBy === 'students') return b.studentCount - a.studentCount || a.name.localeCompare(b.name)
+        if (sortBy === 'students')
+          return b.studentCount - a.studentCount || a.name.localeCompare(b.name)
         // default: name
         return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
       })
@@ -136,7 +179,9 @@ export function useCompaniesSnapshot({ schoolId, limit = 5, sortBy = 'name' } = 
   useEffect(() => {
     fetchOnce()
     return () => {
-      try { abortRef.current?.abort() } catch {
+      try {
+        abortRef.current?.abort()
+      } catch {
         // intentionally ignored
       }
     }
@@ -144,7 +189,12 @@ export function useCompaniesSnapshot({ schoolId, limit = 5, sortBy = 'name' } = 
 
   // Derived value: total students in the snapshot
   const totalStudents = useMemo(
-    () => rows.reduce((acc, r) => acc + (Number.isFinite(r.studentCount) ? r.studentCount : 0), 0),
+    () =>
+      rows.reduce(
+        (acc, r) =>
+          acc + (Number.isFinite(r.studentCount) ? r.studentCount : 0),
+        0
+      ),
     [rows]
   )
 

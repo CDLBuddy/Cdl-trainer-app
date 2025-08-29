@@ -21,17 +21,20 @@ async function loadServices() {
         import('../services/tprClient.js'),
       ])
       return {
-        toCompletion: mappers?.toTPRCompletion || ((x) => x),
-        validate: validators?.validateTPRPayload || (() => ({ ok: true, errors: [] })),
-        submitOne: tprClient?.submitCompletion || (async (payload) => ({ ok: true, mode: 'stub', payload })),
+        toCompletion: mappers?.toTPRCompletion || (x => x),
+        validate:
+          validators?.validateTPRPayload || (() => ({ ok: true, errors: [] })),
+        submitOne:
+          tprClient?.submitCompletion ||
+          (async payload => ({ ok: true, mode: 'stub', payload })),
         bulk: tprClient?.bulkUpload || null,
       }
     } catch {
       // Safe stubs if services fail to load (keeps UI usable)
       return {
-        toCompletion: (x) => x,
+        toCompletion: x => x,
         validate: () => ({ ok: true, errors: [] }),
-        submitOne: async (payload) => ({ ok: true, mode: 'stub', payload }),
+        submitOne: async payload => ({ ok: true, mode: 'stub', payload }),
         bulk: null,
       }
     }
@@ -41,7 +44,9 @@ async function loadServices() {
 
 /** Optional: caller can prefetch on idle/hover. */
 export async function prefetchTPRServices() {
-  try { await loadServices() } catch {}
+  try {
+    await loadServices()
+  } catch {}
 }
 
 /**
@@ -63,7 +68,7 @@ export async function prefetchTPRServices() {
 
 export default function useTPRSubmit() {
   const [submitting, setSubmitting] = useState(false)
-  const [lastError, setLastError]   = useState('')
+  const [lastError, setLastError] = useState('')
   const [lastResult, setLastResult] = useState(null)
   const progressRef = useRef({ processed: 0, total: 0, ok: 0, failed: 0 })
 
@@ -74,26 +79,35 @@ export default function useTPRSubmit() {
     progressRef.current = { processed: 0, total: 0, ok: 0, failed: 0 }
   }, [])
 
-  const emitProgress = useCallback((onProgress) => {
+  const emitProgress = useCallback(onProgress => {
     if (typeof onProgress === 'function') onProgress({ ...progressRef.current })
   }, [])
 
-  const runValidateMap = useCallback(async (item) => {
+  const runValidateMap = useCallback(async item => {
     const { toCompletion, validate } = await loadServices()
     // Accept either a ready payload or { student, training, provider }
-    const mightBePayload = item && (item.trainee || item.traineeName || item.completionDate || item.providerId)
+    const mightBePayload =
+      item &&
+      (item.trainee ||
+        item.traineeName ||
+        item.completionDate ||
+        item.providerId)
     const payload = mightBePayload ? item : toCompletion(item)
 
     const v = validate(payload)
     const valid = !!v.ok && (!v.errors || v.errors.length === 0)
-    const errors = Array.isArray(v.errors) ? v.errors : (v.ok ? [] : ['Invalid payload'])
+    const errors = Array.isArray(v.errors)
+      ? v.errors
+      : v.ok
+        ? []
+        : ['Invalid payload']
 
     return { payload, valid, errors }
   }, [])
 
   // ------------------------------- submitOne -------------------------------
   const submitOne = useCallback(
-    async (item, opts = /** @type {SubmitOptions} */({})) => {
+    async (item, opts = /** @type {SubmitOptions} */ ({})) => {
       const { dryRun = false, onProgress } = opts
       setSubmitting(true)
       setLastError('')
@@ -104,13 +118,25 @@ export default function useTPRSubmit() {
         const svc = await loadServices()
         const mapped = await runValidateMap(item)
         /** @type {SubmitItemResult} */
-        const result = { input: item, payload: mapped.payload, valid: mapped.valid, errors: mapped.errors, response: null }
+        const result = {
+          input: item,
+          payload: mapped.payload,
+          valid: mapped.valid,
+          errors: mapped.errors,
+          response: null,
+        }
 
         if (!mapped.valid) {
           progressRef.current.failed += 1
           progressRef.current.processed += 1
           emitProgress(onProgress)
-          const summary = { ok: 0, failed: 1, total: 1, items: [result], mode: dryRun ? 'dry-run' : 'single' }
+          const summary = {
+            ok: 0,
+            failed: 1,
+            total: 1,
+            items: [result],
+            mode: dryRun ? 'dry-run' : 'single',
+          }
           setLastResult(summary)
           const msg = `Invalid payload: ${mapped.errors.join('; ')}`
           setLastError(msg)
@@ -121,7 +147,13 @@ export default function useTPRSubmit() {
           progressRef.current.ok += 1
           progressRef.current.processed += 1
           emitProgress(onProgress)
-          const summary = { ok: 1, failed: 0, total: 1, items: [result], mode: 'dry-run' }
+          const summary = {
+            ok: 1,
+            failed: 0,
+            total: 1,
+            items: [result],
+            mode: 'dry-run',
+          }
           setLastResult(summary)
           return summary
         }
@@ -131,11 +163,17 @@ export default function useTPRSubmit() {
         const ok = !!(res && (res.ok ?? true))
 
         if (ok) progressRef.current.ok += 1
-        else    progressRef.current.failed += 1
+        else progressRef.current.failed += 1
         progressRef.current.processed += 1
         emitProgress(onProgress)
 
-        const summary = { ok: ok ? 1 : 0, failed: ok ? 0 : 1, total: 1, items: [result], mode: 'single' }
+        const summary = {
+          ok: ok ? 1 : 0,
+          failed: ok ? 0 : 1,
+          total: 1,
+          items: [result],
+          mode: 'single',
+        }
         setLastResult(summary)
         if (!ok) {
           const msg = 'TPR submission failed.'
@@ -160,16 +198,17 @@ export default function useTPRSubmit() {
      * @param {SubmitOptions} opts
      */
     async (items = [], opts = {}) => {
-      const {
-        dryRun = false,
-        batchSize = 100,
-        onProgress,
-      } = opts
+      const { dryRun = false, batchSize = 100, onProgress } = opts
 
       const input = Array.isArray(items) ? items : []
       setSubmitting(true)
       setLastError('')
-      progressRef.current = { processed: 0, total: input.length, ok: 0, failed: 0 }
+      progressRef.current = {
+        processed: 0,
+        total: input.length,
+        ok: 0,
+        failed: 0,
+      }
       emitProgress(onProgress)
 
       try {
@@ -177,14 +216,20 @@ export default function useTPRSubmit() {
 
         // 1) Map + validate all up front
         const prepared = await Promise.all(
-          input.map(async (it) => {
+          input.map(async it => {
             const mapped = await runValidateMap(it)
             /** @type {SubmitItemResult} */
-            return { input: it, payload: mapped.payload, valid: mapped.valid, errors: mapped.errors, response: null }
+            return {
+              input: it,
+              payload: mapped.payload,
+              valid: mapped.valid,
+              errors: mapped.errors,
+              response: null,
+            }
           })
         )
 
-        const invalid = prepared.filter((r) => !r.valid)
+        const invalid = prepared.filter(r => !r.valid)
         if (dryRun) {
           progressRef.current.ok = prepared.length - invalid.length
           progressRef.current.failed = invalid.length
@@ -220,19 +265,21 @@ export default function useTPRSubmit() {
         }
 
         // 2) Submit: prefer bulk if available; otherwise per-item in batches
-        let results = prepared
+        const results = prepared
 
         if (svc.bulk) {
           for (let i = 0; i < prepared.length; i += batchSize) {
             const chunk = prepared.slice(i, i + batchSize)
-            const payloads = chunk.map((r) => r.payload)
+            const payloads = chunk.map(r => r.payload)
             const res = await svc.bulk(payloads)
             const ok = !!(res && (res.ok ?? true))
-            chunk.forEach((r) => { r.response = res })
+            chunk.forEach(r => {
+              r.response = res
+            })
 
             progressRef.current.processed += chunk.length
             if (ok) progressRef.current.ok += chunk.length
-            else    progressRef.current.failed += chunk.length
+            else progressRef.current.failed += chunk.length
             emitProgress(onProgress)
           }
         } else {
@@ -243,7 +290,7 @@ export default function useTPRSubmit() {
               r.response = res
               const ok = !!(res && (res.ok ?? true))
               if (ok) progressRef.current.ok += 1
-              else    progressRef.current.failed += 1
+              else progressRef.current.failed += 1
             } catch (e) {
               r.response = { ok: false, error: String(e?.message || e) }
               progressRef.current.failed += 1
@@ -279,15 +326,18 @@ export default function useTPRSubmit() {
     [emitProgress, runValidateMap]
   )
 
-  const progress = useMemo(() => ({ ...progressRef.current }), [lastResult, submitting])
+  const progress = useMemo(
+    () => ({ ...progressRef.current }),
+    [lastResult, submitting]
+  )
 
   return {
     submitOne,
     submitMany,
     submitting,
     lastError,
-    lastResult,   // { mode, ok, failed, total, items: SubmitItemResult[] }
-    progress,     // { processed, total, ok, failed }
+    lastResult, // { mode, ok, failed, total, items: SubmitItemResult[] }
+    progress, // { processed, total, ok, failed }
     reset,
   }
 }

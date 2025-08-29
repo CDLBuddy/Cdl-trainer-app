@@ -1,6 +1,6 @@
 //src/student/dashboard/components/TipsRow.jsx
-import React, { memo, useMemo } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useMemo } from 'react'
 
 import cls from './TipsRow.module.css'
 

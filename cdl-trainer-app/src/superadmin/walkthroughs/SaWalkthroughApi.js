@@ -20,16 +20,18 @@ import {
 import { db, auth } from '@utils/firebase.js'
 
 // === Config (adjust if your paths differ) ====================================
-const SUBMISSIONS = (schoolId) =>
+const SUBMISSIONS = schoolId =>
   collection(db, 'schools', schoolId, 'walkthrough_submissions')
-const PUBLISHED = (schoolId) => collection(db, 'schools', schoolId, 'walkthroughs')
+const PUBLISHED = schoolId =>
+  collection(db, 'schools', schoolId, 'walkthroughs')
 
 // Utility: tolerant Timestamp/number/ISO → Date
 function toDate(x) {
   try {
     if (!x) return null
     if (typeof x === 'number') return new Date(x)
-    if (typeof x === 'object' && typeof x.toDate === 'function') return x.toDate()
+    if (typeof x === 'object' && typeof x.toDate === 'function')
+      return x.toDate()
     return new Date(x)
   } catch {
     return null
@@ -46,7 +48,7 @@ function mapSnap(snap) {
 // Normalize QuerySnapshot
 function mapQuery(qs) {
   const out = []
-  qs.forEach((d) => {
+  qs.forEach(d => {
     const row = mapSnap(d)
     if (row) out.push(row)
   })
@@ -78,7 +80,7 @@ export async function listSubmissions(opts = {}) {
   const qs = await getDocs(qref)
   const rows = mapQuery(qs)
 
-  return rows.map((r) => ({
+  return rows.map(r => ({
     ...r,
     _displayDate: toDate(r.updatedAt) || toDate(r.submittedAt) || new Date(),
   }))
@@ -90,7 +92,13 @@ export async function listSubmissions(opts = {}) {
 export async function getSubmission({ schoolId, submissionId }) {
   if (!schoolId) throw new Error('schoolId required')
   if (!submissionId) throw new Error('submissionId required')
-  const ref = doc(db, 'schools', schoolId, 'walkthrough_submissions', submissionId)
+  const ref = doc(
+    db,
+    'schools',
+    schoolId,
+    'walkthrough_submissions',
+    submissionId
+  )
   const snap = await getDoc(ref)
   return mapSnap(snap) // { id, ...data } or null
 }
@@ -105,7 +113,9 @@ export async function approveAndPublish(submission) {
   const { schoolId, token } = submission
   const publishId = token || submission.id
 
-  const latest = token ? await getCurrentPublishedForToken(schoolId, token) : null
+  const latest = token
+    ? await getCurrentPublishedForToken(schoolId, token)
+    : null
   const nextVersion = Number(latest?.version ?? 0) + 1
 
   const batch = writeBatch(db)
@@ -131,7 +141,13 @@ export async function approveAndPublish(submission) {
   )
 
   // 2) Mark submission as approved
-  const subRef = doc(db, 'schools', schoolId, 'walkthrough_submissions', submission.id)
+  const subRef = doc(
+    db,
+    'schools',
+    schoolId,
+    'walkthrough_submissions',
+    submission.id
+  )
   batch.update(subRef, {
     status: 'approved',
     reviewedAt: serverTimestamp(),
@@ -213,7 +229,13 @@ export async function _setSubmissionStatus({
   if (!schoolId) throw new Error('schoolId required')
   if (!submissionId) throw new Error('submissionId required')
   if (!status) throw new Error('status required')
-  const ref = doc(db, 'schools', schoolId, 'walkthrough_submissions', submissionId)
+  const ref = doc(
+    db,
+    'schools',
+    schoolId,
+    'walkthrough_submissions',
+    submissionId
+  )
   const patch = {
     status,
     updatedAt: serverTimestamp(),

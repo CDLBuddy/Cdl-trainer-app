@@ -3,6 +3,7 @@
 // Pure React; no Firestore listeners (so it stays cheap).
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import { listMessages } from '../services'
 
 /**
@@ -37,7 +38,9 @@ export function useMessageHistory(opts = {}) {
   useEffect(() => {
     alive.current = true
     refresh()
-    return () => { alive.current = false }
+    return () => {
+      alive.current = false
+    }
   }, [refresh])
 
   // optional polling (polite: skip when tab hidden)
@@ -49,10 +52,15 @@ export function useMessageHistory(opts = {}) {
       refresh().catch(() => {})
     }
     t = setInterval(tick, pollMs)
-    return () => { if (t) clearInterval(t) }
+    return () => {
+      if (t) clearInterval(t)
+    }
   }, [pollMs, refresh])
 
-  const empty = useMemo(() => !loading && !error && rows.length === 0, [loading, error, rows])
+  const empty = useMemo(
+    () => !loading && !error && rows.length === 0,
+    [loading, error, rows]
+  )
 
   return { rows, loading, error, empty, refresh }
 }

@@ -8,13 +8,14 @@
 // - Polished for a11y: aria-* hints, focus states, and safe buttons
 // ======================================================================
 
-import React from 'react'
 import PropTypes from 'prop-types'
-import styles from './AdminReports.module.css'
+import React from 'react'
 
+import useToast from '@components/useToast.js'
+
+import styles from './AdminReports.module.css'
 // Lightweight atoms/molecules (static)
 import { ChecklistCard, FiltersBar, StatusPill } from './components'
-
 // Hooks (from ./hooks/index.js barrel)
 import {
   useReports,
@@ -26,52 +27,77 @@ import {
 } from './hooks'
 
 // Toast (UX pings)
-import useToast from '@components/useToast.js'
 
 /* ------------------------------ Lazy bundles ----------------------------- */
-const UsersTable          = React.lazy(() => import('./components/UsersTable.jsx'))
-const CompanyRosterTable  = React.lazy(() => import('./components/CompanyRosterTable.jsx'))
-const ExportMenu          = React.lazy(() => import('./components/ExportMenu.jsx'))
-const BulkUploadDialog    = React.lazy(() => import('./components/BulkUploadDialog.jsx'))
-const SubmitToTPRDialog   = React.lazy(() => import('./components/SubmitToTPRDialog.jsx'))
-const StudentReportDrawer = React.lazy(() => import('./StudentReportDrawer.jsx'))
+const UsersTable = React.lazy(() => import('./components/UsersTable.jsx'))
+const CompanyRosterTable = React.lazy(
+  () => import('./components/CompanyRosterTable.jsx')
+)
+const ExportMenu = React.lazy(() => import('./components/ExportMenu.jsx'))
+const BulkUploadDialog = React.lazy(
+  () => import('./components/BulkUploadDialog.jsx')
+)
+const SubmitToTPRDialog = React.lazy(
+  () => import('./components/SubmitToTPRDialog.jsx')
+)
+const StudentReportDrawer = React.lazy(
+  () => import('./student-reports/StudentReportsDrawer.jsx')
+)
 
 // Memo wrappers so re-renders are minimized even for lazy comps
-const MemoUsersTable         = React.memo((p) => <UsersTable {...p} />)
-const MemoCompanyRosterTable = React.memo((p) => <CompanyRosterTable {...p} />)
-const MemoExportMenu         = React.memo((p) => <ExportMenu {...p} />)
+const MemoUsersTable = React.memo(p => <UsersTable {...p} />)
+const MemoCompanyRosterTable = React.memo(p => <CompanyRosterTable {...p} />)
+const MemoExportMenu = React.memo(p => <ExportMenu {...p} />)
 
 /* ------------------------------- Fallbacks -------------------------------- */
-const FallbackCard = React.memo(function FallbackCard({ children = 'Loading…' }) {
+const FallbackCard = React.memo(function FallbackCard({
+  children = 'Loading…',
+}) {
   return (
     <div className="dashboard-card" role="status" aria-live="polite">
       {children}
     </div>
   )
 })
-const TableSkeleton = React.memo(function TableSkeleton({ rows = 6, height = 220 }) {
+const TableSkeleton = React.memo(function TableSkeleton({
+  rows = 6,
+  height = 220,
+}) {
   return (
-    <div className="dashboard-card" aria-hidden style={{ minHeight: height, opacity: 0.75 }}>
-      <div className="skeleton" style={{ height: 18, width: 180, marginBottom: 10 }} />
+    <div
+      className="dashboard-card"
+      aria-hidden
+      style={{ minHeight: height, opacity: 0.75 }}
+    >
+      <div
+        className="skeleton"
+        style={{ height: 18, width: 180, marginBottom: 10 }}
+      />
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="skeleton" style={{ height: 14, margin: '10px 0' }} />
+        <div
+          key={i}
+          className="skeleton"
+          style={{ height: 14, margin: '10px 0' }}
+        />
       ))}
     </div>
   )
 })
 
 /* ------------------------------- Prefetchers ------------------------------ */
-const prefetchUsersBundle  = () => import('./components/UsersTable.jsx')
+const prefetchUsersBundle = () => import('./components/UsersTable.jsx')
 const prefetchRosterBundle = () => import('./components/CompanyRosterTable.jsx')
 const prefetchExportBundle = () => import('./components/ExportMenu.jsx')
 const prefetchDialogs = () => {
   import('./components/BulkUploadDialog.jsx')
   import('./components/SubmitToTPRDialog.jsx')
-  import('./StudentReportDrawer.jsx')
+  import('./student-reports/StudentReportsDrawer.jsx')
 }
 /** Prefetch mappers/validators/tprClient used by useTPRSubmit */
 const prefetchTPRServices = () =>
-  import('./hooks/useTPRSubmit.js').then(m => m.prefetchTPRServices?.()).catch(() => {})
+  import('./hooks/useTPRSubmit.js')
+    .then(m => m.prefetchTPRServices?.())
+    .catch(() => {})
 
 /* --------------------------------- Page ---------------------------------- */
 export default function AdminReports({ currentSchoolId, currentRole }) {
@@ -83,8 +109,10 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
     companies,
     loading,
     error,
-    roleFilter, setRoleFilter,
-    search, setSearch,
+    roleFilter,
+    setRoleFilter,
+    search,
+    setSearch,
     filteredUsers,
   } = useReports(currentSchoolId)
 
@@ -94,31 +122,39 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
   // 3) Company roster panel state
   const [activeCompanyId, setActiveCompanyId] = React.useState('')
   const activeCompany = React.useMemo(
-    () => (companies || []).find((c) => c.id === activeCompanyId) || null,
+    () => (companies || []).find(c => c.id === activeCompanyId) || null,
     [companies, activeCompanyId]
   )
   const {
     students: roster,
     loading: rosterLoading,
     refresh: refreshRoster,
-  } = useCompanyRoster({ schoolId: currentSchoolId, companyId: activeCompanyId })
+  } = useCompanyRoster({
+    schoolId: currentSchoolId,
+    companyId: activeCompanyId,
+  })
 
   // 4) Per-student drawer
   const [drawerStudent, setDrawerStudent] = React.useState(null)
   // Thin style: hook returns cert + provider/training directly (accepts both call shapes)
-  const { cert, provider, training } = useStudentCert({ student: drawerStudent, schoolId: currentSchoolId })
+  const { cert, provider, training } = useStudentCert({
+    student: drawerStudent,
+    schoolId: currentSchoolId,
+  })
 
   // 5) Bulk upload + TPR submit (confirm-first workflow)
   const {
     open: bulkOpen,
     openDialog: openBulk,
     closeDialog: closeBulk,
-    handleFile,     // dialog calls onFile(file) -> hook parses & summarizes
-    summary,        // { fileName, total, errors, ok }
+    handleFile, // dialog calls onFile(file) -> hook parses & summarizes
+    summary, // { fileName, total, errors, ok }
   } = useBulkUpload({
     onParsed: (rows, issues) => {
       const ok = Math.max(0, rows.length - issues.length)
-      toast?.info?.(`Parsed ${rows.length} rows • ${issues.length} issue${issues.length === 1 ? '' : 's'} • ${ok} ready`)
+      toast?.info?.(
+        `Parsed ${rows.length} rows • ${issues.length} issue${issues.length === 1 ? '' : 's'} • ${ok} ready`
+      )
     },
   })
 
@@ -129,7 +165,10 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
   // 6) Auth gate
   if (currentRole !== 'admin') {
     return (
-      <div className="dashboard-card" style={{ margin: '2em auto', maxWidth: 520 }}>
+      <div
+        className="dashboard-card"
+        style={{ margin: '2em auto', maxWidth: 520 }}
+      >
         <h3>Access denied</h3>
         <p>This page is for admins only.</p>
       </div>
@@ -153,7 +192,11 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
         <header className={styles.head}>
           <h2 className="dash-head">📄 Admin Reports</h2>
         </header>
-        <div className="dashboard-card" role="alert" style={{ border: '1px solid #ff8a8a' }}>
+        <div
+          className="dashboard-card"
+          role="alert"
+          style={{ border: '1px solid #ff8a8a' }}
+        >
           {String(error)}
         </div>
       </div>
@@ -161,16 +204,19 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
   }
 
   // 8) Handlers (stable)
-  const onOpenStudent   = React.useCallback((row) => setDrawerStudent(row), [])
-  const onCloseStudent  = React.useCallback(() => setDrawerStudent(null), [])
-  const onToggleCompany = React.useCallback((id) => setActiveCompanyId((v) => (v === id ? '' : id)), [])
+  const onOpenStudent = React.useCallback(row => setDrawerStudent(row), [])
+  const onCloseStudent = React.useCallback(() => setDrawerStudent(null), [])
+  const onToggleCompany = React.useCallback(
+    id => setActiveCompanyId(v => (v === id ? '' : id)),
+    []
+  )
 
   const onResetFilters = React.useCallback(() => {
     setRoleFilter('')
     setSearch('')
   }, [setRoleFilter, setSearch])
 
-  const openTPRConfirm = React.useCallback((students) => {
+  const openTPRConfirm = React.useCallback(students => {
     setPendingStudents(Array.isArray(students) ? students : [])
     setSubmitOpen(true)
   }, [])
@@ -186,7 +232,14 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
       toast?.error?.('Submission failed.')
       // keep dialog open for retry/cancel
     }
-  }, [submitMany, pendingStudents, currentSchoolId, toast, activeCompanyId, refreshRoster])
+  }, [
+    submitMany,
+    pendingStudents,
+    currentSchoolId,
+    toast,
+    activeCompanyId,
+    refreshRoster,
+  ])
 
   // 9) Prefetch on idle to hide the lazy cost when possible
   React.useEffect(() => {
@@ -237,14 +290,23 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
               onMouseEnter={prefetchExportBundle}
               onFocus={prefetchExportBundle}
             >
-              <React.Suspense fallback={<span className="btn" aria-busy>Export…</span>}>
+              <React.Suspense
+                fallback={
+                  <span className="btn" aria-busy>
+                    Export…
+                  </span>
+                }
+              >
                 <MemoExportMenu users={filteredUsers} />
               </React.Suspense>
 
               <button
                 type="button"
                 className="btn"
-                onClick={() => { prefetchDialogs(); openBulk() }}
+                onClick={() => {
+                  prefetchDialogs()
+                  openBulk()
+                }}
                 onMouseEnter={prefetchDialogs}
                 onFocus={prefetchDialogs}
                 title="Upload a CSV of completion records"
@@ -253,8 +315,15 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
               </button>
 
               {summary?.total > 0 && (
-                <span style={{ fontSize: 12, color: 'color-mix(in oklab, var(--text-light, #fff), #000 40%)' }}>
-                  {summary.fileName ? `${summary.fileName} • ` : ''}{summary.ok}/{summary.total} ready
+                <span
+                  style={{
+                    fontSize: 12,
+                    color:
+                      'color-mix(in oklab, var(--text-light, #fff), #000 40%)',
+                  }}
+                >
+                  {summary.fileName ? `${summary.fileName} • ` : ''}
+                  {summary.ok}/{summary.total} ready
                 </span>
               )}
             </div>
@@ -266,7 +335,8 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
         </React.Suspense>
 
         <small style={{ color: '#77a', display: 'block', marginTop: '1em' }}>
-          <b>Tips:</b> Exports are scoped to this school. Use role + search filters to narrow before exporting.
+          <b>Tips:</b> Exports are scoped to this school. Use role + search
+          filters to narrow before exporting.
         </small>
       </section>
 
@@ -276,7 +346,7 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
 
         {/* Company chips (use :global(.chip) styles from AdminReports.module.css) */}
         <div className={styles.actionsRow} style={{ flexWrap: 'wrap' }}>
-          {(companies || []).map((c) => {
+          {(companies || []).map(c => {
             const active = activeCompanyId === c.id
             return (
               <button
@@ -293,10 +363,15 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
                 title={`${c.name} • ${c.studentCount ?? 0} students`}
               >
                 <span>{c.name}</span>
-                <span className={styles.pill} style={{ marginLeft: 6 }}>{c.studentCount ?? 0}</span>
+                <span className={styles.pill} style={{ marginLeft: 6 }}>
+                  {c.studentCount ?? 0}
+                </span>
                 {c.expiringSoon > 0 && (
                   <span style={{ marginLeft: 6 }}>
-                    <StatusPill kind="warning" label={`${c.expiringSoon} expiring`} />
+                    <StatusPill
+                      kind="warning"
+                      label={`${c.expiringSoon} expiring`}
+                    />
                   </span>
                 )}
               </button>
@@ -307,7 +382,14 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
         {/* Roster table + actions */}
         {activeCompany ? (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 8,
+              }}
+            >
               <div style={{ fontWeight: 600 }}>
                 {activeCompany.name}{' '}
                 <span style={{ color: '#6b7280', fontWeight: 400 }}>
@@ -316,14 +398,24 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
               </div>
 
               <div style={{ display: 'flex', gap: 8 }}>
-                <React.Suspense fallback={<span className="btn" aria-busy>Export…</span>}>
+                <React.Suspense
+                  fallback={
+                    <span className="btn" aria-busy>
+                      Export…
+                    </span>
+                  }
+                >
                   <MemoExportMenu users={roster} company={activeCompany} />
                 </React.Suspense>
 
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={() => { prefetchDialogs(); prefetchTPRServices(); openTPRConfirm(roster) }}
+                  onClick={() => {
+                    prefetchDialogs()
+                    prefetchTPRServices()
+                    openTPRConfirm(roster)
+                  }}
                   onMouseEnter={prefetchTPRServices}
                   onFocus={prefetchTPRServices}
                   disabled={!roster || roster.length === 0 || submitting}
@@ -351,8 +443,14 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
 
       {/* Bulk upload dialog (lazy) */}
       {bulkOpen && (
-        <React.Suspense fallback={<FallbackCard>Preparing upload…</FallbackCard>}>
-          <BulkUploadDialog open={!!bulkOpen} onClose={closeBulk} onFile={handleFile} />
+        <React.Suspense
+          fallback={<FallbackCard>Preparing upload…</FallbackCard>}
+        >
+          <BulkUploadDialog
+            open={!!bulkOpen}
+            onClose={closeBulk}
+            onFile={handleFile}
+          />
         </React.Suspense>
       )}
 
@@ -361,7 +459,10 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
         <React.Suspense fallback={<FallbackCard>Loading…</FallbackCard>}>
           <SubmitToTPRDialog
             open={submitOpen}
-            onClose={() => { setSubmitOpen(false); setPendingStudents([]) }}
+            onClose={() => {
+              setSubmitOpen(false)
+              setPendingStudents([])
+            }}
             onConfirm={confirmTPRSubmit}
             isSubmitting={submitting}
             count={pendingStudents.length}
@@ -372,7 +473,9 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
 
       {/* Per-student drawer (lazy) */}
       {drawerStudent && (
-        <React.Suspense fallback={<FallbackCard>Loading student…</FallbackCard>}>
+        <React.Suspense
+          fallback={<FallbackCard>Loading student…</FallbackCard>}
+        >
           <StudentReportDrawer
             student={drawerStudent}
             provider={provider}

@@ -5,7 +5,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 export const KEY = 'billing'
 
 /** Allowed payment methods (extend as your product supports more) */
-const ALLOWED_METHODS = ['card', 'ach', 'cash', 'check', 'invoice', 'wire', 'paypal']
+const ALLOWED_METHODS = [
+  'card',
+  'ach',
+  'cash',
+  'check',
+  'invoice',
+  'wire',
+  'paypal',
+]
 
 /** Sensible defaults */
 export const DEFAULTS = Object.freeze({
@@ -22,7 +30,9 @@ function normalizeDraft(d = {}) {
   const methods = Array.isArray(d.acceptedMethods) ? d.acceptedMethods : []
   const deduped = [...new Set(methods.map(String).map(s => s.toLowerCase()))]
   const filtered = deduped.filter(m => ALLOWED_METHODS.includes(m))
-  const net = Number.isFinite(+d.defaultTermsNetDays) ? +d.defaultTermsNetDays : DEFAULTS.defaultTermsNetDays
+  const net = Number.isFinite(+d.defaultTermsNetDays)
+    ? +d.defaultTermsNetDays
+    : DEFAULTS.defaultTermsNetDays
   return {
     acceptedMethods: filtered.length ? filtered : DEFAULTS.acceptedMethods,
     defaultTermsNetDays: clamp(net, 0, 60), // keep reasonable window
@@ -56,7 +66,9 @@ export function useBillingSettings({ vm } = {}) {
   const [draft, setDraft] = useState(initial)
 
   // Keep draft in sync when prefs change externally
-  useEffect(() => { setDraft(initial) }, [initial])
+  useEffect(() => {
+    setDraft(initial)
+  }, [initial])
 
   // ---- mutations --------------------------------------------------------
 
@@ -76,7 +88,10 @@ export function useBillingSettings({ vm } = {}) {
         const m = String(method || '').toLowerCase()
         if (!ALLOWED_METHODS.includes(m)) return d
         if (d.acceptedMethods.includes(m)) return d
-        return normalizeDraft({ ...d, acceptedMethods: [...d.acceptedMethods, m] })
+        return normalizeDraft({
+          ...d,
+          acceptedMethods: [...d.acceptedMethods, m],
+        })
       }),
     []
   )
@@ -97,7 +112,9 @@ export function useBillingSettings({ vm } = {}) {
         const m = String(method || '').toLowerCase()
         if (!ALLOWED_METHODS.includes(m)) return d
         const has = d.acceptedMethods.includes(m)
-        const next = has ? d.acceptedMethods.filter(x => x !== m) : [...d.acceptedMethods, m]
+        const next = has
+          ? d.acceptedMethods.filter(x => x !== m)
+          : [...d.acceptedMethods, m]
         return normalizeDraft({ ...d, acceptedMethods: next })
       }),
     []
@@ -109,8 +126,13 @@ export function useBillingSettings({ vm } = {}) {
 
   const errors = useMemo(() => {
     const e = {}
-    if (!draft.acceptedMethods?.length) e.acceptedMethods = 'Select at least one payment method.'
-    if (!Number.isInteger(draft.defaultTermsNetDays) || draft.defaultTermsNetDays < 0 || draft.defaultTermsNetDays > 60) {
+    if (!draft.acceptedMethods?.length)
+      e.acceptedMethods = 'Select at least one payment method.'
+    if (
+      !Number.isInteger(draft.defaultTermsNetDays) ||
+      draft.defaultTermsNetDays < 0 ||
+      draft.defaultTermsNetDays > 60
+    ) {
       e.defaultTermsNetDays = 'Net terms must be an integer between 0 and 60.'
     }
     return e
@@ -122,16 +144,21 @@ export function useBillingSettings({ vm } = {}) {
   // ---- persistence ------------------------------------------------------
 
   const save = useCallback(
-    async (partial) => {
+    async partial => {
       const toSave = normalizeDraft(partial ? { ...draft, ...partial } : draft)
       // Prevent no-op or invalid saves
-      if (!valid) return { ok: false, error: 'Fix validation errors before saving.' }
-      if (!vm?.actions?.save) return { ok: false, error: 'Save action is unavailable.' }
+      if (!valid)
+        return { ok: false, error: 'Fix validation errors before saving.' }
+      if (!vm?.actions?.save)
+        return { ok: false, error: 'Save action is unavailable.' }
       try {
         await vm.actions.save({ [KEY]: toSave })
         return { ok: true }
       } catch (err) {
-        return { ok: false, error: err?.message || 'Failed to save billing settings.' }
+        return {
+          ok: false,
+          error: err?.message || 'Failed to save billing settings.',
+        }
       }
     },
     [draft, valid, vm?.actions]

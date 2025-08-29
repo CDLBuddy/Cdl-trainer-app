@@ -23,8 +23,12 @@ function __preloadCanonical() {
     // Kick off an idle preload (best effort)
     const start = () => {
       import('@/utils/cert-builder.ts')
-        .then((m) => { __canonMod = m || null })
-        .catch(() => { /* ignore; fallback stays in place */ })
+        .then(m => {
+          __canonMod = m || null
+        })
+        .catch(() => {
+          /* ignore; fallback stays in place */
+        })
     }
     if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
       // @ts-ignore
@@ -40,7 +44,7 @@ __preloadCanonical()
 
 // ------------------------------ utils --------------------------------------
 
-const S = (x) => (x == null ? '' : String(x).trim())
+const S = x => (x == null ? '' : String(x).trim())
 
 /** ISO date (YYYY-MM-DD) without TZ drift */
 export function toISODate(x) {
@@ -54,7 +58,9 @@ export function toISODate(x) {
     const m = String(d.getMonth() + 1).padStart(2, '0')
     const day = String(d.getDate()).padStart(2, '0')
     return `${y}-${m}-${day}`
-  } catch { return '' }
+  } catch {
+    return ''
+  }
 }
 
 const num = (v, def = 0) => {
@@ -97,8 +103,8 @@ export function buildCertPayload(args = {}) {
 
   // ---- trainee
   const first = S(student.firstName || student.first_name || student.givenName)
-  const last  = S(student.lastName  || student.last_name  || student.familyName)
-  const full  = S(student.fullName || student.name || `${first} ${last}`.trim())
+  const last = S(student.lastName || student.last_name || student.familyName)
+  const full = S(student.fullName || student.name || `${first} ${last}`.trim())
 
   const trainee = {
     id: S(student.id || student.uid),
@@ -107,9 +113,9 @@ export function buildCertPayload(args = {}) {
     fullName: full || `${first} ${last}`.trim(),
     dob: toISODate(student.dob || student.dateOfBirth || student.birthDate),
     licenseNumber: S(student.licenseNumber || student.cdlNumber || ''),
-    licenseState:  S(student.licenseState  || student.cdlState  || ''),
+    licenseState: S(student.licenseState || student.cdlState || ''),
     clpNumber: S(student.clpNumber || student.clp || ''),
-    clpState:  S(student.clpState  || ''),
+    clpState: S(student.clpState || ''),
     clpIssued: toISODate(student.clpIssued || student.clpIssuedAt),
     email: S(student.email || ''),
     assignedCompany: S(student.assignedCompany || student.company || ''),
@@ -117,56 +123,92 @@ export function buildCertPayload(args = {}) {
 
   // ---- provider
   const prov = {
-    name: S(provider.name || provider.providerName || provider.schoolName || 'Training Provider'),
-    tprId: S(provider.tprId || provider.tprID || provider.trainingProviderId || ''),
-    tin:   S(provider.tin || provider.taxId || ''),
-    contactName:  S(provider.contactName || provider.adminName || ''),
+    name: S(
+      provider.name ||
+        provider.providerName ||
+        provider.schoolName ||
+        'Training Provider'
+    ),
+    tprId: S(
+      provider.tprId || provider.tprID || provider.trainingProviderId || ''
+    ),
+    tin: S(provider.tin || provider.taxId || ''),
+    contactName: S(provider.contactName || provider.adminName || ''),
     contactEmail: S(provider.contactEmail || provider.email || ''),
     contactPhone: S(provider.contactPhone || provider.phone || ''),
     address: {
       street: S(provider.street || ''),
-      city:   S(provider.city || ''),
-      state:  S(provider.state || ''),
-      zip:    S(provider.zip || ''),
+      city: S(provider.city || ''),
+      state: S(provider.state || ''),
+      zip: S(provider.zip || ''),
     },
   }
 
   // ---- training
-  const classType = S(training.classType || training.cdlClass || training.class || 'A')
+  const classType = S(
+    training.classType || training.cdlClass || training.class || 'A'
+  )
     .replace(/^class\s*/i, '')
     .toUpperCase() // 'A' | 'B' | 'C'
-  const endorsement = S(training.endorsement || training.track || '').toUpperCase()
+  const endorsement = S(
+    training.endorsement || training.track || ''
+  ).toUpperCase()
   const theory = {
     completed: !!(training.theory?.completed ?? training.theoryCompleted),
-    completedAt: toISODate(training.theory?.completedAt || training.theoryCompletedAt),
-    scorePct: Number.isFinite(Number(training.theory?.scorePct ?? training.theoryScorePct))
+    completedAt: toISODate(
+      training.theory?.completedAt || training.theoryCompletedAt
+    ),
+    scorePct: Number.isFinite(
+      Number(training.theory?.scorePct ?? training.theoryScorePct)
+    )
       ? Number(training.theory?.scorePct ?? training.theoryScorePct)
       : undefined,
   }
   const btw = {
-    completed: !!(training.btw?.completed ?? training.btwCompleted ?? training.rangeCompleted),
-    completedAt: toISODate(training.btw?.completedAt || training.btwCompletedAt),
-    rangeHours: num(training.btw?.rangeHours ?? training.btwRangeHours ?? training.rangeHours, 0),
-    publicRoadHours: num(training.btw?.publicRoadHours ?? training.btwPublicRoadHours ?? training.roadHours, 0),
+    completed: !!(
+      training.btw?.completed ??
+      training.btwCompleted ??
+      training.rangeCompleted
+    ),
+    completedAt: toISODate(
+      training.btw?.completedAt || training.btwCompletedAt
+    ),
+    rangeHours: num(
+      training.btw?.rangeHours ?? training.btwRangeHours ?? training.rangeHours,
+      0
+    ),
+    publicRoadHours: num(
+      training.btw?.publicRoadHours ??
+        training.btwPublicRoadHours ??
+        training.roadHours,
+      0
+    ),
     vehicleType: S(training.vehicleType || ''),
   }
 
-  const completionDate =
-    toISODate(
-      training.completionDate ||
+  const completionDate = toISODate(
+    training.completionDate ||
       training.completedAt ||
       theory.completedAt ||
       btw.completedAt
-    )
+  )
 
   // derive programType (theory|btw|both)
-  const programType = (theory.completed && btw.completed) ? 'both'
-                     : (theory.completed ? 'theory'
-                     : (btw.completed ? 'btw' : 'both'))
+  const programType =
+    theory.completed && btw.completed
+      ? 'both'
+      : theory.completed
+        ? 'theory'
+        : btw.completed
+          ? 'btw'
+          : 'both'
 
   const payload = {
     meta: {
-      recordId: S(training.recordId || `cert_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,7)}`),
+      recordId: S(
+        training.recordId ||
+          `cert_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`
+      ),
       createdAt: new Date().toISOString(),
       schoolId: S(schoolId),
       schema: 'tpr.completion.v1',
@@ -180,8 +222,12 @@ export function buildCertPayload(args = {}) {
       theory,
       btw,
       completionDate,
-      restrictionsLifted: Array.isArray(training.restrictionsLifted) ? training.restrictionsLifted : [],
-      categories: Array.isArray(training.categories) ? training.categories.filter(Boolean) : [],
+      restrictionsLifted: Array.isArray(training.restrictionsLifted)
+        ? training.restrictionsLifted
+        : [],
+      categories: Array.isArray(training.categories)
+        ? training.categories.filter(Boolean)
+        : [],
     },
     // Mirrors some fields at top-level for consumers that expect them
     programType,
@@ -224,13 +270,19 @@ export function buildTprCsvRow(cert) {
   return {
     ProviderTPRID: S(p.tprId),
     ProviderName: S(p.name),
-    CDLClass: S(t.classType),                           // 'A' | 'B' | 'C'
-    Endorsement: S(t.endorsement || ''),               // 'P','S','N',''...
+    CDLClass: S(t.classType), // 'A' | 'B' | 'C'
+    Endorsement: S(t.endorsement || ''), // 'P','S','N',''...
     TraineeFullName: S(u.fullName),
     TraineeDOB: S(u.dob),
     CLPNumber: S(u.clpNumber || u.licenseNumber || ''),
     CLPIssuingState: S(u.clpState || u.licenseState || '').toUpperCase(),
-    CompletionDate: S(t.completionDate || r.completedAt || t.theory?.completedAt || t.btw?.completedAt || ''),
+    CompletionDate: S(
+      t.completionDate ||
+        r.completedAt ||
+        t.theory?.completedAt ||
+        t.btw?.completedAt ||
+        ''
+    ),
     TheoryCompleted: t.theory?.completed ? 'Y' : 'N',
     BTWCompleted: t.btw?.completed ? 'Y' : 'N',
   }
@@ -249,9 +301,9 @@ export function toCsv(rows, headers, opts = {}) {
   const eol = opts.eol ?? '\r\n'
   const addBOM = opts.addBOM ?? false
 
-  const HEADERS = (headers && headers.length ? headers : Object.keys(items[0]))
+  const HEADERS = headers && headers.length ? headers : Object.keys(items[0])
 
-  const esc = (val) => {
+  const esc = val => {
     const raw = val == null ? '' : String(val)
     const needsQuote =
       raw.includes(delimiter) ||

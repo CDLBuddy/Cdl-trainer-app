@@ -2,11 +2,11 @@
 /* Mirrors your AdminDashboard theme: glass card, borders, tokens */
 
 .card {
-  background: var(--card-bg, rgba(255,255,255,.06));
+  background: var(--card-bg, rgba(255, 255, 255, 0.06));
   color: var(--text-light, #fff);
   border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
   border-radius: var(--radius-md, 10px);
-  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
   padding: 14px;
 }
 
@@ -19,22 +19,22 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  border-bottom: 1px solid rgba(255,255,255,.10);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 8px;
   margin-bottom: 10px;
 }
 
 .kicker {
   font-size: 12px;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  opacity: .75;
+  opacity: 0.75;
 }
 
 .title {
   margin: 0;
   font-weight: 800;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
 }
 
 .badges {
@@ -49,8 +49,8 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 800;
-  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
-  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .badgeOk {
@@ -65,15 +65,18 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0,1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
 @media (max-width: 560px) {
-  .grid { grid-template-columns: 1fr; }
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.field { }
+.field {
+}
 
 .fieldWide {
   grid-column: 1 / -1;
@@ -82,7 +85,7 @@
 .label {
   font-size: 12px;
   color: #cbd5e1;
-  opacity: .9;
+  opacity: 0.9;
 }
 
 .value {
@@ -98,13 +101,15 @@
 }
 
 .muted {
-  opacity: .8;
-  font-size: .9rem;
+  opacity: 0.8;
+  font-size: 0.9rem;
 }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .card { box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20)); }
+  .card {
+    box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
+  }
 }
 
 /* High contrast / forced colors */

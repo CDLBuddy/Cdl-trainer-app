@@ -17,7 +17,8 @@ const safeEmail = () =>
   ''
 
 const safeRole = () =>
-  (localStorage.getItem('userRole') ||
+  (
+    localStorage.getItem('userRole') ||
     (typeof window !== 'undefined' ? window.currentUserRole : '') ||
     ''
   ).toLowerCase()
@@ -37,13 +38,19 @@ export default function SuperAdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [me, setMe] = useState(null)
   const [email, setEmail] = useState('')
-  const [stats, setStats] = useState({ schools: 0, users: 0, complianceAlerts: 0 })
+  const [stats, setStats] = useState({
+    schools: 0,
+    users: 0,
+    complianceAlerts: 0,
+  })
 
   // Title management
   useEffect(() => {
     const prev = document.title
     document.title = 'Super Admin • CDL Trainer'
-    return () => { document.title = prev }
+    return () => {
+      document.title = prev
+    }
   }, [])
 
   useEffect(() => {
@@ -68,7 +75,12 @@ export default function SuperAdminDashboard() {
             : Promise.resolve({ empty: true }),
           getDocs(collection(db, 'schools')),
           getDocs(collection(db, 'users')),
-          getDocs(query(collection(db, 'complianceAlerts'), where('resolved', '==', false))),
+          getDocs(
+            query(
+              collection(db, 'complianceAlerts'),
+              where('resolved', '==', false)
+            )
+          ),
         ])
 
         if (!alive) return
@@ -86,7 +98,9 @@ export default function SuperAdminDashboard() {
         if (alive) setLoading(false)
       }
     })()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -111,13 +125,23 @@ export default function SuperAdminDashboard() {
         {/* Header */}
         <h2 className={styles.dashHead}>
           🏆 Super Admin Panel{' '}
-          <span className={`${styles.roleBadge} ${styles.superadmin}`}>Super Admin</span>
+          <span className={`${styles.roleBadge} ${styles.superadmin}`}>
+            Super Admin
+          </span>
         </h2>
 
         {/* Stats */}
-        <div className={styles.statsBar} role="group" aria-label="Platform stats">
-          <span className={styles.stat}>🏫 Schools: <b>{stats.schools}</b></span>
-          <span className={styles.stat}>👤 Users: <b>{stats.users}</b></span>
+        <div
+          className={styles.statsBar}
+          role="group"
+          aria-label="Platform stats"
+        >
+          <span className={styles.stat}>
+            🏫 Schools: <b>{stats.schools}</b>
+          </span>
+          <span className={styles.stat}>
+            👤 Users: <b>{stats.users}</b>
+          </span>
           <span className={`${styles.stat} ${styles.dangerText}`}>
             🛡️ Compliance Alerts: <b>{stats.complianceAlerts}</b>
           </span>
@@ -128,7 +152,10 @@ export default function SuperAdminDashboard() {
           {avatar ? (
             <img src={avatar} alt="Profile" className={styles.profilePic} />
           ) : (
-            <div className={`${styles.profilePic} ${styles.placeholder}`} aria-hidden>
+            <div
+              className={`${styles.profilePic} ${styles.placeholder}`}
+              aria-hidden
+            >
               {initials(name)}
             </div>
           )}

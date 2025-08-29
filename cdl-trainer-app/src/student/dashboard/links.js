@@ -30,7 +30,10 @@ const SCHOOL_RESOURCES = {
 }
 
 /** Normalize key for object lookup */
-const keyOf = (id) => String(id || '').trim().toLowerCase()
+const keyOf = id =>
+  String(id || '')
+    .trim()
+    .toLowerCase()
 
 /** Merge defaults + school-specific links */
 export function getResourcesForSchool(schoolId) {
@@ -50,7 +53,10 @@ export function getResourcesForSchool(schoolId) {
 export function getSchedulerURL(schoolId) {
   const base = import.meta.env.VITE_SCHEDULER_URL || ''
   const envKey =
-    'VITE_SCHEDULER_URL__' + keyOf(schoolId).toUpperCase().replace(/[^A-Z0-9]/g, '_')
+    'VITE_SCHEDULER_URL__' +
+    keyOf(schoolId)
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '_')
   const perSchool = import.meta.env[envKey]
   return perSchool || base || ''
 }

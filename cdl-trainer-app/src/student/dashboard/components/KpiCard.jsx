@@ -1,6 +1,7 @@
 // src/student/dashboard/components/KpiCard.jsx
-import React, { memo, useId, useMemo } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useId, useMemo } from 'react'
+
 import cls from './KpiCard.module.css'
 
 /**
@@ -33,25 +34,16 @@ function KpiCard({
   const titleId = useId()
   const hintId = hint ? `${titleId}-hint` : undefined
 
-  const {
-    isNumber,
-    displayValue,
-    pct,
-    shouldShowBar,
-  } = useMemo(() => {
+  const { isNumber, displayValue, pct, shouldShowBar } = useMemo(() => {
     const isNum = Number.isFinite(value)
-    const clamped = isNum
-      ? Math.max(min, Math.min(max, Number(value)))
-      : null
+    const clamped = isNum ? Math.max(min, Math.min(max, Number(value))) : null
     const range = Math.max(1e-9, max - min)
     const percent = isNum ? Math.round(((clamped - min) / range) * 100) : null
     const formatted = isNum
       ? Number(value).toFixed(Math.min(3, Math.max(0, decimals)))
       : (value ?? '--')
 
-    const show = typeof showBar === 'boolean'
-      ? showBar
-      : isNum // default behavior
+    const show = typeof showBar === 'boolean' ? showBar : isNum // default behavior
 
     return {
       isNumber: isNum,
@@ -68,7 +60,9 @@ function KpiCard({
       aria-describedby={hintId}
       role="group"
     >
-      <h3 id={titleId} className={cls.kpiTitle}>{title}</h3>
+      <h3 id={titleId} className={cls.kpiTitle}>
+        {title}
+      </h3>
 
       <div className={cls.kpiValue} aria-live="polite">
         {loading ? <span className={cls.skelBlock} /> : displayValue}

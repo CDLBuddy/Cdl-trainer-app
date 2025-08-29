@@ -212,9 +212,10 @@ declare module '@walkthrough-data' {
   ): import('./schema').WalkthroughDataset | null
 
   // Validator helper exposed via the data barrel (optional)
-  export function validateWalkthroughShape(
-    w: unknown
-  ): { ok: boolean; problems: string[] }
+  export function validateWalkthroughShape(w: unknown): {
+    ok: boolean
+    problems: string[]
+  }
 
   export const WALKTHROUGHS_BY_CLASS: ReadonlyMap<
     string,
@@ -290,9 +291,10 @@ declare module '@walkthrough-defaults' {
     id: string
   ): import('./schema').WalkthroughDataset | null
 
-  export function validateWalkthroughShape(
-    w: unknown
-  ): { ok: boolean; problems: string[] }
+  export function validateWalkthroughShape(w: unknown): {
+    ok: boolean
+    problems: string[]
+  }
 
   export const WALKTHROUGHS_BY_CLASS: ReadonlyMap<
     string,
@@ -309,8 +311,12 @@ declare module '@walkthrough-defaults' {
  *   import { overlaysForRestrictions } from '@walkthrough-overlays'
  */
 declare module '@walkthrough-overlays' {
-  export const ALL_OVERLAYS: ReadonlyArray<import('./schema').WalkthroughOverlay>
-  export const OVERLAYS_BY_ID: Readonly<Record<string, import('./schema').WalkthroughOverlay>>
+  export const ALL_OVERLAYS: ReadonlyArray<
+    import('./schema').WalkthroughOverlay
+  >
+  export const OVERLAYS_BY_ID: Readonly<
+    Record<string, import('./schema').WalkthroughOverlay>
+  >
 
   /** Map of CDL restriction code → overlay id (immutable). */
   export const RESTRICTION_ID_BY_CODE: Readonly<Record<string, string>>
@@ -388,9 +394,10 @@ declare module '@walkthrough-utils' {
     results: Record<string, { ok: boolean; problems: string[] }>
   }
 
-  export function validateWalkthroughShape(
-    w: unknown
-  ): { ok: boolean; problems: string[] }
+  export function validateWalkthroughShape(w: unknown): {
+    ok: boolean
+    problems: string[]
+  }
 
   // Overlay applier (pure)
   export function applyOverlays(

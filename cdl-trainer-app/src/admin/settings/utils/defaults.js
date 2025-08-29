@@ -9,7 +9,7 @@ export const DEFAULT_BRAND = Object.freeze({
 
 export const DEFAULT_PREFS = Object.freeze({
   billing: {
-    mode: 'employer',        // 'student' | 'employer'
+    mode: 'employer', // 'student' | 'employer'
     currency: 'USD',
     invoicePrefix: '',
     acceptedMethods: ['card'],

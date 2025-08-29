@@ -12,9 +12,9 @@
 // ---------------------------
 // Robust namespace imports
 // ---------------------------
-import * as csvNS      from './parseCsv.js'
-import * as mdNS       from './parseMarkdown.js'
-import * as xlsxNS     from './parseXlsx.js'
+import * as csvNS from './parseCsv.js'
+import * as mdNS from './parseMarkdown.js'
+import * as xlsxNS from './parseXlsx.js'
 import * as validateNS from './validateWalkthroughs.js'
 
 // ---------------------------
@@ -22,7 +22,11 @@ import * as validateNS from './validateWalkthroughs.js'
 // ---------------------------
 /** @template T */
 const pickFn = (ns, keys) =>
-  /** @type {T|undefined} */ (keys.map(k => /** @type {any} */(ns)?.[k]).find(v => typeof v === 'function'))
+  /** @type {T|undefined} */ (
+    keys
+      .map(k => /** @type {any} */ (ns)?.[k])
+      .find(v => typeof v === 'function')
+  )
 
 const id = x => x
 
@@ -41,7 +45,8 @@ export const parseXlsx =
 
 // Keep isXlsxAvailable synchronous; fall back to a false-returning fn
 export const isXlsxAvailable =
-  /** @type {() => boolean} */ (pickFn(xlsxNS, ['isXlsxAvailable'])) || (() => false)
+  /** @type {() => boolean} */ (pickFn(xlsxNS, ['isXlsxAvailable'])) ||
+  (() => false)
 
 // Validation (named + useful extras)
 export const validateWalkthroughs =
@@ -50,15 +55,18 @@ export const validateWalkthroughs =
 
 export const validateWalkthroughShape =
   /** @type {typeof validateNS.validateWalkthroughShape} */
-  (validateNS.validateWalkthroughShape ?? /** @type {any} */ (validateNS).default?.validateWalkthroughShape)
+  (
+    validateNS.validateWalkthroughShape ??
+      /** @type {any} */ (validateNS).default?.validateWalkthroughShape
+  )
 
 // Nice extra exports from the validator (non-breaking, tree-shakable)
-export const validateSingle               = validateNS.validateSingle
-export const validateSingleWalkthrough    = validateNS.validateSingleWalkthrough
-export const validate                     = validateNS.validate
-export const summarizeWalkthrough         = validateNS.summarizeWalkthrough
-export const formatProblems               = validateNS.formatProblems
-export const assertValidOrThrow           = validateNS.assertValidOrThrow
+export const validateSingle = validateNS.validateSingle
+export const validateSingleWalkthrough = validateNS.validateSingleWalkthrough
+export const validate = validateNS.validate
+export const summarizeWalkthrough = validateNS.summarizeWalkthrough
+export const formatProblems = validateNS.formatProblems
+export const assertValidOrThrow = validateNS.assertValidOrThrow
 
 // Also expose the overlay applier from the utils barrel for convenience.
 export { applyOverlays } from './applyOverlays.js'
@@ -75,7 +83,10 @@ export { normalizeWalkthrough as normalizeMarkdownWalkthrough } from './parseMar
 // ---------------------------
 // Back-compat aliases used by admin upload screens
 // ---------------------------
-export { parseCsv as parseCsvToWalkthrough, parseMarkdown as parseMarkdownToWalkthrough }
+export {
+  parseCsv as parseCsvToWalkthrough,
+  parseMarkdown as parseMarkdownToWalkthrough,
+}
 
 // ---------------------------
 // Optional convenience default (kept tiny for bundle diff)

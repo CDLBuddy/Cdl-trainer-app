@@ -30,8 +30,11 @@ export function normalizeRole(role) {
   try {
     const canon = cfgNormalizeRole?.(role)
     const v = (canon ?? String(role ?? '')).trim().toLowerCase()
-    return /** @type any */(
-      v === 'student' || v === 'instructor' || v === 'admin' || v === 'superadmin'
+    return /** @type any */ (
+      v === 'student' ||
+      v === 'instructor' ||
+      v === 'admin' ||
+      v === 'superadmin'
         ? v
         : 'student'
     )
@@ -47,10 +50,15 @@ export function normalizeRole(role) {
  */
 export function roleFromPath(path = '') {
   // prefer navConfig’s regex for consistency, fall back to local
-  return cfgRoleFromPath?.(path) ?? (()=>{
-    const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(String(path))
-    return m ? /** @type any */ (m[1].toLowerCase()) : null
-  })()
+  return (
+    cfgRoleFromPath?.(path) ??
+    (() => {
+      const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(
+        String(path)
+      )
+      return m ? /** @type any */ (m[1].toLowerCase()) : null
+    })()
+  )
 }
 
 /**
@@ -90,10 +98,14 @@ export function isJavascriptURL(s = '') {
 export function toURL(input) {
   try {
     if (input instanceof URL) return input
-    const base = typeof window !== 'undefined' ? window.location.href : 'http://localhost/'
+    const base =
+      typeof window !== 'undefined' ? window.location.href : 'http://localhost/'
     return new URL(String(input || '/'), base)
   } catch {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
+    const origin =
+      typeof window !== 'undefined'
+        ? window.location.origin
+        : 'http://localhost'
     return new URL('/', origin)
   }
 }
@@ -123,7 +135,9 @@ export function ensureLeadingSlash(p = '') {
 /** Simple internal path check */
 export function isInternalPath(p = '') {
   const s = String(p || '')
-  return /^\/(?!\/)/.test(s) && !/^https?:\/\//i.test(s) && !/^javascript:/i.test(s)
+  return (
+    /^\/(?!\/)/.test(s) && !/^https?:\/\//i.test(s) && !/^javascript:/i.test(s)
+  )
 }
 
 /** Safe “return to” sanitizer used after login */
@@ -150,10 +164,10 @@ export function getDashboardRoute(role) {
     (r === 'superadmin'
       ? '/superadmin/dashboard'
       : r === 'admin'
-      ? '/admin/dashboard'
-      : r === 'instructor'
-      ? '/instructor/dashboard'
-      : '/student/dashboard')
+        ? '/admin/dashboard'
+        : r === 'instructor'
+          ? '/instructor/dashboard'
+          : '/student/dashboard')
   )
 }
 
@@ -163,7 +177,11 @@ export function getDashboardRoute(role) {
  * @param {string|null} [roleOverride]
  * @param {{ replace?: boolean }} [options]
  */
-export function goToCurrentDashboard(navigate, roleOverride = null, options = { replace: true }) {
+export function goToCurrentDashboard(
+  navigate,
+  roleOverride = null,
+  options = { replace: true }
+) {
   const role = normalizeRole(roleOverride || getCurrentRole())
   safeNavigate(navigate, getDashboardRoute(role), options)
 }
@@ -189,7 +207,8 @@ export function safeNavigate(navigate, to, options = {}) {
       if (typeof window !== 'undefined') window.location.assign(href)
       return
     }
-    const path = href instanceof URL ? href.pathname + href.search + href.hash : href
+    const path =
+      href instanceof URL ? href.pathname + href.search + href.hash : href
     if (typeof navigate === 'function') {
       navigate(path, options)
     } else if (typeof window !== 'undefined') {
@@ -199,7 +218,9 @@ export function safeNavigate(navigate, to, options = {}) {
     console.error('[navigation] navigate failed:', err)
     try {
       if (typeof window !== 'undefined') window.location.assign(href)
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }
 }
 
@@ -217,7 +238,9 @@ export function redirectAfterLogin(navigate, role, location) {
     if (typeof window !== 'undefined') {
       fromQuery = new URL(window.location.href).searchParams.get('from')
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   const candidate = sanitizeReturnPath(fromState || fromQuery || '')
   const dest = candidate || getDashboardRoute(role)
@@ -230,49 +253,52 @@ export function redirectAfterLogin(navigate, role, location) {
 
 // ---- Student
 export const StudentRoutes = Object.freeze({
-  dashboard:     () => '/student/dashboard',
-  profile:       () => '/student/profile',
+  dashboard: () => '/student/dashboard',
+  profile: () => '/student/profile',
   /** Deep-link to a profile section via hash, e.g., "#permit" */
   profileSection: (section = '') =>
     `/student/profile${section ? `#${String(section).replace(/\s+/g, '-').toLowerCase()}` : ''}`,
-  checklists:    () => '/student/checklists',
+  checklists: () => '/student/checklists',
   practiceTests: () => '/student/practice-tests',
-  testEngine:    (testName = '') => `/student/test-engine/${encodeURIComponent(testName)}`,
-  testReview:    (testName = '') => `/student/test-review/${encodeURIComponent(testName)}`,
-  testResults:   () => '/student/test-results',
-  walkthrough:   () => '/student/walkthrough',
-  flashcards:    () => '/student/flashcards',
+  testEngine: (testName = '') =>
+    `/student/test-engine/${encodeURIComponent(testName)}`,
+  testReview: (testName = '') =>
+    `/student/test-review/${encodeURIComponent(testName)}`,
+  testResults: () => '/student/test-results',
+  walkthrough: () => '/student/walkthrough',
+  flashcards: () => '/student/flashcards',
 })
 
 // ---- Instructor
 export const InstructorRoutes = Object.freeze({
-  dashboard:       () => '/instructor/dashboard',
-  profile:         () => '/instructor/profile',
+  dashboard: () => '/instructor/dashboard',
+  profile: () => '/instructor/profile',
   checklistReview: () => '/instructor/checklist-review',
-  studentProfile:  (studentId) => `/instructor/student-profile/${encodeURIComponent(studentId)}`,
+  studentProfile: studentId =>
+    `/instructor/student-profile/${encodeURIComponent(studentId)}`,
 })
 
 // ---- Admin (Users removed; companies own user mgmt)
 export const AdminRoutes = Object.freeze({
-  dashboard:     () => '/admin/dashboard',
-  profile:       () => '/admin/profile',
-  companies:     () => '/admin/companies',
-  reports:       () => '/admin/reports',
-  billing:       () => '/admin/billing',
-  walkthroughs:  () => '/admin/walkthroughs',
-  settings:      () => '/admin/settings',
+  dashboard: () => '/admin/dashboard',
+  profile: () => '/admin/profile',
+  companies: () => '/admin/companies',
+  reports: () => '/admin/reports',
+  billing: () => '/admin/billing',
+  walkthroughs: () => '/admin/walkthroughs',
+  settings: () => '/admin/settings',
 })
 
 // ---- Superadmin
 export const SuperadminRoutes = Object.freeze({
-  dashboard:    () => '/superadmin/dashboard',
-  schools:      () => '/superadmin/schools',
-  users:        () => '/superadmin/users',
-  compliance:   () => '/superadmin/compliance',
-  billing:      () => '/superadmin/billing',
-  settings:     () => '/superadmin/settings',
-  logs:         () => '/superadmin/logs',
-  permissions:  () => '/superadmin/permissions',
+  dashboard: () => '/superadmin/dashboard',
+  schools: () => '/superadmin/schools',
+  users: () => '/superadmin/users',
+  compliance: () => '/superadmin/compliance',
+  billing: () => '/superadmin/billing',
+  settings: () => '/superadmin/settings',
+  logs: () => '/superadmin/logs',
+  permissions: () => '/superadmin/permissions',
   walkthroughs: () => '/superadmin/walkthroughs',
 })
 
@@ -284,50 +310,54 @@ export const RouteBuilders = Object.freeze({
    */
   profile(role = getCurrentRole()) {
     switch (normalizeRole(role)) {
-      case 'superadmin': return '/superadmin/profile'
-      case 'admin':      return '/admin/profile'
-      case 'instructor': return '/instructor/profile'
+      case 'superadmin':
+        return '/superadmin/profile'
+      case 'admin':
+        return '/admin/profile'
+      case 'instructor':
+        return '/instructor/profile'
       case 'student':
-      default:           return '/student/profile'
+      default:
+        return '/student/profile'
     }
   },
 
   // Student aliases
-  studentDashboard:     StudentRoutes.dashboard,
-  studentProfile:       StudentRoutes.profile,
-  studentProfileSection:StudentRoutes.profileSection,
-  studentChecklists:    StudentRoutes.checklists,
+  studentDashboard: StudentRoutes.dashboard,
+  studentProfile: StudentRoutes.profile,
+  studentProfileSection: StudentRoutes.profileSection,
+  studentChecklists: StudentRoutes.checklists,
   studentPracticeTests: StudentRoutes.practiceTests,
-  studentTestEngine:    StudentRoutes.testEngine,
-  studentTestReview:    StudentRoutes.testReview,
-  studentTestResults:   StudentRoutes.testResults,
-  studentWalkthrough:   StudentRoutes.walkthrough,
-  studentFlashcards:    StudentRoutes.flashcards,
+  studentTestEngine: StudentRoutes.testEngine,
+  studentTestReview: StudentRoutes.testReview,
+  studentTestResults: StudentRoutes.testResults,
+  studentWalkthrough: StudentRoutes.walkthrough,
+  studentFlashcards: StudentRoutes.flashcards,
 
   // Instructor aliases
-  instructorDashboard:       InstructorRoutes.dashboard,
-  instructorProfile:         InstructorRoutes.profile,
+  instructorDashboard: InstructorRoutes.dashboard,
+  instructorProfile: InstructorRoutes.profile,
   instructorChecklistReview: InstructorRoutes.checklistReview,
-  instructorStudentProfile:  InstructorRoutes.studentProfile,
+  instructorStudentProfile: InstructorRoutes.studentProfile,
 
   // Admin aliases
-  adminDashboard:    AdminRoutes.dashboard,
-  adminProfile:      AdminRoutes.profile,
-  adminCompanies:    AdminRoutes.companies,
-  adminReports:      AdminRoutes.reports,
-  adminBilling:      AdminRoutes.billing,
+  adminDashboard: AdminRoutes.dashboard,
+  adminProfile: AdminRoutes.profile,
+  adminCompanies: AdminRoutes.companies,
+  adminReports: AdminRoutes.reports,
+  adminBilling: AdminRoutes.billing,
   adminWalkthroughs: AdminRoutes.walkthroughs,
-  adminSettings:     AdminRoutes.settings,
+  adminSettings: AdminRoutes.settings,
 
   // Superadmin aliases
-  superadminDashboard:    SuperadminRoutes.dashboard,
-  superadminSchools:      SuperadminRoutes.schools,
-  superadminUsers:        SuperadminRoutes.users,
-  superadminCompliance:   SuperadminRoutes.compliance,
-  superadminBilling:      SuperadminRoutes.billing,
-  superadminSettings:     SuperadminRoutes.settings,
-  superadminLogs:         SuperadminRoutes.logs,
-  superadminPermissions:  SuperadminRoutes.permissions,
+  superadminDashboard: SuperadminRoutes.dashboard,
+  superadminSchools: SuperadminRoutes.schools,
+  superadminUsers: SuperadminRoutes.users,
+  superadminCompliance: SuperadminRoutes.compliance,
+  superadminBilling: SuperadminRoutes.billing,
+  superadminSettings: SuperadminRoutes.settings,
+  superadminLogs: SuperadminRoutes.logs,
+  superadminPermissions: SuperadminRoutes.permissions,
   superadminWalkthroughs: SuperadminRoutes.walkthroughs,
 })
 

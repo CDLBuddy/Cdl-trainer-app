@@ -9,6 +9,7 @@
 
 import PropTypes from 'prop-types'
 import React from 'react'
+
 import styles from './FiltersBar.module.css'
 
 const cx = (...c) => c.filter(Boolean).join(' ')
@@ -18,11 +19,11 @@ function FiltersBarImpl({
   setRoleFilter,
   search,
   setSearch,
-  RightControls,          // preferred: a component that renders any controls you want
-  UsersExport,            // back-compat: will render if provided
-  CompaniesExport,        // back-compat: will render if provided
-  debounceMs = 0,         // set >0 to debounce search updates
-  onReset,                // optional "Reset filters" handler
+  RightControls, // preferred: a component that renders any controls you want
+  UsersExport, // back-compat: will render if provided
+  CompaniesExport, // back-compat: will render if provided
+  debounceMs = 0, // set >0 to debounce search updates
+  onReset, // optional "Reset filters" handler
   className = '',
 }) {
   // local input state (supports optional debounce)
@@ -33,7 +34,9 @@ function FiltersBarImpl({
   const searchId = React.useId()
 
   // keep local input in sync if parent changes search externally
-  React.useEffect(() => { setLocalSearch(search || '') }, [search])
+  React.useEffect(() => {
+    setLocalSearch(search || '')
+  }, [search])
 
   // push updates upstream (debounced if requested)
   React.useEffect(() => {
@@ -48,7 +51,7 @@ function FiltersBarImpl({
 
   // "/" focuses search (outside of inputs); Esc (when focused) clears
   React.useEffect(() => {
-    const onGlobalKey = (e) => {
+    const onGlobalKey = e => {
       const tag = String(e.target?.tagName || '').toLowerCase()
       if (tag === 'input' || tag === 'textarea' || tag === 'select') return
       if (e.metaKey || e.ctrlKey || e.altKey) return
@@ -63,31 +66,39 @@ function FiltersBarImpl({
 
   const clearSearch = React.useCallback(() => setLocalSearch(''), [])
 
-  const onSearchKeyDown = React.useCallback((e) => {
-    if (e.key === 'Escape') {
-      e.preventDefault()
-      clearSearch()
-      return
-    }
-    if (e.key === 'Enter') {
-      // flush immediately even if debounced
-      setSearch?.(localSearch)
-    }
-  }, [clearSearch, localSearch, setSearch])
+  const onSearchKeyDown = React.useCallback(
+    e => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        clearSearch()
+        return
+      }
+      if (e.key === 'Enter') {
+        // flush immediately even if debounced
+        setSearch?.(localSearch)
+      }
+    },
+    [clearSearch, localSearch, setSearch]
+  )
 
-  const hasActiveFilters = Boolean((roleFilter && roleFilter !== '') || (localSearch && localSearch !== ''))
+  const hasActiveFilters = Boolean(
+    (roleFilter && roleFilter !== '') || (localSearch && localSearch !== '')
+  )
 
   return (
     <div className={cx(styles.controls || styles.toolbar, className)}>
-
       {/* Role filter */}
-      <div style={{ minWidth: 280, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <label htmlFor={roleId} style={{ fontWeight: 700 }}>Filter by role:</label>
+      <div
+        style={{ minWidth: 280, display: 'flex', alignItems: 'center', gap: 8 }}
+      >
+        <label htmlFor={roleId} style={{ fontWeight: 700 }}>
+          Filter by role:
+        </label>
         <select
           id={roleId}
           className={styles.select || 'glass-select'}
           value={roleFilter}
-          onChange={(e) => setRoleFilter?.(e.target.value)}
+          onChange={e => setRoleFilter?.(e.target.value)}
           aria-label="Filter users by role"
         >
           <option value="">All</option>
@@ -112,19 +123,29 @@ function FiltersBarImpl({
 
       {/* Right-side controls */}
       <div style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
-        {RightControls
-          ? <RightControls />
-          : (
-            <>
-              {UsersExport ? <UsersExport /> : null}
-              {CompaniesExport ? <CompaniesExport /> : null}
-            </>
-          )}
+        {RightControls ? (
+          <RightControls />
+        ) : (
+          <>
+            {UsersExport ? <UsersExport /> : null}
+            {CompaniesExport ? <CompaniesExport /> : null}
+          </>
+        )}
       </div>
 
       {/* Search (align right) */}
-      <div className={styles.searchWrap || ''} style={{ marginLeft: 'auto', position: 'relative', minWidth: 260, maxWidth: 360 }}>
-        <label htmlFor={searchId} className={styles.srOnly || ''}>Search users/companies</label>
+      <div
+        className={styles.searchWrap || ''}
+        style={{
+          marginLeft: 'auto',
+          position: 'relative',
+          minWidth: 260,
+          maxWidth: 360,
+        }}
+      >
+        <label htmlFor={searchId} className={styles.srOnly || ''}>
+          Search users/companies
+        </label>
         <input
           ref={inputRef}
           id={searchId}
@@ -132,7 +153,7 @@ function FiltersBarImpl({
           className={styles.input || ''}
           placeholder="Search users/companies… ( / )"
           value={localSearch}
-          onChange={(e) => setLocalSearch(e.target.value)}
+          onChange={e => setLocalSearch(e.target.value)}
           onKeyDown={onSearchKeyDown}
           spellCheck={false}
           autoComplete="off"
@@ -140,7 +161,9 @@ function FiltersBarImpl({
           aria-keyshortcuts="/"
         />
         {/* leading icon (if the CSS provides .searchIcon it will place nicely) */}
-        <span aria-hidden className={styles.searchIcon || ''}>🔎</span>
+        <span aria-hidden className={styles.searchIcon || ''}>
+          🔎
+        </span>
 
         {/* clear button */}
         {localSearch && (
@@ -158,7 +181,7 @@ function FiltersBarImpl({
               background: 'transparent',
               cursor: 'pointer',
               fontSize: 16,
-              opacity: .75,
+              opacity: 0.75,
             }}
           >
             ×

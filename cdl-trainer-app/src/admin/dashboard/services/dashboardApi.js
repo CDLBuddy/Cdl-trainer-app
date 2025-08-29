@@ -13,25 +13,24 @@ import { ENV } from '@utils/env.js'
 /** Toggle to use baked-in mocks (handy during dev/offline) */
 export let USE_DASHBOARD_MOCKS =
   (typeof window !== 'undefined' && window.__DASHBOARD_MOCKS__) ||
-  (ENV.VITE_DASHBOARD_MOCKS === 'true') ||
+  ENV.VITE_DASHBOARD_MOCKS === 'true' ||
   true // keep true until real endpoints are fully wired
 
 /** Optional base URL for HTTP API (if you’re not using Firestore/callables) */
-export const DASHBOARD_BASE_URL =
-  ENV.VITE_DASHBOARD_API_URL || '/api/dashboard'
+export const DASHBOARD_BASE_URL = ENV.VITE_DASHBOARD_API_URL || '/api/dashboard'
 
 /* --------------------------- Tunable cache TTLs --------------------------- */
 const TTL = {
   companies: 30_000,
-  alerts:    15_000,
-  kpis:      15_000,
-  activity:  10_000,
+  alerts: 15_000,
+  kpis: 15_000,
+  activity: 10_000,
 }
 
 /* ------------------------------ Utilities -------------------------------- */
 
 /** Small sleep helper to simulate latency in mocks */
-const wait = (ms = 260) => new Promise((r) => setTimeout(r, ms))
+const wait = (ms = 260) => new Promise(r => setTimeout(r, ms))
 
 /**
  * Fire-and-forget fetch wrapper with AbortSignal & JSON handling.
@@ -51,7 +50,8 @@ async function fetchJSON(url, { method = 'GET', body, headers, signal } = {}) {
     const ct = res.headers.get('content-type') || ''
     const isJson = /\bapplication\/json\b/i.test(ct)
     const data = isJson ? await res.json() : await res.text()
-    if (!res.ok) return { ok: false, data: null, error: data || `HTTP ${res.status}` }
+    if (!res.ok)
+      return { ok: false, data: null, error: data || `HTTP ${res.status}` }
     return { ok: true, data, error: null }
   } catch (err) {
     if (signal?.aborted) return { ok: false, data: null, error: 'aborted' }
@@ -63,7 +63,7 @@ async function fetchJSON(url, { method = 'GET', body, headers, signal } = {}) {
 // Simple in-memory cache keyed by a stable string
 const _cache = new Map()
 const _key = (name, args) => `${name}:${JSON.stringify(args || {})}`
-const _getCached = (k) => _cache.get(k)
+const _getCached = k => _cache.get(k)
 const _setCached = (k, v, ttlMs = 30_000) => {
   _cache.set(k, v)
   if (ttlMs > 0) {
@@ -75,9 +75,13 @@ const _setCached = (k, v, ttlMs = 30_000) => {
   }
 }
 /** Maintenance helper: clear whole dashboard cache */
-export function clearDashboardCache() { _cache.clear() }
+export function clearDashboardCache() {
+  _cache.clear()
+}
 /** Maintenance helper: flip mock mode at runtime (useful in dev tools) */
-export function setDashboardMocksEnabled(v) { USE_DASHBOARD_MOCKS = !!v }
+export function setDashboardMocksEnabled(v) {
+  USE_DASHBOARD_MOCKS = !!v
+}
 
 /* -------------------------------- Shapes --------------------------------- */
 /**
@@ -140,10 +144,10 @@ export function setDashboardMocksEnabled(v) { USE_DASHBOARD_MOCKS = !!v }
  */
 export function buildReportsURL({ view, companyId, role, q } = {}) {
   const params = new URLSearchParams()
-  if (view)      params.set('view', String(view))
+  if (view) params.set('view', String(view))
   if (companyId) params.set('company', String(companyId))
-  if (role)      params.set('role', String(role).toLowerCase())
-  if (q)         params.set('q', String(q))
+  if (role) params.set('role', String(role).toLowerCase())
+  if (q) params.set('q', String(q))
   const qs = params.toString()
   return `/admin/reports${qs ? `?${qs}` : ''}`
 }
@@ -153,11 +157,41 @@ export function buildReportsURL({ view, companyId, role, q } = {}) {
 function mockCompanies({ limit = 5 } = {}) {
   const now = Date.now()
   const rows = [
-    { id: 'acme',  name: 'ACME Logistics',   studentCount: 42, active: true,  trend: 'up'   },
-    { id: 'road',  name: 'RoadStar Freight', studentCount: 31, active: true,  trend: 'flat' },
-    { id: 'midw',  name: 'Midwest Carriers', studentCount: 18, active: false, trend: 'down' },
-    { id: 'north', name: 'North Haul LLC',   studentCount: 11, active: true,  trend: 'up'   },
-    { id: 'swift', name: 'Swift & Sons',     studentCount: 8,  active: true,  trend: 'flat' },
+    {
+      id: 'acme',
+      name: 'ACME Logistics',
+      studentCount: 42,
+      active: true,
+      trend: 'up',
+    },
+    {
+      id: 'road',
+      name: 'RoadStar Freight',
+      studentCount: 31,
+      active: true,
+      trend: 'flat',
+    },
+    {
+      id: 'midw',
+      name: 'Midwest Carriers',
+      studentCount: 18,
+      active: false,
+      trend: 'down',
+    },
+    {
+      id: 'north',
+      name: 'North Haul LLC',
+      studentCount: 11,
+      active: true,
+      trend: 'up',
+    },
+    {
+      id: 'swift',
+      name: 'Swift & Sons',
+      studentCount: 8,
+      active: true,
+      trend: 'flat',
+    },
   ]
   return rows.slice(0, Math.max(1, limit)).map((r, i) => ({
     ...r,
@@ -166,7 +200,7 @@ function mockCompanies({ limit = 5 } = {}) {
 }
 
 function mockAlerts() {
-  const soon = (d) => new Date(Date.now() + d * 86_400_000).toISOString()
+  const soon = d => new Date(Date.now() + d * 86_400_000).toISOString()
   /** @type {AlertItem[]} */
   return [
     {
@@ -205,11 +239,27 @@ function mockKpis() {
 
 function mockActivity({ limit = 10 } = {}) {
   const base = [
-    { actor: 'You',       message: 'Marked invoice INV-104 paid',         type: 'BILLING'   },
-    { actor: 'J. Rivera', message: 'Added student to ACME Logistics',     type: 'ENROLLMENT'},
-    { actor: 'System',    message: 'Reported 8 completions to TPR',       type: 'REPORTING' },
-    { actor: 'M. Chen',   message: 'Updated instructor certification',    type: 'PROFILE'   },
-    { actor: 'System',    message: 'Scheduled permit expiry export',      type: 'AUTOMATION'},
+    { actor: 'You', message: 'Marked invoice INV-104 paid', type: 'BILLING' },
+    {
+      actor: 'J. Rivera',
+      message: 'Added student to ACME Logistics',
+      type: 'ENROLLMENT',
+    },
+    {
+      actor: 'System',
+      message: 'Reported 8 completions to TPR',
+      type: 'REPORTING',
+    },
+    {
+      actor: 'M. Chen',
+      message: 'Updated instructor certification',
+      type: 'PROFILE',
+    },
+    {
+      actor: 'System',
+      message: 'Scheduled permit expiry export',
+      type: 'AUTOMATION',
+    },
   ]
   const now = Date.now()
   return base.slice(0, Math.max(1, limit)).map((x, i) => ({
@@ -226,12 +276,16 @@ function mockActivity({ limit = 10 } = {}) {
 
 /* ---------------------------- Normalizers -------------------------------- */
 
-const asSeverity = (v) => {
+const asSeverity = v => {
   const s = String(v || '').toLowerCase()
-  return /** @type {'info'|'warning'|'error'|'success'} */(
-    s === 'warning' ? 'warning' :
-    s === 'error'   ? 'error'   :
-    s === 'success' ? 'success' : 'info'
+  return /** @type {'info'|'warning'|'error'|'success'} */ (
+    s === 'warning'
+      ? 'warning'
+      : s === 'error'
+        ? 'error'
+        : s === 'success'
+          ? 'success'
+          : 'info'
   )
 }
 
@@ -242,7 +296,9 @@ function normalizeAlert(raw, i) {
   const title = String(raw?.title || 'Alert')
   const description = raw?.description ?? raw?.detail ?? ''
   // If backend didn’t supply a link, smart-default to reports root for warning/error types.
-  const href = raw?.href || (severity !== 'info' ? buildReportsURL({ view: 'overview' }) : '')
+  const href =
+    raw?.href ||
+    (severity !== 'info' ? buildReportsURL({ view: 'overview' }) : '')
   const ctaLabel = raw?.ctaLabel || ''
   const icon = raw?.icon || ''
   const dueAtISO = raw?.dueAtISO ?? raw?.due ?? ''
@@ -272,9 +328,11 @@ function normalizeActivity(raw, i) {
   const message = String(raw?.message ?? raw?.action ?? 'Updated')
   const actor = raw?.actor ? String(raw.actor) : undefined
   const dateISO =
-    typeof raw?.date === 'string' ? raw.date :
-    typeof raw?.timestamp === 'string' ? raw.timestamp :
-    new Date().toISOString()
+    typeof raw?.date === 'string'
+      ? raw.date
+      : typeof raw?.timestamp === 'string'
+        ? raw.timestamp
+        : new Date().toISOString()
   /** @type {ActivityItem} */
   return {
     id,
@@ -312,12 +370,17 @@ export const companies = {
     const { ok, data, error } = await fetchJSON(url, { signal })
     if (!ok) throw new Error(error || 'Failed to load companies')
 
-    const rows = (Array.isArray(data) ? data : []).map((c) => ({
+    const rows = (Array.isArray(data) ? data : []).map(c => ({
       id: c.id ?? c.companyId ?? String(c.name || 'company'),
       name: String(c.name || 'Company'),
       studentCount: Number(c.studentCount ?? c.students ?? 0) || 0,
-      active: 'active' in c ? !!c.active : (String(c.status || '').toLowerCase() !== 'inactive'),
-      trend: ['up', 'flat', 'down'].includes(String(c.trend)) ? c.trend : 'flat',
+      active:
+        'active' in c
+          ? !!c.active
+          : String(c.status || '').toLowerCase() !== 'inactive',
+      trend: ['up', 'flat', 'down'].includes(String(c.trend))
+        ? c.trend
+        : 'flat',
       updatedAt: c.updatedAt || c.updated_at || new Date().toISOString(),
     }))
     _setCached(key, rows, TTL.companies)
@@ -346,7 +409,9 @@ export const alerts = {
     const { ok, data, error } = await fetchJSON(url, { signal })
     if (!ok) throw new Error(error || 'Failed to load alerts')
 
-    const rows = (Array.isArray(data) ? data : []).map((a, i) => normalizeAlert(a, i))
+    const rows = (Array.isArray(data) ? data : []).map((a, i) =>
+      normalizeAlert(a, i)
+    )
     _setCached(key, rows, TTL.alerts)
     return rows
   },
@@ -375,12 +440,12 @@ export const kpis = {
 
     const safe = (n, d = 0) => (Number.isFinite(+n) ? +n : d)
     const out = {
-      studentCount:  safe(data.studentCount),
-      instructorCount:safe(data.instructorCount),
-      adminCount:    safe(data.adminCount),
-      permitSoon:    safe(data.permitSoon),
-      medSoon:       safe(data.medSoon),
-      incomplete:    safe(data.incomplete),
+      studentCount: safe(data.studentCount),
+      instructorCount: safe(data.instructorCount),
+      adminCount: safe(data.adminCount),
+      permitSoon: safe(data.permitSoon),
+      medSoon: safe(data.medSoon),
+      incomplete: safe(data.incomplete),
     }
     _setCached(key, out, TTL.kpis)
     return out
@@ -408,7 +473,9 @@ export const activity = {
     const { ok, data, error } = await fetchJSON(url, { signal })
     if (!ok) throw new Error(error || 'Failed to load activity')
 
-    const rows = (Array.isArray(data) ? data : []).map((e, i) => normalizeActivity(e, i))
+    const rows = (Array.isArray(data) ? data : []).map((e, i) =>
+      normalizeActivity(e, i)
+    )
     _setCached(key, rows, TTL.activity)
     return rows
   },

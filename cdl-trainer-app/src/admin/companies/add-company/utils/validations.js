@@ -32,7 +32,9 @@ export function validateCompany(raw = {}, opts = {}) {
 
   // --- normalize -----------------------------------------------------------
   const name = String(raw.name ?? '').trim()
-  const billingMode = String(raw.billingMode ?? 'employer').trim().toLowerCase()
+  const billingMode = String(raw.billingMode ?? 'employer')
+    .trim()
+    .toLowerCase()
   const contactEmail = String(raw.contactEmail ?? '').trim()
 
   // --- name ---------------------------------------------------------------
@@ -42,7 +44,8 @@ export function validateCompany(raw = {}, opts = {}) {
     if (name.length > LIMITS.name) {
       errors.name = `Name must be ≤ ${LIMITS.name} characters.`
     } else if (!NAME_RE.test(name)) {
-      errors.name = "Name contains invalid characters. Allowed: letters, numbers, spaces, - ' . &"
+      errors.name =
+        "Name contains invalid characters. Allowed: letters, numbers, spaces, - ' . &"
     }
   }
 

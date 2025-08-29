@@ -1,10 +1,11 @@
 // src/admin/communications/components/MessageHistoryTable.jsx
 
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+
+import { listMessages } from '../services'
 
 import cls from './MessageHistoryTable.module.css'
-import { listMessages } from '../services'
 
 /* ----------------------------- small formatters ----------------------------- */
 function toDate(value) {
@@ -93,7 +94,9 @@ function MessageHistoryTable({ take = 25 }) {
         if (alive) setLoading(false)
       }
     })()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [take, refreshTick])
 
   const empty = useMemo(
@@ -109,7 +112,9 @@ function MessageHistoryTable({ take = 25 }) {
   return (
     <section className={cls.card} aria-labelledby="recent-messages-title">
       <header className={cls.cardHeader}>
-        <h3 id="recent-messages-title" className={cls.cardTitle}>Recent Messages</h3>
+        <h3 id="recent-messages-title" className={cls.cardTitle}>
+          Recent Messages
+        </h3>
 
         <div className={cls.headerActions}>
           <button
@@ -132,18 +137,35 @@ function MessageHistoryTable({ take = 25 }) {
         aria-busy={loading ? 'true' : 'false'}
       >
         <div className={`${cls.row} ${cls.head}`} role="row">
-          <div className={cls.cell} role="columnheader">Subject</div>
-          <div className={cls.cell} role="columnheader">Channels</div>
-          <div className={cls.cell} role="columnheader">Audience</div>
-          <div className={cls.cell} role="columnheader">When</div>
-          <div className={cls.cell} role="columnheader">Status</div>
-          <div className={`${cls.cell} ${cls.r}`} role="columnheader">Counts</div>
+          <div className={cls.cell} role="columnheader">
+            Subject
+          </div>
+          <div className={cls.cell} role="columnheader">
+            Channels
+          </div>
+          <div className={cls.cell} role="columnheader">
+            Audience
+          </div>
+          <div className={cls.cell} role="columnheader">
+            When
+          </div>
+          <div className={cls.cell} role="columnheader">
+            Status
+          </div>
+          <div className={`${cls.cell} ${cls.r}`} role="columnheader">
+            Counts
+          </div>
         </div>
 
         {/* Loading skeleton */}
-        {loading && (
+        {loading &&
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={`skel-${i}`} className={cls.skelRow} role="row" aria-hidden="true">
+            <div
+              key={`skel-${i}`}
+              className={cls.skelRow}
+              role="row"
+              aria-hidden="true"
+            >
               <div className={cls.skel} />
               <div className={cls.skel} />
               <div className={cls.skel} />
@@ -151,8 +173,7 @@ function MessageHistoryTable({ take = 25 }) {
               <div className={cls.skel} />
               <div className={cls.skel} />
             </div>
-          ))
-        )}
+          ))}
 
         {/* Error state */}
         {error && !loading && (
@@ -169,37 +190,57 @@ function MessageHistoryTable({ take = 25 }) {
         {/* Empty state */}
         {empty && (
           <div className={cls.empty} role="row">
-            <div className={cls.cell} role="cell">No messages yet.</div>
+            <div className={cls.cell} role="cell">
+              No messages yet.
+            </div>
           </div>
         )}
 
         {/* Rows */}
-        {!loading && !error && rows.map((m) => {
-          const ch = fmtChannels(m.channels)
-          const seg = fmtAudience(m.segment)
-          const when = m.scheduleAt || m.createdAt
-          const titleWhen = toDate(when)?.toLocaleString() || ''
-          const targeted = m.counts?.targeted ?? 0
-          const sent = m.counts?.sent ?? 0
-          const failed = m.counts?.failed ?? 0
+        {!loading &&
+          !error &&
+          rows.map(m => {
+            const ch = fmtChannels(m.channels)
+            const seg = fmtAudience(m.segment)
+            const when = m.scheduleAt || m.createdAt
+            const titleWhen = toDate(when)?.toLocaleString() || ''
+            const targeted = m.counts?.targeted ?? 0
+            const sent = m.counts?.sent ?? 0
+            const failed = m.counts?.failed ?? 0
 
-          return (
-            <div key={m.id} className={cls.row} role="row">
-              <div className={cls.cell} role="cell" title={m.subject || '(no subject)'}>
-                {m.subject || <i>(no subject)</i>}
+            return (
+              <div key={m.id} className={cls.row} role="row">
+                <div
+                  className={cls.cell}
+                  role="cell"
+                  title={m.subject || '(no subject)'}
+                >
+                  {m.subject || <i>(no subject)</i>}
+                </div>
+                <div className={cls.cell} role="cell">
+                  {ch}
+                </div>
+                <div className={cls.cell} role="cell">
+                  {seg}
+                </div>
+                <div className={cls.cell} role="cell" title={titleWhen}>
+                  {fmtWhen(when)}
+                </div>
+                <div className={cls.cell} role="cell">
+                  <StatusPill status={m.status} />
+                </div>
+                <div className={`${cls.cell} ${cls.r}`} role="cell">
+                  <span
+                    className={cls.counts}
+                    title={`sent / targeted (failed: ${failed})`}
+                  >
+                    {sent}/{targeted}
+                    {failed ? ` • ${failed} failed` : ''}
+                  </span>
+                </div>
               </div>
-              <div className={cls.cell} role="cell">{ch}</div>
-              <div className={cls.cell} role="cell">{seg}</div>
-              <div className={cls.cell} role="cell" title={titleWhen}>{fmtWhen(when)}</div>
-              <div className={cls.cell} role="cell"><StatusPill status={m.status} /></div>
-              <div className={`${cls.cell} ${cls.r}`} role="cell">
-                <span className={cls.counts} title={`sent / targeted (failed: ${failed})`}>
-                  {sent}/{targeted}{failed ? ` • ${failed} failed` : ''}
-                </span>
-              </div>
-            </div>
-          )
-        })}
+            )
+          })}
       </div>
     </section>
   )

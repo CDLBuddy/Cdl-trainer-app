@@ -5,10 +5,20 @@ import { deepClone } from './wtValidation.js'
 
 /** Slug/token for a class code (A/B/PASSENGER-BUS → class-a/class-b/passenger-bus) */
 export function toToken(classCode) {
-  const s = String(classCode || '').trim().toUpperCase()
-  if (s === 'A' || s === 'CLASS A' || s === 'CLASS-A' || s === 'CLASS_A') return 'class-a'
-  if (s === 'B' || s === 'CLASS B' || s === 'CLASS-B' || s === 'CLASS_B') return 'class-b'
-  if (s.includes('PASSENGER') || s.includes('BUS') || s === 'P' || s === 'CLASS P') return 'passenger-bus'
+  const s = String(classCode || '')
+    .trim()
+    .toUpperCase()
+  if (s === 'A' || s === 'CLASS A' || s === 'CLASS-A' || s === 'CLASS_A')
+    return 'class-a'
+  if (s === 'B' || s === 'CLASS B' || s === 'CLASS-B' || s === 'CLASS_B')
+    return 'class-b'
+  if (
+    s.includes('PASSENGER') ||
+    s.includes('BUS') ||
+    s === 'P' ||
+    s === 'CLASS P'
+  )
+    return 'passenger-bus'
   return s.toLowerCase().replace(/\s+/g, '-')
 }
 
@@ -18,7 +28,9 @@ export function inferLabelFromToken(token) {
   if (t === 'class-a') return 'Class A'
   if (t === 'class-b') return 'Class B'
   if (t === 'passenger-bus') return 'Passenger Bus'
-  return token ? token.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : ''
+  return token
+    ? token.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    : ''
 }
 
 /** ISO timestamp (always UTC) */

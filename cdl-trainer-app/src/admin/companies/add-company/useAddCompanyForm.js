@@ -28,26 +28,35 @@ import { validateCompany } from './utils/validations.js'
  *   actorEmail?: string,
  * }} options
  */
-export default function useAddCompanyForm({ onSaved, onError, schoolId, actorEmail } = {}) {
-  const [values, setValues] = useState(/** @type {CompanyFormValues} */({
-    name: '',
-    billingMode: 'employer',
-    contactEmail: '',
-  }))
-  const [errors, setErrors] = useState(/** @type {Record<string, string>} */({}))
+export default function useAddCompanyForm({
+  onSaved,
+  onError,
+  schoolId,
+  actorEmail,
+} = {}) {
+  const [values, setValues] = useState(
+    /** @type {CompanyFormValues} */ ({
+      name: '',
+      billingMode: 'employer',
+      contactEmail: '',
+    })
+  )
+  const [errors, setErrors] = useState(
+    /** @type {Record<string, string>} */ ({})
+  )
   const [saving, setSaving] = useState(false)
 
   // ------------- helpers ----------------------------------------------------
 
   /** Replace a single field value; clears that field's error, if present. */
   const update = useCallback((field, v) => {
-    setValues((s) => ({ ...s, [field]: v }))
-    setErrors((e) => (e[field] ? { ...e, [field]: '' } : e))
+    setValues(s => ({ ...s, [field]: v }))
+    setErrors(e => (e[field] ? { ...e, [field]: '' } : e))
   }, [])
 
   /** Shallow-merge many values at once (does not clear errors automatically). */
-  const setMany = useCallback((patch) => {
-    setValues((s) => ({ ...s, ...patch }))
+  const setMany = useCallback(patch => {
+    setValues(s => ({ ...s, ...patch }))
   }, [])
 
   /** Reset to pristine defaults. */
@@ -75,16 +84,19 @@ export default function useAddCompanyForm({ onSaved, onError, schoolId, actorEma
 
     const errs = validateCompany(cleaned, { schoolId })
     setErrors(errs)
-    if (Object.keys(errs).some((k) => !!errs[k])) return false
+    if (Object.keys(errs).some(k => !!errs[k])) return false
 
     // Optional duplicate-name check if service is exported
     try {
       if (schoolId && typeof _existsByNameInSchool === 'function') {
         // If the function is present, use it; otherwise skip silently.
-         
+
         const already = await _existsByNameInSchool(schoolId, cleaned.name)
         if (already) {
-          setErrors((e) => ({ ...e, name: 'A company with this name already exists.' }))
+          setErrors(e => ({
+            ...e,
+            name: 'A company with this name already exists.',
+          }))
           return false
         }
       }
@@ -102,7 +114,7 @@ export default function useAddCompanyForm({ onSaved, onError, schoolId, actorEma
     } catch (err) {
       // Surface a friendly error and allow the caller to handle it too
       const msg = 'Failed to create company. Please try again.'
-      setErrors((e) => ({ ...e, form: msg }))
+      setErrors(e => ({ ...e, form: msg }))
       onError?.(msg, err)
       return false
     } finally {
@@ -122,11 +134,11 @@ export default function useAddCompanyForm({ onSaved, onError, schoolId, actorEma
     canSubmit,
 
     // mutators
-    update,     // (field, value)
-    setMany,    // (partial)
+    update, // (field, value)
+    setMany, // (partial)
     reset,
 
     // actions
-    submit,     // () => Promise<false|any>
+    submit, // () => Promise<false|any>
   }
 }

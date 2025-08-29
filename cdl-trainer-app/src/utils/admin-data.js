@@ -26,7 +26,9 @@ import { db } from '@/utils/firebase.js' // initialized Firestore instance
 
 /** Lowercases + trims an email (safe for doc IDs). */
 export function normalizeEmail(email) {
-  return String(email || '').trim().toLowerCase()
+  return String(email || '')
+    .trim()
+    .toLowerCase()
 }
 
 /** Map a Firestore user doc to a roster/exports-friendly row. */
@@ -38,7 +40,9 @@ function mapUserDoc(ds) {
     name:
       u.name ||
       u.fullName ||
-      [u.firstName ?? u.first_name, u.lastName ?? u.last_name].filter(Boolean).join(' ') ||
+      [u.firstName ?? u.first_name, u.lastName ?? u.last_name]
+        .filter(Boolean)
+        .join(' ') ||
       '',
     role: (u.role || 'student').toString().toLowerCase(),
     course: u.course || '',
@@ -47,7 +51,9 @@ function mapUserDoc(ds) {
     assignedCompany: u.assignedCompany || '',
     companyId: u.companyId || '',
     billing: u.billing || null, // may be { mode: 'employer'|'individual', ... } or null
-    profileProgress: Number.isFinite(u.profileProgress) ? Number(u.profileProgress) : 0,
+    profileProgress: Number.isFinite(u.profileProgress)
+      ? Number(u.profileProgress)
+      : 0,
     permitExpiry: u.permitExpiry || '',
     medCardExpiry: u.medCardExpiry || '',
     paymentStatus: u.paymentStatus || '',
@@ -68,8 +74,8 @@ function mapCompanyDoc(ds) {
     // Our AddCompany flow saves a flat billingMode string (not nested)
     billingMode: c.billingMode || 'employer',
     contactEmail: c.contactEmail || '',
-    address: c.address || '',      // present if your UI captured it
-    status: c.status || 'active',  // optional; default ‘active’
+    address: c.address || '', // present if your UI captured it
+    status: c.status || 'active', // optional; default ‘active’
     createdAt: c.createdAt || null,
     updatedAt: c.updatedAt || null,
 
@@ -99,9 +105,17 @@ function mapCompanyDoc(ds) {
  */
 export async function fetchUsersForSchool(
   schoolId,
-  { roles = ['student', 'instructor', 'admin'], pageSize = 500, maxRecords = 500 } = {}
+  {
+    roles = ['student', 'instructor', 'admin'],
+    pageSize = 500,
+    maxRecords = 500,
+  } = {}
 ) {
-  const { items } = await fetchUsersForSchoolPaged(schoolId, { roles, pageSize, maxRecords })
+  const { items } = await fetchUsersForSchoolPaged(schoolId, {
+    roles,
+    pageSize,
+    maxRecords,
+  })
   return items
 }
 
@@ -120,7 +134,12 @@ export async function fetchUsersForSchool(
  */
 export async function fetchUsersForSchoolPaged(
   schoolId,
-  { roles = ['student', 'instructor', 'admin'], pageSize = 500, cursor = null, maxRecords = 0 } = {}
+  {
+    roles = ['student', 'instructor', 'admin'],
+    pageSize = 500,
+    cursor = null,
+    maxRecords = 0,
+  } = {}
 ) {
   if (!schoolId) return { items: [], lastDoc: null }
 
@@ -133,7 +152,7 @@ export async function fetchUsersForSchoolPaged(
       const clauses = [
         where('schoolId', '==', schoolId),
         roles && roles.length ? where('role', 'in', roles.slice(0, 10)) : null,
-        orderBy('email'),                         // requires index w/ 'in' on role; add via console if needed
+        orderBy('email'), // requires index w/ 'in' on role; add via console if needed
         fbLimit(Math.max(1, Math.min(pageSize, 1000))),
         lastDoc ? startAfter(lastDoc) : null,
       ].filter(Boolean)
@@ -145,7 +164,8 @@ export async function fetchUsersForSchoolPaged(
       items.push(...pageItems)
       lastDoc = snap.docs.length ? snap.docs[snap.docs.length - 1] : null
 
-      if (!maxRecords || items.length >= maxRecords || !lastDoc) keepGoing = false
+      if (!maxRecords || items.length >= maxRecords || !lastDoc)
+        keepGoing = false
     }
 
     // Trim to maxRecords if we overshot on the last page

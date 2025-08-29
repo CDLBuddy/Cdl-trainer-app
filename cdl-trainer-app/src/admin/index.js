@@ -8,12 +8,12 @@
 // ============================================================================
 
 // ---------- Pages / Views (compat) ------------------------------------------
-export { default as AdminDashboard }      from './dashboard/AdminDashboard.jsx'
-export { default as AdminProfile }        from './AdminProfile.jsx'
-export { default as AdminReports }        from './reports/AdminReports.jsx'
-export { default as AdminCompanies }      from './companies/AdminCompanies.jsx'
+export { default as AdminDashboard } from './dashboard/AdminDashboard.jsx'
+export { default as AdminProfile } from './AdminProfile.jsx'
+export { default as AdminReports } from './reports/AdminReports.jsx'
+export { default as AdminCompanies } from './companies/AdminCompanies.jsx'
 export { default as AdminCommunications } from './communications/AdminCommunications.jsx'
-export { default as AdminBilling }        from './billing/Billing.jsx'
+export { default as AdminBilling } from './billing/Billing.jsx'
 
 // ---------- Preferred submodule barrels ------------------------------------
 // These surface components, hooks, services, utils, and prefetch helpers.

@@ -18,7 +18,12 @@ const fixNegZero = n => (Object.is(n, -0) ? 0 : n)
 export const centsToDollars = cents => fixNegZero(toNumber(cents, 0) / 100)
 // dollars → cents (int)
 export const dollarsToCents = dollars =>
-  Math.round(toNumber(typeof dollars === 'string' ? dollars.replace(/[$,\s]/g, '') : dollars, 0) * 100)
+  Math.round(
+    toNumber(
+      typeof dollars === 'string' ? dollars.replace(/[$,\s]/g, '') : dollars,
+      0
+    ) * 100
+  )
 
 /* ----------------------------- Intl memoization ---------------------------- */
 
@@ -62,7 +67,14 @@ function getCurrencyFormatter({
   notation,
   compactDisplay,
 } = {}) {
-  const key = currencyKey(locale, currency, minimumFractionDigits, maximumFractionDigits, notation, compactDisplay)
+  const key = currencyKey(
+    locale,
+    currency,
+    minimumFractionDigits,
+    maximumFractionDigits,
+    notation,
+    compactDisplay
+  )
   let nf = _fmtCache.get(key)
   if (!nf) {
     // Only allow valid notation values
@@ -75,7 +87,7 @@ function getCurrencyFormatter({
       maximumFractionDigits,
     }
     if (validNotations.includes(notation)) {
-      options.notation = notation;
+      options.notation = notation
     }
     if (compactDisplay) {
       options.compactDisplay = compactDisplay === 'long' ? 'long' : 'short'
@@ -90,7 +102,13 @@ function getCurrencyFormatter({
 function getDateFormatter(locale = 'en-US', withTime = false) {
   /** @type {Intl.DateTimeFormatOptions} */
   const opts = withTime
-    ? { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }
+    ? {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      }
     : { month: 'short', day: 'numeric', year: 'numeric' }
   const key = dateKey(locale, opts)
   let df = _fmtCache.get(key)
@@ -106,8 +124,12 @@ export function getCurrencySymbol(locale = 'en-US', currency = 'USD') {
   let sym = _fmtCache.get(key)
   if (!sym) {
     try {
-      const parts = getCurrencyFormatter({ locale, currency, minimumFractionDigits: 0, maximumFractionDigits: 0 })
-        .formatToParts(0)
+      const parts = getCurrencyFormatter({
+        locale,
+        currency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).formatToParts(0)
       sym = parts.find(p => p.type === 'currency')?.value || '$'
     } catch {
       sym = '$'
@@ -137,12 +159,19 @@ export function formatCurrency(
     minimumFractionDigits = 2,
     maximumFractionDigits = 2,
     notation,
-    compactDisplay
+    compactDisplay,
   } = {}
 ) {
   const dollars = centsToDollars(cents)
   try {
-    return getCurrencyFormatter({ locale, currency, minimumFractionDigits, maximumFractionDigits, notation, compactDisplay }).format(dollars)
+    return getCurrencyFormatter({
+      locale,
+      currency,
+      minimumFractionDigits,
+      maximumFractionDigits,
+      notation,
+      compactDisplay,
+    }).format(dollars)
   } catch {
     const fixed = dollars.toFixed(maximumFractionDigits)
     return `${getCurrencySymbol(locale, currency)}${fixed}`
@@ -179,7 +208,10 @@ export function toCurrencyShort(
       })
       // Some engines produce "-$0" around tiny values; normalize
       const s = nf.format(dollars)
-      if (s && typeof s === 'string') return s.replace(/^-?\$?0(\.0+)?([A-Za-z]*)$/, match => match.replace(/^-/, ''))
+      if (s && typeof s === 'string')
+        return s.replace(/^-?\$?0(\.0+)?([A-Za-z]*)$/, match =>
+          match.replace(/^-/, '')
+        )
     } catch {
       // fall through to manual
     }
@@ -188,12 +220,20 @@ export function toCurrencyShort(
   // Manual compact (stable across engines)
   let value = dollars
   let suffix = ''
-  if (abs >= 1_000_000_000) { value = dollars / 1_000_000_000; suffix = 'B' }
-  else if (abs >= 1_000_000) { value = dollars / 1_000_000; suffix = 'M' }
-  else if (abs >= 1_000)     { value = dollars / 1_000; suffix = 'k' }
+  if (abs >= 1_000_000_000) {
+    value = dollars / 1_000_000_000
+    suffix = 'B'
+  } else if (abs >= 1_000_000) {
+    value = dollars / 1_000_000
+    suffix = 'M'
+  } else if (abs >= 1_000) {
+    value = dollars / 1_000
+    suffix = 'k'
+  }
 
   const symbol = getCurrencySymbol(locale, currency)
-  const formatted = Math.abs(value) < 10 ? value.toFixed(digits) : Math.round(value).toString()
+  const formatted =
+    Math.abs(value) < 10 ? value.toFixed(digits) : Math.round(value).toString()
   const sign = dollars < 0 ? '-' : ''
   return `${sign}${symbol}${formatted}${suffix}`
 }

@@ -47,7 +47,9 @@ export function useBrandingSettings({ vm } = {}) {
   }, [vm?.prefs, vm?.brand])
 
   const [draft, setDraft] = useState(base)
-  useEffect(() => { setDraft(base) }, [base])
+  useEffect(() => {
+    setDraft(base)
+  }, [base])
 
   /* mutations */
   const update = useCallback(
@@ -72,8 +74,10 @@ export function useBrandingSettings({ vm } = {}) {
   const errors = useMemo(() => {
     const e = {}
     if (!draft.schoolName?.trim()) e.schoolName = 'School name is required.'
-    if (!isHex(draft.primaryColor)) e.primaryColor = 'Use a valid hex color (e.g., #0b5a6e).'
-    if (draft.logoUrl && !isUrl(draft.logoUrl)) e.logoUrl = 'Logo must be an absolute URL or a site-relative path.'
+    if (!isHex(draft.primaryColor))
+      e.primaryColor = 'Use a valid hex color (e.g., #0b5a6e).'
+    if (draft.logoUrl && !isUrl(draft.logoUrl))
+      e.logoUrl = 'Logo must be an absolute URL or a site-relative path.'
     return e
   }, [draft])
 
@@ -82,15 +86,20 @@ export function useBrandingSettings({ vm } = {}) {
 
   /* persistence */
   const save = useCallback(
-    async (partial) => {
+    async partial => {
       const toSave = normalizeDraft(partial ? { ...draft, ...partial } : draft)
-      if (!valid) return { ok: false, error: 'Fix validation errors before saving.' }
-      if (!vm?.actions?.save) return { ok: false, error: 'Save action is unavailable.' }
+      if (!valid)
+        return { ok: false, error: 'Fix validation errors before saving.' }
+      if (!vm?.actions?.save)
+        return { ok: false, error: 'Save action is unavailable.' }
       try {
         await vm.actions.save({ [KEY]: toSave })
         return { ok: true }
       } catch (err) {
-        return { ok: false, error: err?.message || 'Failed to save branding settings.' }
+        return {
+          ok: false,
+          error: err?.message || 'Failed to save branding settings.',
+        }
       }
     },
     [draft, valid, vm?.actions]
@@ -110,7 +119,8 @@ export function useBrandingSettings({ vm } = {}) {
 
     // field accessors (with server-brand fallbacks for display)
     schoolName: draft.schoolName || vm?.brand?.schoolName || '',
-    primaryColor: draft.primaryColor || vm?.brand?.primaryColor || DEFAULTS.primaryColor,
+    primaryColor:
+      draft.primaryColor || vm?.brand?.primaryColor || DEFAULTS.primaryColor,
     logoUrl: draft.logoUrl || vm?.brand?.logoUrl || '',
 
     // mutators

@@ -61,7 +61,7 @@ export default defineConfig(async ({ mode }) => {
         // ===== Base =====
         '@': r('src'),
 
-        // ===== Shared Communications (new) =====
+        // ===== Shared Communications =====
         '@communications': r('src/communications'),
 
         // ===== lib (user-profile module) =====
@@ -90,9 +90,8 @@ export default defineConfig(async ({ mode }) => {
         '@styles': r('src/styles'),
         '@utils': r('src/utils'),
 
-        // ===== Data / Workers =====
+        // ===== Data =====
         '@data': r('src/data'),
-        '@workers': r('src/workers'),
 
         // ===== Walkthrough system =====
         '@walkthrough-data': r('src/walkthrough-data'),

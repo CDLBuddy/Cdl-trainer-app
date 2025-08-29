@@ -110,7 +110,11 @@ export default function useChecklistPdf(defaults = {}) {
 
         // Header
         doc.setFontSize(16)
-        doc.text(`${opts.title}${opts.jurisdiction ? ` (${opts.jurisdiction})` : ''}`, M, M)
+        doc.text(
+          `${opts.title}${opts.jurisdiction ? ` (${opts.jurisdiction})` : ''}`,
+          M,
+          M
+        )
         doc.setFontSize(10)
         const sub = [
           opts.schoolName && `School: ${opts.schoolName}`,
@@ -147,7 +151,7 @@ export default function useChecklistPdf(defaults = {}) {
           doc.setFontSize(11)
         }
 
-        list.forEach((raw) => {
+        list.forEach(raw => {
           const line = String(raw)
           const wrapped = doc.splitTextToSize(line, contentWidth)
           // height needed for this item block
@@ -183,14 +187,19 @@ export default function useChecklistPdf(defaults = {}) {
           (opts.schoolName ? `School: ${opts.schoolName}\n` : '') +
           (opts.providerName ? `Provider: ${opts.providerName}\n` : '') +
           `Generated: ${new Date().toLocaleString()}\n\n` +
-          list.map((l) => `[ ] ${l}`).join('\n') +
+          list.map(l => `[ ] ${l}`).join('\n') +
           (opts.footerNote ? `\n\n${opts.footerNote}` : '')
-        const name = (opts.fileName || 'ELDT_Checklist.txt').replace(/\.pdf$/i, '.txt')
+        const name = (opts.fileName || 'ELDT_Checklist.txt').replace(
+          /\.pdf$/i,
+          '.txt'
+        )
         downloadBlob(name, 'text/plain;charset=utf-8', txt)
         // Optional noise-free console note for devs
         if (process?.env?.NODE_ENV !== 'production') {
-          // eslint-disable-next-line no-console
-          console.warn('[useChecklistPdf] jsPDF unavailable, fell back to .txt export:', err)
+          console.warn(
+            '[useChecklistPdf] jsPDF unavailable, fell back to .txt export:',
+            err
+          )
         }
       }
     },

@@ -12,14 +12,19 @@
 
 import PropTypes from 'prop-types'
 import React, {
-  memo, useCallback, useEffect, useId, useRef, useState,
+  memo,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
 } from 'react'
 
 import styles from './AddCompanyDrawer.module.css'
 import useAddCompanyForm from './useAddCompanyForm.js'
 
 const MODE_OPTIONS = [
-  { value: 'employer',   label: 'Employer-billed' },
+  { value: 'employer', label: 'Employer-billed' },
   { value: 'individual', label: 'Student-paid' },
 ]
 
@@ -31,7 +36,7 @@ function getTabbables(container) {
       'a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])'
     )
   )
-  return nodes.filter((el) => {
+  return nodes.filter(el => {
     if (!(el instanceof HTMLElement)) return false
     if (el.hasAttribute('disabled')) return false
     const style = window.getComputedStyle(el)
@@ -43,19 +48,19 @@ function getTabbables(container) {
 }
 
 function AddCompanyDrawer({ open = false, onClose }) {
-  const titleId   = useId()
-  const descId    = useId()
+  const titleId = useId()
+  const descId = useId()
   const nameErrId = `${titleId}-name-err`
   const billErrId = `${titleId}-billing-err`
 
-  const panelRef       = useRef(null)
-  const firstFieldRef  = useRef(null)
-  const lastActiveRef  = useRef(null)
-  const intentRef      = useRef('create') // 'create' | 'create-and-add'
+  const panelRef = useRef(null)
+  const firstFieldRef = useRef(null)
+  const lastActiveRef = useRef(null)
+  const intentRef = useRef('create') // 'create' | 'create-and-add'
   const [closeOnOverlay, setCloseOnOverlay] = useState(true)
 
   const { values, errors, saving, update, submit } = useAddCompanyForm({
-    onSaved: (saved) => {
+    onSaved: saved => {
       const payload =
         intentRef.current === 'create-and-add'
           ? { ...saved, openAddStudent: true }
@@ -77,11 +82,11 @@ function AddCompanyDrawer({ open = false, onClose }) {
 
     // initial focus
     const t = setTimeout(() => {
-      (firstFieldRef.current || panelRef.current)?.focus?.()
+      ;(firstFieldRef.current || panelRef.current)?.focus?.()
     }, 0)
 
     // keydown: escape + focus trap
-    const onKey = (e) => {
+    const onKey = e => {
       if (e.key === 'Escape') {
         e.stopPropagation()
         if (!saving) onClose?.(false)
@@ -95,7 +100,7 @@ function AddCompanyDrawer({ open = false, onClose }) {
         return
       }
       const first = tabbables[0]
-      const last  = tabbables[tabbables.length - 1]
+      const last = tabbables[tabbables.length - 1]
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault()
         last.focus()
@@ -114,17 +119,22 @@ function AddCompanyDrawer({ open = false, onClose }) {
       try {
         const el = lastActiveRef.current
         if (el && document.contains(el)) el.focus()
-      } catch { /* noop */ }
+      } catch {
+        /* noop */
+      }
     }
   }, [open, onClose, saving])
 
   // (Removed unused stopOverlayFromPanel)
 
   // Close on background click (disabled while saving)
-  const onOverlayMouseDown = useCallback((e) => {
-    if (!closeOnOverlay || saving) return
-    if (e.target === e.currentTarget) onClose?.(false)
-  }, [closeOnOverlay, onClose, saving])
+  const onOverlayMouseDown = useCallback(
+    e => {
+      if (!closeOnOverlay || saving) return
+      if (e.target === e.currentTarget) onClose?.(false)
+    },
+    [closeOnOverlay, onClose, saving]
+  )
 
   // Submit handlers decide the post-save intent
   const handleCreate = useCallback(async () => {
@@ -140,15 +150,18 @@ function AddCompanyDrawer({ open = false, onClose }) {
   }, [submit, saving])
 
   // Allow Enter-to-submit
-  const onFormSubmit = useCallback((e) => {
-    e.preventDefault()
-    if (saving) return
-    handleCreate()
-  }, [handleCreate, saving])
+  const onFormSubmit = useCallback(
+    e => {
+      e.preventDefault()
+      if (saving) return
+      handleCreate()
+    },
+    [handleCreate, saving]
+  )
 
   if (!open) return null
 
-  const hasError  = Boolean(errors?.name || errors?.billingMode)
+  const hasError = Boolean(errors?.name || errors?.billingMode)
   const canSubmit = !saving && !hasError && values.name.trim().length > 0
 
   return (
@@ -172,9 +185,12 @@ function AddCompanyDrawer({ open = false, onClose }) {
         {/* Header */}
         <header className={styles.header}>
           <div className={styles.headerText}>
-            <h3 id={titleId} className={styles.title}>Add Company</h3>
+            <h3 id={titleId} className={styles.title}>
+              Add Company
+            </h3>
             <p id={descId} className={styles.subtitle}>
-              Create a new company. You can immediately add the first student after saving.
+              Create a new company. You can immediately add the first student
+              after saving.
             </p>
           </div>
           <div className={styles.headerActions}>
@@ -182,7 +198,7 @@ function AddCompanyDrawer({ open = false, onClose }) {
               <input
                 type="checkbox"
                 checked={closeOnOverlay}
-                onChange={(e) => setCloseOnOverlay(e.target.checked)}
+                onChange={e => setCloseOnOverlay(e.target.checked)}
                 aria-label="Allow clicking the background to close"
               />
               <span>Overlay closes</span>
@@ -205,13 +221,16 @@ function AddCompanyDrawer({ open = false, onClose }) {
           {/* Name */}
           <label className={styles.field}>
             <span className={styles.label}>
-              Name <span className={styles.req} aria-hidden="true">*</span>
+              Name{' '}
+              <span className={styles.req} aria-hidden="true">
+                *
+              </span>
             </span>
             <input
               ref={firstFieldRef}
               type="text"
               value={values.name}
-              onChange={(e) => update('name', e.target.value)}
+              onChange={e => update('name', e.target.value)}
               placeholder="Acme Logistics, Inc."
               autoComplete="organization"
               aria-required="true"
@@ -219,7 +238,12 @@ function AddCompanyDrawer({ open = false, onClose }) {
               aria-describedby={errors?.name ? nameErrId : undefined}
             />
             {errors?.name && (
-              <small id={nameErrId} className={styles.error} role="status" aria-live="polite">
+              <small
+                id={nameErrId}
+                className={styles.error}
+                role="status"
+                aria-live="polite"
+              >
                 {errors.name}
               </small>
             )}
@@ -230,18 +254,23 @@ function AddCompanyDrawer({ open = false, onClose }) {
             <span className={styles.label}>Billing Mode</span>
             <select
               value={values.billingMode}
-              onChange={(e) => update('billingMode', e.target.value)}
+              onChange={e => update('billingMode', e.target.value)}
               aria-invalid={errors?.billingMode ? 'true' : undefined}
               aria-describedby={errors?.billingMode ? billErrId : undefined}
             >
-              {MODE_OPTIONS.map((opt) => (
+              {MODE_OPTIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
               ))}
             </select>
             {errors?.billingMode && (
-              <small id={billErrId} className={styles.error} role="status" aria-live="polite">
+              <small
+                id={billErrId}
+                className={styles.error}
+                role="status"
+                aria-live="polite"
+              >
                 {errors.billingMode}
               </small>
             )}
@@ -253,7 +282,7 @@ function AddCompanyDrawer({ open = false, onClose }) {
             <input
               type="email"
               value={values.contactEmail}
-              onChange={(e) => update('contactEmail', e.target.value)}
+              onChange={e => update('contactEmail', e.target.value)}
               placeholder="ap@acmelogistics.com"
               inputMode="email"
               autoComplete="email"
@@ -262,13 +291,17 @@ function AddCompanyDrawer({ open = false, onClose }) {
 
           {/* Helpful tip */}
           <p className={styles.tip}>
-            Tip: Choose <strong>Employer-billed</strong> if invoices are paid by the company.&nbsp;
-            Choose <strong>Student-paid</strong> if trainees pay individually.
+            Tip: Choose <strong>Employer-billed</strong> if invoices are paid by
+            the company.&nbsp; Choose <strong>Student-paid</strong> if trainees
+            pay individually.
           </p>
         </form>
 
         {/* Footer */}
-        <footer className={styles.footer} aria-busy={saving ? 'true' : undefined}>
+        <footer
+          className={styles.footer}
+          aria-busy={saving ? 'true' : undefined}
+        >
           <button
             type="button"
             className="btn outline"
@@ -285,9 +318,15 @@ function AddCompanyDrawer({ open = false, onClose }) {
               onClick={handleCreateAndAdd}
               disabled={!canSubmit}
               title="Create the company and then add the first student"
-              aria-busy={saving && intentRef.current === 'create-and-add' ? 'true' : undefined}
+              aria-busy={
+                saving && intentRef.current === 'create-and-add'
+                  ? 'true'
+                  : undefined
+              }
             >
-              {saving && intentRef.current === 'create-and-add' ? 'Working…' : 'Create & Add First Student'}
+              {saving && intentRef.current === 'create-and-add'
+                ? 'Working…'
+                : 'Create & Add First Student'}
             </button>
 
             <button
@@ -296,9 +335,13 @@ function AddCompanyDrawer({ open = false, onClose }) {
               onClick={handleCreate}
               disabled={!canSubmit}
               title="Create the company"
-              aria-busy={saving && intentRef.current === 'create' ? 'true' : undefined}
+              aria-busy={
+                saving && intentRef.current === 'create' ? 'true' : undefined
+              }
             >
-              {saving && intentRef.current === 'create' ? 'Saving…' : 'Create Company'}
+              {saving && intentRef.current === 'create'
+                ? 'Saving…'
+                : 'Create Company'}
             </button>
           </div>
         </footer>

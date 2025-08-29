@@ -1,13 +1,23 @@
 //src/admin/walkthroughs/Editor/hooks/useWalkthroughEditorState.js
 import { useMemo, useState } from 'react'
-import { deepClone, ensureScriptShape, validateScript } from '../services/wtValidation.js'
+
+import {
+  deepClone,
+  ensureScriptShape,
+  validateScript,
+} from '../services/wtValidation.js'
 
 export function useWalkthroughEditorState(initialScript) {
   const [script, setScript] = useState(() => ensureScriptShape(initialScript))
 
   const counts = useMemo(() => {
     const sections = Array.isArray(script) ? script.length : 0
-    const steps = sections ? script.reduce((a, s) => a + (Array.isArray(s?.steps) ? s.steps.length : 0), 0) : 0
+    const steps = sections
+      ? script.reduce(
+          (a, s) => a + (Array.isArray(s?.steps) ? s.steps.length : 0),
+          0
+        )
+      : 0
     return { sections, steps }
   }, [script])
 
@@ -15,9 +25,12 @@ export function useWalkthroughEditorState(initialScript) {
 
   // Section ops
   const addSection = () =>
-    setScript(s => [...s, { section: `Section ${s.length + 1}`, steps: [{ script: '' }] }])
+    setScript(s => [
+      ...s,
+      { section: `Section ${s.length + 1}`, steps: [{ script: '' }] },
+    ])
 
-  const removeSection = (i) =>
+  const removeSection = i =>
     setScript(s => (s.length <= 1 ? s : s.filter((_, idx) => idx !== i)))
 
   const updateSectionTitle = (i, title) =>
@@ -35,7 +48,7 @@ export function useWalkthroughEditorState(initialScript) {
     })
 
   // Step ops
-  const addStep = (si) =>
+  const addStep = si =>
     setScript(s => {
       const next = deepClone(s)
       next[si].steps.push({ script: '' })
@@ -68,8 +81,17 @@ export function useWalkthroughEditorState(initialScript) {
     })
 
   return {
-    script, setScript, counts, validation,
-    addSection, removeSection, updateSectionTitle, toggleSecFlag,
-    addStep, removeStep, updateStepField, toggleStepFlag,
+    script,
+    setScript,
+    counts,
+    validation,
+    addSection,
+    removeSection,
+    updateSectionTitle,
+    toggleSecFlag,
+    addStep,
+    removeStep,
+    updateStepField,
+    toggleStepFlag,
   }
 }

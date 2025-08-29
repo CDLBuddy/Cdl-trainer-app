@@ -9,6 +9,7 @@
 // ======================================================================
 
 import { serverTimestamp } from 'firebase/firestore'
+
 import { normalizeProfile } from './normalize.js'
 
 /** Base key list (unconditional “simple” fields). */
@@ -32,7 +33,7 @@ const BASE_PROGRESS_KEYS = [
 const CONDITIONAL_GROUPS = [
   // Permit group → only when student reports they have a permit
   {
-    when: (p) => (p.cdlPermit || '').toLowerCase() === 'yes',
+    when: p => (p.cdlPermit || '').toLowerCase() === 'yes',
     keys: ['cdlPermit', 'permitPhotoUrl', 'permitExpiry'],
   },
 
@@ -50,13 +51,13 @@ const CONDITIONAL_GROUPS = [
 
   // Vehicle plates → only when student will use their own vehicle
   {
-    when: (p) => (p.vehicleQualified || '').toLowerCase() === 'yes',
+    when: p => (p.vehicleQualified || '').toLowerCase() === 'yes',
     keys: ['vehicleQualified', 'truckPlateUrl', 'trailerPlateUrl'],
   },
 
   // Payment → only when individual billing
   {
-    when: (p) => (p?.billing?.mode || '').toLowerCase() === 'individual',
+    when: p => (p?.billing?.mode || '').toLowerCase() === 'individual',
     keys: ['paymentStatus', 'paymentProofUrl'],
   },
 ]
@@ -89,9 +90,10 @@ export function calculateProfileCompletion(profile = {}, overrideKeys) {
   // Normalize first so comparisons are consistent
   const normalized = normalizeProfile(profile)
 
-  const keys = Array.isArray(overrideKeys) && overrideKeys.length
-    ? overrideKeys
-    : getEffectiveProgressKeys(normalized)
+  const keys =
+    Array.isArray(overrideKeys) && overrideKeys.length
+      ? overrideKeys
+      : getEffectiveProgressKeys(normalized)
 
   const total = keys.length || 1
   let filled = 0
@@ -99,7 +101,7 @@ export function calculateProfileCompletion(profile = {}, overrideKeys) {
   for (const key of keys) {
     if (Array.isArray(key)) {
       // compound requirement: every member must be truthy
-      if (key.every((k) => Boolean(normalized[k]))) filled += 1
+      if (key.every(k => Boolean(normalized[k]))) filled += 1
       continue
     }
     const v = normalized[key]
@@ -132,9 +134,10 @@ export function calculateProfileCompletion(profile = {}, overrideKeys) {
  */
 export function calculateProfileCompletionDetailed(profile = {}, overrideKeys) {
   const normalized = normalizeProfile(profile)
-  const keys = Array.isArray(overrideKeys) && overrideKeys.length
-    ? overrideKeys
-    : getEffectiveProgressKeys(normalized)
+  const keys =
+    Array.isArray(overrideKeys) && overrideKeys.length
+      ? overrideKeys
+      : getEffectiveProgressKeys(normalized)
 
   const keysFilled = []
   let filled = 0
@@ -142,10 +145,14 @@ export function calculateProfileCompletionDetailed(profile = {}, overrideKeys) {
   for (const key of keys) {
     let ok = false
     if (Array.isArray(key)) {
-      ok = key.every((k) => Boolean(normalized[k]))
+      ok = key.every(k => Boolean(normalized[k]))
     } else {
       const v = normalized[key]
-      ok = Array.isArray(v) ? v.length > 0 : (typeof v === 'boolean' ? v : Boolean(v))
+      ok = Array.isArray(v)
+        ? v.length > 0
+        : typeof v === 'boolean'
+          ? v
+          : Boolean(v)
     }
     if (ok) {
       filled += 1

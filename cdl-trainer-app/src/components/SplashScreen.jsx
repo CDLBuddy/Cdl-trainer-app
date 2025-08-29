@@ -40,7 +40,10 @@ export default function SplashScreen({
 
       // SSR/Unit-test safe document access
       if (typeof document !== 'undefined' && detail?.primaryColor) {
-        document.documentElement.style.setProperty('--brand-primary', detail.primaryColor)
+        document.documentElement.style.setProperty(
+          '--brand-primary',
+          detail.primaryColor
+        )
       }
     })
     return unsub
@@ -48,25 +51,35 @@ export default function SplashScreen({
 
   const logo = brand?.logoUrl || '/default-logo.svg'
   const name = brand?.schoolName || 'CDL Trainer'
-  const sub  = brand?.subHeadline || ''
+  const sub = brand?.subHeadline || ''
   const primary = brand?.primaryColor || 'var(--brand-light)'
 
   /* 2) Random tip (stable seed so it doesn't reshuffle on re-renders) */
   const tipIndexRef = useRef(
-    disableRandomTip || !tips?.length ? 0 : Math.floor(Math.random() * tips.length)
+    disableRandomTip || !tips?.length
+      ? 0
+      : Math.floor(Math.random() * tips.length)
   )
   const tipText = useMemo(() => {
     if (!showTip || !tips?.length) return ''
-    const idx = disableRandomTip ? 0 : Math.min(tipIndexRef.current, tips.length - 1)
+    const idx = disableRandomTip
+      ? 0
+      : Math.min(tipIndexRef.current, tips.length - 1)
     return tips[idx]
   }, [showTip, tips, disableRandomTip])
 
   /* 3) Inline CSS var to tint spinner/accents to brand color */
-  const themeStyle = useMemo(() => ({ ['--splash-accent']: primary }), [primary])
+  const themeStyle = useMemo(
+    () => ({ ['--splash-accent']: primary }),
+    [primary]
+  )
 
   /* 4) Fallback handler if logo fails to load (prevents broken image icon) */
   const onLogoError = e => {
-    if (e?.currentTarget && e.currentTarget.src !== window.location.origin + '/default-logo.svg') {
+    if (
+      e?.currentTarget &&
+      e.currentTarget.src !== window.location.origin + '/default-logo.svg'
+    ) {
       e.currentTarget.src = '/default-logo.svg'
     }
   }

@@ -21,20 +21,26 @@ import {
   useState,
   useDeferredValue,
 } from 'react'
+
 import { loadReportsBundle } from '../services'
 
 // --- helpers --------------------------------------------------------------
 
-const S = (v) => (v == null ? '' : String(v))
+const S = v => (v == null ? '' : String(v))
 
 function normalizeBrand(raw = {}) {
-  const schoolName = S(raw.schoolName || raw.name || raw.displayName || 'Current School')
+  const schoolName = S(
+    raw.schoolName || raw.name || raw.displayName || 'Current School'
+  )
   return { ...raw, schoolName }
 }
 
 function normalizeUser(u = {}) {
   const id =
-    u.id || u.uid || u.email || `${S(u.name || u.fullName || u.displayName)}::${S(u.role)}`
+    u.id ||
+    u.uid ||
+    u.email ||
+    `${S(u.name || u.fullName || u.displayName)}::${S(u.role)}`
   const role = S((u.role || '').toLowerCase())
   const assignedCompany = S(u.assignedCompany || u.company || u.companyName)
   const assignedInstructor = S(u.assignedInstructor || u.instructor || '')
@@ -60,7 +66,9 @@ function normalizeCompany(c = {}) {
   const name = S(c.name || c.title)
   const studentCount = Number.isFinite(+c.studentCount)
     ? +c.studentCount
-    : (Array.isArray(c.students) ? c.students.length : 0)
+    : Array.isArray(c.students)
+      ? c.students.length
+      : 0
   const expiringSoon = Number.isFinite(+c.expiringSoon) ? +c.expiringSoon : 0
   return { id, name, studentCount, expiringSoon, _raw: c }
 }
@@ -123,8 +131,12 @@ export default function useReports(schoolId, opts = {}) {
       if (ac.signal.aborted) return
 
       const nb = normalizeBrand(result?.brand || {})
-      const nu = (Array.isArray(result?.users) ? result.users : []).map(normalizeUser)
-      const nc = (Array.isArray(result?.companies) ? result.companies : []).map(normalizeCompany)
+      const nu = (Array.isArray(result?.users) ? result.users : []).map(
+        normalizeUser
+      )
+      const nc = (Array.isArray(result?.companies) ? result.companies : []).map(
+        normalizeCompany
+      )
 
       // stable sort for UX
       nu.sort((a, b) => a.name.localeCompare(b.name))
@@ -159,12 +171,15 @@ export default function useReports(schoolId, opts = {}) {
     let list = users
     if (roleFilter) {
       const rf = S(roleFilter).toLowerCase()
-      list = list.filter((u) => S(u.role).toLowerCase() === rf)
+      list = list.filter(u => S(u.role).toLowerCase() === rf)
     }
     if (dq) {
-      list = list.filter((u) => {
-        const contains = (v) => S(v).toLowerCase().includes(dq)
-        const alnum = (v) => S(v).replace(/[^a-z0-9]/gi, '').toLowerCase()
+      list = list.filter(u => {
+        const contains = v => S(v).toLowerCase().includes(dq)
+        const alnum = v =>
+          S(v)
+            .replace(/[^a-z0-9]/gi, '')
+            .toLowerCase()
         return (
           contains(u.name) ||
           contains(u.email) ||
@@ -181,15 +196,20 @@ export default function useReports(schoolId, opts = {}) {
 
   // small, handy extras (non-breaking)
   const roleOptions = useMemo(() => {
-    const set = new Set(users.map((u) => u.role).filter(Boolean))
+    const set = new Set(users.map(u => u.role).filter(Boolean))
     // keep predictable order if present
     const order = ['student', 'instructor', 'admin', 'superadmin']
-    return order.filter((r) => set.has(r)).concat([...set].filter((r) => !order.includes(r)))
+    return order
+      .filter(r => set.has(r))
+      .concat([...set].filter(r => !order.includes(r)))
   }, [users])
 
   const counts = useMemo(() => {
     const total = users.length
-    let students = 0, instructors = 0, admins = 0, superadmins = 0
+    let students = 0,
+      instructors = 0,
+      admins = 0,
+      superadmins = 0
     for (const u of users) {
       if (u.role === 'student') students++
       else if (u.role === 'instructor') instructors++

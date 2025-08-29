@@ -1,10 +1,23 @@
 //src/admin/companies/company-detail/utils/exportCsv.js
+import {
+  getEnrollmentReadiness,
+  getBTWReadiness,
+} from '@student/profile/schema/calculators.js'
+
 import { pct } from './format.js'
-import { getEnrollmentReadiness, getBTWReadiness } from '@student/profile/schema/calculators.js'
 
 export function exportRosterCsv(companyId, rows) {
   if (!companyId) return
-  const headers = ['Name', 'Email', 'Course', 'Class', 'Billing Mode', 'Instructor', 'Enroll %', 'BTW %']
+  const headers = [
+    'Name',
+    'Email',
+    'Course',
+    'Class',
+    'Billing Mode',
+    'Instructor',
+    'Enroll %',
+    'BTW %',
+  ]
   const lines = rows.map(r => [
     r.name,
     r.email,
@@ -16,7 +29,9 @@ export function exportRosterCsv(companyId, rows) {
     pct(getBTWReadiness(r.profile)),
   ])
   const csv = [headers, ...lines]
-    .map(cols => cols.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+    .map(cols =>
+      cols.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')
+    )
     .join('\n')
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })

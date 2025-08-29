@@ -28,8 +28,26 @@ import { db } from '@utils/firebase.js'
 // Constants (shared across CSV & PDF)
 // ----------------------------------------------------------------------------
 
-const CSV_HEADERS = ['name','contact','address','status','createdAt','createdBy','updatedAt','updatedBy']
-const PDF_HEADERS = ['Name','Contact','Address','Status','Created','Created By','Updated','Updated By']
+const CSV_HEADERS = [
+  'name',
+  'contact',
+  'address',
+  'status',
+  'createdAt',
+  'createdBy',
+  'updatedAt',
+  'updatedBy',
+]
+const PDF_HEADERS = [
+  'Name',
+  'Contact',
+  'Address',
+  'Status',
+  'Created',
+  'Created By',
+  'Updated',
+  'Updated By',
+]
 const FIRESTORE_BATCH_LIMIT = 500 // per Firestore rules
 const EXPORT_DATE = () => new Date().toISOString().slice(0, 10)
 
@@ -95,7 +113,9 @@ function chunk(arr, size) {
 
 /** Lowercased “search” version of a name (for future indexing) */
 function normalizeName(name) {
-  return String(name || '').trim().toLowerCase()
+  return String(name || '')
+    .trim()
+    .toLowerCase()
 }
 
 // jspdf ctor cache (keeps bundle slim until needed)
@@ -114,9 +134,11 @@ async function getJsPdfCtor() {
 /** Fetch companies for a school (sorted by name) */
 export async function listCompaniesBySchool(schoolId) {
   if (!schoolId) return []
-  const snap = await getDocs(query(collection(db, 'companies'), where('schoolId', '==', schoolId)))
+  const snap = await getDocs(
+    query(collection(db, 'companies'), where('schoolId', '==', schoolId))
+  )
   const rows = []
-  snap.forEach((d) => rows.push(mapCompanyDoc(d)))
+  snap.forEach(d => rows.push(mapCompanyDoc(d)))
   rows.sort((a, b) => a.name.localeCompare(b.name))
   return rows
 }
@@ -125,7 +147,13 @@ export async function listCompaniesBySchool(schoolId) {
  * Add a company
  * @param {{ schoolId:string, userEmail:string, name:string, contact?:string, address?:string }} params
  */
-export async function addCompany({ schoolId, userEmail, name, contact, address }) {
+export async function addCompany({
+  schoolId,
+  userEmail,
+  name,
+  contact,
+  address,
+}) {
   const nowIso = new Date().toISOString()
   const payload = {
     name: String(name || '').trim(),
@@ -166,8 +194,8 @@ export async function removeCompaniesBulk(ids = []) {
   try {
     for (const group of chunk(ids, FIRESTORE_BATCH_LIMIT)) {
       const batch = writeBatch(db)
-      group.forEach((id) => batch.delete(doc(db, 'companies', id)))
-       
+      group.forEach(id => batch.delete(doc(db, 'companies', id)))
+
       await batch.commit()
     }
     return
@@ -175,7 +203,6 @@ export async function removeCompaniesBulk(ids = []) {
     // Fallback to sequential to be safe with quotas/limits
   }
   for (const id of ids) {
-     
     await removeCompany(id)
   }
 }
@@ -203,7 +230,7 @@ export async function existsByNameInSchool(schoolId, name) {
 function toCompaniesCsv(rows) {
   return [
     CSV_HEADERS.join(','),
-    ...rows.map((c) =>
+    ...rows.map(c =>
       [
         escCsv(c.name),
         escCsv(c.contact),
@@ -262,7 +289,7 @@ export async function exportCompaniesToPDF(rows, showToast = () => {}) {
 
   // rows (wrap address conservatively)
   pdf.setFontSize(9)
-  rows.forEach((c) => {
+  rows.forEach(c => {
     const fields = [
       c.name || '',
       c.contact || '',
@@ -274,8 +301,19 @@ export async function exportCompaniesToPDF(rows, showToast = () => {}) {
       c.updatedBy || '',
     ]
     // Wrap address to avoid runaway lines; join into one line string
-    const addressWrapped = pdf.splitTextToSize(fields[2], WRAP_W * 0.45).join(' ')
-    const line = [fields[0], fields[1], addressWrapped, fields[3], fields[4], fields[5], fields[6], fields[7]].join(' | ')
+    const addressWrapped = pdf
+      .splitTextToSize(fields[2], WRAP_W * 0.45)
+      .join(' ')
+    const line = [
+      fields[0],
+      fields[1],
+      addressWrapped,
+      fields[3],
+      fields[4],
+      fields[5],
+      fields[6],
+      fields[7],
+    ].join(' | ')
 
     // Add new page if needed
     if (y > pdf.internal.pageSize.getHeight() - 40) {

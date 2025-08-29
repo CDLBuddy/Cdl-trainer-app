@@ -13,8 +13,9 @@
  * @param {number} [opts.pollMs=0]             Optional polling interval (ms). 0 = off
  * @param {(err:Error)=>void} [opts.onError]   Optional onError callback
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getAuth } from 'firebase/auth'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import { listInAppForUser } from '../services/inboxApi.js'
 
 const noop = () => {}
@@ -23,8 +24,11 @@ const noop = () => {}
 function toError(e, fallback = 'Failed to load announcements') {
   if (!e) return new Error(fallback)
   if (e instanceof Error) return e
-  try { return new Error(typeof e === 'string' ? e : JSON.stringify(e)) }
-  catch { return new Error(fallback) }
+  try {
+    return new Error(typeof e === 'string' ? e : JSON.stringify(e))
+  } catch {
+    return new Error(fallback)
+  }
 }
 
 export function useInbox({
@@ -35,10 +39,12 @@ export function useInbox({
   pollMs = 0,
   onError = noop,
 } = {}) {
-  const [items, setItems] = useState(() => /** @type {any[]} */([]))
+  const [items, setItems] = useState(() => /** @type {any[]} */ ([]))
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(/** @type {Error|null} */(null))
-  const [lastLoadedAt, setLastLoadedAt] = useState(/** @type {Date|null} */(null))
+  const [error, setError] = useState(/** @type {Error|null} */ (null))
+  const [lastLoadedAt, setLastLoadedAt] = useState(
+    /** @type {Date|null} */ (null)
+  )
 
   // Guard for SSR
   const hasWindow = typeof window !== 'undefined'
@@ -46,7 +52,11 @@ export function useInbox({
   // Infer role/scope once per change in inputs
   const inferred = useMemo(() => {
     if (!hasWindow) {
-      return { role: (role || 'student'), schoolId: schoolId ?? null, companyId: companyId ?? null }
+      return {
+        role: role || 'student',
+        schoolId: schoolId ?? null,
+        companyId: companyId ?? null,
+      }
     }
     try {
       const u = getAuth()?.currentUser
@@ -63,13 +73,16 @@ export function useInbox({
         uid: u?.uid ?? null,
       }
     } catch {
-      return { role: (role || 'student'), schoolId: schoolId ?? null, companyId: companyId ?? null }
+      return {
+        role: role || 'student',
+        schoolId: schoolId ?? null,
+        companyId: companyId ?? null,
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, schoolId, companyId, hasWindow])
 
   // Keep an AbortController for in-flight fetches (prevents late state updates)
-  const abortRef = useRef(/** @type {AbortController|null} */(null))
+  const abortRef = useRef(/** @type {AbortController|null} */ (null))
 
   const fetchOnce = useCallback(async () => {
     abortRef.current?.abort()
@@ -81,7 +94,12 @@ export function useInbox({
 
     try {
       const data = await listInAppForUser(
-        { role: inferred.role, schoolId: inferred.schoolId, companyId: inferred.companyId, take },
+        {
+          role: inferred.role,
+          schoolId: inferred.schoolId,
+          companyId: inferred.companyId,
+          take,
+        },
         ctl.signal // if your service ignores it, no harm
       )
 

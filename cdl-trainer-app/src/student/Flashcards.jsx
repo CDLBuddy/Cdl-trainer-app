@@ -19,10 +19,19 @@ import {
 } from '@utils/ui-helpers.js'
 
 const defaultFlashcards = [
-  { q: 'What is the minimum tread depth for front tires?', a: '4/32 of an inch.' },
+  {
+    q: 'What is the minimum tread depth for front tires?',
+    a: '4/32 of an inch.',
+  },
   { q: 'What do you check for on rims?', a: 'Bent, damaged, or rust trails.' },
-  { q: 'When must you use 3 points of contact?', a: 'When entering and exiting the vehicle.' },
-  { q: 'What triggers the spring brake pop-out?', a: 'Low air pressure (between 20–45 PSI).' },
+  {
+    q: 'When must you use 3 points of contact?',
+    a: 'When entering and exiting the vehicle.',
+  },
+  {
+    q: 'What triggers the spring brake pop-out?',
+    a: 'Low air pressure (between 20–45 PSI).',
+  },
 ]
 
 // util: robust user email
@@ -72,12 +81,13 @@ export default function StudentFlashcards() {
       return
     }
     setEmail(userEmail)
-
     ;(async () => {
       // default to cached role; verify from Firestore if available
       let userRole = localStorage.getItem('userRole') || 'student'
       try {
-        const snap = await getDocs(query(collection(db, 'users'), where('email', '==', userEmail)))
+        const snap = await getDocs(
+          query(collection(db, 'users'), where('email', '==', userEmail))
+        )
         if (!snap.empty) userRole = snap.docs[0].data().role || userRole
       } catch {
         // ignore; fall back to local
@@ -89,14 +99,25 @@ export default function StudentFlashcards() {
       }
 
       const shouldShuffle = localStorage.getItem('fcShuffle') === '1'
-      const known = JSON.parse(localStorage.getItem('fcKnown_' + userEmail) || '[]')
-      const savedIdx = parseInt(localStorage.getItem('fcCurrent_' + userEmail) || '0', 10)
+      const known = JSON.parse(
+        localStorage.getItem('fcKnown_' + userEmail) || '[]'
+      )
+      const savedIdx = parseInt(
+        localStorage.getItem('fcCurrent_' + userEmail) || '0',
+        10
+      )
 
-      const deck = shouldShuffle ? shuffleArray(defaultFlashcards) : [...defaultFlashcards]
+      const deck = shouldShuffle
+        ? shuffleArray(defaultFlashcards)
+        : [...defaultFlashcards]
       setShuffle(shouldShuffle)
       setKnownCards(Array.isArray(known) ? known : [])
       setFlashcards(deck)
-      setCurrent(!Number.isNaN(savedIdx) && savedIdx >= 0 && savedIdx < deck.length ? savedIdx : 0)
+      setCurrent(
+        !Number.isNaN(savedIdx) && savedIdx >= 0 && savedIdx < deck.length
+          ? savedIdx
+          : 0
+      )
       setStartedAt(Date.now())
       setCompleted(false)
       setLoading(false)
@@ -131,9 +152,16 @@ export default function StudentFlashcards() {
     const el = flashcardRef.current
     if (!el) return
     const onKey = e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleFlip() }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); handleNext() }
-      else if (e.key === 'ArrowLeft') { e.preventDefault(); handlePrev() }
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        handleFlip()
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        handleNext()
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        handlePrev()
+      }
     }
     el.addEventListener('keydown', onKey)
     return () => el.removeEventListener('keydown', onKey)
@@ -144,7 +172,9 @@ export default function StudentFlashcards() {
     const el = flashcardRef.current
     if (!el) return
     let startX = null
-    const onTouchStart = e => { startX = e.changedTouches[0].clientX }
+    const onTouchStart = e => {
+      startX = e.changedTouches[0].clientX
+    }
     const onTouchEnd = e => {
       if (startX == null) return
       const dx = e.changedTouches[0].clientX - startX
@@ -174,7 +204,9 @@ export default function StudentFlashcards() {
         await logStudySession(email, minutes, 'Flashcards')
         showToast('✅ Flashcard session logged!')
       } catch {
-        showToast('Could not log your session, but your study progress is saved locally.')
+        showToast(
+          'Could not log your session, but your study progress is saved locally.'
+        )
       }
     })()
   }, [completed, email, startedAt, showToast])
@@ -184,16 +216,19 @@ export default function StudentFlashcards() {
     if (!knownCards.includes(current)) {
       const updated = [...knownCards, current]
       setKnownCards(updated)
-      if (email) localStorage.setItem('fcKnown_' + email, JSON.stringify(updated))
+      if (email)
+        localStorage.setItem('fcKnown_' + email, JSON.stringify(updated))
       showToast('Marked as known!')
     }
   }, [current, email, knownCards, showToast])
 
-  const handleShuffleToggle = useCallback((e) => {
+  const handleShuffleToggle = useCallback(e => {
     const checked = !!e.target.checked
     setShuffle(checked)
     localStorage.setItem('fcShuffle', checked ? '1' : '0')
-    const deck = checked ? shuffleArray(defaultFlashcards) : [...defaultFlashcards]
+    const deck = checked
+      ? shuffleArray(defaultFlashcards)
+      : [...defaultFlashcards]
     setFlashcards(deck)
     setCurrent(0)
     setFlipped(false)
@@ -216,8 +251,12 @@ export default function StudentFlashcards() {
     return (
       <div className="flashcards-complete container fade-in">
         <h2>🎉 Flashcard Session Complete!</h2>
-        <p>You reviewed <b>{flashcards.length}</b> cards.</p>
-        <p><b>{minutes}</b> study minute{minutes === 1 ? '' : 's'} logged!</p>
+        <p>
+          You reviewed <b>{flashcards.length}</b> cards.
+        </p>
+        <p>
+          <b>{minutes}</b> study minute{minutes === 1 ? '' : 's'} logged!
+        </p>
         <div className="flashcard-complete-actions">
           <button
             className="btn primary"
@@ -234,7 +273,9 @@ export default function StudentFlashcards() {
           <button
             className="btn outline"
             onClick={() => {
-              const missed = defaultFlashcards.filter((_, i) => !knownCards.includes(i))
+              const missed = defaultFlashcards.filter(
+                (_, i) => !knownCards.includes(i)
+              )
               setFlashcards(missed.length ? missed : [...defaultFlashcards])
               setKnownCards([])
               setCurrent(0)
@@ -244,7 +285,10 @@ export default function StudentFlashcards() {
           >
             Review Missed
           </button>
-          <button className="btn outline" onClick={() => navigate('/student/dashboard')}>
+          <button
+            className="btn outline"
+            onClick={() => navigate('/student/dashboard')}
+          >
             ⬅ Back to Dashboard
           </button>
         </div>
@@ -257,16 +301,32 @@ export default function StudentFlashcards() {
   return (
     <div className="flashcards-page container fade-in">
       <h2 className="dash-head">
-        🃏 Student Flashcards <span className="role-badge student">Student</span>
+        🃏 Student Flashcards{' '}
+        <span className="role-badge student">Student</span>
       </h2>
 
       <div className="flashcard-progress">
-        <progress value={current + 1} max={flashcards.length} aria-valuemin={1} aria-valuemax={flashcards.length} aria-valuenow={current + 1} />
-        <div aria-live="polite">Card {current + 1} of {flashcards.length}</div>
+        <progress
+          value={current + 1}
+          max={flashcards.length}
+          aria-valuemin={1}
+          aria-valuemax={flashcards.length}
+          aria-valuenow={current + 1}
+        />
+        <div aria-live="polite">
+          Card {current + 1} of {flashcards.length}
+        </div>
         <label className="shuffle-toggle">
-          <input type="checkbox" checked={shuffle} onChange={handleShuffleToggle} /> Shuffle
+          <input
+            type="checkbox"
+            checked={shuffle}
+            onChange={handleShuffleToggle}
+          />{' '}
+          Shuffle
         </label>
-        <span>Known: {knownCards.length}/{flashcards.length} ({knownPct}%)</span>
+        <span>
+          Known: {knownCards.length}/{flashcards.length} ({knownPct}%)
+        </span>
       </div>
 
       <div
@@ -278,8 +338,8 @@ export default function StudentFlashcards() {
         onClick={handleFlip}
         onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleFlip();
+            e.preventDefault()
+            handleFlip()
           }
         }}
       >
@@ -290,15 +350,49 @@ export default function StudentFlashcards() {
       </div>
 
       <div className="flashcard-controls">
-        <button className="btn outline" onClick={handlePrev} disabled={current === 0} aria-label="Previous card">← Prev</button>
-        <button className="btn" onClick={handleFlip} aria-label="Flip card">🔄 Flip</button>
-        <button className="btn outline" onClick={handleNext} disabled={current === flashcards.length - 1} aria-label="Next card">Next →</button>
+        <button
+          className="btn outline"
+          onClick={handlePrev}
+          disabled={current === 0}
+          aria-label="Previous card"
+        >
+          ← Prev
+        </button>
+        <button className="btn" onClick={handleFlip} aria-label="Flip card">
+          🔄 Flip
+        </button>
+        <button
+          className="btn outline"
+          onClick={handleNext}
+          disabled={current === flashcards.length - 1}
+          aria-label="Next card"
+        >
+          Next →
+        </button>
       </div>
 
       <div className="flashcard-actions">
-        <button className="btn small" onClick={handleKnown} aria-label="Mark as known">✅ I know this</button>
-        <button className="btn wide outline" onClick={handleEndSession} aria-label="End session">✅ End Session</button>
-        <button className="btn wide outline" onClick={() => navigate('/student/dashboard')} aria-label="Back to Dashboard">⬅ Back to Dashboard</button>
+        <button
+          className="btn small"
+          onClick={handleKnown}
+          aria-label="Mark as known"
+        >
+          ✅ I know this
+        </button>
+        <button
+          className="btn wide outline"
+          onClick={handleEndSession}
+          aria-label="End session"
+        >
+          ✅ End Session
+        </button>
+        <button
+          className="btn wide outline"
+          onClick={() => navigate('/student/dashboard')}
+          aria-label="Back to Dashboard"
+        >
+          ⬅ Back to Dashboard
+        </button>
       </div>
     </div>
   )

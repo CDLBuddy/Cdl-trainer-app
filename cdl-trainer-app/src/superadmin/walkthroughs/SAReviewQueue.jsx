@@ -33,7 +33,8 @@ function toDate(x) {
   try {
     if (!x) return null
     if (typeof x === 'number') return new Date(x)
-    if (typeof x === 'object' && typeof x.toDate === 'function') return x.toDate()
+    if (typeof x === 'object' && typeof x.toDate === 'function')
+      return x.toDate()
     return new Date(x)
   } catch {
     return null
@@ -89,7 +90,7 @@ export default function SAReviewQueue() {
             Status:{' '}
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={e => setStatus(e.target.value)}
               aria-label="Filter by status"
             >
               <option value="in-review">In Review</option>
@@ -105,7 +106,7 @@ export default function SAReviewQueue() {
             School:{' '}
             <input
               value={schoolInput}
-              onChange={(e) => setSchoolInput(e.target.value)}
+              onChange={e => setSchoolInput(e.target.value)}
               placeholder="schoolId (optional)"
               inputMode="text"
               spellCheck={false}
@@ -120,7 +121,9 @@ export default function SAReviewQueue() {
           Loading submissions…
         </div>
       ) : !Array.isArray(rows) || rows.length === 0 ? (
-        <div className={styles.placeholder}>No submissions match your filters.</div>
+        <div className={styles.placeholder}>
+          No submissions match your filters.
+        </div>
       ) : (
         <div className={styles.tableWrap || styles.wrap}>
           <table className={styles.table} role="table">
@@ -136,11 +139,9 @@ export default function SAReviewQueue() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((s) => {
+              {rows.map(s => {
                 const dt =
-                  toDate(s.updatedAt) ||
-                  toDate(s.submittedAt) ||
-                  new Date()
+                  toDate(s.updatedAt) || toDate(s.submittedAt) || new Date()
                 const color = statusColorMap[s.status] || '#111827'
                 const border = statusColorMap[s.status] || '#d1d5db'
                 return (

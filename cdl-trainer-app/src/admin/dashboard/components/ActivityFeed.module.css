@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: .75rem;
+  margin-bottom: 0.75rem;
 }
 
 .title {
@@ -36,7 +36,7 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: .75rem;
+  gap: 0.75rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -47,8 +47,8 @@
   justify-content: space-between;
   align-items: baseline;
   font-size: 0.9rem;
-  padding-bottom: .5rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .item:last-child {
@@ -57,7 +57,7 @@
 
 .meta {
   display: flex;
-  gap: .4rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
 }
 

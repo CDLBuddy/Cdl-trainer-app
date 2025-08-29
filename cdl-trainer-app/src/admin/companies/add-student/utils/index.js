@@ -16,6 +16,6 @@ export * from './transforms.js'
 
 // ----------------------------------------------------------------------
 // Usage:
-//   import { validate, canSave, toPayload, trapFocus } 
+//   import { validate, canSave, toPayload, trapFocus }
 //     from '@admin/companies/add-student/utils'
 // ----------------------------------------------------------------------

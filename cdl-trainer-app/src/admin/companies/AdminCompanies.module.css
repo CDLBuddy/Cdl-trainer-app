@@ -60,16 +60,31 @@
   padding: 10px 14px;
   font-weight: 600;
   line-height: 1;
-  background: linear-gradient(180deg, color-mix(in oklab, var(--btn-bg) 88%, #fff 12%), var(--btn-bg));
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--btn-bg) 88%, #fff 12%),
+    var(--btn-bg)
+  );
   color: var(--btn-fg);
-  box-shadow: 0 6px 18px rgba(0,0,0,.22), inset 0 0 0 1px color-mix(in oklab, #000 70%, var(--btn-bg) 30%);
-  transition: transform .08s ease-out, box-shadow .18s ease, filter .18s ease;
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.22),
+    inset 0 0 0 1px color-mix(in oklab, #000 70%, var(--btn-bg) 30%);
+  transition:
+    transform 0.08s ease-out,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
 }
-.addBtn:hover { transform: translateY(-1px); filter: brightness(1.03); }
-.addBtn:active { transform: translateY(0); filter: brightness(.98); }
-.addBtn[aria-disabled="true"],
+.addBtn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+.addBtn:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
+}
+.addBtn[aria-disabled='true'],
 .addBtn:disabled {
-  opacity: .55;
+  opacity: 0.55;
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -92,7 +107,7 @@
   border-radius: 14px;
   padding: 10px;
   margin: 8px 0 14px 0;
-  box-shadow: 0 8px 28px rgba(0,0,0,.22);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
 }
 
 /* Table region host (CompaniesTable mounts inside) */
@@ -101,7 +116,7 @@
   overflow: clip;
   background: var(--card);
   border: 1px solid var(--border);
-  box-shadow: 0 14px 42px rgba(0,0,0,.28);
+  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.28);
 }
 
 /* Give any inner table a "mini-table" vibe without touching its component CSS.
@@ -137,7 +152,7 @@
 }
 
 /* Selected row accent (when your row component adds [aria-selected="true"]) */
-.tableRegion [aria-selected="true"] td {
+.tableRegion [aria-selected='true'] td {
   background: color-mix(in oklab, var(--brand) 14%, var(--card) 86%);
 }
 
@@ -152,7 +167,7 @@
 
 /* Optional: a slim "footer note" under the table */
 .footerNote {
-  font-size: .96rem;
+  font-size: 0.96rem;
   color: var(--muted);
   margin-top: 8px;
 }
@@ -176,10 +191,19 @@
   background-size: 200% 100%;
   animation: shimmer 1.2s ease-in-out infinite;
 }
-@keyframes shimmer { to { background-position: -200% 0; } }
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
 
 /* Responsive tweaks */
 @media (max-width: 880px) {
-  .title { font-size: 18px; }
-  .tableRegion thead th, .tableRegion tbody td { padding: 10px 12px; }
+  .title {
+    font-size: 18px;
+  }
+  .tableRegion thead th,
+  .tableRegion tbody td {
+    padding: 10px 12px;
+  }
 }

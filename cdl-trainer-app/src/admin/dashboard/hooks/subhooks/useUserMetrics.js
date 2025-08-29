@@ -37,7 +37,8 @@ export function useUserMetrics({ users, options = {} }) {
   const expiryCheck = useMemo(() => {
     if (typeof expirySoonOverride === 'function') return expirySoonOverride
     // Default: consider either util's soon OR within N days from now
-    return (dateStr) => expirySoonDefault(dateStr) || withinDays(dateStr, expiringDays)
+    return dateStr =>
+      expirySoonDefault(dateStr) || withinDays(dateStr, expiringDays)
   }, [expiringDays, expirySoonOverride])
 
   const {
@@ -91,13 +92,20 @@ export function useUserMetrics({ users, options = {} }) {
   }, [list, lowProfileThreshold, expiryCheck])
 
   // Percent helpers (rounded, safe)
-  const pct = (n) => {
+  const pct = n => {
     const d = total || 1
     return Math.round((Math.max(0, n) / d) * 100)
   }
 
   // Back-compat core keys
-  const core = { studentCount, instructorCount, adminCount, permitSoon, medSoon, incomplete }
+  const core = {
+    studentCount,
+    instructorCount,
+    adminCount,
+    permitSoon,
+    medSoon,
+    incomplete,
+  }
 
   // Non-breaking extras
   const extras = {

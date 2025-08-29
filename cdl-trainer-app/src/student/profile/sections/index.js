@@ -8,18 +8,18 @@
 // ======================================================================
 
 // Eager (standard) exports
-export { default as BasicInfoSection }     from './BasicInfoSection.jsx'
-export { default as CdlSection }           from './CdlSection.jsx'
+export { default as BasicInfoSection } from './BasicInfoSection.jsx'
+export { default as CdlSection } from './CdlSection.jsx'
 export { default as CoursePaymentSection } from './CoursePaymentSection.jsx'
-export { default as EmergencySection }     from './EmergencySection.jsx'
-export { default as LicenseSection }       from './LicenseSection.jsx'
-export { default as MedicalSection }       from './MedicalSection.jsx'
-export { default as PermitSection }        from './PermitSection.jsx'
-export { default as VehicleSection }       from './VehicleSection.jsx'
-export { default as WaiverSection }        from './WaiverSection.jsx'
+export { default as EmergencySection } from './EmergencySection.jsx'
+export { default as LicenseSection } from './LicenseSection.jsx'
+export { default as MedicalSection } from './MedicalSection.jsx'
+export { default as PermitSection } from './PermitSection.jsx'
+export { default as VehicleSection } from './VehicleSection.jsx'
+export { default as WaiverSection } from './WaiverSection.jsx'
 
 // Shared UI used by every section
-export { default as SectionHeader }        from './SectionHeader.jsx'
+export { default as SectionHeader } from './SectionHeader.jsx'
 
 // ----------------------------------------------------------------------
 // Optional lazy helpers (tree-shakeable). Useful if you ever decide to
@@ -28,15 +28,15 @@ export { default as SectionHeader }        from './SectionHeader.jsx'
 //   const PermitSection = React.lazy(sections.lazy.PermitSection)
 // ----------------------------------------------------------------------
 export const lazy = {
-  BasicInfoSection:     () => import('./BasicInfoSection.jsx'),
-  CdlSection:           () => import('./CdlSection.jsx'),
+  BasicInfoSection: () => import('./BasicInfoSection.jsx'),
+  CdlSection: () => import('./CdlSection.jsx'),
   CoursePaymentSection: () => import('./CoursePaymentSection.jsx'),
-  EmergencySection:     () => import('./EmergencySection.jsx'),
-  LicenseSection:       () => import('./LicenseSection.jsx'),
-  MedicalSection:       () => import('./MedicalSection.jsx'),
-  PermitSection:        () => import('./PermitSection.jsx'),
-  VehicleSection:       () => import('./VehicleSection.jsx'),
-  WaiverSection:        () => import('./WaiverSection.jsx'),
+  EmergencySection: () => import('./EmergencySection.jsx'),
+  LicenseSection: () => import('./LicenseSection.jsx'),
+  MedicalSection: () => import('./MedicalSection.jsx'),
+  PermitSection: () => import('./PermitSection.jsx'),
+  VehicleSection: () => import('./VehicleSection.jsx'),
+  WaiverSection: () => import('./WaiverSection.jsx'),
 }
 
 // ----------------------------------------------------------------------

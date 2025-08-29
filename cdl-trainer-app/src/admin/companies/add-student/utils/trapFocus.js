@@ -28,7 +28,7 @@ export function getTabbables(container) {
     '[role="button"]',
   ].join(',')
 
-  const isVisible = (el) => {
+  const isVisible = el => {
     if (!el) return false
     // Disabled via attribute or ancestor fieldset
     if (el.hasAttribute('disabled')) return false
@@ -54,7 +54,7 @@ export function getTabbables(container) {
   /** @type {HTMLElement[]} */
   const nodes = Array.from(container.querySelectorAll(CANDIDATE_SELECTOR))
 
-  return nodes.filter((el) => {
+  return nodes.filter(el => {
     if (!(el instanceof HTMLElement)) return false
 
     // Exclude negative tabindex
@@ -62,7 +62,10 @@ export function getTabbables(container) {
     if (tiRaw != null && Number.parseInt(tiRaw, 10) < 0) return false
 
     // Inputs that are truly disabled or readOnly radios (let’s be conservative)
-    if ((el.tagName === 'INPUT' || el.tagName === 'BUTTON') && el.hasAttribute('disabled')) {
+    if (
+      (el.tagName === 'INPUT' || el.tagName === 'BUTTON') &&
+      el.hasAttribute('disabled')
+    ) {
       return false
     }
 
@@ -80,7 +83,12 @@ export function focusFirstIn(container) {
   const tabbables = getTabbables(container)
   const target = tabbables[0] || container
   if (target && target.focus) {
-    try { target.focus(); return true } catch { /* noop */ }
+    try {
+      target.focus()
+      return true
+    } catch {
+      /* noop */
+    }
   }
   return false
 }
@@ -116,7 +124,7 @@ export default function trapFocus(e, container, onEscape) {
   }
 
   const first = tabbables[0]
-  const last  = tabbables[tabbables.length - 1]
+  const last = tabbables[tabbables.length - 1]
   const active = /** @type {HTMLElement|null} */ (document.activeElement)
 
   // If focus starts outside the container, pull it in.

@@ -47,7 +47,7 @@ export function getNextChecklistAlert(progress = {}) {
     walkthroughComplete: 'Finish your walkthrough practice',
     practiceTestPassed: 'Pass a practice test',
   }
-  const next = order.find((k) => progress?.[k] !== true)
+  const next = order.find(k => progress?.[k] !== true)
   if (!next) return null
   return {
     key: next,
@@ -152,7 +152,11 @@ export async function getAITipOfTheDay() {
 // ===================================================
 // TYPEWRITER HEADLINE (legacy optional)
 // ===================================================
-const _headlines = ['CDL Buddy', 'Your CDL Prep Coach', 'Study Smarter, Not Harder']
+const _headlines = [
+  'CDL Buddy',
+  'Your CDL Prep Coach',
+  'Study Smarter, Not Harder',
+]
 let _hw = 0
 let _hc = 0
 
@@ -182,7 +186,11 @@ export function startTypewriter(custom = null) {
  */
 export async function fetchLatestUpdate() {
   try {
-    const q = query(collection(db, 'updates'), orderBy('date', 'desc'), limit(1))
+    const q = query(
+      collection(db, 'updates'),
+      orderBy('date', 'desc'),
+      limit(1)
+    )
     const snap = await getDocs(q)
     if (!snap.empty) {
       const docSnap = snap.docs[0]
@@ -300,7 +308,8 @@ export function getCurrentSchoolId(userObj = null) {
 }
 
 export function showRoleToast(message, role = null, duration = 3200) {
-  const type = role === 'admin' ? 'error' : role === 'instructor' ? 'success' : 'info'
+  const type =
+    role === 'admin' ? 'error' : role === 'instructor' ? 'success' : 'info'
   // Compat supports both (msg,type,duration) and (msg,duration,type)
   showToast(message, type, duration)
 }
@@ -378,19 +387,39 @@ export async function getUserProgress(userId) {
 
 // --- CHECKLIST MILESTONES ---------------------------------------------
 export async function markStudentProfileComplete(studentEmail) {
-  await updateELDTProgress(studentEmail, { profileComplete: true }, { role: 'student' })
+  await updateELDTProgress(
+    studentEmail,
+    { profileComplete: true },
+    { role: 'student' }
+  )
 }
 export async function markStudentPermitUploaded(studentEmail) {
-  await updateELDTProgress(studentEmail, { permitUploaded: true }, { role: 'student' })
+  await updateELDTProgress(
+    studentEmail,
+    { permitUploaded: true },
+    { role: 'student' }
+  )
 }
 export async function markStudentVehicleUploaded(studentEmail) {
-  await updateELDTProgress(studentEmail, { vehicleUploaded: true }, { role: 'student' })
+  await updateELDTProgress(
+    studentEmail,
+    { vehicleUploaded: true },
+    { role: 'student' }
+  )
 }
 export async function markStudentWalkthroughComplete(studentEmail) {
-  await updateELDTProgress(studentEmail, { walkthroughComplete: true }, { role: 'student' })
+  await updateELDTProgress(
+    studentEmail,
+    { walkthroughComplete: true },
+    { role: 'student' }
+  )
 }
 export async function markStudentTestPassed(studentEmail) {
-  await updateELDTProgress(studentEmail, { practiceTestPassed: true }, { role: 'student' })
+  await updateELDTProgress(
+    studentEmail,
+    { practiceTestPassed: true },
+    { role: 'student' }
+  )
 }
 export async function verifyStudentProfile(studentEmail, instructorEmail) {
   await updateELDTProgress(
@@ -454,7 +483,11 @@ export async function adminResetStudentProgress(studentEmail, _adminEmail) {
 export async function incrementStudentStudyMinutes(studentEmail, minutes) {
   const m = Number(minutes) || 0
   if (!m) return
-  await updateELDTProgress(studentEmail, { studyMinutes: increment(m) }, { role: 'student' })
+  await updateELDTProgress(
+    studentEmail,
+    { studyMinutes: increment(m) },
+    { role: 'student' }
+  )
 }
 export async function logStudySession(studentEmail, minutes, context = '') {
   const progressRef = doc(db, 'eldtProgress', studentEmail)

@@ -37,9 +37,9 @@ export const REQUIRED_FIELDS = [
   'trainee.fullName',
   'trainee.dob',
   'trainee.state',
-  'trainee.licenseNumber',    // CLP or CDL #
-  'programType',              // theory|btw|both
-  'completedAt',              // YYYY-MM-DD
+  'trainee.licenseNumber', // CLP or CDL #
+  'programType', // theory|btw|both
+  'completedAt', // YYYY-MM-DD
   'provider.tprId',
 ]
 
@@ -48,18 +48,18 @@ export const REQUIRED_FIELDS = [
  * (Adjust these to match your real TPR service. They’re used by mappers.)
  */
 export const CANONICAL_TO_TPR = {
-  'trainee.fullName':    'trainee.fullName',
-  'trainee.dob':         'trainee.dob',
-  'trainee.state':       'trainee.state',
+  'trainee.fullName': 'trainee.fullName',
+  'trainee.dob': 'trainee.dob',
+  'trainee.state': 'trainee.state',
   'trainee.licenseNumber': 'trainee.licenseNumber',
-  'programType':         'training.programType',
-  'completedAt':         'training.completedAt',
-  'provider.tprId':      'provider.tprId',
+  programType: 'training.programType',
+  completedAt: 'training.completedAt',
+  'provider.tprId': 'provider.tprId',
   // Optional but common:
-  'training.classType':  'training.classType',
-  'training.endorsement':'training.endorsement',
+  'training.classType': 'training.classType',
+  'training.endorsement': 'training.endorsement',
   'training.theory.completed': 'training.theory.completed',
-  'training.btw.completed':    'training.btw.completed',
+  'training.btw.completed': 'training.btw.completed',
 }
 
 /* --------------------------------------------------------------------- */
@@ -86,23 +86,27 @@ export function pathSet(obj, path, value) {
     if (i === parts.length - 1) {
       cur[k] = value
     } else {
-      cur[k] = (cur[k] && typeof cur[k] === 'object') ? cur[k] : {}
+      cur[k] = cur[k] && typeof cur[k] === 'object' ? cur[k] : {}
       cur = cur[k]
     }
   }
   return obj
 }
 
-export const pathHas = (obj, path) => pathGet(obj, path, undefined) !== undefined
+export const pathHas = (obj, path) =>
+  pathGet(obj, path, undefined) !== undefined
 
 /* --------------------------------------------------------------------- */
 /* Normalizers                                                            */
 /* --------------------------------------------------------------------- */
 
 export function normalizeTrainingType(v) {
-  const s = String(v || '').trim().toLowerCase()
+  const s = String(v || '')
+    .trim()
+    .toLowerCase()
   if (s === TRAINING_TYPES.THEORY || s === 't') return TRAINING_TYPES.THEORY
-  if (s === TRAINING_TYPES.BTW || s === 'range' || s === 'road') return TRAINING_TYPES.BTW
+  if (s === TRAINING_TYPES.BTW || s === 'range' || s === 'road')
+    return TRAINING_TYPES.BTW
   if (s === TRAINING_TYPES.BOTH || s === 'all') return TRAINING_TYPES.BOTH
   // Heuristics: accept “theory|btw|both” in any order; default BOTH if ambiguous
   if (/(theory).*(btw)|(btw).*(theory)/.test(s)) return TRAINING_TYPES.BOTH
@@ -110,14 +114,19 @@ export function normalizeTrainingType(v) {
 }
 
 export function normalizeClassType(v) {
-  const s = String(v || '').trim().toUpperCase().replace(/^CLASS\s*/i, '')
-  return (s === 'A' || s === 'B' || s === 'C') ? s : 'A'
+  const s = String(v || '')
+    .trim()
+    .toUpperCase()
+    .replace(/^CLASS\s*/i, '')
+  return s === 'A' || s === 'B' || s === 'C' ? s : 'A'
 }
 
 export function normalizeEndorsement(v) {
-  const s = String(v || '').trim().toUpperCase()
+  const s = String(v || '')
+    .trim()
+    .toUpperCase()
   if (!s) return 'NONE'
-  const map = { N:'N', P:'P', S:'S', T:'T', H:'H', X:'X', NONE:'NONE' }
+  const map = { N: 'N', P: 'P', S: 'S', T: 'T', H: 'H', X: 'X', NONE: 'NONE' }
   // Accept words too
   if (/haz(mat)?/i.test(s)) return 'H'
   if (/pass/i.test(s)) return 'P'
@@ -161,16 +170,24 @@ export function validateRequired(obj, required = REQUIRED_FIELDS) {
 export function validateWithMessages(obj, required = REQUIRED_FIELDS) {
   const { ok, missing } = validateRequired(obj, required)
   if (ok) return { ok, messages: [] }
-  const messages = missing.map((p) => {
+  const messages = missing.map(p => {
     switch (p) {
-      case 'trainee.fullName': return 'Trainee full name is required'
-      case 'trainee.dob': return 'Date of birth is required'
-      case 'trainee.state': return 'Issuing state (CLP/CDL) is required'
-      case 'trainee.licenseNumber': return 'CLP/CDL number is required'
-      case 'programType': return 'Program type (theory/btw/both) is required'
-      case 'completedAt': return 'Completion date is required'
-      case 'provider.tprId': return 'Provider TPR ID is required'
-      default: return `${p} is required`
+      case 'trainee.fullName':
+        return 'Trainee full name is required'
+      case 'trainee.dob':
+        return 'Date of birth is required'
+      case 'trainee.state':
+        return 'Issuing state (CLP/CDL) is required'
+      case 'trainee.licenseNumber':
+        return 'CLP/CDL number is required'
+      case 'programType':
+        return 'Program type (theory/btw/both) is required'
+      case 'completedAt':
+        return 'Completion date is required'
+      case 'provider.tprId':
+        return 'Provider TPR ID is required'
+      default:
+        return `${p} is required`
     }
   })
   return { ok: false, messages }

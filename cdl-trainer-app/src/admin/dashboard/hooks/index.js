@@ -9,14 +9,14 @@
 
 // ---- Named exports (alphabetized) ------------------------------------
 // Hooks barrel — static exports only (no lazy)
-export { default as useAdminDashboard } from './useAdminDashboard.js';
-export { default as useCompaniesSnapshot } from './useCompaniesSnapshot.js';
-export { default as useDashboardAlerts } from './useDashboardAlerts.js';
-export { default as useDashboardKpis } from './useDashboardKpis.js';
-export { default as useRecentActivity } from './useRecentActivity.js';
+export { default as useAdminDashboard } from './useAdminDashboard.js'
+export { default as useCompaniesSnapshot } from './useCompaniesSnapshot.js'
+export { default as useDashboardAlerts } from './useDashboardAlerts.js'
+export { default as useDashboardKpis } from './useDashboardKpis.js'
+export { default as useRecentActivity } from './useRecentActivity.js'
 
 // Subhooks (auth/metrics/users)
-export * from './subhooks';
+export * from './subhooks'
 
 // Optional: local hook utilities (namespaced to avoid collisions)
 // Usage: hookUtils.clampPct(...)

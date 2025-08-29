@@ -12,7 +12,9 @@ import { auth } from './firebase.js' // assumes you've initialized Firebase Auth
 /** @typedef {'student'|'instructor'|'admin'|'superadmin'} AppRole */
 
 export function normalizeRole(role) {
-  const r = String(role ?? '').trim().toLowerCase()
+  const r = String(role ?? '')
+    .trim()
+    .toLowerCase()
   return /** @type {AppRole} */ (
     r === 'student' || r === 'instructor' || r === 'admin' || r === 'superadmin'
       ? r
@@ -101,14 +103,14 @@ export function isLoggedInSync() {
 export function useAuthStatus() {
   const [loading, setLoading] = useState(true)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [role, setRole] = useState(/** @type {AppRole|null} */(null))
+  const [role, setRole] = useState(/** @type {AppRole|null} */ (null))
   const [user, setUser] = useState(null) // includes uid/displayName/email/photoURL
 
   useEffect(() => {
     let mounted = true
 
     // 1) Auth state changes (login/logout)
-    const unsubAuth = auth.onAuthStateChanged(async (u) => {
+    const unsubAuth = auth.onAuthStateChanged(async u => {
       if (!mounted) return
       setUser(u || null)
       setIsLoggedIn(!!u)
@@ -139,14 +141,26 @@ export function useAuthStatus() {
 
     // 3) Refresh tokens when tab regains focus (helps keep sessions alive)
     const onVisible = () => {
-      try { auth.currentUser?.getIdToken(true) } catch { /* no-op */ }
+      try {
+        auth.currentUser?.getIdToken(true)
+      } catch {
+        /* no-op */
+      }
     }
     document.addEventListener('visibilitychange', onVisible, { passive: true })
 
     return () => {
       mounted = false
-      try { unsubAuth() } catch { /* no-op */ }
-      try { unsubToken() } catch { /* no-op */ }
+      try {
+        unsubAuth()
+      } catch {
+        /* no-op */
+      }
+      try {
+        unsubToken()
+      } catch {
+        /* no-op */
+      }
       document.removeEventListener('visibilitychange', onVisible)
     }
   }, [])
@@ -167,9 +181,13 @@ export function useAuthStatus() {
  * Useful in non-React contexts (e.g., one-off scripts).
  */
 export function waitForAuthReady() {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const unsub = auth.onAuthStateChanged(() => {
-      try { unsub() } catch { /* no-op */ }
+      try {
+        unsub()
+      } catch {
+        /* no-op */
+      }
       resolve(auth.currentUser || null)
     })
   })
@@ -179,7 +197,7 @@ export function waitForAuthReady() {
  * Subscribe to auth changes without React. Returns an unsubscribe function.
  */
 export function onAuthChange(callback) {
-  return auth.onAuthStateChanged((u) => callback(u || null))
+  return auth.onAuthStateChanged(u => callback(u || null))
 }
 
 /**

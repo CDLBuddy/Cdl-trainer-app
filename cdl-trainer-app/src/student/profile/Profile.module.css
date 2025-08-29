@@ -12,11 +12,15 @@
   height: 32px;
   margin: 0 auto 0.5rem;
   border-radius: 50%;
-  border: 3px solid rgba(0,0,0,.12);
+  border: 3px solid rgba(0, 0, 0, 0.12);
   border-top-color: currentColor;
-  animation: spn .8s linear infinite;
+  animation: spn 0.8s linear infinite;
 }
-@keyframes spn { to { transform: rotate(360deg); } }
+@keyframes spn {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .inactive {
   max-width: 560px;
@@ -31,7 +35,7 @@
 
 /* Progress bars */
 .progressBar {
-  --fill: var(--brand-primary, var(--brand-light, #4E8EF7));
+  --fill: var(--brand-primary, var(--brand-light, #4e8ef7));
   --bar-h: 10px;
   position: relative;
   height: var(--bar-h);
@@ -39,11 +43,11 @@
   background: #eef1f8; /* fallback */
   background: color-mix(in oklab, var(--brand-dark, #0b172b), #fff 6%);
   border: 1px solid color-mix(in oklab, var(--accent, #0b172b), #000 35%);
-  margin: 0 0 .9rem 0;
+  margin: 0 0 0.9rem 0;
   overflow: hidden;
 }
 .progressBarSecondary {
-  --fill: var(--brand-secondary, #6AA6FF);
+  --fill: var(--brand-secondary, #6aa6ff);
 }
 
 .progressFill {
@@ -55,17 +59,17 @@
     color-mix(in oklab, var(--fill), #000 18%)
   );
   box-shadow: 0 4px 12px color-mix(in oklab, var(--fill), #000 40%);
-  transition: width .24s ease;
+  transition: width 0.24s ease;
 }
 
 .progressLabel {
   position: absolute;
   right: 10px;
   top: -24px;
-  font-size: .9rem;
-  letter-spacing: .2px;
+  font-size: 0.9rem;
+  letter-spacing: 0.2px;
   color: color-mix(in oklab, var(--text-light, #3a475a), transparent 25%);
-  text-shadow: 0 1px 0 rgba(255,255,255,.25);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 /* Form layout */
@@ -83,27 +87,38 @@
 }
 .saveState {
   margin-left: auto;
-  font-size: .95rem;
-  opacity: .85;
+  font-size: 0.95rem;
+  opacity: 0.85;
 }
 
 /* Note beneath */
 .afterNote {
   margin-top: 1.1rem;
-  color: var(--brand-primary, var(--brand-light, #4E8EF7));
+  color: var(--brand-primary, var(--brand-light, #4e8ef7));
   font-weight: 600;
 }
 
 /* ------------------------------ Media queries ----------------------------- */
 
 @media (max-width: 560px) {
-  .progressLabel { right: 0; left: 0; text-align: center; top: -22px; }
-  .footerRow { flex-wrap: wrap; }
+  .progressLabel {
+    right: 0;
+    left: 0;
+    text-align: center;
+    top: -22px;
+  }
+  .footerRow {
+    flex-wrap: wrap;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .progressFill { transition: none !important; }
-  .loading .spinner { animation: none !important; }
+  .progressFill {
+    transition: none !important;
+  }
+  .loading .spinner {
+    animation: none !important;
+  }
 }
 
 /* Dark scheme tweaks */
@@ -120,12 +135,24 @@
 
 /* High-contrast / forced-colors */
 @media (forced-colors: active) {
-  .progressBar { border: 1px solid CanvasText; background: Canvas; }
-  .progressFill { background: Highlight; box-shadow: none; }
-  .progressLabel { color: CanvasText; }
+  .progressBar {
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+  .progressFill {
+    background: Highlight;
+    box-shadow: none;
+  }
+  .progressLabel {
+    color: CanvasText;
+  }
 }
 
 /* Print: hide dynamic chrome */
 @media print {
-  .progressGroup, .footerRow, .afterNote { break-inside: avoid; }
+  .progressGroup,
+  .footerRow,
+  .afterNote {
+    break-inside: avoid;
+  }
 }

@@ -10,6 +10,7 @@
 // ======================================================================
 
 import React from 'react'
+
 import styles from './ExportMenu.module.css'
 
 // -------- tiny local fallbacks (only used if services/exporters fails) -----
@@ -42,9 +43,9 @@ export default function ExportMenu({
   users = [],
   company = null,
   disabled = false,
-  onExport,            // (type, { rows, company, filename }) => void
+  onExport, // (type, { rows, company, filename }) => void
   className = '',
-  fileBase = 'users',  // filename base; auto-suffixed with -YYYY-MM-DD
+  fileBase = 'users', // filename base; auto-suffixed with -YYYY-MM-DD
 }) {
   const [open, setOpen] = React.useState(false)
   const wrapRef = React.useRef(null)
@@ -53,26 +54,39 @@ export default function ExportMenu({
   const itemRefs = React.useRef([])
 
   const rows = React.useMemo(() => (Array.isArray(users) ? users : []), [users])
-  const dateStamp = React.useMemo(() => new Date().toISOString().slice(0, 10), [])
-  const companyPart = company?.id || company?.name ? `-${String(company.id || company.name).replace(/\s+/g, '-')}` : ''
+  const dateStamp = React.useMemo(
+    () => new Date().toISOString().slice(0, 10),
+    []
+  )
+  const companyPart =
+    company?.id || company?.name
+      ? `-${String(company.id || company.name).replace(/\s+/g, '-')}`
+      : ''
   const base = `${fileBase}${companyPart}-${dateStamp}`
 
   // Normalize subset for consistent exports (matches UsersTable columns)
   const compactRows = React.useMemo(() => {
-    const safe = (v) => (v == null ? '' : String(v).trim())
-    const fmtDate = (v) => {
+    const safe = v => (v == null ? '' : String(v).trim())
+    const fmtDate = v => {
       if (!v) return ''
       try {
         const dt = new Date(v)
         if (!Number.isFinite(dt.getTime())) return ''
-        return dt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: '2-digit' })
-      } catch { return '' }
+        return dt.toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: '2-digit',
+        })
+      } catch {
+        return ''
+      }
     }
-    const pct = (v) => {
-      const n = Number(v); if (!Number.isFinite(n)) return ''
+    const pct = v => {
+      const n = Number(v)
+      if (!Number.isFinite(n)) return ''
       return Math.max(0, Math.min(100, Math.round(n)))
     }
-    return rows.map((u) => ({
+    return rows.map(u => ({
       name: safe(u?.name || u?.fullName || u?.displayName),
       email: safe(u?.email),
       role: safe((u?.role || '').toLowerCase()),
@@ -87,10 +101,10 @@ export default function ExportMenu({
   // Close on outside click / ESC
   React.useEffect(() => {
     if (!open) return
-    const onDocClick = (e) => {
+    const onDocClick = e => {
       if (!wrapRef.current?.contains(e.target)) setOpen(false)
     }
-    const onEsc = (e) => {
+    const onEsc = e => {
       if (e.key === 'Escape') {
         setOpen(false)
         btnRef.current?.focus()
@@ -135,12 +149,22 @@ export default function ExportMenu({
       switch (type) {
         case 'csv': {
           if (svc?.toCSV) svc.toCSV(compactRows, `${base}.csv`)
-          else downloadBlob(`${base}.csv`, localCSV(compactRows), 'text/csv;charset=utf-8')
+          else
+            downloadBlob(
+              `${base}.csv`,
+              localCSV(compactRows),
+              'text/csv;charset=utf-8'
+            )
           break
         }
         case 'json': {
           if (svc?.toJSON) svc.toJSON(compactRows, `${base}.json`)
-          else downloadBlob(`${base}.json`, JSON.stringify(compactRows, null, 2), 'application/json;charset=utf-8')
+          else
+            downloadBlob(
+              `${base}.json`,
+              JSON.stringify(compactRows, null, 2),
+              'application/json;charset=utf-8'
+            )
           break
         }
         case 'pdf': {
@@ -159,7 +183,7 @@ export default function ExportMenu({
   }
 
   // Keyboard navigation inside the menu
-  const onMenuKeyDown = (e) => {
+  const onMenuKeyDown = e => {
     const items = itemRefs.current.filter(Boolean)
     if (!items.length) return
     const i = items.indexOf(document.activeElement)
@@ -170,13 +194,23 @@ export default function ExportMenu({
       e.preventDefault()
       items[(i - 1 + items.length) % items.length].focus()
     } else if (e.key === 'Home') {
-      e.preventDefault(); items[0].focus()
+      e.preventDefault()
+      items[0].focus()
     } else if (e.key === 'End') {
-      e.preventDefault(); items[items.length - 1].focus()
-    } else if (e.key === ',' && !e.shiftKey && !e.altKey && !e.metaKey && !e.ctrlKey) {
-      e.preventDefault(); handleExport('csv')
+      e.preventDefault()
+      items[items.length - 1].focus()
+    } else if (
+      e.key === ',' &&
+      !e.shiftKey &&
+      !e.altKey &&
+      !e.metaKey &&
+      !e.ctrlKey
+    ) {
+      e.preventDefault()
+      handleExport('csv')
     } else if (e.key === 'Enter' && i >= 0) {
-      e.preventDefault(); items[i].click()
+      e.preventDefault()
+      items[i].click()
     }
   }
 
@@ -195,11 +229,13 @@ export default function ExportMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(v => !v)}
         title={compactRows.length ? 'Export options' : 'Nothing to export'}
       >
         ⭳ Export
-        <span className={styles.caret} aria-hidden>▾</span>
+        <span className={styles.caret} aria-hidden>
+          ▾
+        </span>
       </button>
 
       {open && (
@@ -212,7 +248,7 @@ export default function ExportMenu({
           onKeyDown={onMenuKeyDown}
         >
           <button
-            ref={(el) => (itemRefs.current[0] = el)}
+            ref={el => (itemRefs.current[0] = el)}
             role="menuitem"
             type="button"
             className={styles.item}
@@ -222,7 +258,7 @@ export default function ExportMenu({
             <kbd className={styles.kbd}>,</kbd>
           </button>
           <button
-            ref={(el) => (itemRefs.current[1] = el)}
+            ref={el => (itemRefs.current[1] = el)}
             role="menuitem"
             type="button"
             className={styles.item}
@@ -231,7 +267,7 @@ export default function ExportMenu({
             Export JSON
           </button>
           <button
-            ref={(el) => (itemRefs.current[2] = el)}
+            ref={el => (itemRefs.current[2] = el)}
             role="menuitem"
             type="button"
             className={styles.item}
@@ -248,9 +284,19 @@ export default function ExportMenu({
 
 /* ----------------- internals ----------------- */
 
-function openPrintableTable(rows, { title = 'Users Export', subtitle = '' } = {}) {
+function openPrintableTable(
+  rows,
+  { title = 'Users Export', subtitle = '' } = {}
+) {
   if (typeof window === 'undefined') return
-  const cols = ['name', 'email', 'role', 'company', 'permitExpiry', 'profilePercent']
+  const cols = [
+    'name',
+    'email',
+    'role',
+    'company',
+    'permitExpiry',
+    'profilePercent',
+  ]
   const labels = {
     name: 'Name',
     email: 'Email',
@@ -260,13 +306,21 @@ function openPrintableTable(rows, { title = 'Users Export', subtitle = '' } = {}
     profilePercent: 'Profile %',
   }
 
-  const escape = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c]))
+  const escape = s =>
+    String(s ?? '').replace(
+      /[&<>]/g,
+      c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]
+    )
 
-  const rowsHtml = rows.map(r => `
+  const rowsHtml = rows
+    .map(
+      r => `
     <tr>
       ${cols.map(c => `<td>${escape(r[c] ?? '')}</td>`).join('')}
     </tr>
-  `).join('')
+  `
+    )
+    .join('')
 
   const html = `<!doctype html>
 <html>
@@ -311,5 +365,7 @@ function openPrintableTable(rows, { title = 'Users Export', subtitle = '' } = {}
   w.document.open()
   w.document.write(html)
   w.document.close()
-  try { w.focus() } catch {}
+  try {
+    w.focus()
+  } catch {}
 }

@@ -21,7 +21,7 @@ import styles from './CompanyHeader.module.css'
 function FallbackAvatar({ name = 'CDL Trainer', color = '#6c5ce7' }) {
   const initials = name
     .split(' ')
-    .map((part) => part.charAt(0).toUpperCase())
+    .map(part => part.charAt(0).toUpperCase())
     .slice(0, 2)
     .join('')
 
@@ -87,7 +87,7 @@ function CompanyHeader({ brand }) {
           alt={`${name} logo`}
           loading="lazy"
           decoding="async"
-          onError={(e) => {
+          onError={e => {
             e.currentTarget.style.display = 'none'
           }}
           style={{

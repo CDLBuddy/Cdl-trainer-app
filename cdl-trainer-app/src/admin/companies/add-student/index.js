@@ -10,10 +10,10 @@
 export { default as AddStudentDrawer } from './AddStudentDrawer.jsx'
 
 // Submodule barrels
-export * from './components'   // DrawerShell, FormActions, FormFields, OverlayChips
-export * from './hooks'        // useAddStudentForm
-export * from './services'     // any network/storage helpers used by the form
-export * from './utils'        // validations, transforms, trapFocus, etc.
+export * from './components' // DrawerShell, FormActions, FormFields, OverlayChips
+export * from './hooks' // useAddStudentForm
+export * from './services' // any network/storage helpers used by the form
+export * from './utils' // validations, transforms, trapFocus, etc.
 // ----------------------------------------------------------------------
 // Usage examples:
 //

@@ -12,15 +12,13 @@ export const DEFAULTS = Object.freeze({
 /* ---------------- helpers ---------------- */
 const toBool = (v, fallback) => (typeof v === 'boolean' ? v : !!fallback)
 const normalizeDraft = (d = {}) => ({
-  email:        toBool(d.email,        DEFAULTS.email),
-  sms:          toBool(d.sms,          DEFAULTS.sms),
+  email: toBool(d.email, DEFAULTS.email),
+  sms: toBool(d.sms, DEFAULTS.sms),
   weeklyDigest: toBool(d.weeklyDigest, DEFAULTS.weeklyDigest),
 })
 
 const shallowEq = (a, b) =>
-  a.email === b.email &&
-  a.sms === b.sms &&
-  a.weeklyDigest === b.weeklyDigest
+  a.email === b.email && a.sms === b.sms && a.weeklyDigest === b.weeklyDigest
 
 /* ---------------- hook ---------------- */
 export function useNotificationsSettings({ vm } = {}) {
@@ -31,11 +29,13 @@ export function useNotificationsSettings({ vm } = {}) {
   )
 
   const [draft, setDraft] = useState(initial)
-  useEffect(() => { setDraft(initial) }, [initial])
+  useEffect(() => {
+    setDraft(initial)
+  }, [initial])
 
   // Mutators
   const update = useCallback(
-    (patch) => setDraft(d => normalizeDraft({ ...d, ...patch })),
+    patch => setDraft(d => normalizeDraft({ ...d, ...patch })),
     []
   )
   const reset = useCallback(() => setDraft(initial), [initial])
@@ -47,14 +47,18 @@ export function useNotificationsSettings({ vm } = {}) {
 
   // Persistence
   const save = useCallback(
-    async (partial) => {
+    async partial => {
       const payload = normalizeDraft(partial ? { ...draft, ...partial } : draft)
-      if (!vm?.actions?.save) return { ok: false, error: 'Save action is unavailable.' }
+      if (!vm?.actions?.save)
+        return { ok: false, error: 'Save action is unavailable.' }
       try {
         await vm.actions.save({ [KEY]: payload })
         return { ok: true }
       } catch (err) {
-        return { ok: false, error: err?.message || 'Failed to save notification settings.' }
+        return {
+          ok: false,
+          error: err?.message || 'Failed to save notification settings.',
+        }
       }
     },
     [draft, vm?.actions]

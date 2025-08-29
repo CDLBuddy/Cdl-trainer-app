@@ -27,6 +27,7 @@ import { useAuthStatus } from '@utils/auth.js'
 import { __DEV__ } from '@utils/env.js'
 import { warmRoutesOnSession } from '@utils/route-preload.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
+
 import { SessionProvider, syncSessionDebug } from '@session'
 
 // Router
@@ -40,10 +41,11 @@ void (async () => {
   try {
     const brand = await getCurrentSchoolBranding()
     const meta = document.querySelector('meta[name="theme-color"]')
-    if (meta && brand?.primaryColor) meta.setAttribute('content', brand.primaryColor)
+    if (meta && brand?.primaryColor)
+      meta.setAttribute('content', brand.primaryColor)
 
     // React to later branding switches (e.g., school switcher)
-    window.addEventListener('branding:updated', (e) => {
+    window.addEventListener('branding:updated', e => {
       const b = e?.detail
       if (meta && b?.primaryColor) meta.setAttribute('content', b.primaryColor)
     })
@@ -76,8 +78,15 @@ export function SessionRoot({ children }) {
   const last = React.useRef({ isLoggedIn: null, role: null })
   React.useEffect(() => {
     const next = { isLoggedIn: !!value.isLoggedIn, role: value.role || null }
-    if (next.isLoggedIn !== last.current.isLoggedIn || next.role !== last.current.role) {
-      warmRoutesOnSession({ loading: !!value.loading, isLoggedIn: next.isLoggedIn, role: next.role })
+    if (
+      next.isLoggedIn !== last.current.isLoggedIn ||
+      next.role !== last.current.role
+    ) {
+      warmRoutesOnSession({
+        loading: !!value.loading,
+        isLoggedIn: next.isLoggedIn,
+        role: next.role,
+      })
       last.current = next
     }
   }, [value.isLoggedIn, value.role, value.loading])
@@ -89,7 +98,9 @@ export function SessionRoot({ children }) {
     const email = (u.email ?? u.profile?.email ?? '').trim()
 
     if (schoolId) {
-      try { localStorage.setItem('schoolId', schoolId) } catch {}
+      try {
+        localStorage.setItem('schoolId', schoolId)
+      } catch {}
       // keep a window property too (older code checks window.schoolId first)
       window.schoolId = schoolId
     }
@@ -129,7 +140,11 @@ export class ErrorBoundary extends React.Component {
           <p style={{ color: '#b22', maxWidth: 720, margin: '0 auto' }}>
             {String(this.state.err)}
           </p>
-          <button className="btn" onClick={() => window.location.reload()} style={{ marginTop: 20 }}>
+          <button
+            className="btn"
+            onClick={() => window.location.reload()}
+            style={{ marginTop: 20 }}
+          >
             Reload App
           </button>
         </div>
@@ -159,7 +174,9 @@ root.render(
           <RouterProvider
             router={router}
             // Shown while route elements lazily load before AppLayout Suspense kicks in
-            fallbackElement={<SplashScreen message="Loading CDL Trainer…" showTip={false} />}
+            fallbackElement={
+              <SplashScreen message="Loading CDL Trainer…" showTip={false} />
+            }
           />
         </ErrorBoundary>
       </SessionRoot>

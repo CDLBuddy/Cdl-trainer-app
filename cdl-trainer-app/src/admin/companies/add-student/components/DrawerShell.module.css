@@ -24,7 +24,7 @@
   background: var(--surface-1, #fff);
   color: var(--text-1, #111);
   border-left: 1px solid var(--border-1, #e5e7eb);
-  box-shadow: 0 2px 20px rgba(0,0,0,.18);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.18);
   display: grid;
   grid-template-rows: auto 1fr auto;
   max-width: 92vw;
@@ -32,9 +32,15 @@
   transition: transform 240ms ease;
 }
 
-.panelSm { width: 380px; }
-.panelMd { width: 460px; }
-.panelLg { width: 720px; }
+.panelSm {
+  width: 380px;
+}
+.panelMd {
+  width: 460px;
+}
+.panelLg {
+  width: 720px;
+}
 
 .header {
   padding: 14px 16px;

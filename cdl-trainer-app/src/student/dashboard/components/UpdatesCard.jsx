@@ -1,5 +1,6 @@
-import React, { memo } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo } from 'react'
+
 import cls from './UpdatesCard.module.css'
 
 /** Safely coerce Firestore Timestamp | Date | ISO into a localized label */
@@ -26,7 +27,12 @@ function asDateLabel(input) {
  *   onRetry?: () => void
  * }} props
  */
-function UpdatesCard({ loading = false, error = null, update = null, onRetry }) {
+function UpdatesCard({
+  loading = false,
+  error = null,
+  update = null,
+  onRetry,
+}) {
   const hasLink = !!update?.href
 
   return (
@@ -48,7 +54,9 @@ function UpdatesCard({ loading = false, error = null, update = null, onRetry }) 
       {/* Error */}
       {!loading && error && (
         <div className={cls.body} role="alert" aria-live="assertive">
-          <div className={cls.errorText}>Couldn’t load updates. Try again later.</div>
+          <div className={cls.errorText}>
+            Couldn’t load updates. Try again later.
+          </div>
           {typeof onRetry === 'function' && (
             <button type="button" className={cls.retry} onClick={onRetry}>
               Retry
@@ -61,9 +69,11 @@ function UpdatesCard({ loading = false, error = null, update = null, onRetry }) 
       {!loading && !error && update && (
         <div className={cls.body}>
           <div className={cls.content}>
-            {update.html
-              ? <div dangerouslySetInnerHTML={{ __html: update.html }} />
-              : (update.content || '(No details)')}
+            {update.html ? (
+              <div dangerouslySetInnerHTML={{ __html: update.html }} />
+            ) : (
+              update.content || '(No details)'
+            )}
           </div>
 
           <div className={cls.meta}>
@@ -97,9 +107,9 @@ UpdatesCard.propTypes = {
   error: PropTypes.string,
   update: PropTypes.shape({
     content: PropTypes.string,
-    html: PropTypes.string,   // optional rich HTML (sanitized upstream)
-    date: PropTypes.any,      // Firestore Timestamp | Date | ISO string
-    href: PropTypes.string,   // optional external “learn more” URL
+    html: PropTypes.string, // optional rich HTML (sanitized upstream)
+    date: PropTypes.any, // Firestore Timestamp | Date | ISO string
+    href: PropTypes.string, // optional external “learn more” URL
   }),
   onRetry: PropTypes.func,
 }

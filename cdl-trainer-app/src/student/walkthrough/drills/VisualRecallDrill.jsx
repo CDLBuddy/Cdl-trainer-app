@@ -54,7 +54,9 @@ export default function VisualRecallDrill({
       )}
 
       {question && (
-        <div style={{ marginBottom: 8, color: 'var(--text-light)' }}>{question}</div>
+        <div style={{ marginBottom: 8, color: 'var(--text-light)' }}>
+          {question}
+        </div>
       )}
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -65,7 +67,7 @@ export default function VisualRecallDrill({
           aria-label="Visual answer"
           value={val}
           disabled={alreadyComplete}
-          onChange={(e) => setVal(e.target.value)}
+          onChange={e => setVal(e.target.value)}
           style={{
             flex: '1 1 auto',
             background: 'var(--card-bg)',

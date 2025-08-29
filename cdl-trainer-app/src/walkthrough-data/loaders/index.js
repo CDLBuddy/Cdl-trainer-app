@@ -18,7 +18,7 @@ const _candidate =
 if (typeof _candidate !== 'function') {
   // Soft failure — keeps this module side-effect free in SSR builds.
   // Consumers will see an error only if they call it.
-  // eslint-disable-next-line no-new-func
+
   throw new Error('[walkthrough-data/loaders] resolveWalkthrough not found.')
 }
 
@@ -27,7 +27,7 @@ export const resolveWalkthrough = _candidate
 
 // Back-compat / nice aliases (pick whichever reads best at call-sites)
 export const loadWalkthrough = resolveWalkthrough
-export const resolve         = resolveWalkthrough
+export const resolve = resolveWalkthrough
 
 // Default export mirrors common usage: `import resolveWalkthrough from '.../loaders'`
 export default resolveWalkthrough

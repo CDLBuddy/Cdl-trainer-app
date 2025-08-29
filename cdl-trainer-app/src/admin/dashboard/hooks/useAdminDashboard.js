@@ -17,7 +17,7 @@ import { clampPct, expirySoon } from '../utils'
 
 import {
   useAuthSchoolGuard,
-  useUsersQuery,   // fetch students/instructors/admins for a school
+  useUsersQuery, // fetch students/instructors/admins for a school
   useUserMetrics, // studentCount, instructorCount, adminCount, permitSoon, medSoon, incomplete
 } from './subhooks'
 
@@ -38,7 +38,7 @@ import {
 
 /** Get a display-safe name */
 function nameOf(u) {
-  const raw = (u?.name || u?.email || 'User')
+  const raw = u?.name || u?.email || 'User'
   return typeof raw === 'string' ? raw.trim() : 'User'
 }
 
@@ -70,7 +70,11 @@ function buildCompaniesSnapshot(users = [], limit = 6) {
     const c = String(u?.assignedCompany || '').trim()
     if (!c) continue
 
-    const bucket = byCompany.get(c) ?? { name: c, studentCount: 0, expiringSoon: 0 }
+    const bucket = byCompany.get(c) ?? {
+      name: c,
+      studentCount: 0,
+      expiringSoon: 0,
+    }
     bucket.studentCount += 1
     if (expirySoon(u?.permitExpiry)) bucket.expiringSoon += 1
     byCompany.set(c, bucket)
@@ -79,7 +83,7 @@ function buildCompaniesSnapshot(users = [], limit = 6) {
   const rows = Array.from(byCompany.values())
     .sort((a, b) => b.studentCount - a.studentCount)
     .slice(0, Math.max(0, limit))
-    .map((r) => ({
+    .map(r => ({
       id: r.name,
       name: r.name,
       studentCount: r.studentCount,
@@ -124,7 +128,9 @@ function buildActivity(users = [], limit = 8) {
 
   // newest first, dedupe by actor|timestamp|action
   const dedup = new Map()
-  for (const it of items.sort((a, b) => toTime(b.timestamp) - toTime(a.timestamp))) {
+  for (const it of items.sort(
+    (a, b) => toTime(b.timestamp) - toTime(a.timestamp)
+  )) {
     const k = `${it.actor}|${it.timestamp}|${it.action}`
     if (!dedup.has(k)) dedup.set(k, it)
   }
@@ -231,20 +237,27 @@ export function useAdminDashboard() {
     // Example heuristic: treat non-incomplete students as “profile ok”
     const totalStudents = Math.max(0, Number(studentCount || 0))
     const profileOkPct =
-      totalStudents > 0 ? clampPct(((totalStudents - Number(incomplete || 0)) / totalStudents) * 100) : 0
+      totalStudents > 0
+        ? clampPct(
+            ((totalStudents - Number(incomplete || 0)) / totalStudents) * 100
+          )
+        : 0
 
     // Weight permits/meds equally for a simple overall
     const atRisk = Number(permitSoon || 0) + Number(medSoon || 0)
-    const riskPct = totalStudents > 0 ? clampPct(((totalStudents - atRisk) / totalStudents) * 100) : 100
+    const riskPct =
+      totalStudents > 0
+        ? clampPct(((totalStudents - atRisk) / totalStudents) * 100)
+        : 100
 
     const overall = clampPct(Math.round((profileOkPct + riskPct) / 2))
 
     return {
       overall,
       categories: [
-        { key: 'profiles',  label: 'Profiles OK',   value: profileOkPct },
-        { key: 'permits',   label: 'Permit Status', value: riskPct },
-        { key: 'training',  label: 'Training Logs', value: 65 }, // stub until logs exist
+        { key: 'profiles', label: 'Profiles OK', value: profileOkPct },
+        { key: 'permits', label: 'Permit Status', value: riskPct },
+        { key: 'training', label: 'Training Logs', value: 65 }, // stub until logs exist
         { key: 'reporting', label: 'TPR Reporting', value: 72 }, // stub until pipeline exists
       ],
     }
@@ -255,14 +268,20 @@ export function useAdminDashboard() {
   const [density, setDensity] = useState('cozy')
 
   // 9) Stable handlers for dashboard widgets
-  const goToCompanies  = useCallback(() => navigate('/admin/companies'), [navigate])
-  const goToReports    = useCallback(() => navigate('/admin/reports'), [navigate])
-  const goToBilling    = useCallback(() => navigate('/admin/billing'), [navigate])
-  const onOpenSettings = useCallback(() => navigate('/admin/settings'), [navigate])
+  const goToCompanies = useCallback(
+    () => navigate('/admin/companies'),
+    [navigate]
+  )
+  const goToReports = useCallback(() => navigate('/admin/reports'), [navigate])
+  const goToBilling = useCallback(() => navigate('/admin/billing'), [navigate])
+  const onOpenSettings = useCallback(
+    () => navigate('/admin/settings'),
+    [navigate]
+  )
 
   // Quick actions (wire up your drawers/flows later if needed)
-  const onAddCompany  = goToCompanies
-  const onInviteUser  = goToCompanies
+  const onAddCompany = goToCompanies
+  const onInviteUser = goToCompanies
   const onOpenBilling = goToBilling
 
   return {

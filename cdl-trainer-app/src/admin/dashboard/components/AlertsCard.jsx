@@ -4,7 +4,7 @@
 // - Dashboard widget to display system or user alerts
 // - Self-contained; style via AlertsCard.module.css
 // - Props:
-//     alerts?: Array<{ id?:string; type?:'info'|'warning'|'error'|'success'; 
+//     alerts?: Array<{ id?:string; type?:'info'|'warning'|'error'|'success';
 //                      message:string; timestamp?:string|number|Date }>
 //     title?: string
 //     emptyText?: string
@@ -46,7 +46,12 @@ function AlertsCard({
             const key = alert.id ?? `alert-${i}`
             const d = toDate(alert.timestamp)
             const dateLabel = Number.isFinite(d.getTime())
-              ? d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+              ? d.toLocaleString([], {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
               : null
             const type = alert.type ?? 'info'
             return (

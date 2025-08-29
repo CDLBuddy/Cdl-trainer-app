@@ -1,12 +1,6 @@
 // src/instructor/InstructorDashboard.jsx
 import { collection, query, where, getDocs } from 'firebase/firestore'
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useCallback,
-} from 'react'
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
@@ -142,7 +136,6 @@ export default function InstructorDashboard() {
           }
         })
       } catch (err) {
-         
         console.error('Assigned students fetch error:', err)
         showToast('Error fetching assigned students.', 'error')
       }
@@ -163,7 +156,8 @@ export default function InstructorDashboard() {
             let latest = null
             tSnap.forEach(doc => {
               const t = doc.data()
-              const tDate = t.timestamp?.toDate?.() || new Date(t.timestamp || 0)
+              const tDate =
+                t.timestamp?.toDate?.() || new Date(t.timestamp || 0)
               const lDate =
                 latest?.timestamp?.toDate?.() ||
                 new Date(latest?.timestamp || 0)
@@ -176,13 +170,14 @@ export default function InstructorDashboard() {
               results[s.email] = {
                 testName: latest.testName,
                 pct: pct(latest.correct, latest.total),
-                date: Number.isNaN(rawDate?.getTime()) ? '--' : dt.format(rawDate),
+                date: Number.isNaN(rawDate?.getTime())
+                  ? '--'
+                  : dt.format(rawDate),
               }
             }
           })
         )
       } catch (err) {
-         
         console.error('Latest test results error:', err)
         showToast('Error fetching test results.', 'error')
       }
@@ -232,7 +227,10 @@ export default function InstructorDashboard() {
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
       el.classList.add(styles.studentCardFocus)
-      const t = setTimeout(() => el.classList.remove(styles.studentCardFocus), 1800)
+      const t = setTimeout(
+        () => el.classList.remove(styles.studentCardFocus),
+        1800
+      )
       return () => clearTimeout(t)
     }
   }, [focusStudentEmail])

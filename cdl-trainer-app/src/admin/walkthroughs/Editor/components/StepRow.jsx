@@ -1,5 +1,6 @@
-/src/admin/walkthroughs/Editor/components/StepRow.jsx
+//src/admin/walkthroughs/Editor/components/StepRow.jsx
 import React from 'react'
+
 import cls from '../WalkthroughEditor.module.css'
 
 export default function StepRow({ si, ti, step, onChange, onToggle, onRemove }) {

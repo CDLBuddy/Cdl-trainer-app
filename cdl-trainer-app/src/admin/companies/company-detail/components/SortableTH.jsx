@@ -1,6 +1,7 @@
 // Path: /src/admin/companies/company-detail/components/SortableTH.jsx
-import React, { memo } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo } from 'react'
+
 import styles from './SortableTH.module.css'
 
 function SortableTH({
@@ -13,7 +14,11 @@ function SortableTH({
 }) {
   if (asStatic) return <th scope="col">{label}</th>
 
-  const ariaSort = active ? (dir === 'asc' ? 'ascending' : 'descending') : 'none'
+  const ariaSort = active
+    ? dir === 'asc'
+      ? 'ascending'
+      : 'descending'
+    : 'none'
   const nextDir = active ? (dir === 'asc' ? 'desc' : 'asc') : 'asc'
   const ariaLabel = `Sort by ${label}. ${active ? `Currently ${dir}ending; activate to sort ${nextDir}ending.` : 'Activate to sort ascending.'}`
 

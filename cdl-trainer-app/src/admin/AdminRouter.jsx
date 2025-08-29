@@ -11,6 +11,11 @@
 
 import React, { Suspense, lazy, useEffect, memo } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+
+import {
+  prefetchOnIdle as prefetchReportsOnIdle,
+  ensureModalRoot,
+} from '@admin/reports'
 import { __DEV__ } from '@utils/env.js'
 
 // Single source of truth for code-splitting warmups
@@ -20,33 +25,39 @@ import {
 } from './preload.js'
 
 // Reports: idle prefetch + portal root for modals (SubmitToTPRDialog, etc.)
-import {
-  prefetchOnIdle as prefetchReportsOnIdle,
-  ensureModalRoot,
-} from '@admin/reports'
 
 // ---------- Lazy pages -------------------------------------------------
-const AdminDashboard      = lazy(() => import('@admin/dashboard/AdminDashboard.jsx'))
-const AdminProfile        = lazy(() => import('@admin/AdminProfile.jsx'))
-const AdminReports        = lazy(() => import('@admin/reports/AdminReports.jsx'))
+const AdminDashboard = lazy(() => import('@admin/dashboard/AdminDashboard.jsx'))
+const AdminProfile = lazy(() => import('@admin/AdminProfile.jsx'))
+const AdminReports = lazy(() => import('@admin/reports/AdminReports.jsx'))
 
 // Companies suite
-const AdminCompanies      = lazy(() => import('@admin/companies/AdminCompanies.jsx'))
+const AdminCompanies = lazy(() => import('@admin/companies/AdminCompanies.jsx'))
 // ⬇️ updated path to the new folder (file name unchanged)
-const CompanyDetail       = lazy(() => import('@admin/companies/company-detail/CompanyDetail.jsx'))
+const CompanyDetail = lazy(
+  () => import('@admin/companies/company-detail/CompanyDetail.jsx')
+)
 
 // Communications / Billing / Settings
-const AdminCommunications = lazy(() => import('@admin/communications/AdminCommunications.jsx'))
-const AdminBilling        = lazy(() => import('@admin/billing/Billing.jsx'))
-const AdminSettings       = lazy(() => import('@admin/settings/AdminSettings.jsx'))
+const AdminCommunications = lazy(
+  () => import('@admin/communications/AdminCommunications.jsx')
+)
+const AdminBilling = lazy(() => import('@admin/billing/Billing.jsx'))
+const AdminSettings = lazy(() => import('@admin/settings/AdminSettings.jsx'))
 
 // Walkthrough management hub
-const WalkthroughManager  = lazy(() => import('@admin/walkthroughs/WalkthroughManager.jsx'))
+const WalkthroughManager = lazy(
+  () => import('@admin/walkthroughs/Manager/WalkthroughManager.jsx')
+)
 
 // ---------- Local loading UI (accessible) ------------------------------
 const Loading = memo(function Loading({ text = 'Loading admin page…' }) {
   return (
-    <div role="status" aria-live="polite" style={{ textAlign: 'center', marginTop: '4rem' }}>
+    <div
+      role="status"
+      aria-live="polite"
+      style={{ textAlign: 'center', marginTop: '4rem' }}
+    >
       <div className="spinner" aria-hidden="true" />
       <p style={{ marginTop: 8 }}>{text}</p>
     </div>
@@ -87,7 +98,6 @@ class AdminSectionErrorBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (__DEV__) {
-      // eslint-disable-next-line no-console
       console.error('[AdminRouter] render error:', error, info)
     }
   }
@@ -96,19 +106,28 @@ class AdminSectionErrorBoundary extends React.Component {
   }
   render() {
     if (this.state.err) {
-      const msg = this.state.err?.message || String(this.state.err) || 'Unknown error.'
+      const msg =
+        this.state.err?.message || String(this.state.err) || 'Unknown error.'
       return (
-        <div role="alert" aria-live="assertive" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+        <div
+          role="alert"
+          aria-live="assertive"
+          style={{ padding: '3rem 1rem', textAlign: 'center' }}
+        >
           <h2 style={{ margin: 0 }}>Admin area failed to load</h2>
           <p style={{ color: '#b22', marginTop: 8 }}>{msg}</p>
           <div style={{ display: 'inline-flex', gap: 8, marginTop: 16 }}>
-            <button className="btn outline" onClick={this.reset}>Try Again</button>
-            <button className="btn" onClick={() => window.location.reload()}>Reload</button>
+            <button className="btn outline" onClick={this.reset}>
+              Try Again
+            </button>
+            <button className="btn" onClick={() => window.location.reload()}>
+              Reload
+            </button>
           </div>
         </div>
       )
     }
-    // eslint-disable-next-line react/prop-types
+
     return this.props.children
   }
 }
@@ -126,8 +145,9 @@ export default function AdminRouter() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const prefersReduced =
-      !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+    const prefersReduced = !!window.matchMedia?.(
+      '(prefers-reduced-motion: reduce)'
+    )?.matches
     const warmCore = () => {
       if (!prefersReduced) _preloadCore().catch(() => {})
     }
@@ -174,7 +194,10 @@ export default function AdminRouter() {
           <Route path="walkthroughs/*" element={<WalkthroughManager />} />
 
           {/* Legacy: /admin/users → redirect to Companies */}
-          <Route path="users" element={<Navigate to="/admin/companies" replace />} />
+          <Route
+            path="users"
+            element={<Navigate to="/admin/companies" replace />}
+          />
 
           {/* Fallback */}
           <Route path="*" element={<AdminNotFound />} />

@@ -12,18 +12,22 @@ import {
 } from './preload.js'
 
 // ---- Lazy pages ---------------------------------------------------------
-const SuperAdminDashboard = lazy(() => import('@superadmin/SuperAdminDashboard.jsx'))
-const SchoolManagement    = lazy(() => import('@superadmin/SchoolManagement.jsx'))
-const UserManagement      = lazy(() => import('@superadmin/UserManagement.jsx'))
-const ComplianceCenter    = lazy(() => import('@superadmin/ComplianceCenter.jsx'))
-const Billings            = lazy(() => import('@superadmin/Billings.jsx'))
-const Settings            = lazy(() => import('@superadmin/Settings.jsx'))
-const Logs                = lazy(() => import('@superadmin/Logs.jsx'))
-const Permissions         = lazy(() => import('@superadmin/Permissions.jsx'))
-const WalkthroughManager  = lazy(() => import('@superadmin/WalkthroughManager.jsx'))
+const SuperAdminDashboard = lazy(
+  () => import('@superadmin/SuperAdminDashboard.jsx')
+)
+const SchoolManagement = lazy(() => import('@superadmin/SchoolManagement.jsx'))
+const UserManagement = lazy(() => import('@superadmin/UserManagement.jsx'))
+const ComplianceCenter = lazy(() => import('@superadmin/ComplianceCenter.jsx'))
+const Billings = lazy(() => import('@superadmin/Billings.jsx'))
+const Settings = lazy(() => import('@superadmin/Settings.jsx'))
+const Logs = lazy(() => import('@superadmin/Logs.jsx'))
+const Permissions = lazy(() => import('@superadmin/Permissions.jsx'))
+const WalkthroughManager = lazy(
+  () => import('@superadmin/WalkthroughManager.jsx')
+)
 
 // Walkthrough Review (from barrel: src/superadmin/walkthroughs/index.js)
-const SAReviewQueue  = lazy(() =>
+const SAReviewQueue = lazy(() =>
   import('@superadmin/walkthroughs').then(m => ({ default: m.SAReviewQueue }))
 )
 const SAReviewDetail = lazy(() =>
@@ -57,7 +61,6 @@ class SuperadminSectionErrorBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-       
       console.error('[SuperadminRouter] render error:', error, info)
     }
   }
@@ -72,7 +75,11 @@ class SuperadminSectionErrorBoundary extends React.Component {
         >
           <h2>Superadmin area failed to load</h2>
           <p style={{ color: '#b22' }}>{String(this.state.err)}</p>
-          <button className="btn" onClick={() => window.location.reload()} style={{ marginTop: 16 }}>
+          <button
+            className="btn"
+            onClick={() => window.location.reload()}
+            style={{ marginTop: 16 }}
+          >
             Reload
           </button>
         </div>
@@ -92,8 +99,12 @@ export default function SuperadminRouter() {
   // Light idle warm-up of core screens after mount (skip on reduced motion)
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const prefersReduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
-    const run = () => { if (!prefersReduced) _preloadCore().catch(() => {}) }
+    const prefersReduced = !!window.matchMedia?.(
+      '(prefers-reduced-motion: reduce)'
+    )?.matches
+    const run = () => {
+      if (!prefersReduced) _preloadCore().catch(() => {})
+    }
 
     if ('requestIdleCallback' in window) {
       // @ts-expect-error not in std lib
@@ -127,7 +138,10 @@ export default function SuperadminRouter() {
           {/* Walkthrough review (superadmin) */}
           <Route path="walkthroughs/review" element={<SAReviewQueue />} />
           {/* Include schoolId so Detail can fetch the doc path directly */}
-          <Route path="walkthroughs/review/:schoolId/:submissionId" element={<SAReviewDetail />} />
+          <Route
+            path="walkthroughs/review/:schoolId/:submissionId"
+            element={<SAReviewDetail />}
+          />
 
           {/* Fallback */}
           <Route path="*" element={<SuperadminNotFound />} />

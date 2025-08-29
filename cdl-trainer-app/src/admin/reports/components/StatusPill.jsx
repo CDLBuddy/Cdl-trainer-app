@@ -10,37 +10,45 @@
 
 import PropTypes from 'prop-types'
 import React from 'react'
+
 import styles from './StatusPill.module.css'
 
-function cx(...xs) { return xs.filter(Boolean).join(' ') }
+function cx(...xs) {
+  return xs.filter(Boolean).join(' ')
+}
 
 const StatusPill = React.forwardRef(function StatusPill(
   {
     as: As = 'span',
-    kind = 'info',           // 'info' | 'success' | 'warning' | 'error'
-    label,                   // preferred text
-    children,                // fallback text
-    title,                   // optional tooltip
-    size = 'sm',             // 'sm' | 'md'
-    soft = false,            // subtle background
-    outline = false,         // outlined style
-    showDot = true,          // show leading dot
+    kind = 'info', // 'info' | 'success' | 'warning' | 'error'
+    label, // preferred text
+    children, // fallback text
+    title, // optional tooltip
+    size = 'sm', // 'sm' | 'md'
+    soft = false, // subtle background
+    outline = false, // outlined style
+    showDot = true, // show leading dot
     className = '',
     ...rest
   },
   ref
 ) {
   const tone = styles[`kind_${kind}`] || styles.kind_info
-  const sz   = styles[`size_${size}`] || styles.size_sm
-  const variant = outline ? styles.outline : (soft ? styles.soft : styles.solid)
+  const sz = styles[`size_${size}`] || styles.size_sm
+  const variant = outline ? styles.outline : soft ? styles.soft : styles.solid
 
   const content = label ?? children ?? ''
-  const isInteractive = typeof rest.onClick === 'function' || As === 'button' || rest.role === 'button'
-  const ariaLabel = rest['aria-label'] || (typeof content === 'string' ? content : undefined)
+  const isInteractive =
+    typeof rest.onClick === 'function' ||
+    As === 'button' ||
+    rest.role === 'button'
+  const ariaLabel =
+    rest['aria-label'] || (typeof content === 'string' ? content : undefined)
 
   // If interactive and not a native button, add minimal button semantics
-  const role = !rest.role && isInteractive && As !== 'button' ? 'button' : rest.role
-  const tabIndex = (rest.tabIndex ?? (role === 'button' ? 0 : undefined))
+  const role =
+    !rest.role && isInteractive && As !== 'button' ? 'button' : rest.role
+  const tabIndex = rest.tabIndex ?? (role === 'button' ? 0 : undefined)
 
   return (
     <As
@@ -52,7 +60,7 @@ const StatusPill = React.forwardRef(function StatusPill(
       tabIndex={tabIndex}
       data-kind={kind}
       data-size={size}
-      data-variant={outline ? 'outline' : (soft ? 'soft' : 'solid')}
+      data-variant={outline ? 'outline' : soft ? 'soft' : 'solid'}
       {...rest}
     >
       {showDot && <span aria-hidden className={styles.dot} />}

@@ -8,13 +8,7 @@
 // ======================================================================
 
 import { doc, getDoc } from 'firebase/firestore'
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import Shell from '@components/Shell.jsx'
@@ -30,7 +24,6 @@ import { getWalkthroughLabel } from '@walkthrough-data'
 
 import { resolveWalkthrough } from '@/walkthrough-data/loaders/resolveWalkthrough.js'
 
-
 // Drills via barrel
 import {
   FillClozeDrill,
@@ -43,7 +36,11 @@ import styles from './walkthrough.module.css'
 // Robust email fallback (uses session + localStorage)
 function getCurrentUserEmail() {
   try {
-    return window.currentUserEmail || localStorage.getItem('currentUserEmail') || null
+    return (
+      window.currentUserEmail ||
+      localStorage.getItem('currentUserEmail') ||
+      null
+    )
   } catch {
     return null
   }
@@ -52,7 +49,9 @@ function getCurrentUserEmail() {
 // If a step lacks tokens, suggest some common numbers/phrases
 function autoTokensFrom(script = '') {
   if (!script) return []
-  const nums = [...script.matchAll(/\b\d+(\.\d+)?\s?(psi|sec|seconds|minutes|°|ft|in)\b/gi)].map(m => m[0])
+  const nums = [
+    ...script.matchAll(/\b\d+(\.\d+)?\s?(psi|sec|seconds|minutes|°|ft|in)\b/gi),
+  ].map(m => m[0])
   const phrases = []
   if (/engine off/i.test(script)) phrases.push('engine off')
   if (/key on/i.test(script)) phrases.push('key on')
@@ -66,10 +65,15 @@ export default function Walkthrough() {
   const { showToast } = useToast()
 
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState(null)                     // { email, cdlClass, schoolId, name }
-  const [script, setScript] = useState(null)                 // WalkthroughSection[]
-  const [currentDrill, setCurrentDrill] = useState('fill')   // 'fill' | 'order' | 'type' | 'visual'
-  const [completedDrills, setCompleted] = useState({ fill: false, order: false, type: false, visual: false })
+  const [user, setUser] = useState(null) // { email, cdlClass, schoolId, name }
+  const [script, setScript] = useState(null) // WalkthroughSection[]
+  const [currentDrill, setCurrentDrill] = useState('fill') // 'fill' | 'order' | 'type' | 'visual'
+  const [completedDrills, setCompleted] = useState({
+    fill: false,
+    order: false,
+    type: false,
+    visual: false,
+  })
 
   const confettiRef = useRef(null)
 
@@ -94,11 +98,15 @@ export default function Walkthrough() {
         if (!snap.exists()) throw new Error('User not found')
 
         const data = snap.data() || {}
-        const role = String(data.role || localStorage.getItem('userRole') || 'student').toLowerCase()
+        const role = String(
+          data.role || localStorage.getItem('userRole') || 'student'
+        ).toLowerCase()
         if (role !== 'student') throw new Error('Student-only page')
 
         const schoolId = data.schoolId || data.schoolName || 'default'
-        const cdlClass = String(data.cdlClass || '').trim().toUpperCase()
+        const cdlClass = String(data.cdlClass || '')
+          .trim()
+          .toUpperCase()
 
         if (!alive) return
         setUser({ email, cdlClass, schoolId, name: data.name || '' })
@@ -116,7 +124,11 @@ export default function Walkthrough() {
 
         // Drill progress
         let prog = {}
-        try { prog = (await getUserProgress(email)) || {} } catch { prog = {} }
+        try {
+          prog = (await getUserProgress(email)) || {}
+        } catch {
+          prog = {}
+        }
         if (!alive) return
         setCompleted({
           fill: !!prog.drills?.fill,
@@ -126,7 +138,6 @@ export default function Walkthrough() {
         })
       } catch (e) {
         if (import.meta.env.DEV) {
-           
           console.error('[Walkthrough] load error:', e)
         }
         if (alive) {
@@ -137,10 +148,15 @@ export default function Walkthrough() {
         if (alive) setLoading(false)
       }
     })()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [])
 
-  const cdlLabel = useMemo(() => getWalkthroughLabel(user?.cdlClass || ''), [user?.cdlClass])
+  const cdlLabel = useMemo(
+    () => getWalkthroughLabel(user?.cdlClass || ''),
+    [user?.cdlClass]
+  )
 
   // Confetti pop
   const showConfetti = useCallback(() => {
@@ -152,7 +168,13 @@ export default function Walkthrough() {
     canvas.height = window.innerHeight
     for (let i = 0; i < 80; i++) {
       ctx.beginPath()
-      ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 7 + 3, 0, 2 * Math.PI)
+      ctx.arc(
+        Math.random() * canvas.width,
+        Math.random() * canvas.height,
+        Math.random() * 7 + 3,
+        0,
+        2 * Math.PI
+      )
       ctx.fillStyle = `hsl(${Math.random() * 360},95%,70%)`
       ctx.fill()
     }
@@ -160,25 +182,28 @@ export default function Walkthrough() {
   }, [])
 
   // Save drill completion
-  const markDrillComplete = useCallback(async (type) => {
-    if (!user?.email || completedDrills[type]) return
-    const next = { ...completedDrills, [type]: true }
-    setCompleted(next)
-    try {
-      await updateELDTProgress(user.email, {
-        [`drills.${type}`]: true,
-        [`drills.${type}CompletedAt`]: new Date().toISOString(),
-      })
-      const allDone = Object.values(next).every(Boolean)
-      if (allDone) {
-        showConfetti()
-        showToast('🎉 All drills complete! Walkthrough milestone saved.')
-        await markStudentWalkthroughComplete(user.email)
+  const markDrillComplete = useCallback(
+    async type => {
+      if (!user?.email || completedDrills[type]) return
+      const next = { ...completedDrills, [type]: true }
+      setCompleted(next)
+      try {
+        await updateELDTProgress(user.email, {
+          [`drills.${type}`]: true,
+          [`drills.${type}CompletedAt`]: new Date().toISOString(),
+        })
+        const allDone = Object.values(next).every(Boolean)
+        if (allDone) {
+          showConfetti()
+          showToast('🎉 All drills complete! Walkthrough milestone saved.')
+          await markStudentWalkthroughComplete(user.email)
+        }
+      } catch {
+        showToast('❌ Error saving progress. Try again.', { type: 'error' })
       }
-    } catch {
-      showToast('❌ Error saving progress. Try again.', { type: 'error' })
-    }
-  }, [user?.email, completedDrills, showConfetti, showToast])
+    },
+    [user?.email, completedDrills, showConfetti, showToast]
+  )
 
   // Pick a focused section (prefer critical/passFail)
   const focusSection = useMemo(() => {
@@ -191,13 +216,19 @@ export default function Walkthrough() {
     return (focusSection.steps || [])
       .map(step => ({
         ...step,
-        tokens: (step.tokens && step.tokens.length ? step.tokens : autoTokensFrom(step.script)),
+        tokens:
+          step.tokens && step.tokens.length
+            ? step.tokens
+            : autoTokensFrom(step.script),
         text: step.script || step.text || '',
       }))
       .filter(s => s.text)
   }, [focusSection])
 
-  const numCompleted = useMemo(() => Object.values(completedDrills).filter(Boolean).length, [completedDrills])
+  const numCompleted = useMemo(
+    () => Object.values(completedDrills).filter(Boolean).length,
+    [completedDrills]
+  )
 
   /* ----------------------- Render States ----------------------- */
   if (loading) {
@@ -217,7 +248,9 @@ export default function Walkthrough() {
         <div className={styles.card}>
           <h2>🧭 CDL Walkthrough Practice</h2>
           <p>Error loading your session. Please log in again.</p>
-          <button className="btn" onClick={() => navigate('/login')}>Go to Login</button>
+          <button className="btn" onClick={() => navigate('/login')}>
+            Go to Login
+          </button>
         </div>
       </Shell>
     )
@@ -228,11 +261,15 @@ export default function Walkthrough() {
       <Shell title="Walkthrough Practice">
         <div className={styles.card}>
           <h2>🧭 CDL Walkthrough Practice</h2>
-        <div className={styles.alert}>
+          <div className={styles.alert}>
             ⚠ You haven’t selected your CDL class yet.
-            <br />Please open your <strong>Profile</strong> and choose a class so we can load the correct script.
+            <br />
+            Please open your <strong>Profile</strong> and choose a class so we
+            can load the correct script.
           </div>
-          <button className="btn" onClick={() => navigate('/student/profile')}>Go to Profile</button>
+          <button className="btn" onClick={() => navigate('/student/profile')}>
+            Go to Profile
+          </button>
         </div>
       </Shell>
     )
@@ -244,9 +281,15 @@ export default function Walkthrough() {
         <div className={styles.card}>
           <h2>🧭 CDL Walkthrough Practice</h2>
           <div className={styles.alert}>
-            ⚠ No walkthrough script found for <b>{cdlLabel}</b>. Please contact your instructor.
+            ⚠ No walkthrough script found for <b>{cdlLabel}</b>. Please contact
+            your instructor.
           </div>
-          <button className="btn outline" onClick={() => navigate('/student/dashboard')}>⬅ Dashboard</button>
+          <button
+            className="btn outline"
+            onClick={() => navigate('/student/dashboard')}
+          >
+            ⬅ Dashboard
+          </button>
         </div>
       </Shell>
     )
@@ -256,8 +299,12 @@ export default function Walkthrough() {
   return (
     <Shell title="Walkthrough Practice">
       <div className={styles.metaRow}>
-        <div><strong>CDL Class:</strong> {cdlLabel}</div>
-        {user.schoolId && <div className={styles.schoolBadge}>{String(user.schoolId)}</div>}
+        <div>
+          <strong>CDL Class:</strong> {cdlLabel}
+        </div>
+        {user.schoolId && (
+          <div className={styles.schoolBadge}>{String(user.schoolId)}</div>
+        )}
       </div>
 
       {/* Script viewer */}
@@ -265,18 +312,25 @@ export default function Walkthrough() {
         {script.map((section, i) => (
           <section
             key={section.id || i}
-            className={`${styles.scriptSection} ${(section.critical || section.passFail) ? styles.critical : ''}`}
+            className={`${styles.scriptSection} ${section.critical || section.passFail ? styles.critical : ''}`}
           >
             <h3 className={styles.sectionTitle}>
-              {(section.critical || section.passFail) ? '🚨' : '✅'} {section.section}
-              {(section.critical || section.passFail) && <span className={styles.flag}>(Pass/Fail)</span>}
+              {section.critical || section.passFail ? '🚨' : '✅'}{' '}
+              {section.section}
+              {(section.critical || section.passFail) && (
+                <span className={styles.flag}>(Pass/Fail)</span>
+              )}
             </h3>
             <div className={styles.steps}>
               {(section.steps || []).map((step, j) => (
                 <p key={step.id || j} className={styles.stepLine}>
                   {step.label && <strong>{step.label}:</strong>} {step.script}
-                  {step.mustSay && <em className={styles.mustSay}> (Must Say)</em>}
-                  {step.passFail && <em className={styles.passFail}> (Pass/Fail)</em>}
+                  {step.mustSay && (
+                    <em className={styles.mustSay}> (Must Say)</em>
+                  )}
+                  {step.passFail && (
+                    <em className={styles.passFail}> (Pass/Fail)</em>
+                  )}
                 </p>
               ))}
             </div>
@@ -293,7 +347,9 @@ export default function Walkthrough() {
           aria-valuenow={numCompleted}
           aria-valuemax={4}
         />
-        <span className={styles.progressLabel}>{numCompleted}/4 drills completed</span>
+        <span className={styles.progressLabel}>
+          {numCompleted}/4 drills completed
+        </span>
       </div>
 
       {/* Drill tabs */}
@@ -349,11 +405,20 @@ export default function Walkthrough() {
       </div>
 
       <div className={styles.footerRow}>
-        <button className="btn outline" onClick={() => navigate('/student/dashboard')}>⬅ Dashboard</button>
+        <button
+          className="btn outline"
+          onClick={() => navigate('/student/dashboard')}
+        >
+          ⬅ Dashboard
+        </button>
       </div>
 
       {/* Confetti canvas */}
-      <canvas ref={confettiRef} className={styles.confetti} style={{ display: 'none' }} />
+      <canvas
+        ref={confettiRef}
+        className={styles.confetti}
+        style={{ display: 'none' }}
+      />
     </Shell>
   )
 }

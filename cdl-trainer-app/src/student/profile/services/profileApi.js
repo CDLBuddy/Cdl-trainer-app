@@ -6,13 +6,19 @@
 // - Shapes are defensive and stable for UI/hooks
 // -----------------------------------------------------------------------------
 
-import { db } from '@/utils/firebase.js'
 import {
-  doc, getDoc, setDoc, updateDoc, onSnapshot, serverTimestamp,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  onSnapshot,
+  serverTimestamp,
 } from 'firebase/firestore'
 
+import { db } from '@/utils/firebase.js'
+
 /** ISO date (YYYY-MM-DD) without TZ drift */
-const toISODate = (x) => {
+const toISODate = x => {
   if (!x) return ''
   const s = String(x).trim()
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s
@@ -25,15 +31,15 @@ const toISODate = (x) => {
   ].join('-')
 }
 
-const S = (v) => (v == null ? '' : String(v).trim())
+const S = v => (v == null ? '' : String(v).trim())
 
 // --------------------------- normalizers (stable) ----------------------------
 
 /** @returns {{id:string, schoolId:string, companyId?:string, fullName:string, firstName?:string, lastName?:string, dob?:string, licenseNumber?:string, licenseState?:string, clpNumber?:string, clpState?:string, clpIssued?:string, email?:string, status:string}} */
 function normalizeStudent(id, raw = {}) {
   const first = S(raw.firstName || raw.first_name)
-  const last  = S(raw.lastName || raw.last_name)
-  const full  = S(raw.fullName || raw.name || `${first} ${last}`.trim())
+  const last = S(raw.lastName || raw.last_name)
+  const full = S(raw.fullName || raw.name || `${first} ${last}`.trim())
   return {
     id,
     schoolId: S(raw.schoolId),
@@ -43,9 +49,9 @@ function normalizeStudent(id, raw = {}) {
     lastName: last || undefined,
     dob: toISODate(raw.dob || raw.dateOfBirth || raw.birthDate),
     licenseNumber: S(raw.licenseNumber || ''),
-    licenseState:  S(raw.licenseState  || ''),
+    licenseState: S(raw.licenseState || ''),
     clpNumber: S(raw.clpNumber || raw.clp || ''),
-    clpState:  S(raw.clpState  || ''),
+    clpState: S(raw.clpState || ''),
     clpIssued: toISODate(raw.clpIssued || ''),
     email: S(raw.email || ''),
     status: S(raw.status || 'active'),
@@ -58,18 +64,26 @@ function normalizeStudent(id, raw = {}) {
 function normalizeProgress(id, raw = {}) {
   return {
     id,
-    classType: S(raw.classType || 'A').replace(/^class\s*/i, '').toUpperCase(),
+    classType: S(raw.classType || 'A')
+      .replace(/^class\s*/i, '')
+      .toUpperCase(),
     endorsement: S(raw.endorsement || '').toUpperCase() || undefined,
     theory: {
-      completed: !!(raw.theory?.completed),
+      completed: !!raw.theory?.completed,
       completedAt: toISODate(raw.theory?.completedAt),
-      scorePct: Number.isFinite(+raw.theory?.scorePct) ? +raw.theory.scorePct : undefined,
+      scorePct: Number.isFinite(+raw.theory?.scorePct)
+        ? +raw.theory.scorePct
+        : undefined,
     },
     btw: {
-      completed: !!(raw.btw?.completed),
+      completed: !!raw.btw?.completed,
       completedAt: toISODate(raw.btw?.completedAt),
-      rangeHours: Number.isFinite(+raw.btw?.rangeHours) ? +raw.btw.rangeHours : 0,
-      publicRoadHours: Number.isFinite(+raw.btw?.publicRoadHours) ? +raw.btw.publicRoadHours : 0,
+      rangeHours: Number.isFinite(+raw.btw?.rangeHours)
+        ? +raw.btw.rangeHours
+        : 0,
+      publicRoadHours: Number.isFinite(+raw.btw?.publicRoadHours)
+        ? +raw.btw.publicRoadHours
+        : 0,
     },
     updatedAt: raw.updatedAt || null,
     createdAt: raw.createdAt || null,
@@ -108,7 +122,7 @@ export async function getStudentWithUserFallback(studentId, uid = studentId) {
     getDoc(doc(db, 'users', uid)),
   ])
   const base = stuSnap.exists() ? stuSnap.data() : {}
-  const usr  = userSnap.exists() ? userSnap.data() : {}
+  const usr = userSnap.exists() ? userSnap.data() : {}
   const merged = {
     ...base,
     email: base.email || usr.email || '',
@@ -120,7 +134,7 @@ export async function getStudentWithUserFallback(studentId, uid = studentId) {
 
 /** Live subscription to /students/{id} (returns unsubscribe). */
 export function watchStudent(studentId, cb) {
-  return onSnapshot(doc(db, 'students', studentId), (snap) => {
+  return onSnapshot(doc(db, 'students', studentId), snap => {
     cb(normalizeStudent(studentId, snap.exists() ? snap.data() : {}))
   })
 }
@@ -134,7 +148,7 @@ export async function getProgress(studentId) {
 
 /** Live subscription to /eldtProgress/{id} (returns unsubscribe). */
 export function watchProgress(studentId, cb) {
-  return onSnapshot(doc(db, 'eldtProgress', studentId), (snap) => {
+  return onSnapshot(doc(db, 'eldtProgress', studentId), snap => {
     cb(normalizeProgress(studentId, snap.exists() ? snap.data() : {}))
   })
 }
@@ -159,7 +173,7 @@ export async function saveStudent(studentId, partial) {
       updatedAt: serverTimestamp(),
       createdAt: partial?.createdAt ?? serverTimestamp(),
     },
-    { merge: true },
+    { merge: true }
   )
 }
 
@@ -173,7 +187,7 @@ export async function saveProgress(studentId, partial) {
       updatedAt: serverTimestamp(),
       createdAt: partial?.createdAt ?? serverTimestamp(),
     },
-    { merge: true },
+    { merge: true }
   )
 }
 
@@ -184,7 +198,15 @@ export async function patchUser(uid, partial) {
     await updateDoc(ref, { ...partial, updatedAt: serverTimestamp() })
   } catch {
     // If missing, create minimal doc:
-    await setDoc(ref, { ...partial, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true })
+    await setDoc(
+      ref,
+      {
+        ...partial,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    )
   }
 }
 

@@ -8,7 +8,14 @@
 // - SSR-safe (guards window/sessionStorage)
 // ======================================================================
 
-import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import Shell from '@components/Shell.jsx'
 
@@ -16,7 +23,7 @@ import EmployerTab from './components/Employer/EmployerTab.jsx'
 import IndividualTab from './components/Individual/IndividualTab.jsx'
 
 const TABS = /** @type const */ (['employer', 'individual'])
-const isValidTab = (t) => TABS.includes(String(t))
+const isValidTab = t => TABS.includes(String(t))
 const STORAGE_KEY = 'admin.billing.tab'
 
 // ---- initial tab resolver ---------------------------------------------------
@@ -28,7 +35,9 @@ function getInitialTab() {
   try {
     const saved = sessionStorage.getItem(STORAGE_KEY) || ''
     if (isValidTab(saved)) return saved
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return 'employer'
 }
 
@@ -40,7 +49,11 @@ export default function Billing() {
 
   // Persist per-session
   useEffect(() => {
-    try { sessionStorage.setItem(STORAGE_KEY, tab) } catch { /* ignore */ }
+    try {
+      sessionStorage.setItem(STORAGE_KEY, tab)
+    } catch {
+      /* ignore */
+    }
   }, [tab])
 
   // Sync URL hash (but don’t cause history spam)
@@ -65,38 +78,51 @@ export default function Billing() {
   }, [])
 
   // Keyboard nav on tablist
-  const onKeyTabs = useCallback((e) => {
-    const idx = TABS.indexOf(tab)
-    if (idx < 0) return
-    const prev = () => setTab(TABS[(idx - 1 + TABS.length) % TABS.length])
-    const next = () => setTab(TABS[(idx + 1) % TABS.length])
+  const onKeyTabs = useCallback(
+    e => {
+      const idx = TABS.indexOf(tab)
+      if (idx < 0) return
+      const prev = () => setTab(TABS[(idx - 1 + TABS.length) % TABS.length])
+      const next = () => setTab(TABS[(idx + 1) % TABS.length])
 
-    switch (e.key) {
-      case 'ArrowRight':
-      case 'ArrowDown':
-        e.preventDefault(); next(); break
-      case 'ArrowLeft':
-      case 'ArrowUp':
-        e.preventDefault(); prev(); break
-      case 'Home':
-        e.preventDefault(); setTab(TABS[0]); break
-      case 'End':
-        e.preventDefault(); setTab(TABS[TABS.length - 1]); break
-      default:
-        break
-    }
-  }, [tab])
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          e.preventDefault()
+          next()
+          break
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault()
+          prev()
+          break
+        case 'Home':
+          e.preventDefault()
+          setTab(TABS[0])
+          break
+        case 'End':
+          e.preventDefault()
+          setTab(TABS[TABS.length - 1])
+          break
+        default:
+          break
+      }
+    },
+    [tab]
+  )
 
   // Move focus to active tab when tab changes via keyboard
   useEffect(() => {
-    const el = tab === 'employer' ? employerBtnRef.current : individualBtnRef.current
+    const el =
+      tab === 'employer' ? employerBtnRef.current : individualBtnRef.current
     // Only shift focus if keyboard likely used (heuristic: last event was a keydown)
     // Keeping it simple—safe to always focus for accessibility.
     el?.focus?.()
   }, [tab])
 
   const panelId = useMemo(() => `billing-panel-${tab}`, [tab])
-  const activeTabId = tab === 'employer' ? 'billing-tab-employer' : 'billing-tab-individual'
+  const activeTabId =
+    tab === 'employer' ? 'billing-tab-employer' : 'billing-tab-individual'
 
   return (
     <Shell title="Billing">

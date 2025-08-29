@@ -27,8 +27,8 @@
 
 /* Base track -- use CSS var for FG so alt just flips the var */
 .track {
-  --bar-fg: #6366f1;     /* indigo-500 */
-  --bar-bg: #eef2ff;     /* indigo-50 */
+  --bar-fg: #6366f1; /* indigo-500 */
+  --bar-bg: #eef2ff; /* indigo-50 */
   position: relative;
   flex: 1;
   height: 8px;
@@ -38,8 +38,8 @@
 }
 
 .alt {
-  --bar-fg: #0ea5e9;     /* sky-500 */
-  --bar-bg: #e0f2fe;     /* sky-100 */
+  --bar-fg: #0ea5e9; /* sky-500 */
+  --bar-bg: #e0f2fe; /* sky-100 */
 }
 
 .fill {
@@ -53,13 +53,23 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fill { transition: none; }
+  .fill {
+    transition: none;
+  }
 }
 
 /* Dark mode tweaks (optional but nice) */
 @media (prefers-color-scheme: dark) {
-  .label { color: #8b95a1; }
-  .value { color: #cbd5e1; }
-  .track { --bar-bg: #1f2937; } /* slate-800-ish */
-  .alt { --bar-bg: #0b2b38; }   /* darker sky background */
+  .label {
+    color: #8b95a1;
+  }
+  .value {
+    color: #cbd5e1;
+  }
+  .track {
+    --bar-bg: #1f2937;
+  } /* slate-800-ish */
+  .alt {
+    --bar-bg: #0b2b38;
+  } /* darker sky background */
 }

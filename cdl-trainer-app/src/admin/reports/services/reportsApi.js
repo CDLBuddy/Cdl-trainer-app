@@ -49,7 +49,7 @@ export function normalizeUser(u = {}) {
   const name =
     u.name ??
     u.fullName ??
-    [u.firstName ?? u.first_name, u.lastName ?? u.last_name].filter(Boolean).join(' ') ||
+    ([(u.firstName ?? u.first_name), (u.lastName ?? u.last_name)].filter(Boolean).join(' ')) ??
     ''
 
   const assignedCompany    = u.assignedCompany ?? u.company ?? u.org ?? ''

@@ -11,12 +11,15 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react'
 
 import Shell from '@components/Shell.jsx'
-import ComposeForm from './components/ComposeForm.jsx'
+
 import cls from './AdminCommunications.module.css'
+import ComposeForm from './components/ComposeForm.jsx'
 
 // NOTE: lazy() must import a *real file*. Use the actual component path.
-const MessageHistoryTable = lazy(() => import('./components/MessageHistoryTable.jsx'))
-const TemplateList        = lazy(() => import('./components/TemplateList.jsx'))
+const MessageHistoryTable = lazy(
+  () => import('./components/MessageHistoryTable.jsx')
+)
+const TemplateList = lazy(() => import('./components/TemplateList.jsx'))
 
 function CardSkeleton({ title = 'Loading…' }) {
   return (
@@ -41,12 +44,14 @@ export default function AdminCommunications() {
   useEffect(() => {
     const prev = document.title
     document.title = 'Communications • Admin'
-    return () => { document.title = prev }
+    return () => {
+      document.title = prev
+    }
   }, [])
 
   // Listen for successful queues from ComposeForm and refresh history
   useEffect(() => {
-    const onQueued = () => setHistoryReloadKey((k) => k + 1)
+    const onQueued = () => setHistoryReloadKey(k => k + 1)
     window.addEventListener('comms:messageQueued', onQueued)
     return () => window.removeEventListener('comms:messageQueued', onQueued)
   }, [])

@@ -9,10 +9,10 @@ import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
 
 const PAYMENT_STATUS_OPTIONS = [
-  { value: '',        label: 'Select status…' },
-  { value: 'unpaid',  label: 'Unpaid' },
+  { value: '', label: 'Select status…' },
+  { value: 'unpaid', label: 'Unpaid' },
   { value: 'pending', label: 'Pending' },
-  { value: 'paid',    label: 'Paid' },
+  { value: 'paid', label: 'Paid' },
 ]
 
 // Normalize payer mode across shapes we’ve used in admin/student
@@ -25,12 +25,21 @@ function normalizePayerMode(v = {}) {
   return String(raw).trim().toLowerCase()
 }
 
-export default function CoursePaymentSection({ value = {}, onChange, onUpload }) {
+export default function CoursePaymentSection({
+  value = {},
+  onChange,
+  onUpload,
+}) {
   const v = useMemo(() => value || {}, [value])
 
   // Honor both: parent already hides when employer, but be defensive here too
   const payer = normalizePayerMode(v)
-  const isEmployerPaid = ['employer', 'company', 'sponsor', 'corporate'].includes(payer)
+  const isEmployerPaid = [
+    'employer',
+    'company',
+    'sponsor',
+    'corporate',
+  ].includes(payer)
   if (isEmployerPaid) return null
 
   const status = useMemo(
@@ -43,7 +52,7 @@ export default function CoursePaymentSection({ value = {}, onChange, onUpload })
   const setField = useCallback((k, val) => onChange?.(k, val), [onChange])
 
   const handleProofUpload = useCallback(
-    (file) => {
+    file => {
       if (!file) return
       // Parent handles upload + URL write
       onUpload?.(file, 'students/payments', 'paymentProofUrl')
@@ -55,7 +64,11 @@ export default function CoursePaymentSection({ value = {}, onChange, onUpload })
   const hasProof = !!v.paymentProofUrl
 
   return (
-    <section id="payment" className={styles.section} aria-labelledby="payment-title">
+    <section
+      id="payment"
+      className={styles.section}
+      aria-labelledby="payment-title"
+    >
       <SectionHeader
         title="Payment"
         status={status}
@@ -63,7 +76,9 @@ export default function CoursePaymentSection({ value = {}, onChange, onUpload })
         verifiedAt={verifiedAt}
       />
 
-      <h3 id="payment-title" className="visually-hidden">Payment</h3>
+      <h3 id="payment-title" className="visually-hidden">
+        Payment
+      </h3>
       <div className={styles.sub}>
         Required for Enrollment • Only shown if you’re paying as an individual.
       </div>
@@ -72,7 +87,7 @@ export default function CoursePaymentSection({ value = {}, onChange, onUpload })
         <Select
           label="Payment Status"
           value={v.paymentStatus || ''}
-          onChange={(val) => setField('paymentStatus', val)}
+          onChange={val => setField('paymentStatus', val)}
           options={PAYMENT_STATUS_OPTIONS}
           hint="Set to Paid after you’ve completed payment."
           aria-describedby="payment-hint"

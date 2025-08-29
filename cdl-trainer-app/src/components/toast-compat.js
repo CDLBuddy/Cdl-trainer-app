@@ -63,7 +63,11 @@ export function clearToasts() {
 
 function _normalizeArgs(messageOrObj, a, b, opts) {
   // Object style
-  if (messageOrObj && typeof messageOrObj === 'object' && 'message' in messageOrObj) {
+  if (
+    messageOrObj &&
+    typeof messageOrObj === 'object' &&
+    'message' in messageOrObj
+  ) {
     const o = messageOrObj
     return {
       id: o.id || _genId(),
@@ -114,8 +118,14 @@ function _normalizeAction(a) {
 }
 
 function _validPos(p) {
-  return p === 'bottom-right' || p === 'bottom-left' || p === 'bottom' ||
-         p === 'top-right'    || p === 'top-left'    || p === 'top'
+  return (
+    p === 'bottom-right' ||
+    p === 'bottom-left' ||
+    p === 'bottom' ||
+    p === 'top-right' ||
+    p === 'top-left' ||
+    p === 'top'
+  )
 }
 
 /* =========================================================================
@@ -124,13 +134,17 @@ function _validPos(p) {
 
 const MAX_PER_POSITION = 4
 const _containers = new Map() // pos -> HTMLElement
-const _indexById = new Map()  // id -> { pos, node }
+const _indexById = new Map() // id -> { pos, node }
 const _reduceMotion = (() => {
   try {
-    return typeof window !== 'undefined' &&
-           !!window.matchMedia &&
-           window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  } catch { return false }
+    return (
+      typeof window !== 'undefined' &&
+      !!window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    )
+  } catch {
+    return false
+  }
 })()
 
 function _domShowToast(t) {
@@ -340,7 +354,9 @@ function _createToastNode(t, position) {
   n.style.boxShadow = '0 10px 30px rgba(0,0,0,.25)'
   n.style.userSelect = 'none'
   n.style.opacity = '1'
-  n.style.transition = _reduceMotion ? 'none' : 'transform .15s ease, opacity .18s ease'
+  n.style.transition = _reduceMotion
+    ? 'none'
+    : 'transform .15s ease, opacity .18s ease'
   n.__duration = Number.isFinite(t.duration) ? t.duration : 3000
   n.__showProgress = !!t.showProgress
 
@@ -348,7 +364,9 @@ function _createToastNode(t, position) {
 
   // stack offset (base Y transform)
   const children = _containers.get(position)?.children?.length || 0
-  const baseTranslateY = position.startsWith('top') ? children * 12 : -children * 12
+  const baseTranslateY = position.startsWith('top')
+    ? children * 12
+    : -children * 12
   n.__baseTranslateY = baseTranslateY
   n.style.transform = `translateY(${baseTranslateY}px)`
 
@@ -382,13 +400,13 @@ function _createToastNode(t, position) {
   _rebuildClose(n, t.dismissible)
 
   // Click toast background to dismiss
-  n.addEventListener('click', (e) => {
+  n.addEventListener('click', e => {
     if (e.target && e.target !== n) return
     _domDismissToast(t.id)
   })
 
   // ESC to dismiss
-  const onKey = (e) => {
+  const onKey = e => {
     if (e.key === 'Escape') _domDismissToast(t.id)
   }
   window.addEventListener('keydown', onKey)
@@ -396,12 +414,22 @@ function _createToastNode(t, position) {
 
   // Swipe to dismiss (mobile) – preserve stack Y while translating X
   let startX = null
-  n.addEventListener('touchstart', (e) => { startX = e.changedTouches[0].clientX }, { passive: true })
-  n.addEventListener('touchmove', (e) => {
-    if (startX == null) return
-    const dx = e.changedTouches[0].clientX - startX
-    n.style.transform = `translateX(${dx}px) translateY(${baseTranslateY}px)`
-  }, { passive: true })
+  n.addEventListener(
+    'touchstart',
+    e => {
+      startX = e.changedTouches[0].clientX
+    },
+    { passive: true }
+  )
+  n.addEventListener(
+    'touchmove',
+    e => {
+      if (startX == null) return
+      const dx = e.changedTouches[0].clientX - startX
+      n.style.transform = `translateX(${dx}px) translateY(${baseTranslateY}px)`
+    },
+    { passive: true }
+  )
   n.addEventListener('touchend', () => {
     const m = /translateX\(([-\d.]+)px\)/.exec(n.style.transform || '')
     const dx = m ? parseFloat(m[1]) : 0
@@ -422,20 +450,26 @@ function _applyTypeStyles(n, type) {
   n.className = `toast-compat toast-${type}`
   const isWarn = type === 'warning'
   n.style.background =
-    type === 'error'   ? 'var(--error, #e53e3e)' :
-    type === 'success' ? 'var(--success, #48bb78)' :
-    isWarn             ? 'var(--warning, #d69e2e)' :
-                         'var(--toast-bg, rgba(0,0,0,.85))'
+    type === 'error'
+      ? 'var(--error, #e53e3e)'
+      : type === 'success'
+        ? 'var(--success, #48bb78)'
+        : isWarn
+          ? 'var(--warning, #d69e2e)'
+          : 'var(--toast-bg, rgba(0,0,0,.85))'
   n.style.color = isWarn ? '#111' : 'var(--toast-text, #fff)'
   const icon = n.querySelector('.tc-icon')
   if (icon) icon.textContent = _iconForType(type)
 }
 
 function _iconForType(type) {
-  return type === 'success' ? '✅'
-       : type === 'error'   ? '⚠️'
-       : type === 'warning' ? '🚧'
-       : '💬'
+  return type === 'success'
+    ? '✅'
+    : type === 'error'
+      ? '⚠️'
+      : type === 'warning'
+        ? '🚧'
+        : '💬'
 }
 
 function _rebuildAction(n, action) {
@@ -456,9 +490,13 @@ function _rebuildAction(n, action) {
     whiteSpace: 'nowrap',
   })
   btn.textContent = action.label
-  btn.addEventListener('click', (e) => {
+  btn.addEventListener('click', e => {
     e.stopPropagation()
-    try { action.onClick() } catch { /* ignore */ }
+    try {
+      action.onClick()
+    } catch {
+      /* ignore */
+    }
     // common pattern is to close after action; keep it consistent
     _domDismissToast(n.dataset.toastId)
   })
@@ -481,7 +519,7 @@ function _rebuildClose(n, dismissible) {
     marginLeft: '6px',
   })
   close.textContent = '×'
-  close.addEventListener('click', (e) => {
+  close.addEventListener('click', e => {
     e.stopPropagation()
     _domDismissToast(n.dataset.toastId)
   })

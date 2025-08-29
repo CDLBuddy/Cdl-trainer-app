@@ -22,9 +22,20 @@ import {
   connectFirestoreEmulator,
   setLogLevel as setFsLogLevel,
   // re-exports
-  doc, getDoc, setDoc, updateDoc, addDoc, collection,
-  serverTimestamp, increment, query, orderBy, limit, getDocs,
-  where, startAfter,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  addDoc,
+  collection,
+  serverTimestamp,
+  increment,
+  query,
+  orderBy,
+  limit,
+  getDocs,
+  where,
+  startAfter,
 } from 'firebase/firestore'
 import { getStorage, connectStorageEmulator } from 'firebase/storage'
 
@@ -35,22 +46,26 @@ const IS_BROWSER = typeof window !== 'undefined'
 
 // Read .env (see .env.example)
 const firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY || '',
-  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId:             import.meta.env.VITE_FIREBASE_APP_ID || '',
-  measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || undefined,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || undefined,
 }
 
 // Emulators
-const IS_EMU          = String(import.meta.env.VITE_USE_FIREBASE_EMULATORS || '').toLowerCase() === 'true'
-const EMU_HOST        = import.meta.env.VITE_EMULATOR_HOST || 'localhost'
-const EMU_AUTH_PORT   = Number(import.meta.env.VITE_EMULATOR_AUTH_PORT || 9099)
-const EMU_FS_PORT     = Number(import.meta.env.VITE_EMULATOR_FIRESTORE_PORT || 8080)
-const EMU_STO_PORT    = Number(import.meta.env.VITE_EMULATOR_STORAGE_PORT || 9199)
-const MULTI_TAB       = String(import.meta.env.VITE_FIRESTORE_MULTI_TAB || 'false').toLowerCase() === 'true'
+const IS_EMU =
+  String(import.meta.env.VITE_USE_FIREBASE_EMULATORS || '').toLowerCase() ===
+  'true'
+const EMU_HOST = import.meta.env.VITE_EMULATOR_HOST || 'localhost'
+const EMU_AUTH_PORT = Number(import.meta.env.VITE_EMULATOR_AUTH_PORT || 9099)
+const EMU_FS_PORT = Number(import.meta.env.VITE_EMULATOR_FIRESTORE_PORT || 8080)
+const EMU_STO_PORT = Number(import.meta.env.VITE_EMULATOR_STORAGE_PORT || 9199)
+const MULTI_TAB =
+  String(import.meta.env.VITE_FIRESTORE_MULTI_TAB || 'false').toLowerCase() ===
+  'true'
 
 // Sanity warn in dev when not using emulators without real env set
 if (IS_DEV && !IS_EMU) {
@@ -81,8 +96,9 @@ if (IS_EMU && IS_BROWSER) {
 }
 // Set persistence after emulator wiring (browser-only)
 if (IS_BROWSER) {
-  setPersistence(auth, browserLocalPersistence).catch((e) => {
-    if (IS_DEV) console.warn('[firebase] setPersistence fell back to default', e)
+  setPersistence(auth, browserLocalPersistence).catch(e => {
+    if (IS_DEV)
+      console.warn('[firebase] setPersistence fell back to default', e)
   })
 }
 
@@ -91,7 +107,9 @@ let db
 try {
   db = initializeFirestore(app, {
     localCache: persistentLocalCache({
-      tabManager: MULTI_TAB ? persistentMultipleTabManager() : persistentSingleTabManager(),
+      tabManager: MULTI_TAB
+        ? persistentMultipleTabManager()
+        : persistentSingleTabManager(),
     }),
     experimentalAutoDetectLongPolling: true, // smoother on VPNs/hotel Wi-Fi
     // ignoreUndefinedProperties: true,      // enable if your writes may contain undefined
@@ -104,9 +122,14 @@ try {
 if (IS_EMU && IS_BROWSER) {
   try {
     connectFirestoreEmulator(db, EMU_HOST, EMU_FS_PORT)
-    if (IS_DEV) console.warn('[firebase] Firestore emulator:', `${EMU_HOST}:${EMU_FS_PORT}`)
+    if (IS_DEV)
+      console.warn(
+        '[firebase] Firestore emulator:',
+        `${EMU_HOST}:${EMU_FS_PORT}`
+      )
   } catch (e) {
-    if (IS_DEV) console.warn('[firebase] Failed to connect Firestore emulator', e)
+    if (IS_DEV)
+      console.warn('[firebase] Failed to connect Firestore emulator', e)
   }
 }
 if (IS_DEV) setFsLogLevel('error') // set to 'debug' if you need extra logs
@@ -116,7 +139,11 @@ const storage = getStorage(app)
 if (IS_EMU && IS_BROWSER) {
   try {
     connectStorageEmulator(storage, EMU_HOST, EMU_STO_PORT)
-    if (IS_DEV) console.warn('[firebase] Storage emulator:', `${EMU_HOST}:${EMU_STO_PORT}`)
+    if (IS_DEV)
+      console.warn(
+        '[firebase] Storage emulator:',
+        `${EMU_HOST}:${EMU_STO_PORT}`
+      )
   } catch (e) {
     if (IS_DEV) console.warn('[firebase] Failed to connect Storage emulator', e)
   }
@@ -137,7 +164,11 @@ export async function __firebaseHealthcheck() {
 
 export async function getLatestUpdate() {
   try {
-    const qRef = query(collection(db, 'updates'), orderBy('date', 'desc'), limit(1))
+    const qRef = query(
+      collection(db, 'updates'),
+      orderBy('date', 'desc'),
+      limit(1)
+    )
     const qs = await getDocs(qRef)
     if (qs.empty) return null
     const d = qs.docs[0]
@@ -149,7 +180,11 @@ export async function getLatestUpdate() {
 }
 
 export function getCurrentUserSchool() {
-  try { return IS_BROWSER ? localStorage.getItem('schoolId') || null : null } catch { return null }
+  try {
+    return IS_BROWSER ? localStorage.getItem('schoolId') || null : null
+  } catch {
+    return null
+  }
 }
 
 // NOTE: this “userRoles” collection is a light helper; your main role source
@@ -167,7 +202,11 @@ export async function getUserRole(email) {
 
 export async function setUserRole(email, role, schoolId = null) {
   try {
-    await setDoc(doc(db, 'userRoles', String(email)), { role, schoolId }, { merge: true })
+    await setDoc(
+      doc(db, 'userRoles', String(email)),
+      { role, schoolId },
+      { merge: true }
+    )
     return true
   } catch {
     return false
@@ -178,16 +217,27 @@ export async function setUserRole(email, role, schoolId = null) {
 export const refs = {
   schoolWalkthrough: (schoolId, token) =>
     doc(db, 'schools', String(schoolId), 'walkthroughs', String(token)),
-  userByUid: (uid) => doc(db, 'users', String(uid)),
+  userByUid: uid => doc(db, 'users', String(uid)),
 }
 
 // ---------- Exports (keep your public surface the same) -----------------
 
 export { app, db, auth, storage }
 export {
-  doc, getDoc, setDoc, updateDoc, addDoc, collection,
-  serverTimestamp, increment, query, orderBy, limit, getDocs,
-  where, startAfter,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  addDoc,
+  collection,
+  serverTimestamp,
+  increment,
+  query,
+  orderBy,
+  limit,
+  getDocs,
+  where,
+  startAfter,
 }
 
 // Also export flags if you want quick checks elsewhere

@@ -197,4 +197,12 @@ export const PROFILE_SCHEMA = {
       key: 'trailerPlateUrl',
       type: 'fileUrl',
       owner: 'student',
-      required
+      requiredIn: ['btw'],
+      requiredWhen: { vehicleQualified: 'yes' },
+      weight: 1,
+      importance: 'extra',
+      validate: { image: true, maxMB: 8 },
+          label: 'Trailer Data Plate',
+        }
+      ],
+    };

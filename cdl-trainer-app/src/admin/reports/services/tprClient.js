@@ -12,9 +12,7 @@ import { ENV } from '@utils/env.js'
 
 /* --------------------------------- Config --------------------------------- */
 
-const BASE =
-  (ENV && (ENV.VITE_TPR_API_BASE || ENV.TPR_API_BASE)) ||
-  '' // e.g., 'https://tpr.example.com'
+const BASE = (ENV && (ENV.VITE_TPR_API_BASE || ENV.TPR_API_BASE)) || '' // e.g., 'https://tpr.example.com'
 
 const PROVIDER_ID =
   (ENV && (ENV.VITE_TPR_PROVIDER_ID || ENV.TPR_PROVIDER_ID)) ||
@@ -23,8 +21,8 @@ const PROVIDER_ID =
 
 const MODE = String(
   (ENV && (ENV.VITE_TPR_MODE || ENV.TPR_MODE)) ||
-  (typeof window !== 'undefined' && /** @type any */ (window)).__TPR_MODE__ ||
-  'portal'
+    (typeof window !== 'undefined' && /** @type any */ (window)).__TPR_MODE__ ||
+    'portal'
 ).toLowerCase() // 'api' | 'bulk' | 'portal'
 
 const DEFAULT_TIMEOUT_MS = 15_000
@@ -53,11 +51,15 @@ const DEFAULT_RETRIES = 2 // for API mode (5xx / network)
 /* ------------------------------- Utilities -------------------------------- */
 
 const __DEV__ =
-  (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') ||
+  (typeof process !== 'undefined' &&
+    process.env &&
+    process.env.NODE_ENV === 'development') ||
   (typeof window !== 'undefined' && /** @type any */ (window)).__DEV__
 
-function isObj(v) { return !!v && typeof v === 'object' && !Array.isArray(v) }
-const wait = (ms) => new Promise(r => setTimeout(r, ms))
+function isObj(v) {
+  return !!v && typeof v === 'object' && !Array.isArray(v)
+}
+const wait = ms => new Promise(r => setTimeout(r, ms))
 
 function joinUrl(base, path) {
   if (!base) return path
@@ -70,11 +72,17 @@ function composeSignal(timeoutMs, externalSignal) {
   const controller = new AbortController()
   let timeoutId = null
 
-  const onAbort = () => controller.abort(externalSignal?.reason || new DOMException('aborted', 'AbortError'))
+  const onAbort = () =>
+    controller.abort(
+      externalSignal?.reason || new DOMException('aborted', 'AbortError')
+    )
   externalSignal?.addEventListener?.('abort', onAbort, { once: true })
 
   if (timeoutMs > 0) {
-    timeoutId = setTimeout(() => controller.abort(new Error('timeout')), timeoutMs)
+    timeoutId = setTimeout(
+      () => controller.abort(new Error('timeout')),
+      timeoutMs
+    )
     timeoutId?.unref?.() // no-op in browsers
   }
 
@@ -87,21 +95,24 @@ function composeSignal(timeoutMs, externalSignal) {
   }
 }
 
-async function fetchJSON(url, {
-  method = 'GET',
-  headers,
-  body,
-  signal,
-  timeoutMs = DEFAULT_TIMEOUT_MS,
-  retries = DEFAULT_RETRIES,
-} = {}) {
+async function fetchJSON(
+  url,
+  {
+    method = 'GET',
+    headers,
+    body,
+    signal,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+    retries = DEFAULT_RETRIES,
+  } = {}
+) {
   const composed = composeSignal(timeoutMs, signal)
   try {
     const res = await fetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
         ...(PROVIDER_ID ? { 'X-TPR-Provider': PROVIDER_ID } : null),
         ...(headers || {}),
       },
@@ -111,26 +122,55 @@ async function fetchJSON(url, {
 
     const ct = res.headers.get('content-type') || ''
     const isJson = /\bapplication\/json\b/i.test(ct)
-    const data = isJson ? await res.json().catch(() => ({})) : await res.text().catch(() => '')
+    const data = isJson
+      ? await res.json().catch(() => ({}))
+      : await res.text().catch(() => '')
 
     if (!res.ok) {
       const transient = res.status >= 500 && res.status < 600
       if (transient && retries > 0) {
-        if (__DEV__) console.debug('[tprClient] retrying after 5xx:', res.status)
+        if (__DEV__) console.warn('[tprClient] retrying after 5xx:', res.status)
         await wait(400 * (DEFAULT_RETRIES - retries + 1))
-        return fetchJSON(url, { method, headers, body, signal, timeoutMs, retries: retries - 1 })
+        return fetchJSON(url, {
+          method,
+          headers,
+          body,
+          signal,
+          timeoutMs,
+          retries: retries - 1,
+        })
       }
-      return { ok: false, status: res.status, data, error: data?.message || data || `HTTP ${res.status}` }
+      return {
+        ok: false,
+        status: res.status,
+        data,
+        error: data?.message || data || `HTTP ${res.status}`,
+      }
     }
     return { ok: true, status: res.status, data, error: null }
   } catch (err) {
-    const transient = /aborted|timeout|network/i.test(String(err?.message || err))
+    const transient = /aborted|timeout|network/i.test(
+      String(err?.message || err)
+    )
     if (transient && retries > 0) {
-      if (__DEV__) console.debug('[tprClient] retrying after network error:', err)
+      if (__DEV__)
+        console.warn('[tprClient] retrying after network error:', err)
       await wait(400 * (DEFAULT_RETRIES - retries + 1))
-      return fetchJSON(url, { method, headers, body, signal, timeoutMs, retries: retries - 1 })
+      return fetchJSON(url, {
+        method,
+        headers,
+        body,
+        signal,
+        timeoutMs,
+        retries: retries - 1,
+      })
     }
-    return { ok: false, status: 0, data: null, error: String(err?.message || err) }
+    return {
+      ok: false,
+      status: 0,
+      data: null,
+      error: String(err?.message || err),
+    }
   } finally {
     composed?.cleanup?.()
   }
@@ -138,7 +178,7 @@ async function fetchJSON(url, {
 
 /* ------------------------------ Normalization ----------------------------- */
 
-const trimmed = (s) => (typeof s === 'string' ? s.trim() : '')
+const trimmed = s => (typeof s === 'string' ? s.trim() : '')
 
 /**
  * Validate & normalize your completion payload into a shape the backend can accept.
@@ -149,36 +189,47 @@ function normalizeCompletion(input) {
   const issues = []
   if (!isObj(input)) issues.push('payload must be an object')
 
-  const trainee  = isObj(input?.trainee) ? input.trainee : {}
+  const trainee = isObj(input?.trainee) ? input.trainee : {}
   const training = isObj(input?.training) ? input.training : {}
   const provider = isObj(input?.provider) ? input.provider : {}
 
-  const fullName = trimmed(trainee.fullName) ||
-    [trimmed(trainee.firstName), trimmed(trainee.middleName), trimmed(trainee.lastName)]
-      .filter(Boolean).join(' ')
+  const fullName =
+    trimmed(trainee.fullName) ||
+    [
+      trimmed(trainee.firstName),
+      trimmed(trainee.middleName),
+      trimmed(trainee.lastName),
+    ]
+      .filter(Boolean)
+      .join(' ')
 
-  const dob   = trimmed(trainee.dob)
-  const clp   = trimmed(trainee.clpNumber || trainee.licenseNumber)
+  const dob = trimmed(trainee.dob)
+  const clp = trimmed(trainee.clpNumber || trainee.licenseNumber)
   const state = trimmed(trainee.clpState || trainee.licenseState)
 
-  const classType      = trimmed(training.classType || '')
-  const completionDate = trimmed(training.completionDate || training?.theory?.completedAt || training?.btw?.completedAt || '')
-  const theoryDone     = !!(training?.theory?.completed)
-  const btwDone        = !!(training?.btw?.completed)
+  const classType = trimmed(training.classType || '')
+  const completionDate = trimmed(
+    training.completionDate ||
+      training?.theory?.completedAt ||
+      training?.btw?.completedAt ||
+      ''
+  )
+  const theoryDone = !!training?.theory?.completed
+  const btwDone = !!training?.btw?.completed
 
   const tprId = trimmed(provider.tprId || PROVIDER_ID)
 
-  if (!fullName)      issues.push('trainee.fullName (or names) is required')
-  if (!dob)           issues.push('trainee.dob is required (YYYY-MM-DD)')
-  if (!clp)           issues.push('trainee.clpNumber / licenseNumber is required')
-  if (!state)         issues.push('trainee.clpState / licenseState is required')
-  if (!classType)     issues.push('training.classType is required (A|B|C)')
-  if (!completionDate)issues.push('training.completionDate is required')
-  if (!tprId)         issues.push('provider.tprId is required (configure PROVIDER ID)')
+  if (!fullName) issues.push('trainee.fullName (or names) is required')
+  if (!dob) issues.push('trainee.dob is required (YYYY-MM-DD)')
+  if (!clp) issues.push('trainee.clpNumber / licenseNumber is required')
+  if (!state) issues.push('trainee.clpState / licenseState is required')
+  if (!classType) issues.push('training.classType is required (A|B|C)')
+  if (!completionDate) issues.push('training.completionDate is required')
+  if (!tprId) issues.push('provider.tprId is required (configure PROVIDER ID)')
 
   if (issues.length) {
     const err = new Error('Invalid completion payload')
-    ;(err /** @type any */).issues = issues
+    err /** @type any */.issues = issues
     throw err
   }
 
@@ -197,8 +248,14 @@ function normalizeCompletion(input) {
     training: {
       classType,
       endorsement: trimmed(training.endorsement),
-      theory: { completed: theoryDone, completedAt: trimmed(training?.theory?.completedAt) || completionDate },
-      btw:    { completed: btwDone,    completedAt: trimmed(training?.btw?.completedAt)    || completionDate },
+      theory: {
+        completed: theoryDone,
+        completedAt: trimmed(training?.theory?.completedAt) || completionDate,
+      },
+      btw: {
+        completed: btwDone,
+        completedAt: trimmed(training?.btw?.completedAt) || completionDate,
+      },
       completionDate,
     },
     provider: {
@@ -222,16 +279,21 @@ export async function submitCompletion(payload, opts = {}) {
   const normalized = normalizeCompletion(payload)
 
   if (MODE === 'api' && BASE) {
-    const { ok, data, error, status } = await fetchJSON(joinUrl(BASE, '/completions'), {
-      method: 'POST',
-      body: { providerId: normalized.provider.tprId, completion: normalized },
-      signal: opts.signal,
-      timeoutMs: opts.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-    })
+    const { ok, data, error, status } = await fetchJSON(
+      joinUrl(BASE, '/completions'),
+      {
+        method: 'POST',
+        body: { providerId: normalized.provider.tprId, completion: normalized },
+        signal: opts.signal,
+        timeoutMs: opts.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+      }
+    )
     if (!ok) {
-      const err = new Error(`TPR API error ${status || ''}: ${error || 'unknown'}`)
-      ;(err /** @type any */).status = status
-      ;(err /** @type any */).payload = normalized
+      const err = new Error(
+        `TPR API error ${status || ''}: ${error || 'unknown'}`
+      )
+      err /** @type any */.status = status
+      err /** @type any */.payload = normalized
       throw err
     }
     return { ok: true, mode: MODE, data }
@@ -242,9 +304,10 @@ export async function submitCompletion(payload, opts = {}) {
     ok: true,
     mode: MODE,
     data: normalized,
-    instructions: MODE === 'bulk'
-      ? 'Aggregate CSV rows and upload via the TPR bulk upload portal.'
-      : 'Enter this completion in the TPR web portal.',
+    instructions:
+      MODE === 'bulk'
+        ? 'Aggregate CSV rows and upload via the TPR bulk upload portal.'
+        : 'Enter this completion in the TPR web portal.',
   }
 }
 
@@ -267,9 +330,10 @@ export async function bulkUpload(payloads = [], opts = {}) {
     return {
       ok: true,
       mode: MODE,
-      message: MODE === 'bulk'
-        ? 'Prepare a CSV and upload via the TPR bulk portal.'
-        : 'Multiple completions ready; enter via TPR portal or switch to API mode.',
+      message:
+        MODE === 'bulk'
+          ? 'Prepare a CSV and upload via the TPR bulk portal.'
+          : 'Multiple completions ready; enter via TPR portal or switch to API mode.',
       rows, // feed these to your exporters to build CSV
       count: rows.length,
     }
@@ -278,7 +342,9 @@ export async function bulkUpload(payloads = [], opts = {}) {
   // API mode: concurrent queue
   const total = rows.length
   const concurrency = Math.max(1, Math.min(Number(opts.concurrency || 4), 10))
-  let done = 0, ok = 0, failed = 0
+  let done = 0,
+    ok = 0,
+    failed = 0
 
   /** @type {Array<{ok:boolean, data?:any, error?:any, index:number}>} */
   const results = new Array(total)
@@ -292,7 +358,12 @@ export async function bulkUpload(payloads = [], opts = {}) {
       const item = rows[i]
       try {
         if (opts.signal?.aborted) throw new Error('aborted')
-        const { ok: resOk, data, error, status } = await fetchJSON(joinUrl(BASE, '/completions'), {
+        const {
+          ok: resOk,
+          data,
+          error,
+          status,
+        } = await fetchJSON(joinUrl(BASE, '/completions'), {
           method: 'POST',
           body: { providerId: item.provider.tprId, completion: item },
           signal: opts.signal,
@@ -322,23 +393,37 @@ export async function bulkUpload(payloads = [], opts = {}) {
   return {
     ok: failed === 0,
     mode: MODE,
-    total, ok, failed,
+    total,
+    failed,
     results,
   }
 }
 
 /* --------------------------------- Helpers -------------------------------- */
 
-export function providerId() { return PROVIDER_ID }
-export function mode() { return MODE }
+export function providerId() {
+  return PROVIDER_ID
+}
+export function mode() {
+  return MODE
+}
 
 /** Quick capability check for UI toggles */
-export function canSubmitViaApi() { return MODE === 'api' && !!BASE && !!PROVIDER_ID }
+export function canSubmitViaApi() {
+  return MODE === 'api' && !!BASE && !!PROVIDER_ID
+}
 
 /** Optional: quick preflight to surface config issues in the UI */
 export function validateProviderConfig() {
   const issues = []
   if (!PROVIDER_ID) issues.push('Missing providerId (TPR ID)')
-  if (MODE === 'api' && !BASE) issues.push('API mode selected but no VITE_TPR_API_BASE configured')
-  return { ok: issues.length === 0, issues, mode: MODE, providerId: PROVIDER_ID, base: BASE }
+  if (MODE === 'api' && !BASE)
+    issues.push('API mode selected but no VITE_TPR_API_BASE configured')
+  return {
+    ok: issues.length === 0,
+    issues,
+    mode: MODE,
+    providerId: PROVIDER_ID,
+    base: BASE,
+  }
 }

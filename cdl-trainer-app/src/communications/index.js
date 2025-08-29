@@ -7,22 +7,24 @@
 // ======================================================================
 
 // --- Direct component exports -----------------------------------------
-export { default as InboxBell } from './InboxBell.jsx'
-export { default as InboxList } from './InboxList.jsx'
+export { default as InboxBell } from './components/InboxBell.jsx'
+export { default as InboxList } from './components/InboxList.jsx'
 
 // Optional alias (same component)
-export { default as Announcements } from './InboxList.jsx'
+export { default as Announcements } from './components/InboxList.jsx'
 
 // --- Lazy loaders (use with React.lazy) -------------------------------
 // Example:
 //   const InboxList  = React.lazy(loadInboxList)
 //   const InboxBell  = React.lazy(loadInboxBell)
 //   // (optional) somewhere idle/hover: preloadInboxList()
-export const loadInboxList = /* @__PURE__ */ () => import('./InboxList.jsx')
-export const loadInboxBell  = /* @__PURE__ */ () => import('./InboxBell.jsx')
+export const loadInboxList = /* @__PURE__ */ () =>
+  import('./components/InboxList.jsx')
+export const loadInboxBell = /* @__PURE__ */ () =>
+  import('./components/InboxBell.jsx')
 
 // --- Optional: tiny preloads (best-effort; safe to call multiple times)
-let _preloaded = { list: false, bell: false }
+const _preloaded = { list: false, bell: false }
 
 /** Warm the InboxList chunk without rendering it. */
 export function preloadInboxList() {
@@ -49,7 +51,9 @@ export function preloadOnHover(elOrGetter, preloadFn = preloadInboxList) {
   if (!el || typeof el.addEventListener !== 'function') return () => {}
 
   const handler = () => {
-    try { preloadFn() } finally {
+    try {
+      preloadFn()
+    } finally {
       el.removeEventListener('pointerenter', handler)
       el.removeEventListener('focus', handler, { capture: true })
     }
@@ -60,6 +64,8 @@ export function preloadOnHover(elOrGetter, preloadFn = preloadInboxList) {
     try {
       el.removeEventListener('pointerenter', handler)
       el.removeEventListener('focus', handler, { capture: true })
-    } catch {}
+    } catch {
+      // intentionally ignored
+    }
   }
 }

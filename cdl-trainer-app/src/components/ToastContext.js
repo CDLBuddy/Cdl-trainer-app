@@ -53,17 +53,39 @@ import { createContext } from 'react'
 
 /** @type {ToastAPI} */
 export const defaultToast = Object.assign(
-  /** @type {ToastCallable} */ (() => { /* no-op */ }),
+  /** @type {ToastCallable} */ (
+    () => {
+      /* no-op */
+    }
+  ),
   {
-    show:      () => { /* no-op */ },
-    showToast: () => { /* no-op */ },
-    success:   () => { /* no-op */ },
-    error:     () => { /* no-op */ },
-    info:      () => { /* no-op */ },
-    warn:      () => { /* no-op */ },
-    dismiss:   () => { /* no-op */ },
-    clear:     () => { /* no-op */ },
-    update:    () => { /* no-op */ },
+    show: () => {
+      /* no-op */
+    },
+    showToast: () => {
+      /* no-op */
+    },
+    success: () => {
+      /* no-op */
+    },
+    error: () => {
+      /* no-op */
+    },
+    info: () => {
+      /* no-op */
+    },
+    warn: () => {
+      /* no-op */
+    },
+    dismiss: () => {
+      /* no-op */
+    },
+    clear: () => {
+      /* no-op */
+    },
+    update: () => {
+      /* no-op */
+    },
   }
 )
 

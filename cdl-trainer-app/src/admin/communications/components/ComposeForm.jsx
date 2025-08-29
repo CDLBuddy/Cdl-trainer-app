@@ -1,10 +1,10 @@
 // Path: src/admin/communications/components/ComposeForm.jsx
-import React, { useMemo, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
+import React, { useMemo, useState, useCallback } from 'react'
 
-import { useComposeMessage } from '../hooks'
-import { useTemplates } from '../hooks'
 import { useToast } from '@components/ToastProvider.jsx'
+
+import { useComposeMessage, useTemplates } from '../hooks'
 
 import cls from './ComposeForm.module.css'
 
@@ -13,7 +13,7 @@ function toLocalInputValue(value) {
   if (!value) return ''
   const d = value instanceof Date ? value : new Date(value)
   if (Number.isNaN(d.getTime())) return ''
-  const pad = (n) => String(n).padStart(2, '0')
+  const pad = n => String(n).padStart(2, '0')
   const yyyy = d.getFullYear()
   const mm = pad(d.getMonth() + 1)
   const dd = pad(d.getDate())
@@ -23,10 +23,10 @@ function toLocalInputValue(value) {
 }
 
 const AUDIENCE_PRESETS = [
-  { value: 'students:all',        label: 'All Students' },
-  { value: 'students:enrolled',   label: 'Enrolled Students' },
-  { value: 'students:not-started',label: 'Not Started (students)' },
-  { value: 'instructors:all',     label: 'All Instructors' },
+  { value: 'students:all', label: 'All Students' },
+  { value: 'students:enrolled', label: 'Enrolled Students' },
+  { value: 'students:not-started', label: 'Not Started (students)' },
+  { value: 'instructors:all', label: 'All Instructors' },
 ]
 
 // ---- component --------------------------------------------------------
@@ -77,36 +77,48 @@ export default function ComposeForm({
     }
   }, [varsText, setField])
 
-  const onTemplateChange = useCallback((e) => {
-    const id = e.target.value
-    if (!id) detachTemplate()
-    else attachTemplate(id)
-  }, [attachTemplate, detachTemplate])
+  const onTemplateChange = useCallback(
+    e => {
+      const id = e.target.value
+      if (!id) detachTemplate()
+      else attachTemplate(id)
+    },
+    [attachTemplate, detachTemplate]
+  )
 
-  const onAudienceChange = useCallback((e) => {
-    const kind = e.target.value
-    setSegment({ type: 'query', query: { kind } })
-  }, [setSegment])
+  const onAudienceChange = useCallback(
+    e => {
+      const kind = e.target.value
+      setSegment({ type: 'query', query: { kind } })
+    },
+    [setSegment]
+  )
 
-  const onScheduleChange = useCallback((e) => {
-    const v = e.target.value // yyyy-mm-ddThh:mm or ''
-    setSchedule(v ? new Date(v) : null)
-  }, [setSchedule])
+  const onScheduleChange = useCallback(
+    e => {
+      const v = e.target.value // yyyy-mm-ddThh:mm or ''
+      setSchedule(v ? new Date(v) : null)
+    },
+    [setSchedule]
+  )
 
-  const onSubmit = useCallback(async (e) => {
-    e.preventDefault()
-    if (!canSend) return
-    try {
-      const { id } = await send()
-      toast?.showToast?.('Message queued', { type: 'success' })
-      onSent?.(id)
-      reset({ subject: '', bodyHtml: '', bodyText: '', templateId: null })
-      setVarsText('{}')
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      toast?.showToast?.(msg || 'Failed to queue message', { type: 'error' })
-    }
-  }, [canSend, send, toast, onSent, reset])
+  const onSubmit = useCallback(
+    async e => {
+      e.preventDefault()
+      if (!canSend) return
+      try {
+        const { id } = await send()
+        toast?.showToast?.('Message queued', { type: 'success' })
+        onSent?.(id)
+        reset({ subject: '', bodyHtml: '', bodyText: '', templateId: null })
+        setVarsText('{}')
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        toast?.showToast?.(msg || 'Failed to queue message', { type: 'error' })
+      }
+    },
+    [canSend, send, toast, onSent, reset]
+  )
 
   const subjectHelp = useMemo(() => {
     if (requiresSubject) return 'Required for email.'
@@ -116,7 +128,9 @@ export default function ComposeForm({
   return (
     <section className={cls.card} aria-labelledby="compose-title">
       <header className={cls.header}>
-        <h3 id="compose-title" className={cls.title}>✍️ Compose Message</h3>
+        <h3 id="compose-title" className={cls.title}>
+          ✍️ Compose Message
+        </h3>
         <p className={cls.subtitle}>
           Choose channels, audience, and content. You can schedule or send now.
         </p>
@@ -136,7 +150,10 @@ export default function ComposeForm({
               <span>In-App</span>
             </label>
 
-            <label className={cls.channel} aria-disabled={!allowedChannels.email}>
+            <label
+              className={cls.channel}
+              aria-disabled={!allowedChannels.email}
+            >
               <input
                 type="checkbox"
                 checked={channels.includes('email')}
@@ -157,7 +174,9 @@ export default function ComposeForm({
             </label>
           </div>
           {validation.channels && (
-            <div role="alert" className={cls.error}>{validation.channels}</div>
+            <div role="alert" className={cls.error}>
+              {validation.channels}
+            </div>
           )}
         </fieldset>
 
@@ -173,11 +192,15 @@ export default function ComposeForm({
               onChange={onAudienceChange}
               value={draft.segment?.query?.kind || 'students:all'}
             >
-              {AUDIENCE_PRESETS.map((a) => (
-                <option key={a.value} value={a.value}>{a.label}</option>
+              {AUDIENCE_PRESETS.map(a => (
+                <option key={a.value} value={a.value}>
+                  {a.label}
+                </option>
               ))}
             </select>
-            <p className={cls.help}>Preset segments. Advanced filters can come later.</p>
+            <p className={cls.help}>
+              Preset segments. Advanced filters can come later.
+            </p>
           </div>
 
           {/* Schedule */}
@@ -200,7 +223,9 @@ export default function ComposeForm({
 
         {/* Template */}
         <div className={cls.field}>
-          <label className={cls.label} htmlFor="tpl">Template</label>
+          <label className={cls.label} htmlFor="tpl">
+            Template
+          </label>
           <select
             id="tpl"
             className={cls.select}
@@ -210,11 +235,14 @@ export default function ComposeForm({
           >
             <option value="">— None —</option>
             {(templates || []).map(t => (
-              <option key={t.id} value={t.id}>{t.name || t.id}</option>
+              <option key={t.id} value={t.id}>
+                {t.name || t.id}
+              </option>
             ))}
           </select>
           <p className={cls.help}>
-            Selecting a template doesn’t erase your body fields; it’s merged at send time.
+            Selecting a template doesn’t erase your body fields; it’s merged at
+            send time.
           </p>
         </div>
 
@@ -228,7 +256,7 @@ export default function ComposeForm({
             className={cls.input}
             type="text"
             value={draft.subject}
-            onChange={(e) => setField('subject', e.target.value)}
+            onChange={e => setField('subject', e.target.value)}
             aria-invalid={!!validation.subject}
             placeholder="e.g., Welcome to CDL Trainer!"
           />
@@ -237,59 +265,75 @@ export default function ComposeForm({
             <span className={cls.count}>{counts.subject}</span>
           </div>
           {validation.subject && (
-            <div role="alert" className={cls.error}>{validation.subject}</div>
+            <div role="alert" className={cls.error}>
+              {validation.subject}
+            </div>
           )}
         </div>
 
         {/* Body (HTML) */}
         <div className={cls.field}>
-          <label className={cls.label} htmlFor="bodyHtml">Body (HTML or plain text)</label>
+          <label className={cls.label} htmlFor="bodyHtml">
+            Body (HTML or plain text)
+          </label>
           <textarea
             id="bodyHtml"
             className={cls.textarea}
             rows={8}
             value={draft.bodyHtml}
-            onChange={(e) => setField('bodyHtml', e.target.value)}
+            onChange={e => setField('bodyHtml', e.target.value)}
             placeholder="<p>Thanks for enrolling…</p>"
           />
           <div className={cls.metaRow}>
-            <p className={cls.help}>You can keep this empty if the template renders the body.</p>
+            <p className={cls.help}>
+              You can keep this empty if the template renders the body.
+            </p>
             <span className={cls.count}>{counts.bodyHtml}</span>
           </div>
         </div>
 
         {/* Body (fallback text) */}
         <div className={cls.field}>
-          <label className={cls.label} htmlFor="bodyText">Text fallback (optional)</label>
+          <label className={cls.label} htmlFor="bodyText">
+            Text fallback (optional)
+          </label>
           <textarea
             id="bodyText"
             className={cls.textarea}
             rows={4}
             value={draft.bodyText}
-            onChange={(e) => setField('bodyText', e.target.value)}
+            onChange={e => setField('bodyText', e.target.value)}
             placeholder="Thanks for enrolling…"
           />
           <div className={cls.metaRow}>
-            <p className={cls.help}>Used for SMS or email clients that prefer text.</p>
+            <p className={cls.help}>
+              Used for SMS or email clients that prefer text.
+            </p>
             <span className={cls.count}>{counts.bodyText}</span>
           </div>
         </div>
 
         {/* Variables (JSON) */}
         <div className={cls.field}>
-          <label className={cls.label} htmlFor="vars">Template variables (JSON)</label>
+          <label className={cls.label} htmlFor="vars">
+            Template variables (JSON)
+          </label>
           <textarea
             id="vars"
             className={cls.textareaMono}
             rows={6}
             value={varsText}
-            onChange={(e) => setVarsText(e.target.value)}
+            onChange={e => setVarsText(e.target.value)}
             onBlur={handleVarsBlur}
             spellCheck={false}
           />
           <div className={cls.metaRow}>
-            <p className={cls.help}>Example: {"{ \"firstName\": \"Alex\" }"}</p>
-            {varsErr && <span role="alert" className={cls.error}>{varsErr}</span>}
+            <p className={cls.help}>Example: {'{ "firstName": "Alex" }'}</p>
+            {varsErr && (
+              <span role="alert" className={cls.error}>
+                {varsErr}
+              </span>
+            )}
           </div>
         </div>
 
@@ -301,7 +345,11 @@ export default function ComposeForm({
             disabled={!canSend}
             aria-disabled={!canSend}
           >
-            {sending ? 'Queuing…' : (draft.scheduleAt ? 'Schedule Message' : 'Send Now')}
+            {sending
+              ? 'Queuing…'
+              : draft.scheduleAt
+                ? 'Schedule Message'
+                : 'Send Now'}
           </button>
           <button
             type="button"
@@ -329,7 +377,9 @@ export default function ComposeForm({
 
 ComposeForm.propTypes = {
   role: PropTypes.oneOf(['admin', 'instructor']),
-  defaultChannels: PropTypes.arrayOf(PropTypes.oneOf(['inapp', 'email', 'sms'])),
+  defaultChannels: PropTypes.arrayOf(
+    PropTypes.oneOf(['inapp', 'email', 'sms'])
+  ),
   scope: PropTypes.shape({
     schoolId: PropTypes.string,
     companyId: PropTypes.string,

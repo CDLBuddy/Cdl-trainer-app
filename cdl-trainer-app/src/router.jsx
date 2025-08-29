@@ -19,16 +19,20 @@ import AppLayout from './App.jsx'
 import { RequireNotLoggedIn, RootRedirect } from './router-helpers.jsx'
 
 // ===== Lazy pages (code-split) =========================================
-const Welcome  = React.lazy(() => import('@pages/Welcome.jsx'))
-const Login    = React.lazy(() => import('@pages/Login.jsx'))
-const Signup   = React.lazy(() => import('@pages/Signup.jsx'))
+const Welcome = React.lazy(() => import('@pages/Welcome.jsx'))
+const Login = React.lazy(() => import('@pages/Login.jsx'))
+const Signup = React.lazy(() => import('@pages/Signup.jsx'))
 const NotFound = React.lazy(() => import('@pages/NotFound.jsx'))
 
 // ===== Role routers (code-split) =======================================
-const StudentRouter    = React.lazy(() => import('@student/StudentRouter.jsx'))
-const InstructorRouter = React.lazy(() => import('@instructor/InstructorRouter.jsx'))
-const AdminRouter      = React.lazy(() => import('@admin/AdminRouter.jsx'))
-const SuperadminRouter = React.lazy(() => import('@superadmin/SuperadminRouter.jsx'))
+const StudentRouter = React.lazy(() => import('@student/StudentRouter.jsx'))
+const InstructorRouter = React.lazy(
+  () => import('@instructor/InstructorRouter.jsx')
+)
+const AdminRouter = React.lazy(() => import('@admin/AdminRouter.jsx'))
+const SuperadminRouter = React.lazy(
+  () => import('@superadmin/SuperadminRouter.jsx')
+)
 
 // Small helper to wrap lazy elements with a consistent splash
 const withSuspense = (node, message) => (
@@ -40,7 +44,8 @@ const withSuspense = (node, message) => (
 // Optional basename (for subfolder deploys); Vite exposes BASE_URL.
 // You can also set VITE_ROUTER_BASENAME if you prefer.
 const BASENAME =
-  (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_ROUTER_BASENAME) ||
+  (typeof import.meta !== 'undefined' &&
+    import.meta?.env?.VITE_ROUTER_BASENAME) ||
   (typeof import.meta !== 'undefined' && import.meta?.env?.BASE_URL) ||
   '/'
 
@@ -59,7 +64,11 @@ export const router = createBrowserRouter(
               Check the browser console for details.
             </p>
           ) : null}
-          <button className="btn" onClick={() => window.location.reload()} style={{ marginTop: 20 }}>
+          <button
+            className="btn"
+            onClick={() => window.location.reload()}
+            style={{ marginTop: 20 }}
+          >
             Reload App
           </button>
         </div>
@@ -100,7 +109,9 @@ export const router = createBrowserRouter(
           element: (
             <RequireRole
               requiredRole="student"
-              fallback={<SplashScreen message="Loading student…" showTip={false} />}
+              fallback={
+                <SplashScreen message="Loading student…" showTip={false} />
+              }
             >
               {withSuspense(<StudentRouter />, 'Loading student…')}
             </RequireRole>
@@ -113,7 +124,9 @@ export const router = createBrowserRouter(
           element: (
             <RequireRole
               requiredRole="instructor"
-              fallback={<SplashScreen message="Loading instructor…" showTip={false} />}
+              fallback={
+                <SplashScreen message="Loading instructor…" showTip={false} />
+              }
             >
               {withSuspense(<InstructorRouter />, 'Loading instructor…')}
             </RequireRole>
@@ -126,7 +139,9 @@ export const router = createBrowserRouter(
           element: (
             <RequireRole
               requiredRole="admin"
-              fallback={<SplashScreen message="Loading admin…" showTip={false} />}
+              fallback={
+                <SplashScreen message="Loading admin…" showTip={false} />
+              }
             >
               {withSuspense(<AdminRouter />, 'Loading admin…')}
             </RequireRole>
@@ -139,7 +154,9 @@ export const router = createBrowserRouter(
           element: (
             <RequireRole
               requiredRole="superadmin"
-              fallback={<SplashScreen message="Loading super admin…" showTip={false} />}
+              fallback={
+                <SplashScreen message="Loading super admin…" showTip={false} />
+              }
             >
               {withSuspense(<SuperadminRouter />, 'Loading super admin…')}
             </RequireRole>
@@ -148,7 +165,7 @@ export const router = createBrowserRouter(
 
         // ---------- 404 ----------
         { path: '/404', element: withSuspense(<NotFound />, 'Loading…') },
-        { path: '*',    element: withSuspense(<NotFound />, 'Loading…') },
+        { path: '*', element: withSuspense(<NotFound />, 'Loading…') },
       ],
     },
   ],

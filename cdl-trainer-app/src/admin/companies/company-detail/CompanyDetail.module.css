@@ -5,7 +5,7 @@
   display: grid;
   gap: 12px;
   margin-bottom: 12px;
-  grid-template-columns: 1fr;            /* stack on mobile */
+  grid-template-columns: 1fr; /* stack on mobile */
   align-items: start;
 }
 
@@ -18,9 +18,9 @@
 /* ----- Roster card container ------------------------------------------- */
 .card {
   /* dashboard-card provides surface/border/shadow; we handle layout */
-  padding: 0;                  /* roster table owns its own padding */
-  overflow-x: auto;            /* allow wide tables to scroll horizontally */
-  border-radius: 12px;         /* keep consistent with dashboard-card rounding */
+  padding: 0; /* roster table owns its own padding */
+  overflow-x: auto; /* allow wide tables to scroll horizontally */
+  border-radius: 12px; /* keep consistent with dashboard-card rounding */
 }
 
 /* Make the internal table feel airy without breaking module boundaries */
@@ -38,7 +38,7 @@
 
 @media (prefers-color-scheme: dark) {
   .card :global(thead th) {
-    background: var(--card-header-bg-dark, rgba(255,255,255,0.04));
+    background: var(--card-header-bg-dark, rgba(255, 255, 255, 0.04));
   }
 }
 
@@ -49,11 +49,11 @@
 }
 
 .card :global(tbody tr + tr td) {
-  border-top: 1px solid rgba(0,0,0,0.06);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 @media (prefers-color-scheme: dark) {
   .card :global(tbody tr + tr td) {
-    border-top-color: rgba(255,255,255,0.08);
+    border-top-color: rgba(255, 255, 255, 0.08);
   }
 }
 

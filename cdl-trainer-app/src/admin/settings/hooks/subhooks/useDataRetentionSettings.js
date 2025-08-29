@@ -12,15 +12,17 @@ export function useDataRetentionSettings({ vm }) {
   const initial = useMemo(
     () =>
       vm?.prefs?.[KEY] || {
-        logsDays: 365,          // audit logs retained for N days
-        piiRetentionDays: 730,  // PII retained for N days
-        purgeEnabled: false,    // safety toggle
+        logsDays: 365, // audit logs retained for N days
+        piiRetentionDays: 730, // PII retained for N days
+        purgeEnabled: false, // safety toggle
       },
     [vm?.prefs]
   )
 
   const [draft, setDraft] = useState(initial)
-  useEffect(() => { setDraft(initial) }, [initial])
+  useEffect(() => {
+    setDraft(initial)
+  }, [initial])
 
   const update = useCallback(patch => setDraft(d => ({ ...d, ...patch })), [])
 

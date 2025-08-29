@@ -37,7 +37,7 @@ export function get(id) {
 }
 
 /** Predicate form of `get` (boolean). */
-export const has = (id) => get(id) !== null
+export const has = id => get(id) !== null
 
 // ======================================================================
 // DEV validation (no-op in prod): basic shape + unique IDs
@@ -54,17 +54,16 @@ if (IS_DEV) {
     ALL.forEach((o, i) => {
       const okId = typeof o?.id === 'string' && o.id.trim().length > 0
       if (!okId) {
-        // eslint-disable-next-line no-console
         console.warn(`[overlays/common] Missing/invalid id at index ${i}`, o)
       } else if (seen.has(o.id)) {
-        // eslint-disable-next-line no-console
         console.warn(`[overlays/common] Duplicate id "${o.id}" at index ${i}`)
       } else {
         seen.add(o.id)
       }
       if (o.rules && !Array.isArray(o.rules)) {
-        // eslint-disable-next-line no-console
-        console.warn(`[overlays/common] "rules" should be an array for id "${o.id}"`)
+        console.warn(
+          `[overlays/common] "rules" should be an array for id "${o.id}"`
+        )
       }
     })
   } catch {

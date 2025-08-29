@@ -55,7 +55,12 @@ export function parseMarkdownToWalkthrough(md, meta = {}) {
 
   const openDefaultSectionIfNeeded = () => {
     if (!curSection) {
-      curSection = { section: 'General', critical: false, passFail: false, steps: [] }
+      curSection = {
+        section: 'General',
+        critical: false,
+        passFail: false,
+        steps: [],
+      }
       sections.push(curSection)
     }
   }
@@ -115,8 +120,10 @@ export function parseMarkdownToWalkthrough(md, meta = {}) {
       curStep = { script: scriptMaybe.trim() }
       if (label) curStep.label = label
       if (hasFlag(lower, 'must')) curStep.mustSay = true
-      if (hasFlag(lower, 'required') || hasFlag(lower, 'req')) curStep.required = true
-      if (hasFlag(lower, 'passfail') || hasFlag(lower, 'pf')) curStep.passFail = true
+      if (hasFlag(lower, 'required') || hasFlag(lower, 'req'))
+        curStep.required = true
+      if (hasFlag(lower, 'passfail') || hasFlag(lower, 'pf'))
+        curStep.passFail = true
       if (hasFlag(lower, 'skip')) curStep.skip = true
       if (tags.length) curStep.tags = tags
 
@@ -129,7 +136,9 @@ export function parseMarkdownToWalkthrough(md, meta = {}) {
     if (curStep) {
       // If this physical line looks like a deeper sub-bullet (indented more),
       // treat it as part of the same step’s script.
-      curStep.script += (curStep.script ? '\n' : '') + raw.slice(Math.min(raw.length, curIndent)).trim()
+      curStep.script +=
+        (curStep.script ? '\n' : '') +
+        raw.slice(Math.min(raw.length, curIndent)).trim()
       continue
     }
 
@@ -142,8 +151,10 @@ export function parseMarkdownToWalkthrough(md, meta = {}) {
       /** @type {any} */
       curStep = { script: text }
       if (hasFlag(lower, 'must')) curStep.mustSay = true
-      if (hasFlag(lower, 'required') || hasFlag(lower, 'req')) curStep.required = true
-      if (hasFlag(lower, 'passfail') || hasFlag(lower, 'pf')) curStep.passFail = true
+      if (hasFlag(lower, 'required') || hasFlag(lower, 'req'))
+        curStep.required = true
+      if (hasFlag(lower, 'passfail') || hasFlag(lower, 'pf'))
+        curStep.passFail = true
       if (hasFlag(lower, 'skip')) curStep.skip = true
       if (tags.length) curStep.tags = tags
       flushStep()
@@ -214,17 +225,17 @@ function collectTags(flagsRaw) {
 // Normalizer (shared shape with CSV util)
 // ----------------------------------------------------------------------------
 export function normalizeWalkthrough(w = {}, meta = {}) {
-  const id        = strOrU(meta.id ?? w.id)
-  const label     = strOrU(meta.label ?? w.label)
+  const id = strOrU(meta.id ?? w.id)
+  const label = strOrU(meta.label ?? w.label)
   const classCode = strOrU(meta.classCode ?? w.classCode)
-  const version   = Number(meta.version ?? w.version ?? 1) || 1
+  const version = Number(meta.version ?? w.version ?? 1) || 1
 
   const sections = Array.isArray(w.sections) ? w.sections : []
   const cleaned = sections
     .map(s => {
       const sectionName = String(s.section ?? '').trim() || 'Untitled'
-      const critical    = !!s.critical
-      const passFail    = !!s.passFail
+      const critical = !!s.critical
+      const passFail = !!s.passFail
 
       const steps = Array.isArray(s.steps)
         ? s.steps
@@ -235,10 +246,10 @@ export function normalizeWalkthrough(w = {}, meta = {}) {
               const out = { script }
               const lbl = String(st.label ?? st.stepLabel ?? '').trim()
               if (lbl) out.label = lbl
-              if (st.mustSay  != null) out.mustSay  = !!st.mustSay
+              if (st.mustSay != null) out.mustSay = !!st.mustSay
               if (st.required != null) out.required = !!st.required
               if (st.passFail != null) out.passFail = !!st.passFail
-              if (st.skip     != null) out.skip     = !!st.skip
+              if (st.skip != null) out.skip = !!st.skip
               const tags = Array.isArray(st.tags)
                 ? st.tags.map(t => String(t).trim()).filter(Boolean)
                 : []

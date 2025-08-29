@@ -6,16 +6,16 @@
 // ======================================================================
 
 // ---- Pages -------------------------------------------------------------
-export { default as InstructorDashboard }          from './InstructorDashboard.jsx'
-export { default as InstructorProfile }            from './InstructorProfile.jsx'
-export { default as StudentProfileForInstructor }  from './StudentProfileForInstructor.jsx'
+export { default as InstructorDashboard } from './InstructorDashboard.jsx'
+export { default as InstructorProfile } from './InstructorProfile.jsx'
+export { default as StudentProfileForInstructor } from './StudentProfileForInstructor.jsx'
 export { default as ChecklistReviewForInstructor } from './ChecklistReviewForInstructor.jsx'
-export { default as ProfileVerify }                from './ProfileVerify.jsx' // NEW
+export { default as ProfileVerify } from './ProfileVerify.jsx' // NEW
 
 // ---- Optional: expose preload helpers (tree-shakable) -----------------
 export {
   default as preloadInstructorCore,
-  preloadInstructorCore as preload,         // alias if you like shorter name
+  preloadInstructorCore as preload, // alias if you like shorter name
   warmInstructorOnIdle,
   warmInstructorSoon,
   preloadInstructorOnHover,

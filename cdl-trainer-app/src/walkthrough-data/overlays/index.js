@@ -8,10 +8,10 @@
 
 // @ts-check
 
-import * as common       from './common/index.js'
-import * as phases       from './phases/index.js'
+import * as common from './common/index.js'
+import * as phases from './phases/index.js'
 import * as restrictions from './restrictions/index.js'
-import * as school       from './school/index.js'
+import * as school from './school/index.js'
 
 // Re-export category namespaces (handy for tooling/tests)
 export { restrictions, school, phases, common }
@@ -26,14 +26,23 @@ const IS_DEV =
 // ---- Collect & index ----------------------------------------------------
 
 /** Keep a deterministic category order for flattening. */
-const CATEGORY_NAMESPACES = /** @type {const} */ ([restrictions, phases, school, common])
+const CATEGORY_NAMESPACES = /** @type {const} */ ([
+  restrictions,
+  phases,
+  school,
+  common,
+])
 
 /** Flatten a namespace object into overlay objects only (skip helpers/BY_ID/etc). */
 function nsValues(ns) {
-  return Object
-    .values(ns || {})
+  return Object.values(ns || {})
     .filter(Boolean)
-    .filter(o => typeof o === 'object' && !Array.isArray(o) && Array.isArray(/** @type any */(o).rules))
+    .filter(
+      o =>
+        typeof o === 'object' &&
+        !Array.isArray(o) &&
+        Array.isArray(/** @type any */ (o).rules)
+    )
 }
 
 /** All overlays, in deterministic category order (frozen). */
@@ -49,10 +58,15 @@ function buildIdMap(list) {
     let { id } = /** @type any */ (ov)
     if (!id) {
       id = `overlay:auto:${auto++}`
-      if (IS_DEV) console.warn('[overlays] Overlay missing id; generated:', id, ov)
+      if (IS_DEV)
+        console.warn('[overlays] Overlay missing id; generated:', id, ov)
     }
     if (out[id]) {
-      if (IS_DEV) console.warn('[overlays] Duplicate overlay id (first wins):', id, { first: out[id], dup: ov })
+      if (IS_DEV)
+        console.warn('[overlays] Duplicate overlay id (first wins):', id, {
+          first: out[id],
+          dup: ov,
+        })
       continue
     }
     out[id] = /** @type WalkthroughOverlay */ (ov)
@@ -70,7 +84,7 @@ export const OVERLAY_IDS = Object.freeze(Object.keys(OVERLAYS_BY_ID))
 export const listOverlayIds = () => OVERLAY_IDS
 
 /** Safe lookup by id */
-export const getOverlayById = (id) => OVERLAYS_BY_ID[id] || null
+export const getOverlayById = id => OVERLAYS_BY_ID[id] || null
 
 // ---- Restriction code → overlay id mapping -----------------------------
 // Prefer deriving from the restrictions barrel (BY_CODE/getByCode) to avoid drift.
@@ -133,7 +147,12 @@ export function overlaysForRestrictions(codes = []) {
       out.push(ov)
       seen.add(id)
     } else if (IS_DEV) {
-      console.warn('[overlays] Restriction mapped to missing overlay id:', id, 'for code:', c)
+      console.warn(
+        '[overlays] Restriction mapped to missing overlay id:',
+        id,
+        'for code:',
+        c
+      )
     }
   }
   return out

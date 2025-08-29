@@ -13,7 +13,7 @@
   --bsc-border: var(--border-1, #e5e7eb);
   --bsc-accent: var(--accent-5, #2563eb);
   --bsc-accent-weak: color-mix(in srgb, var(--bsc-accent), transparent 82%);
-  --bsc-shadow: 0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.04);
+  --bsc-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 18px rgba(0, 0, 0, 0.04);
   --bsc-radius: 12px;
   --bsc-gap: 14px;
   --bsc-pad: 16px;
@@ -70,7 +70,9 @@
   color: inherit;
   line-height: 1.2;
   cursor: pointer;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .modeSelect:focus-visible {
@@ -144,11 +146,12 @@
 .skeleton {
   display: inline-block;
   border-radius: 6px;
-  background:
-    linear-gradient(90deg,
-      color-mix(in srgb, var(--bsc-border), transparent 35%) 25%,
-      color-mix(in srgb, var(--bsc-border), transparent 5%) 45%,
-      color-mix(in srgb, var(--bsc-border), transparent 35%) 65%);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--bsc-border), transparent 35%) 25%,
+    color-mix(in srgb, var(--bsc-border), transparent 5%) 45%,
+    color-mix(in srgb, var(--bsc-border), transparent 35%) 65%
+  );
   background-size: 240% 100%;
   animation: bsc-shimmer 1.2s ease-in-out infinite;
   height: 1em;
@@ -156,19 +159,32 @@
 }
 
 @keyframes bsc-shimmer {
-  0%   { background-position: 100% 0; }
-  100% { background-position: -140% 0; }
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -140% 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .skeleton { animation: none; }
-  .modeSelect { transition: none; }
+  .skeleton {
+    animation: none;
+  }
+  .modeSelect {
+    transition: none;
+  }
 }
 
 /* Compact widths */
 @media (max-width: 720px) {
-  .kpis { grid-template-columns: 1fr; }
-  .header { align-items: start; flex-direction: column; }
+  .kpis {
+    grid-template-columns: 1fr;
+  }
+  .header {
+    align-items: start;
+    flex-direction: column;
+  }
 }
 
 /* Dark mode hints (if no global tokens present) */

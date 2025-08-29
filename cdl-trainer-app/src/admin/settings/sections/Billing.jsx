@@ -28,10 +28,13 @@ export default function Billing() {
 
   // Derived states
   const isReady = Boolean(schoolId) && !vmLoading
-  const isDirty = useMemo(() => JSON.stringify(form) !== JSON.stringify(draft), [form, draft])
+  const isDirty = useMemo(
+    () => JSON.stringify(form) !== JSON.stringify(draft),
+    [form, draft]
+  )
 
   // Handlers
-  const onChange = (e) => {
+  const onChange = e => {
     const { name, value, type, checked } = e.target
     const v = type === 'checkbox' ? checked : value
     setForm(prev => ({ ...prev, [name]: v }))
@@ -49,7 +52,9 @@ export default function Billing() {
   if (!schoolId) {
     return (
       <div className={styles.section} role="region" aria-live="polite">
-        <div className={styles.sectionError}>No school selected. Billing settings unavailable.</div>
+        <div className={styles.sectionError}>
+          No school selected. Billing settings unavailable.
+        </div>
       </div>
     )
   }
@@ -64,15 +69,19 @@ export default function Billing() {
 
   return (
     <section className={styles.section} aria-labelledby="billing-heading">
-      <h2 id="billing-heading" className={styles.heading}>Billing Settings</h2>
+      <h2 id="billing-heading" className={styles.heading}>
+        Billing Settings
+      </h2>
       <p className={styles.description}>
-        Configure how billing works for your school. These preferences affect invoice defaults
-        and behavior across your Billing pages.
+        Configure how billing works for your school. These preferences affect
+        invoice defaults and behavior across your Billing pages.
       </p>
 
       {/* Billing Mode */}
       <div className={styles.fieldGroup}>
-        <label htmlFor="billing-mode" className={styles.label}>Billing Mode</label>
+        <label htmlFor="billing-mode" className={styles.label}>
+          Billing Mode
+        </label>
         <select
           id="billing-mode"
           name="mode"
@@ -85,13 +94,16 @@ export default function Billing() {
           <option value="employer">Employer billed</option>
         </select>
         <small className={styles.help}>
-          Choose who receives invoices by default. You can still override per invoice.
+          Choose who receives invoices by default. You can still override per
+          invoice.
         </small>
       </div>
 
       {/* Currency */}
       <div className={styles.fieldGroup}>
-        <label htmlFor="billing-currency" className={styles.label}>Currency</label>
+        <label htmlFor="billing-currency" className={styles.label}>
+          Currency
+        </label>
         <input
           id="billing-currency"
           type="text"
@@ -105,13 +117,16 @@ export default function Billing() {
           disabled={vmLoading}
         />
         <small className={styles.help}>
-          ISO currency code (e.g., USD, CAD). Used for formatting totals in exports and invoices.
+          ISO currency code (e.g., USD, CAD). Used for formatting totals in
+          exports and invoices.
         </small>
       </div>
 
       {/* Invoice Prefix */}
       <div className={styles.fieldGroup}>
-        <label htmlFor="billing-prefix" className={styles.label}>Invoice Prefix</label>
+        <label htmlFor="billing-prefix" className={styles.label}>
+          Invoice Prefix
+        </label>
         <input
           id="billing-prefix"
           type="text"
@@ -129,7 +144,9 @@ export default function Billing() {
 
       {/* Accepted Methods / Terms (if you want to surface them) */}
       <div className={styles.fieldGroup}>
-        <label className={styles.label} htmlFor="accepted-methods-group">Accepted Payment Methods</label>
+        <label className={styles.label} htmlFor="accepted-methods-group">
+          Accepted Payment Methods
+        </label>
         <div
           className={styles.row}
           role="group"
@@ -141,7 +158,7 @@ export default function Billing() {
               type="checkbox"
               name="acceptedMethods_card"
               checked={!!(form.acceptedMethods || []).includes('card')}
-              onChange={(e) => {
+              onChange={e => {
                 const has = new Set(form.acceptedMethods || [])
                 e.target.checked ? has.add('card') : has.delete('card')
                 setForm(prev => ({ ...prev, acceptedMethods: Array.from(has) }))
@@ -155,7 +172,7 @@ export default function Billing() {
               type="checkbox"
               name="acceptedMethods_ach"
               checked={!!(form.acceptedMethods || []).includes('ach')}
-              onChange={(e) => {
+              onChange={e => {
                 const has = new Set(form.acceptedMethods || [])
                 e.target.checked ? has.add('ach') : has.delete('ach')
                 setForm(prev => ({ ...prev, acceptedMethods: Array.from(has) }))
@@ -169,7 +186,7 @@ export default function Billing() {
               type="checkbox"
               name="acceptedMethods_cash"
               checked={!!(form.acceptedMethods || []).includes('cash')}
-              onChange={(e) => {
+              onChange={e => {
                 const has = new Set(form.acceptedMethods || [])
                 e.target.checked ? has.add('cash') : has.delete('cash')
                 setForm(prev => ({ ...prev, acceptedMethods: Array.from(has) }))
@@ -180,12 +197,15 @@ export default function Billing() {
           </label>
         </div>
         <small className={styles.help}>
-          These are defaults—actual options may be limited by your processor integration.
+          These are defaults—actual options may be limited by your processor
+          integration.
         </small>
       </div>
 
       <div className={styles.fieldGroup}>
-        <label htmlFor="billing-netdays" className={styles.label}>Default Terms (NET)</label>
+        <label htmlFor="billing-netdays" className={styles.label}>
+          Default Terms (NET)
+        </label>
         <input
           id="billing-netdays"
           type="number"

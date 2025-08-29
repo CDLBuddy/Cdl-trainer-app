@@ -8,7 +8,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 
 import { db } from '@utils/firebase.js'
 
-const PATH = (schoolId) => doc(db, 'schools', schoolId)
+const PATH = schoolId => doc(db, 'schools', schoolId)
 
 export async function getNotificationsPrefs(schoolId) {
   if (!schoolId) return { email: true, sms: false, weeklyDigest: true }
@@ -16,8 +16,8 @@ export async function getNotificationsPrefs(schoolId) {
   const data = snap.exists() ? snap.data() : {}
   const p = data.adminPrefs?.notifications || {}
   return {
-    email: p.email !== false,            // default true
-    sms: !!p.sms,                        // default false
+    email: p.email !== false, // default true
+    sms: !!p.sms, // default false
     weeklyDigest: p.weeklyDigest !== false, // default true
   }
 }
@@ -32,7 +32,10 @@ export async function saveNotificationsPrefs(schoolId, partial = {}) {
 
   await setDoc(
     PATH(schoolId),
-    { adminPrefs: { ...adminPrefs, notifications: next }, updatedAt: serverTimestamp() },
+    {
+      adminPrefs: { ...adminPrefs, notifications: next },
+      updatedAt: serverTimestamp(),
+    },
     { merge: true }
   )
   return next

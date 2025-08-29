@@ -10,8 +10,9 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 
-import styles from './ChecklistCard.module.css'
 import { DOT_CHECKLIST } from '../hooks/useChecklistPdf.js'
+
+import styles from './ChecklistCard.module.css'
 
 function ChecklistCard({
   onDownload,
@@ -30,7 +31,8 @@ function ChecklistCard({
   )
 
   const visible = React.useMemo(
-    () => (expanded ? safeItems : safeItems.slice(0, Math.max(0, initialVisible))),
+    () =>
+      expanded ? safeItems : safeItems.slice(0, Math.max(0, initialVisible)),
     [expanded, safeItems, initialVisible]
   )
 
@@ -68,7 +70,8 @@ function ChecklistCard({
             📝 DOT/ELDT Compliance Checklist ({jurisdiction})
           </div>
           <div className={styles.muted} id={listId}>
-            {safeItems.length} item{safeItems.length === 1 ? '' : 's'} • use this list to keep your provider audit-ready.
+            {safeItems.length} item{safeItems.length === 1 ? '' : 's'} • use
+            this list to keep your provider audit-ready.
           </div>
         </div>
 
@@ -96,7 +99,8 @@ function ChecklistCard({
           <ul className={styles.list}>
             {visible.map((line, i) => (
               <li key={`chk-${i}`}>
-                <span aria-hidden>☐ </span>{line}
+                <span aria-hidden>☐ </span>
+                {line}
               </li>
             ))}
           </ul>
@@ -115,7 +119,8 @@ function ChecklistCard({
               </button>
             )}
             <span className={styles.tip}>
-              Tip: export records first, then archive a signed copy with your submission.
+              Tip: export records first, then archive a signed copy with your
+              submission.
             </span>
           </div>
         </>
@@ -126,7 +131,9 @@ function ChecklistCard({
 
 ChecklistCard.propTypes = {
   onDownload: PropTypes.func.isRequired,
-  items: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.node])),
+  items: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.node])
+  ),
   jurisdiction: PropTypes.string,
   collapsed: PropTypes.bool,
   initialVisible: PropTypes.number,

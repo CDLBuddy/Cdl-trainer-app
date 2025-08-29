@@ -3,12 +3,9 @@ import React, { useCallback, memo } from 'react'
 
 import { StatusPill } from '..'
 
-function IndividualTableBase({
-  rows = [],
-  onToggleReconciled = () => {},
-}) {
+function IndividualTableBase({ rows = [], onToggleReconciled = () => {} }) {
   const handleToggle = useCallback(
-    (email) => {
+    email => {
       // Defensive: ignore if email missing
       if (!email) return
       onToggleReconciled(email)
@@ -21,7 +18,8 @@ function IndividualTableBase({
       <table className="table" style={{ width: '100%', minWidth: 960 }}>
         {/* Hidden caption improves SR context without visual noise */}
         <caption className="visually-hidden">
-          Individual payments table. Columns: Student, Email, Course, Class, Payment, Receipt, Reconciled, Actions.
+          Individual payments table. Columns: Student, Email, Course, Class,
+          Payment, Receipt, Reconciled, Actions.
         </caption>
 
         <thead>
@@ -38,7 +36,7 @@ function IndividualTableBase({
         </thead>
 
         <tbody>
-          {rows.map((r) => {
+          {rows.map(r => {
             const name = r.name || '—'
             const email = r.email || ''
             const reconciled = Boolean(r.reconciled)
@@ -47,7 +45,12 @@ function IndividualTableBase({
               <tr key={email || name}>
                 <td>{name}</td>
 
-                <td style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
+                <td
+                  style={{
+                    fontFamily:
+                      'ui-monospace, SFMono-Regular, Menlo, monospace',
+                  }}
+                >
                   {email ? (
                     <a href={`mailto:${email}`} title={`Email ${name}`}>
                       {email}
@@ -61,7 +64,12 @@ function IndividualTableBase({
                 <td>{r.cdlClass || '—'}</td>
 
                 <td>
-                  <StatusPill value={r.paymentStatus} individual size="sm" showDot />
+                  <StatusPill
+                    value={r.paymentStatus}
+                    individual
+                    size="sm"
+                    showDot
+                  />
                 </td>
 
                 <td>
@@ -94,7 +102,9 @@ function IndividualTableBase({
                         ? `Mark ${name}${email ? ` (${email})` : ''} as unreconciled`
                         : `Mark ${name}${email ? ` (${email})` : ''} as reconciled`
                     }
-                    title={reconciled ? 'Mark as unreconciled' : 'Mark as reconciled'}
+                    title={
+                      reconciled ? 'Mark as unreconciled' : 'Mark as reconciled'
+                    }
                     disabled={!email}
                   >
                     {reconciled ? 'Unreconcile' : 'Mark Reconciled'}

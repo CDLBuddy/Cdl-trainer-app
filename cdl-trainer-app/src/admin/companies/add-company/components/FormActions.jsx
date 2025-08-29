@@ -7,10 +7,21 @@ import styles from '../AddCompanyDrawer.module.css'
 /**
  * Footer actions for AddCompanyDrawer.
  */
-export default function FormActions({ saving, canSubmit, onCancel, onCreate, onCreateAndAdd }) {
+export default function FormActions({
+  saving,
+  canSubmit,
+  onCancel,
+  onCreate,
+  onCreateAndAdd,
+}) {
   return (
     <footer className={styles.footer}>
-      <button type="button" className="btn outline" onClick={onCancel} disabled={saving}>
+      <button
+        type="button"
+        className="btn outline"
+        onClick={onCancel}
+        disabled={saving}
+      >
         Cancel
       </button>
 

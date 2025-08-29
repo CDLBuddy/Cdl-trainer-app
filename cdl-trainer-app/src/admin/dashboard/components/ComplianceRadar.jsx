@@ -26,7 +26,7 @@ function toPolarPoints(values = [], size = 220, padding = 18) {
   // values are 0..1
   const cx = size / 2
   const cy = size / 2
-  const rMax = (size / 2) - padding
+  const rMax = size / 2 - padding
   const n = values.length || 1
   const step = (Math.PI * 2) / n
   // Start at -90deg so first axis is up
@@ -40,13 +40,20 @@ function toPolarPoints(values = [], size = 220, padding = 18) {
 function pathFromPoints(pts) {
   if (!pts.length) return ''
   const [x0, y0] = pts[0]
-  return `M ${x0} ${y0} ` + pts.slice(1).map(([x, y]) => `L ${x} ${y}`).join(' ') + ' Z'
+  return (
+    `M ${x0} ${y0} ` +
+    pts
+      .slice(1)
+      .map(([x, y]) => `L ${x} ${y}`)
+      .join(' ') +
+    ' Z'
+  )
 }
 
 function ringPath(size = 220, padding = 18, frac = 1) {
   const cx = size / 2
   const cy = size / 2
-  const r = ((size / 2) - padding) * clamp01(frac)
+  const r = (size / 2 - padding) * clamp01(frac)
   return `M ${cx - r} ${cy}
           a ${r} ${r} 0 1 0 ${r * 2} 0
           a ${r} ${r} 0 1 0 -${r * 2} 0`
@@ -55,7 +62,7 @@ function ringPath(size = 220, padding = 18, frac = 1) {
 function axisLine(size = 220, padding = 18, i = 0, n = 1) {
   const cx = size / 2
   const cy = size / 2
-  const r = (size / 2) - padding
+  const r = size / 2 - padding
   const a = -Math.PI / 2 + i * ((Math.PI * 2) / n)
   const x = cx + r * Math.cos(a)
   const y = cy + r * Math.sin(a)
@@ -82,8 +89,10 @@ function ComplianceRadar({
 }) {
   // Normalize to 0..1 for layout
   const vals01 = useMemo(
-    () => (Array.isArray(metrics) ? metrics : [])
-      .map(m => clamp01((Number(m?.value) || 0) / 100)),
+    () =>
+      (Array.isArray(metrics) ? metrics : []).map(m =>
+        clamp01((Number(m?.value) || 0) / 100)
+      ),
     [metrics]
   )
 
@@ -115,7 +124,11 @@ function ComplianceRadar({
         </div>
       </header>
 
-      <div className={styles.chart} role="img" aria-label={`Radar chart with ${n} axes`}>
+      <div
+        className={styles.chart}
+        role="img"
+        aria-label={`Radar chart with ${n} axes`}
+      >
         {n === 0 ? (
           <div className={styles.empty}>No data</div>
         ) : (
@@ -145,7 +158,11 @@ function ComplianceRadar({
 
             {/* Axes */}
             {Array.from({ length: n }).map((_, i) => (
-              <path key={i} d={axisLine(size, padding, i, n)} className={styles.axis} />
+              <path
+                key={i}
+                d={axisLine(size, padding, i, n)}
+                className={styles.axis}
+              />
             ))}
 
             {/* Filled polygon */}
@@ -166,7 +183,9 @@ function ComplianceRadar({
             <li key={i} className={styles.legendItem}>
               <span className={styles.legendSwatch} aria-hidden />
               <span className={styles.legendLabel}>{m.label}</span>
-              <span className={styles.legendValue}>{Math.round(Number(m.value) || 0)}%</span>
+              <span className={styles.legendValue}>
+                {Math.round(Number(m.value) || 0)}%
+              </span>
             </li>
           ))}
         </ul>

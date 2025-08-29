@@ -11,21 +11,28 @@
 import React from 'react'
 
 // ----- Direct component exports ----------------------------------------------
-export { default as WalkthroughManager } from './Manager/WalkthroughManager.jsx'
-export { default as WalkthroughList }    from './List/WalkthroughList.jsx'
-export { default as WalkthroughPreview } from './Preview/WalkthroughPreview.jsx'
-export { default as WalkthroughUpload }  from './Upload/WalkthroughUpload.jsx'
-export { default as WalkthroughEditor }  from './Editor/WalkthroughEditor.jsx'
-export { default as WalkthroughForm }    from './Form/WalkthroughForm.jsx'
+import WalkthroughEditor from './Editor/WalkthroughEditor.jsx'
+import WalkthroughForm from './Form/WalkthroughForm.jsx'
+import WalkthroughList from './List/WalkthroughList.jsx'
+import WalkthroughManager from './Manager/WalkthroughManager.jsx'
+import WalkthroughPreview from './Preview/WalkthroughPreview.jsx'
+import WalkthroughUpload from './Upload/WalkthroughUpload.jsx'
+
+export { WalkthroughManager }
+export { WalkthroughList }
+export { WalkthroughPreview }
+export { WalkthroughUpload }
+export { WalkthroughEditor }
+export { WalkthroughForm }
 
 // ----- Sub-package barrels as namespaces (tree-shakeable) --------------------
 export * as Manager from './Manager'
-export * as List    from './List'
+export * as List from './List'
 export * as Preview from './Preview'
-export * as Upload  from './Upload'
-export * as Editor  from './Editor'
-export * as Form    from './Form'
-export * as shared  from './shared'
+export * as Upload from './Upload'
+export * as Editor from './Editor'
+export * as Form from './Form'
+export * as shared from './shared'
 
 // ----- Convenience helpers (avoid deep import paths) -------------------------
 export {
@@ -42,30 +49,42 @@ export {
 } from './shared/services/wtValidation.js'
 
 // ----- Lazy variants for code splitting --------------------------------------
-export const WalkthroughManagerLazy = React.lazy(() => import('./Manager/WalkthroughManager.jsx'))
-export const WalkthroughListLazy    = React.lazy(() => import('./List/WalkthroughList.jsx'))
-export const WalkthroughPreviewLazy = React.lazy(() => import('./Preview/WalkthroughPreview.jsx'))
-export const WalkthroughUploadLazy  = React.lazy(() => import('./Upload/WalkthroughUpload.jsx'))
-export const WalkthroughEditorLazy  = React.lazy(() => import('./Editor/WalkthroughEditor.jsx'))
-export const WalkthroughFormLazy    = React.lazy(() => import('./Form/WalkthroughForm.jsx'))
+export const WalkthroughManagerLazy = React.lazy(
+  () => import('./Manager/WalkthroughManager.jsx')
+)
+export const WalkthroughListLazy = React.lazy(
+  () => import('./List/WalkthroughList.jsx')
+)
+export const WalkthroughPreviewLazy = React.lazy(
+  () => import('./Preview/WalkthroughPreview.jsx')
+)
+export const WalkthroughUploadLazy = React.lazy(
+  () => import('./Upload/WalkthroughUpload.jsx')
+)
+export const WalkthroughEditorLazy = React.lazy(
+  () => import('./Editor/WalkthroughEditor.jsx')
+)
+export const WalkthroughFormLazy = React.lazy(
+  () => import('./Form/WalkthroughForm.jsx')
+)
 
 // ----- Screen registry (nice for dynamic renderers) --------------------------
 export const walkthroughScreens = {
   Manager: WalkthroughManager,
-  List:    WalkthroughList,
+  List: WalkthroughList,
   Preview: WalkthroughPreview,
-  Upload:  WalkthroughUpload,
-  Editor:  WalkthroughEditor,
-  Form:    WalkthroughForm,
+  Upload: WalkthroughUpload,
+  Editor: WalkthroughEditor,
+  Form: WalkthroughForm,
 }
 
 export const walkthroughScreensLazy = {
   Manager: WalkthroughManagerLazy,
-  List:    WalkthroughListLazy,
+  List: WalkthroughListLazy,
   Preview: WalkthroughPreviewLazy,
-  Upload:  WalkthroughUploadLazy,
-  Editor:  WalkthroughEditorLazy,
-  Form:    WalkthroughFormLazy,
+  Upload: WalkthroughUploadLazy,
+  Editor: WalkthroughEditorLazy,
+  Form: WalkthroughFormLazy,
 }
 
 // ----- Tiny route helper -----------------------------------------------------
@@ -76,12 +95,24 @@ export const walkthroughScreensLazy = {
 export function getWalkthroughRoutes(prefix = '/admin/walkthroughs') {
   // Plain descriptors so you can adapt to any router
   return [
-    { key: 'manager', path: `${prefix}`,             component: WalkthroughManagerLazy },
-    { key: 'list',    path: `${prefix}/list`,        component: WalkthroughListLazy },
-    { key: 'upload',  path: `${prefix}/upload`,      component: WalkthroughUploadLazy },
-    { key: 'preview', path: `${prefix}/preview/:id?`,component: WalkthroughPreviewLazy },
-    { key: 'editor',  path: `${prefix}/editor/:id?`, component: WalkthroughEditorLazy },
-    { key: 'form',    path: `${prefix}/form`,        component: WalkthroughFormLazy },
+    { key: 'manager', path: `${prefix}`, component: WalkthroughManagerLazy },
+    { key: 'list', path: `${prefix}/list`, component: WalkthroughListLazy },
+    {
+      key: 'upload',
+      path: `${prefix}/upload`,
+      component: WalkthroughUploadLazy,
+    },
+    {
+      key: 'preview',
+      path: `${prefix}/preview/:id?`,
+      component: WalkthroughPreviewLazy,
+    },
+    {
+      key: 'editor',
+      path: `${prefix}/editor/:id?`,
+      component: WalkthroughEditorLazy,
+    },
+    { key: 'form', path: `${prefix}/form`, component: WalkthroughFormLazy },
   ]
 }
 

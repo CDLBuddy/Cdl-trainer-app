@@ -563,7 +563,9 @@ export default function Billings() {
                           <td>{school.billingPlan || 'Standard'}</td>
                           <td>
                             {school.isActive ? (
-                              <span className="badge badge-success">Active</span>
+                              <span className="badge badge-success">
+                                Active
+                              </span>
                             ) : (
                               <span className="badge badge-fail">Inactive</span>
                             )}{' '}
@@ -602,10 +604,16 @@ export default function Billings() {
                             {school.licensingDocs?.length ? (
                               school.licensingDocs.map((url, i) => (
                                 <React.Fragment key={url}>
-                                  <a href={url} target="_blank" rel="noreferrer">
+                                  <a
+                                    href={url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
                                     Lic {i + 1}
                                   </a>
-                                  {i < school.licensingDocs.length - 1 ? ', ' : ''}
+                                  {i < school.licensingDocs.length - 1
+                                    ? ', '
+                                    : ''}
                                 </React.Fragment>
                               ))
                             ) : (
@@ -623,7 +631,11 @@ export default function Billings() {
                           </td>
                           <td>
                             <div
-                              style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}
+                              style={{
+                                display: 'flex',
+                                gap: 6,
+                                flexWrap: 'wrap',
+                              }}
                             >
                               <button
                                 className="btn small outline"
@@ -651,8 +663,8 @@ export default function Billings() {
               className="billing-hint"
               style={{ margin: '1em 0 .3em', fontSize: '.98em', color: '#77a' }}
             >
-              <b>Note:</b> All changes are logged for audit. Export full records or
-              upload invoices/licensing docs as needed.
+              <b>Note:</b> All changes are logged for audit. Export full records
+              or upload invoices/licensing docs as needed.
             </div>
 
             <button

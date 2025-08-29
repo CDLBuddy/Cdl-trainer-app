@@ -42,7 +42,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 let _kpisClientPromise = null
 const loadKpisClient = async () => {
   if (_kpisClientPromise) return _kpisClientPromise
-  _kpisClientPromise = import('../services/dashboardApi.js').then((m) => {
+  _kpisClientPromise = import('../services/dashboardApi.js').then(m => {
     // dashboardApi exports named `kpis` and default { kpis }
     return m.kpis ?? m.default?.kpis
   })
@@ -71,32 +71,50 @@ function ni(x, d = 0) {
  * @returns {UseDashboardKpisResult}
  */
 export function useDashboardKpis({ schoolId } = {}) {
-  const [data, setData] = useState(/** @type {any} */({
-    studentCount: 0,
-    instructorCount: 0,
-    adminCount: 0,
-    permitSoon: 0,
-    medSoon: 0,
-    incomplete: 0,
-    total: 0,
-    percents: {
-      students: 0, instructors: 0, admins: 0,
-      permitSoon: 0, medSoon: 0, incomplete: 0,
-    },
-  }))
+  const [data, setData] = useState(
+    /** @type {any} */ ({
+      studentCount: 0,
+      instructorCount: 0,
+      adminCount: 0,
+      permitSoon: 0,
+      medSoon: 0,
+      incomplete: 0,
+      total: 0,
+      percents: {
+        students: 0,
+        instructors: 0,
+        admins: 0,
+        permitSoon: 0,
+        medSoon: 0,
+        incomplete: 0,
+      },
+    })
+  )
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(/** @type {Error|null} */(null))
+  const [error, setError] = useState(/** @type {Error|null} */ (null))
 
   // Drop stale responses on fast remounts/navigation
   const reqIdRef = useRef(0)
 
   const fetchOnce = useCallback(async () => {
     if (!schoolId) {
-      setData((d) => ({
+      setData(d => ({
         ...d,
-        studentCount: 0, instructorCount: 0, adminCount: 0,
-        permitSoon: 0, medSoon: 0, incomplete: 0, total: 0,
-        percents: { students:0, instructors:0, admins:0, permitSoon:0, medSoon:0, incomplete:0 },
+        studentCount: 0,
+        instructorCount: 0,
+        adminCount: 0,
+        permitSoon: 0,
+        medSoon: 0,
+        incomplete: 0,
+        total: 0,
+        percents: {
+          students: 0,
+          instructors: 0,
+          admins: 0,
+          permitSoon: 0,
+          medSoon: 0,
+          incomplete: 0,
+        },
       }))
       setError(null)
       setLoading(false)
@@ -119,17 +137,19 @@ export function useDashboardKpis({ schoolId } = {}) {
       if (id !== reqIdRef.current) return
 
       // Defensive normalization
-      const k = /** @type {Kpis} */({
-        studentCount:    ni(res?.studentCount),
+      const k = /** @type {Kpis} */ ({
+        studentCount: ni(res?.studentCount),
         instructorCount: ni(res?.instructorCount),
-        adminCount:      ni(res?.adminCount),
-        permitSoon:      ni(res?.permitSoon),
-        medSoon:         ni(res?.medSoon),
-        incomplete:      ni(res?.incomplete),
+        adminCount: ni(res?.adminCount),
+        permitSoon: ni(res?.permitSoon),
+        medSoon: ni(res?.medSoon),
+        incomplete: ni(res?.incomplete),
       })
 
-      const total = ni(res?.total ?? (k.studentCount + k.instructorCount + k.adminCount))
-      const pct = (n) => (total ? Math.round((ni(n) / total) * 100) : 0)
+      const total = ni(
+        res?.total ?? k.studentCount + k.instructorCount + k.adminCount
+      )
+      const pct = n => (total ? Math.round((ni(n) / total) * 100) : 0)
 
       setData({
         ...k,
@@ -146,11 +166,23 @@ export function useDashboardKpis({ schoolId } = {}) {
     } catch (err) {
       if (/** @type {any} */ (err)?.name === 'AbortError') return
       setError(err instanceof Error ? err : new Error('Failed to load KPIs'))
-      setData((d) => ({
+      setData(d => ({
         ...d,
-        studentCount:0, instructorCount:0, adminCount:0,
-        permitSoon:0, medSoon:0, incomplete:0, total:0,
-        percents: { students:0, instructors:0, admins:0, permitSoon:0, medSoon:0, incomplete:0 },
+        studentCount: 0,
+        instructorCount: 0,
+        adminCount: 0,
+        permitSoon: 0,
+        medSoon: 0,
+        incomplete: 0,
+        total: 0,
+        percents: {
+          students: 0,
+          instructors: 0,
+          admins: 0,
+          permitSoon: 0,
+          medSoon: 0,
+          incomplete: 0,
+        },
       }))
     } finally {
       if (id === reqIdRef.current) setLoading(false)

@@ -7,4 +7,4 @@
 
 export { useComposeMessage } from './useComposeMessage.js'
 export { useMessageHistory } from './useMessageHistory.js'
-export { useTemplates }      from './useTemplates.js'
+export { useTemplates } from './useTemplates.js'

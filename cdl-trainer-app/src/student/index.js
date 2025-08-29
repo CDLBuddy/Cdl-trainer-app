@@ -11,20 +11,20 @@
 export { StudentDashboard, DashboardPage } from './dashboard'
 
 // Profile module exposes a default export via its own barrel
-export { default as Profile }           from './profile'
+export { default as Profile } from './profile'
 
 // Legacy top-level pages (default exports)
-export { default as Checklists }        from './Checklists.jsx'
-export { default as PracticeTests }     from './PracticeTests.jsx'
-export { default as Walkthrough }       from './walkthrough/Walkthrough.jsx'
-export { default as Flashcards }        from './Flashcards.jsx'
-export { default as TestEngine }        from './TestEngine.jsx'
-export { default as TestReview }        from './TestReview.jsx'
-export { default as TestResults }       from './TestResults.jsx'
+export { default as Checklists } from './Checklists.jsx'
+export { default as PracticeTests } from './PracticeTests.jsx'
+export { default as Walkthrough } from './walkthrough/Walkthrough.jsx'
+export { default as Flashcards } from './Flashcards.jsx'
+export { default as TestEngine } from './TestEngine.jsx'
+export { default as TestReview } from './TestReview.jsx'
+export { default as TestResults } from './TestResults.jsx'
 
 // ---- Wrappers (route shells) ------------------------------------------
-export { default as TestEngineWrapper }  from './components/TestEngineWrapper.jsx'
-export { default as TestReviewWrapper }  from './components/TestReviewWrapper.jsx'
+export { default as TestEngineWrapper } from './components/TestEngineWrapper.jsx'
+export { default as TestReviewWrapper } from './components/TestReviewWrapper.jsx'
 export { default as TestResultsWrapper } from './components/TestResultsWrapper.jsx'
 
 // ---- Preloader (used by StudentRouter idle warm-up) --------------------

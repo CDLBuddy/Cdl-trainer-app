@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 /** Safe string */
-const S = (v) => (v == null ? '' : String(v))
+const S = v => (v == null ? '' : String(v))
 
 /** Best-effort name */
 function fullName(s = {}) {
@@ -32,7 +32,11 @@ function normalizeStudent(raw = {}) {
   const btw = training.btw || {}
 
   return {
-    id: raw.id || raw.uid || raw.email || `${fullName(raw)}-${S(raw.licenseNumber || raw.clpNumber)}`,
+    id:
+      raw.id ||
+      raw.uid ||
+      raw.email ||
+      `${fullName(raw)}-${S(raw.licenseNumber || raw.clpNumber)}`,
     email: S(raw.email),
     fullName: fullName(raw),
     dob: S(raw.dob || raw.dateOfBirth || raw.birthDate),
@@ -40,9 +44,17 @@ function normalizeStudent(raw = {}) {
     clpState: S(raw.clpState),
     licenseNumber: S(raw.licenseNumber || raw.license),
     licenseState: S(raw.licenseState || raw.state),
-    companyId: S(raw.assignedCompanyId || raw.companyId || raw.assignedCompany || raw.company),
+    companyId: S(
+      raw.assignedCompanyId ||
+        raw.companyId ||
+        raw.assignedCompany ||
+        raw.company
+    ),
     training: {
-      classType: S(training.classType || training.class || training.program || '').replace(/^class\s*/i, '') || 'A',
+      classType:
+        S(
+          training.classType || training.class || training.program || ''
+        ).replace(/^class\s*/i, '') || 'A',
       endorsement: S(training.endorsement || training.endorse || ''),
       completionDate: S(training.completionDate || training.completedAt),
       theory: {
@@ -50,7 +62,11 @@ function normalizeStudent(raw = {}) {
         completedAt: S(theory.completedAt || raw.theoryCompletedAt),
       },
       btw: {
-        completed: !!(btw.completed ?? raw.behindTheWheelCompleted ?? raw.rangeCompleted),
+        completed: !!(
+          btw.completed ??
+          raw.behindTheWheelCompleted ??
+          raw.rangeCompleted
+        ),
         completedAt: S(btw.completedAt || raw.btwCompletedAt),
         rangeHours: Number(btw.rangeHours ?? raw.rangeHours ?? 0) || 0,
         publicRoadHours: Number(btw.publicRoadHours ?? raw.roadHours ?? 0) || 0,
@@ -68,7 +84,7 @@ async function defaultFetchRoster({ schoolId, companyId, signal }) {
 
   const res = await fetch(url, {
     method: 'GET',
-    headers: { 'Accept': 'application/json' },
+    headers: { Accept: 'application/json' },
     signal,
   })
   // Accept 204/empty as "no students" without throwing
@@ -90,7 +106,12 @@ async function defaultFetchRoster({ schoolId, companyId, signal }) {
  *   fetcher?: (args:{schoolId:string,companyId:string,signal?:AbortSignal})=>Promise<Array<object>>,
  * }} params
  */
-export default function useCompanyRoster({ schoolId = '', companyId = '', users = [], fetcher = defaultFetchRoster } = {}) {
+export default function useCompanyRoster({
+  schoolId = '',
+  companyId = '',
+  users = [],
+  fetcher = defaultFetchRoster,
+} = {}) {
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -139,11 +160,16 @@ export default function useCompanyRoster({ schoolId = '', companyId = '', users 
       // Local fallback from supplied users list (if any)
       try {
         const local = (Array.isArray(users) ? users : [])
-          .filter(u => S(u.assignedCompany || u.companyId || u.company) === S(companyId))
+          .filter(
+            u =>
+              S(u.assignedCompany || u.companyId || u.company) === S(companyId)
+          )
           .map(normalizeStudent)
           .sort((a, b) => a.fullName.localeCompare(b.fullName))
         setStudents(local)
-        setError(`Roster service unavailable; showing local data (${e?.message || e})`)
+        setError(
+          `Roster service unavailable; showing local data (${e?.message || e})`
+        )
       } catch {
         setStudents([])
         setError(`Failed to load roster (${e?.message || e})`)
@@ -174,7 +200,7 @@ export default function useCompanyRoster({ schoolId = '', companyId = '', users 
     const list = Array.isArray(students) ? students : []
     const q = S(query).toLowerCase().trim()
     if (!q) return list
-    return list.filter((s) => {
+    return list.filter(s => {
       return (
         s.fullName.toLowerCase().includes(q) ||
         s.email.toLowerCase().includes(q) ||

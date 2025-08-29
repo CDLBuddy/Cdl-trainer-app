@@ -75,12 +75,10 @@ const IS_DEV =
 if (IS_DEV) {
   try {
     if (!(typeof overlay.id === 'string' && overlay.id.trim().length > 0)) {
-      // eslint-disable-next-line no-console
       console.warn('[overlays/phases:pre-trip] Missing or invalid id')
     }
 
     if (!Array.isArray(overlay.rules)) {
-      // eslint-disable-next-line no-console
       console.warn(
         '[overlays/phases:pre-trip] rules must be an array; got:',
         typeof overlay.rules
@@ -88,7 +86,6 @@ if (IS_DEV) {
     } else {
       overlay.rules.forEach((r, i) => {
         if (!r || typeof r !== 'object') {
-          // eslint-disable-next-line no-console
           console.warn(
             `[overlays/phases:pre-trip] Rule at index ${i} must be an object`
           )
@@ -102,20 +99,17 @@ if (IS_DEV) {
         if (op === 'replaceSectionSteps' || op === 'appendSteps') {
           const hasSteps = Array.isArray(/** @type {any} */ (r).steps)
           if (!(hasSection && hasSteps)) {
-            // eslint-disable-next-line no-console
             console.warn(
               `[overlays/phases:pre-trip] Invalid ${op} rule at ${i} — requires match.section and steps[]`
             )
           }
         } else if (op === 'removeSection' || op === 'hideSection') {
           if (!hasSection) {
-            // eslint-disable-next-line no-console
             console.warn(
               `[overlays/phases:pre-trip] Invalid ${op} rule at ${i} — requires match.section`
             )
           }
         } else {
-          // eslint-disable-next-line no-console
           console.warn(
             `[overlays/phases:pre-trip] Unknown op "${op}" at index ${i}`
           )

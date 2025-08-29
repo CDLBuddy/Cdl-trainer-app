@@ -1,6 +1,7 @@
 // src/communications/components/InboxBell.jsx
-import React, { forwardRef, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
+import React, { forwardRef, useEffect, useRef } from 'react'
+
 import cls from './InboxBell.module.css'
 
 const srOnly = {
@@ -24,10 +25,10 @@ const InboxBell = forwardRef(function InboxBell(
   {
     count = 0,
     onClick,
-    ariaLabel,              // if omitted, we compute a good one
-    showZero = false,       // show badge when 0 (e.g., to keep layout stable)
-    max = 99,               // 99+ cap
-    title,                  // hover title
+    ariaLabel, // if omitted, we compute a good one
+    showZero = false, // show badge when 0 (e.g., to keep layout stable)
+    max = 99, // 99+ cap
+    title, // hover title
     className = '',
     id,
     disabled = false,
@@ -38,13 +39,18 @@ const InboxBell = forwardRef(function InboxBell(
   const prevCount = useRef(count)
 
   const hasUnread = showZero ? count >= 0 : count > 0
-  const computedLabel = ariaLabel ?? `Open inbox${count ? `, ${count} unread` : ''}`
-  const classes = [cls.bell, hasUnread && cls.hasUnread, className].filter(Boolean).join(' ')
+  const computedLabel =
+    ariaLabel ?? `Open inbox${count ? `, ${count} unread` : ''}`
+  const classes = [cls.bell, hasUnread && cls.hasUnread, className]
+    .filter(Boolean)
+    .join(' ')
 
   // Announce changes for assistive tech
   useEffect(() => {
     if (prevCount.current !== count && liveRef.current) {
-      const text = count ? `${count} unread message${count === 1 ? '' : 's'}` : 'No unread messages'
+      const text = count
+        ? `${count} unread message${count === 1 ? '' : 's'}`
+        : 'No unread messages'
       liveRef.current.textContent = text
       prevCount.current = count
     }
@@ -61,14 +67,21 @@ const InboxBell = forwardRef(function InboxBell(
       title={title ?? (count ? `${count} unread` : 'Inbox')}
       disabled={disabled}
     >
-      <span className={cls.icon} aria-hidden="true">🔔</span>
+      <span className={cls.icon} aria-hidden="true">
+        🔔
+      </span>
       {hasUnread && (
         <span className={cls.badge} aria-hidden="true">
           {count > max ? `${max}+` : count}
         </span>
       )}
       {/* SR-only live region */}
-      <span ref={liveRef} style={srOnly} aria-live="polite" aria-atomic="true" />
+      <span
+        ref={liveRef}
+        style={srOnly}
+        aria-live="polite"
+        aria-atomic="true"
+      />
     </button>
   )
 })

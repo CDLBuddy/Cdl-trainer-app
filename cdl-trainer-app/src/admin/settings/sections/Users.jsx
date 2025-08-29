@@ -13,16 +13,16 @@ import { useUsersSettings } from '../hooks/subhooks/useUsersSettings.js'
 import styles from './Section.module.css'
 
 const ROLE_OPTIONS = [
-  { value: 'student',    label: 'Student' },
+  { value: 'student', label: 'Student' },
   { value: 'instructor', label: 'Instructor' },
-  { value: 'admin',      label: 'Admin' },
+  { value: 'admin', label: 'Admin' },
 ]
 
 const TEMPLATE_OPTIONS = [
-  { value: 'default',   label: 'Default (recommended)' },
-  { value: 'concise',   label: 'Concise' },
-  { value: 'detailed',  label: 'Detailed' },
-  { value: 'custom-1',  label: 'Custom #1' },
+  { value: 'default', label: 'Default (recommended)' },
+  { value: 'concise', label: 'Concise' },
+  { value: 'detailed', label: 'Detailed' },
+  { value: 'custom-1', label: 'Custom #1' },
 ]
 
 export default function Users({ vm }) {
@@ -42,7 +42,11 @@ export default function Users({ vm }) {
       inviteEmailTemplate: u.draft.inviteEmailTemplate || 'default',
       requireProfileBeforeEnroll: !!u.draft.requireProfileBeforeEnroll,
     })
-  }, [u.draft.defaultRole, u.draft.inviteEmailTemplate, u.draft.requireProfileBeforeEnroll])
+  }, [
+    u.draft.defaultRole,
+    u.draft.inviteEmailTemplate,
+    u.draft.requireProfileBeforeEnroll,
+  ])
 
   const isDirty = useMemo(() => {
     return (
@@ -52,9 +56,12 @@ export default function Users({ vm }) {
     )
   }, [form, u.draft])
 
-  const onChange = (e) => {
+  const onChange = e => {
     const { name, value, type, checked } = e.target
-    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
+    setForm(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }))
   }
 
   const onReset = () => {
@@ -77,10 +84,12 @@ export default function Users({ vm }) {
 
   return (
     <section className={styles.section} aria-labelledby="users-heading">
-      <h2 id="users-heading" className={styles.heading}>Users &amp; Roles</h2>
+      <h2 id="users-heading" className={styles.heading}>
+        Users &amp; Roles
+      </h2>
       <p className={styles.description}>
-        Control the default role for new invites, the email template used,
-        and whether students must complete a profile before enrollment.
+        Control the default role for new invites, the email template used, and
+        whether students must complete a profile before enrollment.
       </p>
 
       {/* Default Role */}
@@ -96,12 +105,14 @@ export default function Users({ vm }) {
           className={styles.select}
         >
           {ROLE_OPTIONS.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
         </select>
         <small className={styles.help}>
-          Used when inviting users from the Admin &rarr; Users page.
-          You can still change a user’s role later.
+          Used when inviting users from the Admin &rarr; Users page. You can
+          still change a user’s role later.
         </small>
       </div>
 
@@ -118,7 +129,9 @@ export default function Users({ vm }) {
           className={styles.select}
         >
           {TEMPLATE_OPTIONS.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
         </select>
         <small className={styles.help}>
@@ -140,8 +153,8 @@ export default function Users({ vm }) {
           <span>Require student profile before enrollment</span>
         </label>
         <small className={styles.help}>
-          Students must complete required profile fields before they can be assigned
-          to a class or added to ELDT modules.
+          Students must complete required profile fields before they can be
+          assigned to a class or added to ELDT modules.
         </small>
       </div>
 

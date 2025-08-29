@@ -1,6 +1,7 @@
 // Path: /src/admin/companies/company-detail/components/RowBar.jsx
-import React, { memo } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo } from 'react'
+
 import styles from './RowBar.module.css'
 
 function RowBar({ label, value, alt = false }) {

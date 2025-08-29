@@ -45,12 +45,12 @@ function KpiRow({
 }) {
   const nf = useMemo(() => new Intl.NumberFormat(), [])
 
-  const toNum = (v) => {
+  const toNum = v => {
     const n = Number(v)
     return Number.isFinite(n) ? n : 0
   }
 
-  const format = (v) => nf.format(toNum(v))
+  const format = v => nf.format(toNum(v))
 
   const spec = [
     {
@@ -124,9 +124,11 @@ function KpiRow({
         const Tag = typeof onClick === 'function' ? 'button' : 'div'
         const className = warn
           ? `${styles.kpiCard || 'kpi-card'} ${styles.warn || 'kpi-card--warn'}`
-          : (styles.kpiCard || 'kpi-card')
+          : styles.kpiCard || 'kpi-card'
 
-        const delta = Number.isFinite(Number(deltas[key])) ? Number(deltas[key]) : null
+        const delta = Number.isFinite(Number(deltas[key]))
+          ? Number(deltas[key])
+          : null
         const isUp = typeof delta === 'number' && delta > 0
 
         return (
@@ -140,7 +142,13 @@ function KpiRow({
             // reset button appearance when clickable
             style={
               Tag === 'button'
-                ? { textAlign: 'left', background: 'inherit', border: 'none', padding: 0, cursor: 'pointer' }
+                ? {
+                    textAlign: 'left',
+                    background: 'inherit',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                  }
                 : undefined
             }
             aria-label={
@@ -152,7 +160,9 @@ function KpiRow({
             }
           >
             <div className={styles.kpiHeader || 'kpi-card__header'}>
-              <span aria-hidden style={{ marginRight: 6 }}>{emoji}</span>
+              <span aria-hidden style={{ marginRight: 6 }}>
+                {emoji}
+              </span>
               <b>{label}</b>
             </div>
 
@@ -168,8 +178,8 @@ function KpiRow({
                 <span
                   className={
                     isUp
-                      ? (styles.deltaUp || 'kpi-delta kpi-delta--up')
-                      : (styles.deltaDown || 'kpi-delta kpi-delta--down')
+                      ? styles.deltaUp || 'kpi-delta kpi-delta--up'
+                      : styles.deltaDown || 'kpi-delta kpi-delta--down'
                   }
                   data-delta={delta}
                 >

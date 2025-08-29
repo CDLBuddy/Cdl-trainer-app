@@ -11,27 +11,27 @@
 const OVERLAY_ORDER = [
   'eldt-core',
   'refresher',
-  'combination',        // CDL A
-  'single-vehicle',     // CDL B
-  'passenger-bus',      // P / passenger hints
-  'school-bus',         // S
-  'hazmat',             // H
-  'tanker',             // N
-  'doubles-triples',    // T
-  'air-brakes',         // air brakes knowledge
-  'manual-transmission' // common add-on
+  'combination', // CDL A
+  'single-vehicle', // CDL B
+  'passenger-bus', // P / passenger hints
+  'school-bus', // S
+  'hazmat', // H
+  'tanker', // N
+  'doubles-triples', // T
+  'air-brakes', // air brakes knowledge
+  'manual-transmission', // common add-on
 ]
 
 /** Human-friendly labels for chips/UI */
 export const OVERLAY_LABELS = {
   'eldt-core': 'ELDT Core',
-  'refresher': 'Refresher',
-  'combination': 'Combination (A)',
+  refresher: 'Refresher',
+  combination: 'Combination (A)',
   'single-vehicle': 'Single Vehicle (B)',
   'passenger-bus': 'Passenger / Bus',
   'school-bus': 'School Bus',
-  'hazmat': 'HazMat',
-  'tanker': 'Tanker',
+  hazmat: 'HazMat',
+  tanker: 'Tanker',
   'doubles-triples': 'Doubles / Triples',
   'air-brakes': 'Air Brakes',
   'manual-transmission': 'Manual Transmission',
@@ -57,7 +57,8 @@ function overlaysFromClass(cdlClass = '') {
   if (c === 'B') out.add('single-vehicle')
 
   // Broad “PASSENGER” token covers many real-world inputs
-  if (c.includes('PASSENGER') || c === 'P' || c === 'BUS') out.add('passenger-bus')
+  if (c.includes('PASSENGER') || c === 'P' || c === 'BUS')
+    out.add('passenger-bus')
 
   // Optional: quick endorsements found in some class strings
   if (/\bS\b|SCHOOL/.test(c)) out.add('school-bus')
@@ -91,12 +92,13 @@ function overlaysFromCourse(course = '') {
 
 /** Stable, deterministic sort using OVERLAY_ORDER (unknowns alphabetized) */
 function sortOverlays(slugs) {
-  const idx = (s) => {
+  const idx = s => {
     const i = OVERLAY_ORDER.indexOf(s)
     return i === -1 ? Number.POSITIVE_INFINITY : i
   }
   return [...slugs].sort((a, b) => {
-    const ia = idx(a), ib = idx(b)
+    const ia = idx(a),
+      ib = idx(b)
     if (ia !== ib) return ia - ib
     // Unknowns: secondary alpha
     if (ia === Number.POSITIVE_INFINITY) return a.localeCompare(b)
@@ -115,9 +117,9 @@ export function deriveOverlays(course = '', cdlClass = '') {
   const set = new Set()
 
   // Class-driven
-  overlaysFromClass(cdlClass).forEach((o) => set.add(o))
+  overlaysFromClass(cdlClass).forEach(o => set.add(o))
   // Course-driven
-  overlaysFromCourse(course).forEach((o) => set.add(o))
+  overlaysFromCourse(course).forEach(o => set.add(o))
 
   // Return stable list
   return sortOverlays(Array.from(set))

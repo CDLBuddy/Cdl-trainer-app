@@ -45,7 +45,7 @@ function CompanyFilters({
 
   // Reset the hidden file input so the same file can be imported twice in a row
   const handleImportChange = useCallback(
-    (e) => {
+    e => {
       onImportCSV?.(e)
       // Reset the value so onChange will fire if user re-selects the same file
       if (importInputRef?.current) {
@@ -73,7 +73,9 @@ function CompanyFilters({
       }}
     >
       {/* Search */}
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+      <div
+        style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
+      >
         <label htmlFor={`${uid}-search`} style={visuallyHidden}>
           Search companies
         </label>
@@ -81,7 +83,7 @@ function CompanyFilters({
           id={`${uid}-search`}
           type="search"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           placeholder="Search companies…"
           aria-label="Search companies"
           style={{
@@ -111,10 +113,20 @@ function CompanyFilters({
       {children}
 
       {/* Exports */}
-      <button className="btn outline" type="button" onClick={onExportCSV} title="Export all rows to CSV">
+      <button
+        className="btn outline"
+        type="button"
+        onClick={onExportCSV}
+        title="Export all rows to CSV"
+      >
         Export CSV
       </button>
-      <button className="btn outline" type="button" onClick={onExportPDF} title="Export all rows to PDF">
+      <button
+        className="btn outline"
+        type="button"
+        onClick={onExportPDF}
+        title="Export all rows to PDF"
+      >
         Export PDF
       </button>
 

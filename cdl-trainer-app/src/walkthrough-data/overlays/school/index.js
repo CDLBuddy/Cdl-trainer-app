@@ -60,7 +60,9 @@ if (IS_DEV) {
         ids.add(o.id)
       }
       if (o.rules && !Array.isArray(o.rules)) {
-        console.warn(`[overlays/school] "rules" should be an array for id "${o.id}"`)
+        console.warn(
+          `[overlays/school] "rules" should be an array for id "${o.id}"`
+        )
       }
     })
   } catch {

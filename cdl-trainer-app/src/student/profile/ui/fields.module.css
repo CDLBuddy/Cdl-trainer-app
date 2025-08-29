@@ -11,7 +11,7 @@
 }
 
 /* If parent marks aria-invalid, tint the label too (subtle) */
-.field[aria-invalid="true"] .label {
+.field[aria-invalid='true'] .label {
   color: color-mix(in oklab, var(--error), #fff 15%);
 }
 
@@ -33,14 +33,14 @@
 /* Inline help block (when <Field> receives children) */
 .inlineHelp {
   margin-top: 4px;
-  font-size: .9rem;
+  font-size: 0.9rem;
   color: color-mix(in oklab, var(--text-light), transparent 28%);
 }
 
 /* Character counter (e.g., "12 / 160") */
 .counter {
   margin-left: auto;
-  font-size: .82rem;
+  font-size: 0.82rem;
   color: color-mix(in oklab, var(--text-light), transparent 38%);
 }
 
@@ -48,7 +48,7 @@
 .label {
   font-weight: 700;
   color: var(--text-light);
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
 }
 
 .required {
@@ -57,12 +57,12 @@
 }
 
 .hint {
-  font-size: .9rem;
+  font-size: 0.9rem;
   color: color-mix(in oklab, var(--text-light), transparent 30%);
 }
 
 .error {
-  font-size: .9rem;
+  font-size: 0.9rem;
   color: var(--error);
   font-weight: 700;
 }
@@ -90,10 +90,12 @@
 .size_sm .control {
   min-height: 34px;
   padding: 6px 10px;
-  font-size: .92rem;
+  font-size: 0.92rem;
 }
 
-.size_md .control { /* default already set on .control */ }
+.size_md .control {
+  /* default already set on .control */
+}
 
 .size_lg .control {
   min-height: 44px;
@@ -111,7 +113,10 @@
   min-height: 38px;
   outline: none;
   width: 100%;
-  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+  transition:
+    border-color 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.12s ease;
 }
 
 .control::placeholder {
@@ -127,16 +132,16 @@
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 8%);
 }
 
-.control[aria-invalid="true"] {
+.control[aria-invalid='true'] {
   border-color: var(--error);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--error), #fff 10%);
 }
 
 .control:disabled,
 [disabled] .control {
-  opacity: .65;
+  opacity: 0.65;
   cursor: not-allowed;
-  filter: grayscale(.1);
+  filter: grayscale(0.1);
 }
 
 .control:read-only {
@@ -169,7 +174,7 @@
 
 .adornmentEnd {
   margin-left: auto; /* pushes to the right edge if needed */
-  opacity: .9;
+  opacity: 0.9;
 }
 
 /* Legacy inline row (kept for compatibility) */
@@ -179,9 +184,10 @@
   gap: 10px;
 }
 
-.endAdornment { /* legacy alias (kept so nothing breaks) */
+.endAdornment {
+  /* legacy alias (kept so nothing breaks) */
   margin-left: auto;
-  opacity: .9;
+  opacity: 0.9;
 }
 
 /* ---------- Native select caret (decorative) ---------- */
@@ -193,13 +199,15 @@
   background-position:
     calc(100% - 18px) calc(50% - 4px),
     calc(100% - 12px) calc(50% - 4px);
-  background-size: 6px 6px, 6px 6px;
+  background-size:
+    6px 6px,
+    6px 6px;
   background-repeat: no-repeat;
   padding-right: 28px;
 }
 
 .select:disabled {
-  opacity: .7;
+  opacity: 0.7;
 }
 
 /* ---------- Checkbox group ---------- */
@@ -236,7 +244,10 @@
   background: color-mix(in oklab, var(--brand-dark), #fff 4%);
   cursor: pointer;
   user-select: none;
-  transition: border-color .12s ease, background .12s ease, transform .12s ease;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    transform 0.12s ease;
 }
 
 .check:hover {
@@ -268,7 +279,10 @@
   background: color-mix(in oklab, var(--brand-mid), #000 70%);
   color: var(--text-light);
   cursor: pointer;
-  transition: border-color .12s ease, transform .12s ease, box-shadow .12s ease;
+  transition:
+    border-color 0.12s ease,
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
 }
 
 .uploadBtn:hover,
@@ -281,13 +295,13 @@
 }
 
 .uploadBtn:disabled {
-  opacity: .6;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .smallBtn {
   padding: 6px 10px;
-  font-size: .92rem;
+  font-size: 0.92rem;
 }
 
 /* ---------- Upload: drag & drop zone ---------- */
@@ -304,7 +318,11 @@
   background: color-mix(in oklab, var(--brand-dark), #fff 3%);
   outline: none;
   user-select: none;
-  transition: border-color .12s ease, background .12s ease, box-shadow .12s ease, transform .12s ease;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    box-shadow 0.12s ease,
+    transform 0.12s ease;
 }
 
 .dropZone:focus-visible {
@@ -319,7 +337,7 @@
 }
 
 .dropDisabled {
-  opacity: .5;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -374,8 +392,8 @@
 }
 
 .fileSize {
-  font-size: .9rem;
-  opacity: .8;
+  font-size: 0.9rem;
+  opacity: 0.8;
 }
 
 /* ---------- Responsive ---------- */

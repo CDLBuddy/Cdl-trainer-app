@@ -105,7 +105,11 @@ const BillingSummary = memo(function BillingSummary({
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>Open Invoices</div>
           <div className={styles.kpiValue}>
-            {busy ? <span className={styles.skeleton}>00</span> : kpis.openInvoices}
+            {busy ? (
+              <span className={styles.skeleton}>00</span>
+            ) : (
+              kpis.openInvoices
+            )}
           </div>
         </div>
         <div className={styles.kpi}>
@@ -121,7 +125,11 @@ const BillingSummary = memo(function BillingSummary({
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>Last Payment</div>
           <div className={styles.kpiValue}>
-            {busy ? <span className={styles.skeleton}>—</span> : kpis.lastPaymentLabel}
+            {busy ? (
+              <span className={styles.skeleton}>—</span>
+            ) : (
+              kpis.lastPaymentLabel
+            )}
           </div>
         </div>
         <div
@@ -166,7 +174,8 @@ const BillingSummary = memo(function BillingSummary({
               </Link>
             </div>
             <p className={styles.empty}>
-              Reconciliation is managed in <Link to={billingHref}>Billing</Link>.
+              Reconciliation is managed in <Link to={billingHref}>Billing</Link>
+              .
             </p>
           </div>
         </>

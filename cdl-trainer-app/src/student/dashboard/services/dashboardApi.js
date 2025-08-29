@@ -17,13 +17,11 @@ import {
   query,
   where,
 } from 'firebase/firestore'
+
 import { db } from '@utils/firebase.js'
 
 // Reuse our centralized link helpers (already used by StudentDashboard)
-export {
-  getResourcesForSchool,
-  getSchedulerURL,
-} from '../links.js'
+export { getResourcesForSchool, getSchedulerURL } from '../links.js'
 
 /* ──────────────────────────────────────────────────────────────────
    Config & helpers
@@ -168,7 +166,12 @@ export function subscribeLatestUpdate(cb, opts = {}) {
   let q
   try {
     q = schoolId
-      ? query(col, where('schoolId', '==', schoolId), orderBy('date', 'desc'), limit(1))
+      ? query(
+          col,
+          where('schoolId', '==', schoolId),
+          orderBy('date', 'desc'),
+          limit(1)
+        )
       : query(col, orderBy('date', 'desc'), limit(1))
   } catch {
     // If we cannot build the constrained query (e.g., missing index),
@@ -178,7 +181,7 @@ export function subscribeLatestUpdate(cb, opts = {}) {
 
   return onSnapshot(
     q,
-    (snap) => {
+    snap => {
       const d = snap.empty ? null : snap.docs[0]
       const shaped = d ? shapeUpdate(d) : null
       if (shaped?.date) shaped.date = coerceDate(shaped.date)
@@ -205,7 +208,9 @@ export function subscribeLatestUpdate(cb, opts = {}) {
  */
 export async function loadDashboardSnapshot(opts = {}) {
   const schoolId = (opts.schoolId ?? getSchoolId() ?? '').trim().toLowerCase()
-  const [update] = await Promise.all([getLatestUpdateOnce({ schoolId, useCache: opts.useCache })])
+  const [update] = await Promise.all([
+    getLatestUpdateOnce({ schoolId, useCache: opts.useCache }),
+  ])
 
   // Defer to our shared helpers for links/scheduling
   const { getResourcesForSchool, getSchedulerURL } = await import('../links.js')

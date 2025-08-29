@@ -10,6 +10,7 @@
 
 import PropTypes from 'prop-types'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import styles from './BulkUploadDialog.module.css'
 
 function BulkUploadDialogImpl({
@@ -33,26 +34,26 @@ function BulkUploadDialogImpl({
   ],
 }) {
   const overlayRef = useRef(null)
-  const panelRef   = useRef(null)
-  const inputRef   = useRef(null)
-  const dropRef    = useRef(null)
+  const panelRef = useRef(null)
+  const inputRef = useRef(null)
+  const dropRef = useRef(null)
 
-  const [file, setFile]           = useState(null)
-  const [status, setStatus]       = useState('idle') // 'idle' | 'parsing'
-  const [error, setError]         = useState('')
+  const [file, setFile] = useState(null)
+  const [status, setStatus] = useState('idle') // 'idle' | 'parsing'
+  const [error, setError] = useState('')
   const [rowsCount, setRowsCount] = useState(0)
-  const [fileName, setFileName]   = useState('')
+  const [fileName, setFileName] = useState('')
 
   const titleId = React.useId()
-  const hintId  = React.useId()
-  const accept  = useMemo(() => 'text/csv,.csv', [])
+  const hintId = React.useId()
+  const accept = useMemo(() => 'text/csv,.csv', [])
 
   // ---------- Mount/Unmount behaviors ----------
   // Focus first actionable and ESC to close
   useEffect(() => {
     if (!open) return
     const t = setTimeout(() => inputRef.current?.focus?.(), 0)
-    const onKey = (e) => {
+    const onKey = e => {
       if (e.key === 'Escape') {
         e.stopPropagation()
         onClose?.()
@@ -70,7 +71,9 @@ function BulkUploadDialogImpl({
     if (!open) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
+    return () => {
+      document.body.style.overflow = prev
+    }
   }, [open])
 
   // Simple focus trap within the panel
@@ -79,16 +82,20 @@ function BulkUploadDialogImpl({
     const el = panelRef.current
     if (!el) return
     const sel = 'a,button,input,select,textarea,[tabindex]:not([tabindex="-1"])'
-    const trap = (e) => {
+    const trap = e => {
       if (e.key !== 'Tab') return
-      const focusables = Array.from(el.querySelectorAll(sel)).filter(n => !n.hasAttribute('disabled'))
+      const focusables = Array.from(el.querySelectorAll(sel)).filter(
+        n => !n.hasAttribute('disabled')
+      )
       if (!focusables.length) return
       const first = focusables[0]
-      const last  = focusables[focusables.length - 1]
+      const last = focusables[focusables.length - 1]
       if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault(); last.focus()
+        e.preventDefault()
+        last.focus()
       } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault(); first.focus()
+        e.preventDefault()
+        first.focus()
       }
     }
     el.addEventListener('keydown', trap)
@@ -96,30 +103,38 @@ function BulkUploadDialogImpl({
   }, [open])
 
   // ---------- CSV parsing helpers ----------
-  const guardFile = useCallback((f) => {
-    if (!f) return 'No file selected.'
-    const okType =
-      f.type === 'text/csv' ||
-      f.name.toLowerCase().endsWith('.csv') ||
-      f.type === '' // some browsers leave CSV as empty type
-    if (!okType) return 'Please select a .csv file.'
-    const tooBig = f.size > maxSizeMB * 1024 * 1024
-    if (tooBig) return `CSV is too large (>${maxSizeMB} MB).`
-    return ''
-  }, [maxSizeMB])
+  const guardFile = useCallback(
+    f => {
+      if (!f) return 'No file selected.'
+      const okType =
+        f.type === 'text/csv' ||
+        f.name.toLowerCase().endsWith('.csv') ||
+        f.type === '' // some browsers leave CSV as empty type
+      if (!okType) return 'Please select a .csv file.'
+      const tooBig = f.size > maxSizeMB * 1024 * 1024
+      if (tooBig) return `CSV is too large (>${maxSizeMB} MB).`
+      return ''
+    },
+    [maxSizeMB]
+  )
 
   // Smol CSV splitter honoring quotes: "a,b",c  -> ["a,b","c"]
-  const splitCsvLine = useCallback((line) => {
+  const splitCsvLine = useCallback(line => {
     const out = []
     let cur = ''
     let inQ = false
     for (let i = 0; i < line.length; i += 1) {
       const ch = line[i]
       if (ch === '"') {
-        if (inQ && line[i + 1] === '"') { cur += '"'; i += 1 }
-        else { inQ = !inQ }
+        if (inQ && line[i + 1] === '"') {
+          cur += '"'
+          i += 1
+        } else {
+          inQ = !inQ
+        }
       } else if (ch === ',' && !inQ) {
-        out.push(cur); cur = ''
+        out.push(cur)
+        cur = ''
       } else {
         cur += ch
       }
@@ -128,86 +143,105 @@ function BulkUploadDialogImpl({
     return out
   }, [])
 
-  const tinyCsvParse = useCallback(async (fileObj) => {
-    const text = await fileObj.text()
-    const lines = text.replace(/\r\n?/g, '\n').split('\n').filter(Boolean)
-    if (!lines.length) return []
-    const header = splitCsvLine(lines[0]).map(h => String(h || '').trim())
-    const out = []
-    for (let i = 1; i < lines.length; i += 1) {
-      const cols = splitCsvLine(lines[i])
-      if (cols.length === 1 && cols[0] === '') continue
-      const row = {}
-      for (let j = 0; j < header.length; j += 1) row[header[j]] = cols[j] ?? ''
-      out.push(row)
-    }
-    return out
-  }, [splitCsvLine])
+  const tinyCsvParse = useCallback(
+    async fileObj => {
+      const text = await fileObj.text()
+      const lines = text.replace(/\r\n?/g, '\n').split('\n').filter(Boolean)
+      if (!lines.length) return []
+      const header = splitCsvLine(lines[0]).map(h => String(h || '').trim())
+      const out = []
+      for (let i = 1; i < lines.length; i += 1) {
+        const cols = splitCsvLine(lines[i])
+        if (cols.length === 1 && cols[0] === '') continue
+        const row = {}
+        for (let j = 0; j < header.length; j += 1)
+          row[header[j]] = cols[j] ?? ''
+        out.push(row)
+      }
+      return out
+    },
+    [splitCsvLine]
+  )
 
-  const parseWithPapa = useCallback(async (fileObj) => {
-    try {
-      const mod = await import(/* @vite-ignore */ 'papaparse')
-      const Papa = mod?.default ?? mod
-      return await new Promise((resolve, reject) => {
-        Papa.parse(fileObj, {
-          header: true,
-          skipEmptyLines: true,
-          transformHeader: (h) => String(h || '').trim(),
-          complete: ({ data }) => resolve(Array.isArray(data) ? data : []),
-          error: (err) => reject(err),
+  const parseWithPapa = useCallback(
+    async fileObj => {
+      try {
+        const mod = await import(/* @vite-ignore */ 'papaparse')
+        const Papa = mod?.default ?? mod
+        return await new Promise((resolve, reject) => {
+          Papa.parse(fileObj, {
+            header: true,
+            skipEmptyLines: true,
+            transformHeader: h => String(h || '').trim(),
+            complete: ({ data }) => resolve(Array.isArray(data) ? data : []),
+            error: err => reject(err),
+          })
         })
-      })
-    } catch {
-      return tinyCsvParse(fileObj)
-    }
-  }, [tinyCsvParse])
+      } catch {
+        return tinyCsvParse(fileObj)
+      }
+    },
+    [tinyCsvParse]
+  )
 
   // ---------- Handlers ----------
-  const handleFiles = useCallback(async (f) => {
-    setError('')
-    const err = guardFile(f)
-    if (err) { setError(err); return }
+  const handleFiles = useCallback(
+    async f => {
+      setError('')
+      const err = guardFile(f)
+      if (err) {
+        setError(err)
+        return
+      }
 
-    setFile(f)
-    setFileName(f.name)
-    // let parent handle parsing (legacy flow)
-    onFile?.(f)
+      setFile(f)
+      setFileName(f.name)
+      // let parent handle parsing (legacy flow)
+      onFile?.(f)
 
-    if (!onUpload) return // caller only wants the file back
+      if (!onUpload) return // caller only wants the file back
 
-    try {
-      setStatus('parsing')
-      const rows = await parseWithPapa(f)
-      setRowsCount(rows.length)
-      setStatus('idle')
-      await onUpload(rows)
-    } catch (e) {
-      setStatus('idle')
-      setError(`Failed to parse CSV: ${e?.message || e}`)
-    }
-  }, [guardFile, onFile, onUpload, parseWithPapa])
+      try {
+        setStatus('parsing')
+        const rows = await parseWithPapa(f)
+        setRowsCount(rows.length)
+        setStatus('idle')
+        await onUpload(rows)
+      } catch (e) {
+        setStatus('idle')
+        setError(`Failed to parse CSV: ${e?.message || e}`)
+      }
+    },
+    [guardFile, onFile, onUpload, parseWithPapa]
+  )
 
-  const onPick = useCallback((e) => {
-    const f = e.target?.files?.[0] || null
-    // allow re-selecting the same file by resetting the input value
-    e.target.value = ''
-    if (f) handleFiles(f)
-  }, [handleFiles])
+  const onPick = useCallback(
+    e => {
+      const f = e.target?.files?.[0] || null
+      // allow re-selecting the same file by resetting the input value
+      e.target.value = ''
+      if (f) handleFiles(f)
+    },
+    [handleFiles]
+  )
 
-  const onDrop = useCallback((e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const f = e.dataTransfer?.files?.[0] || null
-    if (dropRef.current) dropRef.current.dataset.dragging = 'false'
-    if (f) handleFiles(f)
-  }, [handleFiles])
+  const onDrop = useCallback(
+    e => {
+      e.preventDefault()
+      e.stopPropagation()
+      const f = e.dataTransfer?.files?.[0] || null
+      if (dropRef.current) dropRef.current.dataset.dragging = 'false'
+      if (f) handleFiles(f)
+    },
+    [handleFiles]
+  )
 
-  const onDragOver = useCallback((e) => {
+  const onDragOver = useCallback(e => {
     e.preventDefault()
     if (dropRef.current) dropRef.current.dataset.dragging = 'true'
   }, [])
 
-  const onDragLeave = useCallback((e) => {
+  const onDragLeave = useCallback(e => {
     e.preventDefault()
     if (dropRef.current) dropRef.current.dataset.dragging = 'false'
   }, [])
@@ -234,7 +268,7 @@ function BulkUploadDialogImpl({
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={hintId}
-      onClick={(e) => {
+      onClick={e => {
         if (e.target === overlayRef.current) onClose?.()
       }}
     >
@@ -242,7 +276,9 @@ function BulkUploadDialogImpl({
         <header className={styles.header}>
           <div>
             <div className={styles.kicker}>Bulk Upload</div>
-            <h3 id={titleId} className={styles.title}>ELDT completion records (.csv)</h3>
+            <h3 id={titleId} className={styles.title}>
+              ELDT completion records (.csv)
+            </h3>
           </div>
           <button
             type="button"
@@ -264,7 +300,9 @@ function BulkUploadDialogImpl({
             className={styles.dropArea}
           >
             <div className={styles.dropTitle}>Drag &amp; drop CSV here</div>
-            <div className={styles.dropSub}>or choose a file from your computer</div>
+            <div className={styles.dropSub}>
+              or choose a file from your computer
+            </div>
 
             <input
               ref={inputRef}
@@ -287,7 +325,9 @@ function BulkUploadDialogImpl({
             <div className={styles.fileMeta}>
               <b>Selected:</b> {fileName}{' '}
               {rowsCount > 0 && (
-                <span className={styles.fileParsed}>(parsed {rowsCount} row{rowsCount === 1 ? '' : 's'})</span>
+                <span className={styles.fileParsed}>
+                  (parsed {rowsCount} row{rowsCount === 1 ? '' : 's'})
+                </span>
               )}
             </div>
           )}
@@ -299,11 +339,17 @@ function BulkUploadDialogImpl({
           )}
 
           <div className={styles.actions}>
-            <button type="button" className="btn btn-ghost" onClick={downloadTemplate}>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={downloadTemplate}
+            >
               Download CSV template
             </button>
             <div className={styles.flexFill} />
-            <button type="button" className="btn btn-ghost" onClick={onClose}>Close</button>
+            <button type="button" className="btn btn-ghost" onClick={onClose}>
+              Close
+            </button>
             <button
               type="button"
               className="btn btn-primary"
@@ -333,8 +379,8 @@ function BulkUploadDialogImpl({
 BulkUploadDialogImpl.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  onFile: PropTypes.func,                             // legacy
-  onUpload: PropTypes.func,                           // parsed rows (header:true)
+  onFile: PropTypes.func, // legacy
+  onUpload: PropTypes.func, // parsed rows (header:true)
   maxSizeMB: PropTypes.number,
   sampleHeaders: PropTypes.arrayOf(PropTypes.string),
 }

@@ -26,8 +26,20 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
  */
 
 const MOCK_DOCS = /** @type {CompanyDoc[]} */ ([
-  { id: 'd1', name: 'Carrier Agreement', type: 'PDF', status: 'ok',      expiresAtLabel: '' },
-  { id: 'd2', name: 'Insurance (COI)',   type: 'PDF', status: 'expired', expiresAtLabel: '2025-07-01' },
+  {
+    id: 'd1',
+    name: 'Carrier Agreement',
+    type: 'PDF',
+    status: 'ok',
+    expiresAtLabel: '',
+  },
+  {
+    id: 'd2',
+    name: 'Insurance (COI)',
+    type: 'PDF',
+    status: 'expired',
+    expiresAtLabel: '2025-07-01',
+  },
 ])
 
 /**
@@ -39,7 +51,7 @@ const MOCK_DOCS = /** @type {CompanyDoc[]} */ ([
  * @returns {UseCompanyDocumentsReturn}
  */
 export default function useCompanyDocuments(companyId) {
-  const [docs, setDocs] = useState(/** @type {CompanyDoc[]} */([]))
+  const [docs, setDocs] = useState(/** @type {CompanyDoc[]} */ ([]))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const aliveRef = useRef(true)
@@ -61,7 +73,6 @@ export default function useCompanyDocuments(companyId) {
       if (!aliveRef.current) return
       setDocs(MOCK_DOCS)
     } catch (err) {
-       
       console.error('[useCompanyDocuments] load failed', err)
       if (!aliveRef.current) return
       setError('Failed to load documents.')
@@ -74,45 +85,48 @@ export default function useCompanyDocuments(companyId) {
   useEffect(() => {
     aliveRef.current = true
     refresh()
-    return () => { aliveRef.current = false }
-  }, [refresh])
-
-  // Upload stub (replace with Storage put + metadata write)
-  const upload = useCallback(async (/* file: File */) => {
-    try {
-      setLoading(true)
-      await new Promise(r => setTimeout(r, 240))
-      // TODO: storage upload → get downloadURL → write doc record in Firestore
-      await refresh()
-    } catch (err) {
-       
-      console.error('[useCompanyDocuments] upload failed', err)
-      setError('Failed to upload document.')
-    } finally {
-      setLoading(false)
+    return () => {
+      aliveRef.current = false
     }
   }, [refresh])
 
+  // Upload stub (replace with Storage put + metadata write)
+  const upload = useCallback(
+    async (/* file: File */) => {
+      try {
+        setLoading(true)
+        await new Promise(r => setTimeout(r, 240))
+        // TODO: storage upload → get downloadURL → write doc record in Firestore
+        await refresh()
+      } catch (err) {
+        console.error('[useCompanyDocuments] upload failed', err)
+        setError('Failed to upload document.')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [refresh]
+  )
+
   // Optional item actions (mocked)
-  const open = useCallback(async (doc) => {
+  const open = useCallback(async doc => {
     // TODO: open in viewer (e.g., new tab with downloadURL)
     // window.open(doc.url, '_blank', 'noopener,noreferrer')
     await Promise.resolve(doc)
   }, [])
 
-  const download = useCallback(async (doc) => {
+  const download = useCallback(async doc => {
     // TODO: trigger browser download of doc.url
     await Promise.resolve(doc)
   }, [])
 
-  const remove = useCallback(async (doc) => {
+  const remove = useCallback(async doc => {
     try {
       setLoading(true)
       // TODO: delete from Storage + remove Firestore doc
       await new Promise(r => setTimeout(r, 200))
       setDocs(prev => prev.filter(d => d.id !== doc.id))
     } catch (err) {
-       
       console.error('[useCompanyDocuments] delete failed', err)
       setError('Failed to delete document.')
     } finally {
@@ -124,11 +138,21 @@ export default function useCompanyDocuments(companyId) {
   const counts = useMemo(() => {
     const acc = { ok: 0, expired: 0, missing: 0, total: docs.length }
     for (const d of docs) {
-      const k = (d.status || 'ok')
+      const k = d.status || 'ok'
       if (k in acc) acc[k] += 1
     }
     return acc
   }, [docs])
 
-  return { docs, loading, error, refresh, upload, open, download, remove, counts }
+  return {
+    docs,
+    loading,
+    error,
+    refresh,
+    upload,
+    open,
+    download,
+    remove,
+    counts,
+  }
 }

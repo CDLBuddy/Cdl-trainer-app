@@ -7,7 +7,7 @@ import { useContext, useRef, useDebugValue } from 'react'
 
 import SessionContext, { DEFAULT_SESSION } from './SessionContext.js'
 
-const __DEV__ = (import.meta?.env?.MODE !== 'production')
+const __DEV__ = import.meta?.env?.MODE !== 'production'
 
 // ---- internal ----------------------------------------------------------
 
@@ -28,12 +28,15 @@ function normalizeRole(r) {
 export function useSession() {
   const ctx = useContext(SessionContext)
   if (__DEV__ && (ctx === DEFAULT_SESSION || ctx == null)) {
-     
-    console.warn('[useSession] Used outside <SessionProvider>. Returning default (logged out).')
+    console.warn(
+      '[useSession] Used outside <SessionProvider>. Returning default (logged out).'
+    )
   }
   const value = ctx || DEFAULT_SESSION
-  useDebugValue(value, s =>
-    `Session{ loading:${!!s.loading}, isLoggedIn:${!!s.isLoggedIn}, role:${s.role ?? 'null'} }`
+  useDebugValue(
+    value,
+    s =>
+      `Session{ loading:${!!s.loading}, isLoggedIn:${!!s.isLoggedIn}, role:${s.role ?? 'null'} }`
   )
   return value
 }
@@ -59,7 +62,6 @@ export function useSessionSelector(selector, isEqual = Object.is) {
     selected = typeof selector === 'function' ? selector(session) : session
   } catch (e) {
     if (__DEV__) {
-       
       console.warn('[useSessionSelector] Selector threw:', e)
     }
     selected = undefined
@@ -79,17 +81,26 @@ export function shallowEqual(a, b) {
   if (aKeys.length !== bKeys.length) return false
   for (let i = 0; i < aKeys.length; i++) {
     const k = aKeys[i]
-    if (!Object.prototype.hasOwnProperty.call(b, k) || !Object.is(a[k], b[k])) return false
+    if (!Object.prototype.hasOwnProperty.call(b, k) || !Object.is(a[k], b[k]))
+      return false
   }
   return true
 }
 
 // ---- Convenience hooks -------------------------------------------------
 
-export function useUser()       { return useSessionSelector(s => s.user) }
-export function useRole()       { return useSessionSelector(s => normalizeRole(s.role)) }
-export function useIsLoggedIn() { return useSessionSelector(s => !!s.isLoggedIn) }
-export function useIsLoading()  { return useSessionSelector(s => !!s.loading) }
+export function useUser() {
+  return useSessionSelector(s => s.user)
+}
+export function useRole() {
+  return useSessionSelector(s => normalizeRole(s.role))
+}
+export function useIsLoggedIn() {
+  return useSessionSelector(s => !!s.isLoggedIn)
+}
+export function useIsLoading() {
+  return useSessionSelector(s => !!s.loading)
+}
 
 /**
  * Role utilities
@@ -101,7 +112,8 @@ export function useHasRole(required) {
   const current = useRole()
   if (!required) return true
   if (typeof required === 'function') return !!required(current)
-  if (Array.isArray(required)) return required.map(normalizeRole).includes(current)
+  if (Array.isArray(required))
+    return required.map(normalizeRole).includes(current)
   return normalizeRole(required) === current
 }
 
@@ -118,7 +130,8 @@ export function getCurrentUserEmailFallback() {
   return (
     last?.user?.email ||
     ctx?.user?.email ||
-    (typeof localStorage !== 'undefined' && localStorage.getItem('currentUserEmail')) ||
+    (typeof localStorage !== 'undefined' &&
+      localStorage.getItem('currentUserEmail')) ||
     null
   )
 }
@@ -128,9 +141,10 @@ export function getCurrentRoleFallback() {
   const ctx = safePeekContext()
   return normalizeRole(
     last?.role ||
-    ctx?.role ||
-    (typeof localStorage !== 'undefined' && localStorage.getItem('userRole')) ||
-    null
+      ctx?.role ||
+      (typeof localStorage !== 'undefined' &&
+        localStorage.getItem('userRole')) ||
+      null
   )
 }
 
@@ -158,7 +172,11 @@ export function peekSession() {
 function safePeekContext() {
   try {
     // React stores internal current value on one of these fields
-    return SessionContext?._currentValue ?? SessionContext?._currentValue2 ?? DEFAULT_SESSION
+    return (
+      SessionContext?._currentValue ??
+      SessionContext?._currentValue2 ??
+      DEFAULT_SESSION
+    )
   } catch {
     return DEFAULT_SESSION
   }

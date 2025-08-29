@@ -36,7 +36,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 let _activityClientPromise = null
 const loadActivityClient = async () => {
   if (_activityClientPromise) return _activityClientPromise
-  _activityClientPromise = import('../services/dashboardApi.js').then((m) => {
+  _activityClientPromise = import('../services/dashboardApi.js').then(m => {
     // dashboardApi exports named `activity` and default { activity }
     return m.activity ?? m.default?.activity
   })
@@ -49,7 +49,9 @@ const loadActivityClient = async () => {
 
 function cryptoRandomId() {
   try {
-    return globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)
+    return (
+      globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)
+    )
   } catch {
     return Math.random().toString(36).slice(2)
   }
@@ -116,9 +118,9 @@ function normalizeItem(raw, idx = 0) {
  * @returns {UseRecentActivityResult}
  */
 export function useRecentActivity({ schoolId, limit = 20 } = {}) {
-  const [data, setData] = useState(/** @type {ActivityItem[]} */([]))
+  const [data, setData] = useState(/** @type {ActivityItem[]} */ ([]))
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(/** @type {Error|null} */(null))
+  const [error, setError] = useState(/** @type {Error|null} */ (null))
 
   // Drop stale responses on fast remounts/navigation
   const reqIdRef = useRef(0)
@@ -141,7 +143,8 @@ export function useRecentActivity({ schoolId, limit = 20 } = {}) {
 
     try {
       const activityClient = await loadActivityClient()
-      if (!activityClient?.getRecent) throw new Error('Activity client unavailable')
+      if (!activityClient?.getRecent)
+        throw new Error('Activity client unavailable')
 
       const rows = await activityClient.getRecent({
         schoolId,
@@ -160,7 +163,9 @@ export function useRecentActivity({ schoolId, limit = 20 } = {}) {
       setData(items)
     } catch (err) {
       if (/** @type {any} */ (err)?.name === 'AbortError') return
-      setError(err instanceof Error ? err : new Error('Failed to load activity'))
+      setError(
+        err instanceof Error ? err : new Error('Failed to load activity')
+      )
       setData([])
     } finally {
       if (id === reqIdRef.current) setLoading(false)

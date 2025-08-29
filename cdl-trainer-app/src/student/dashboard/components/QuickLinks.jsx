@@ -1,7 +1,8 @@
 // src/student/dashboard/components/QuickLinks.jsx
-import React, { memo, useMemo } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+
 import cls from './QuickLinks.module.css'
 
 /**
@@ -58,7 +59,7 @@ function QuickLinks({
         const isProto = /^(mailto:|tel:)/i.test(href)
 
         // if caller didn't force external, infer from URL
-        const external = it.external ?? isAbsolute || isProto
+        const external = (it.external ?? isAbsolute) || isProto
 
         // default new tab: yes for http(s) externals, no for mailto/tel (unless caller opts in)
         const newTab =

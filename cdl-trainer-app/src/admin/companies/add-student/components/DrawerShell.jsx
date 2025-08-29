@@ -4,7 +4,7 @@ import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import styles from '../AddStudentDrawer.module.css'
-import { trapFocus } from '../utils'               // from the utils barrel
+import { trapFocus } from '../utils' // from the utils barrel
 
 // Respect prefers-reduced-motion: shorten or disable transitions
 function getAnimMs() {
@@ -63,7 +63,9 @@ export default function DrawerShell({
     const { body } = document
     const prev = body.style.overflow
     body.style.overflow = 'hidden'
-    return () => { body.style.overflow = prev }
+    return () => {
+      body.style.overflow = prev
+    }
   }, [open])
 
   // Focus management + Esc/Tab handling
@@ -81,7 +83,7 @@ export default function DrawerShell({
       )
     toFocus?.focus?.()
 
-    const onKey = (e) => {
+    const onKey = e => {
       if (e.key === 'Escape' && closeOnEsc) {
         e.stopPropagation()
         onClose?.()
@@ -95,7 +97,11 @@ export default function DrawerShell({
       // restore focus if the opener is still in the document
       const el = lastActiveRef.current
       if (el && typeof document !== 'undefined') {
-        try { if (document.contains(el)) el.focus() } catch { /* ignore */ }
+        try {
+          if (document.contains(el)) el.focus()
+        } catch {
+          /* ignore */
+        }
       }
     }
   }, [open, onClose, closeOnEsc, initialFocusRef])
@@ -103,9 +109,11 @@ export default function DrawerShell({
   if (!render || typeof document === 'undefined') return null
 
   const widthClass =
-    size === 'sm' ? styles.panelSm :
-    size === 'lg' ? styles.panelLg :
-    styles.panelMd
+    size === 'sm'
+      ? styles.panelSm
+      : size === 'lg'
+        ? styles.panelLg
+        : styles.panelMd
 
   return createPortal(
     <div className={styles.portalWrap} aria-hidden={!open}>
@@ -124,7 +132,9 @@ export default function DrawerShell({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={ariaDescribedBy || undefined}
-        className={[styles.panel, widthClass, className].filter(Boolean).join(' ')}
+        className={[styles.panel, widthClass, className]
+          .filter(Boolean)
+          .join(' ')}
         style={{
           transform: `translateX(${open ? '0%' : '100%'})`,
           transitionDuration: `${ANIM_MS}ms`,

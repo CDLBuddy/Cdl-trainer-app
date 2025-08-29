@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react'
 
 import { getWalkthroughLabel } from '@walkthrough-data'
+
 import { getSectionStatus } from '../schema/calculators.js'
 
 import SectionHeader from './SectionHeader.jsx'
@@ -27,7 +28,7 @@ function CdlSection({ value = {} /* read-only */ }) {
     const a = Array.isArray(value.overlays) ? value.overlays : []
     const b = Array.isArray(value.restrictions) ? value.restrictions : []
     const all = [...a, ...b]
-      .map((x) => (x == null ? '' : String(x).trim()))
+      .map(x => (x == null ? '' : String(x).trim()))
       .filter(Boolean)
     return [...new Set(all)]
   }, [value.overlays, value.restrictions])
@@ -49,7 +50,11 @@ function CdlSection({ value = {} /* read-only */ }) {
   const instructor = (value.assignedInstructor || '').trim()
 
   return (
-    <section id="cdlInfo" className={styles.section} aria-labelledby="cdl-info-title">
+    <section
+      id="cdlInfo"
+      className={styles.section}
+      aria-labelledby="cdl-info-title"
+    >
       <SectionHeader
         title="CDL Assignment (Admin-set)"
         status={status}
@@ -80,7 +85,7 @@ function CdlSection({ value = {} /* read-only */ }) {
         <Row label="Overlays / Restrictions">
           {overlays.length ? (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {overlays.map((o) => (
+              {overlays.map(o => (
                 <span
                   key={o}
                   style={{
@@ -90,9 +95,12 @@ function CdlSection({ value = {} /* read-only */ }) {
                     borderRadius: 999,
                     fontSize: 12,
                     lineHeight: 1.4,
-                    background: 'color-mix(in oklab, var(--primary, #3b82f6) 12%, transparent)',
-                    color: 'color-mix(in oklab, var(--primary-foreground, #0b2469) 80%, #0b2469)',
-                    border: '1px solid color-mix(in oklab, var(--primary, #3b82f6) 35%, transparent)',
+                    background:
+                      'color-mix(in oklab, var(--primary, #3b82f6) 12%, transparent)',
+                    color:
+                      'color-mix(in oklab, var(--primary-foreground, #0b2469) 80%, #0b2469)',
+                    border:
+                      '1px solid color-mix(in oklab, var(--primary, #3b82f6) 35%, transparent)',
                   }}
                 >
                   {o}
@@ -104,13 +112,12 @@ function CdlSection({ value = {} /* read-only */ }) {
           )}
         </Row>
 
-        <Row label="Assigned Instructor">
-          {instructor || <i>Unassigned</i>}
-        </Row>
+        <Row label="Assigned Instructor">{instructor || <i>Unassigned</i>}</Row>
       </div>
 
       <p id="cdl-info-help" className={styles.sub} style={{ marginTop: 8 }}>
-        These fields are set by your school and are read-only. Contact your administrator if something looks off.
+        These fields are set by your school and are read-only. Contact your
+        administrator if something looks off.
       </p>
     </section>
   )

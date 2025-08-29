@@ -7,7 +7,13 @@
 // ======================================================================
 
 import React, { Suspense } from 'react'
-import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom'
+import {
+  Link,
+  Navigate,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
 
 // Lazy-load the actual review screen (lives one folder up)
 const TestReview = React.lazy(() => import('../TestReview.jsx'))
@@ -23,7 +29,6 @@ class Boundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-       
       console.error('[TestReviewWrapper] render error:', error, info)
     }
   }
@@ -38,8 +43,14 @@ class Boundary extends React.Component {
           aria-live="assertive"
         >
           <h2>Review couldn’t load</h2>
-          <p style={{ color: '#b12' }}>{String(err?.message || err || 'Unknown error')}</p>
-          <Link className="btn outline" to="/student/practice-tests" style={{ marginTop: 10 }}>
+          <p style={{ color: '#b12' }}>
+            {String(err?.message || err || 'Unknown error')}
+          </p>
+          <Link
+            className="btn outline"
+            to="/student/practice-tests"
+            style={{ marginTop: 10 }}
+          >
             Back to Practice Tests
           </Link>
         </div>

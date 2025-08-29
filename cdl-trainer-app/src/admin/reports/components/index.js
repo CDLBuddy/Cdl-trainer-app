@@ -7,8 +7,8 @@
 // ======================================================================
 
 export { default as ChecklistCard } from './ChecklistCard.jsx'
-export { default as FiltersBar }    from './FiltersBar.jsx'
-export { default as StatusPill }    from './StatusPill.jsx'
+export { default as FiltersBar } from './FiltersBar.jsx'
+export { default as StatusPill } from './StatusPill.jsx'
 
 // Intentionally NOT exported here to keep the route light:
 //   - UsersTable

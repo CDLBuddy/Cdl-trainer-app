@@ -22,7 +22,6 @@ class Boundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-       
       console.error('[TestResultsWrapper] render error:', error, info)
     }
   }
@@ -37,9 +36,15 @@ class Boundary extends React.Component {
         >
           <h2>Results couldn’t load</h2>
           <p style={{ color: '#b12' }}>
-            {String(this.state.err?.message || this.state.err || 'Unknown error')}
+            {String(
+              this.state.err?.message || this.state.err || 'Unknown error'
+            )}
           </p>
-          <Link className="btn outline" to="/student/practice-tests" style={{ marginTop: 10 }}>
+          <Link
+            className="btn outline"
+            to="/student/practice-tests"
+            style={{ marginTop: 10 }}
+          >
             Back to Practice Tests
           </Link>
         </div>

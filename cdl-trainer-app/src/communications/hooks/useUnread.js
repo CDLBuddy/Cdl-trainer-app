@@ -14,6 +14,7 @@
  *  - markOnMount?: boolean  (if true, auto-mark as read after first load)
  */
 import { useEffect, useMemo, useState } from 'react'
+
 import { useInbox } from './useInbox.js'
 
 const hasWindow = () => typeof window !== 'undefined'
@@ -27,7 +28,9 @@ function tsToMs(ts) {
     const d = ts?.toDate ? ts.toDate() : new Date(ts)
     const n = d?.getTime?.()
     return Number.isFinite(n) ? n : 0
-  } catch { return 0 }
+  } catch {
+    return 0
+  }
 }
 
 /** Per-user-ish key so multiple users on one device don’t collide */
@@ -38,7 +41,7 @@ function storageKeyFor({ role, schoolId, companyId }) {
   const userHint =
     (hasWindow() &&
       (localStorage.getItem('currentUserEmail') ||
-       localStorage.getItem('uid'))) ||
+        localStorage.getItem('uid'))) ||
     'anon'
   return `inbox:lastSeen:${r}:${s}:${c}:${userHint}`
 }
@@ -48,11 +51,17 @@ function readLS(key, fallback = 0) {
   try {
     const v = Number(localStorage.getItem(key))
     return Number.isFinite(v) ? v : fallback
-  } catch { return fallback }
+  } catch {
+    return fallback
+  }
 }
 function writeLS(key, value) {
   if (!hasWindow()) return
-  try { localStorage.setItem(key, String(value)) } catch { /* ignore */ }
+  try {
+    localStorage.setItem(key, String(value))
+  } catch {
+    /* ignore */
+  }
 }
 
 export function useUnreadAnnouncements({
@@ -63,8 +72,12 @@ export function useUnreadAnnouncements({
   markOnMount = false,
 } = {}) {
   // Let useInbox infer missing role/scope; it exposes the resolved role.
-  const { items, loading, error, role: resolvedRole } =
-    useInbox({ role, schoolId, companyId, take })
+  const {
+    items,
+    loading,
+    error,
+    role: resolvedRole,
+  } = useInbox({ role, schoolId, companyId, take })
 
   const key = useMemo(
     () => storageKeyFor({ role: resolvedRole || role, schoolId, companyId }),
@@ -75,7 +88,9 @@ export function useUnreadAnnouncements({
   const [lastSeen, setLastSeen] = useState(() => readLS(key, 0))
 
   // Persist whenever it changes
-  useEffect(() => { writeLS(key, lastSeen) }, [key, lastSeen])
+  useEffect(() => {
+    writeLS(key, lastSeen)
+  }, [key, lastSeen])
 
   // Find newest message timestamp (max across list)
   const newestMs = useMemo(() => {
@@ -105,7 +120,7 @@ export function useUnreadAnnouncements({
     const now = Date.now()
     setLastSeen(Math.max(now, newestMs || now))
   }
-  const markSeenThrough = (through) => {
+  const markSeenThrough = through => {
     const t = tsToMs(through)
     if (!t) return
     setLastSeen(prev => (t > prev ? t : prev))
@@ -116,7 +131,6 @@ export function useUnreadAnnouncements({
     if (!markOnMount || loading || !newestMs) return
     setLastSeen(prev => (newestMs > prev ? newestMs : prev))
     // run once per key/newestMs pair
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [markOnMount, loading, newestMs, key])
 
   return {

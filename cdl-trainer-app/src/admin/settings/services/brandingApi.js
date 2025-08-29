@@ -6,7 +6,12 @@
 // ---------------------------------------------------------------------
 
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
+import {
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from 'firebase/storage'
 
 import { db, storage } from '@utils/firebase.js'
 
@@ -33,7 +38,11 @@ export async function saveBranding(schoolId, partial = {}) {
   if (partial.primaryColor != null) payload.primaryColor = partial.primaryColor
   if (partial.logoUrl != null) payload.logoUrl = partial.logoUrl
 
-  await setDoc(ref, { ...payload, updatedAt: serverTimestamp() }, { merge: true })
+  await setDoc(
+    ref,
+    { ...payload, updatedAt: serverTimestamp() },
+    { merge: true }
+  )
 }
 
 /**
@@ -60,7 +69,7 @@ export async function deleteLogo(schoolId) {
   if (!schoolId) throw new Error('Missing schoolId')
   const ref = doc(db, 'schools', schoolId)
   const snap = await getDoc(ref)
-  const url = snap.exists() ? (snap.data().logoUrl || '') : ''
+  const url = snap.exists() ? snap.data().logoUrl || '' : ''
   if (!url) {
     // clear anyway
     await saveBranding(schoolId, { logoUrl: '' })
@@ -70,7 +79,9 @@ export async function deleteLogo(schoolId) {
   // Try to delete the object if it’s in our bucket path
   try {
     // crude path guess (only safe if you used uploadLogo)
-    const path = new URL(url).pathname.replace(/^\/v0\/b\/[^/]+\/o\//, '').replace(/%2F/g, '/')
+    const path = new URL(url).pathname
+      .replace(/^\/v0\/b\/[^/]+\/o\//, '')
+      .replace(/%2F/g, '/')
     await deleteObject(storageRef(storage, path))
   } catch {
     // best-effort; don’t throw on opaque URLs

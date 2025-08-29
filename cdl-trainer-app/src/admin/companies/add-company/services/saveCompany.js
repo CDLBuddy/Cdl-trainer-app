@@ -37,7 +37,8 @@ export default async function saveCompany(input = {}) {
   const nowServer = serverTimestamp()
 
   const name = String(input.name || '').trim()
-  const billingMode = (input.billingMode === 'individual' ? 'individual' : 'employer')
+  const billingMode =
+    input.billingMode === 'individual' ? 'individual' : 'employer'
   const contactEmail = String(input.contactEmail || '').trim()
   const contact = String(input.contact || '').trim()
   const address = String(input.address || '').trim()
@@ -53,7 +54,9 @@ export default async function saveCompany(input = {}) {
   if (!skipDuplicateCheck && schoolId) {
     const exists = await existsByNameInSchool(schoolId, name)
     if (exists) {
-      const err = new Error('A company with this name already exists for this school.')
+      const err = new Error(
+        'A company with this name already exists for this school.'
+      )
       err.code = 'company/duplicate'
       throw err
     }
@@ -62,11 +65,11 @@ export default async function saveCompany(input = {}) {
   // Canonical Firestore payload (kept consistent with other company writers)
   const docPayload = {
     name,
-    contact,                       // display contact (name/phone/etc.)
+    contact, // display contact (name/phone/etc.)
     address,
     contactEmail,
-    billing: { mode: billingMode },// future-proof structure
-    status: true,                  // active by default
+    billing: { mode: billingMode }, // future-proof structure
+    status: true, // active by default
     schoolId: schoolId || null,
 
     // audit + server time

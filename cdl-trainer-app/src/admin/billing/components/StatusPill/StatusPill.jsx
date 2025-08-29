@@ -7,7 +7,9 @@ import styles from './StatusPill.module.css'
 
 /** Normalize incoming value -> canonical token (tolerates common aliases). */
 function normalize(value) {
-  const v = String(value ?? '').trim().toLowerCase()
+  const v = String(value ?? '')
+    .trim()
+    .toLowerCase()
   if (!v) return ''
   const map = {
     // employer
@@ -19,7 +21,7 @@ function normalize(value) {
     waived: 'waived',
     // friendly aliases
     'partially paid': 'partial',
-    'incomplete': 'pending',
+    incomplete: 'pending',
     'not paid': 'unpaid',
     'fully paid': 'paid',
   }
@@ -48,14 +50,14 @@ const StatusPill = forwardRef(function StatusPill(
   {
     value,
     individual = false,
-    scope,                 // optional explicit scope wins over boolean
+    scope, // optional explicit scope wins over boolean
     size = 'sm',
     title,
     className = '',
     as: As = 'span',
     showDot = false,
     ariaLive = 'off',
-    children,              // optional custom content
+    children, // optional custom content
     ...rest
   },
   ref

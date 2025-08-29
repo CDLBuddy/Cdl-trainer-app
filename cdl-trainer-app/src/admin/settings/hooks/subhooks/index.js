@@ -6,19 +6,19 @@
 // ======================================================================
 
 // Core sections
-export { useBillingSettings }        from './useBillingSettings.js'
-export { useBrandingSettings }       from './useBrandingSettings.js'
-export { useComplianceSettings }     from './useComplianceSettings.js'
-export { useCoursesSettings }        from './useCoursesSettings.js'
-export { useNotificationsSettings }  from './useNotificationsSettings.js'
-export { useUsersSettings }          from './useUsersSettings.js'
+export { useBillingSettings } from './useBillingSettings.js'
+export { useBrandingSettings } from './useBrandingSettings.js'
+export { useComplianceSettings } from './useComplianceSettings.js'
+export { useCoursesSettings } from './useCoursesSettings.js'
+export { useNotificationsSettings } from './useNotificationsSettings.js'
+export { useUsersSettings } from './useUsersSettings.js'
 
 // Optional/advanced sections
-export { useAuditSettings }          from './useAuditSettings.js'
-export { useDataRetentionSettings }  from './useDataRetentionSettings.js'
-export { useIntegrationsSettings }   from './useIntegrationsSettings.js'
-export { useSecuritySettings }       from './useSecuritySettings.js'
-export { useWebhooksSettings }       from './useWebhooksSettings.js'
+export { useAuditSettings } from './useAuditSettings.js'
+export { useDataRetentionSettings } from './useDataRetentionSettings.js'
+export { useIntegrationsSettings } from './useIntegrationsSettings.js'
+export { useSecuritySettings } from './useSecuritySettings.js'
+export { useWebhooksSettings } from './useWebhooksSettings.js'
 
 // ----------------------------------------------------------------------
 // Usage

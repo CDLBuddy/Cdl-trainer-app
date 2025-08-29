@@ -5,7 +5,7 @@ export const KEY = 'compliance'
 
 export const DEFAULTS = Object.freeze({
   requiredDocs: ['insurance', 'bonding'], // ids/keys you recognize in UI
-  notifyBeforeDays: 30,                   // reminder lead time
+  notifyBeforeDays: 30, // reminder lead time
 })
 
 /* ---------------- helpers ---------------- */
@@ -14,9 +14,13 @@ const uniqueStrings = (arr = []) =>
   Array.from(new Set((Array.isArray(arr) ? arr : []).map(String)))
 
 function normalizeDraft(d = {}) {
-  const days = Number.isFinite(+d.notifyBeforeDays) ? Math.max(0, +d.notifyBeforeDays) : DEFAULTS.notifyBeforeDays
+  const days = Number.isFinite(+d.notifyBeforeDays)
+    ? Math.max(0, +d.notifyBeforeDays)
+    : DEFAULTS.notifyBeforeDays
   return {
-    requiredDocs: uniqueStrings(d.requiredDocs?.length ? d.requiredDocs : DEFAULTS.requiredDocs),
+    requiredDocs: uniqueStrings(
+      d.requiredDocs?.length ? d.requiredDocs : DEFAULTS.requiredDocs
+    ),
     notifyBeforeDays: days,
   }
 }
@@ -30,10 +34,15 @@ const shallowEq = (a, b) =>
 
 export function useComplianceSettings({ vm } = {}) {
   // seed from saved prefs → normalize
-  const base = useMemo(() => normalizeDraft(vm?.prefs?.[KEY] || DEFAULTS), [vm?.prefs])
+  const base = useMemo(
+    () => normalizeDraft(vm?.prefs?.[KEY] || DEFAULTS),
+    [vm?.prefs]
+  )
 
   const [draft, setDraft] = useState(base)
-  useEffect(() => { setDraft(base) }, [base])
+  useEffect(() => {
+    setDraft(base)
+  }, [base])
 
   const update = useCallback(
     patch => setDraft(d => normalizeDraft({ ...d, ...patch })),
@@ -45,11 +54,20 @@ export function useComplianceSettings({ vm } = {}) {
     []
   )
   const addRequiredDoc = useCallback(
-    docKey => setDraft(d => normalizeDraft({ ...d, requiredDocs: [...d.requiredDocs, docKey] })),
+    docKey =>
+      setDraft(d =>
+        normalizeDraft({ ...d, requiredDocs: [...d.requiredDocs, docKey] })
+      ),
     []
   )
   const removeRequiredDoc = useCallback(
-    docKey => setDraft(d => normalizeDraft({ ...d, requiredDocs: d.requiredDocs.filter(x => x !== docKey) })),
+    docKey =>
+      setDraft(d =>
+        normalizeDraft({
+          ...d,
+          requiredDocs: d.requiredDocs.filter(x => x !== docKey),
+        })
+      ),
     []
   )
   const setNotifyBeforeDays = useCallback(
@@ -65,7 +83,11 @@ export function useComplianceSettings({ vm } = {}) {
     if (!Array.isArray(draft.requiredDocs) || draft.requiredDocs.length === 0) {
       e.requiredDocs = 'Select at least one required document.'
     }
-    if (!Number.isFinite(draft.notifyBeforeDays) || draft.notifyBeforeDays < 0 || draft.notifyBeforeDays > 365) {
+    if (
+      !Number.isFinite(draft.notifyBeforeDays) ||
+      draft.notifyBeforeDays < 0 ||
+      draft.notifyBeforeDays > 365
+    ) {
       e.notifyBeforeDays = 'Lead time must be between 0 and 365 days.'
     }
     return e
@@ -76,15 +98,20 @@ export function useComplianceSettings({ vm } = {}) {
 
   // persistence
   const save = useCallback(
-    async (partial) => {
+    async partial => {
       const toSave = normalizeDraft(partial ? { ...draft, ...partial } : draft)
-      if (!valid) return { ok: false, error: 'Fix validation errors before saving.' }
-      if (!vm?.actions?.save) return { ok: false, error: 'Save action is unavailable.' }
+      if (!valid)
+        return { ok: false, error: 'Fix validation errors before saving.' }
+      if (!vm?.actions?.save)
+        return { ok: false, error: 'Save action is unavailable.' }
       try {
         await vm.actions.save({ [KEY]: toSave })
         return { ok: true }
       } catch (err) {
-        return { ok: false, error: err?.message || 'Failed to save compliance settings.' }
+        return {
+          ok: false,
+          error: err?.message || 'Failed to save compliance settings.',
+        }
       }
     },
     [draft, valid, vm?.actions]

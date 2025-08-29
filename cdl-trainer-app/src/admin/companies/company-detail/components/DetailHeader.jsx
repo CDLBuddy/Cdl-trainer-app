@@ -1,15 +1,23 @@
 // Path: /src/admin/companies/company-detail/components/DetailHeader.jsx
-import React, { memo, useCallback } from 'react'
 import PropTypes from 'prop-types'
-import styles from './DetailHeader.module.css'
+import React, { memo, useCallback } from 'react'
+
 import { visuallyHidden } from '../utils/format.js'
 
+import styles from './DetailHeader.module.css'
+
 function DetailHeader({
-  companyId, name,
-  search, onSearch,
-  onBack, onAdd, onExport,
-  billingFilter, setBillingFilter,
-  onlyUnassigned, setOnlyUnassigned,
+  companyId,
+  name,
+  search,
+  onSearch,
+  onBack,
+  onAdd,
+  onExport,
+  billingFilter,
+  setBillingFilter,
+  onlyUnassigned,
+  setOnlyUnassigned,
 }) {
   const clearSearch = useCallback(() => onSearch(''), [onSearch])
 
@@ -17,20 +25,28 @@ function DetailHeader({
     <header className={styles.header}>
       {/* Title */}
       <div className={styles.titleBlock}>
-        <div className={styles.name} title={name || '(No name)'}>{name || '(No name)'}</div>
+        <div className={styles.name} title={name || '(No name)'}>
+          {name || '(No name)'}
+        </div>
         <div className={styles.subtle}>{companyId}</div>
       </div>
 
       {/* Controls */}
-      <div className={styles.controls} role="toolbar" aria-label="Roster actions">
+      <div
+        className={styles.controls}
+        role="toolbar"
+        aria-label="Roster actions"
+      >
         {/* Search */}
         <div className={styles.searchWrap}>
-          <label htmlFor="company-roster-search" style={visuallyHidden}>Search roster</label>
+          <label htmlFor="company-roster-search" style={visuallyHidden}>
+            Search roster
+          </label>
           <input
             id="company-roster-search"
             type="search"
             value={search}
-            onChange={(e) => onSearch(e.target.value)}
+            onChange={e => onSearch(e.target.value)}
             placeholder="Search roster…"
             aria-label="Search roster"
             className={styles.search}
@@ -52,11 +68,13 @@ function DetailHeader({
         </div>
 
         {/* Billing filter */}
-        <label htmlFor="billing-filter" style={visuallyHidden}>Billing mode filter</label>
+        <label htmlFor="billing-filter" style={visuallyHidden}>
+          Billing mode filter
+        </label>
         <select
           id="billing-filter"
           value={billingFilter}
-          onChange={(e) => setBillingFilter(e.target.value)}
+          onChange={e => setBillingFilter(e.target.value)}
           title="Billing mode filter"
           aria-label="Filter by billing mode"
           className={styles.select}
@@ -71,20 +89,33 @@ function DetailHeader({
           <input
             type="checkbox"
             checked={onlyUnassigned}
-            onChange={(e) => setOnlyUnassigned(e.target.checked)}
+            onChange={e => setOnlyUnassigned(e.target.checked)}
             aria-label="Show unassigned only"
           />
           <span>Unassigned only</span>
         </label>
 
         {/* Actions */}
-        <button className="btn outline" onClick={onExport} title="Export visible roster to CSV">
+        <button
+          className="btn outline"
+          onClick={onExport}
+          title="Export visible roster to CSV"
+        >
           Export CSV
         </button>
-        <button className="btn" onClick={onAdd} aria-haspopup="dialog" title="Add a student to this company">
+        <button
+          className="btn"
+          onClick={onAdd}
+          aria-haspopup="dialog"
+          title="Add a student to this company"
+        >
           + Add Student
         </button>
-        <button className="btn outline" onClick={onBack} title="Back to Companies">
+        <button
+          className="btn outline"
+          onClick={onBack}
+          title="Back to Companies"
+        >
           ⬅ Back
         </button>
       </div>

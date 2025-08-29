@@ -35,7 +35,9 @@ export default function EmployerTab() {
 
   // (Optional) quick metrics you can render near the filters if desired
   const counts = useMemo(() => {
-    let unpaid = 0, partial = 0, paid = 0
+    let unpaid = 0,
+      partial = 0,
+      paid = 0
     for (const r of employerInvoices) {
       if (r.status === 'unpaid') unpaid++
       else if (r.status === 'partial') partial++
@@ -46,13 +48,21 @@ export default function EmployerTab() {
 
   // Stable wrapper (prevents re-renders of table rows relying on referential equality)
   const onMarkPaid = useCallback(
-    (id) => handleMarkInvoicePaid?.(id),
+    id => handleMarkInvoicePaid?.(id),
     [handleMarkInvoicePaid]
   )
 
   // CSV export
   const exportCsv = useCallback(() => {
-    const headers = ['Company','PO Number','Amount','Issued','Due','Status','Contact']
+    const headers = [
+      'Company',
+      'PO Number',
+      'Amount',
+      'Issued',
+      'Due',
+      'Status',
+      'Contact',
+    ]
     const lines = filtered.map(r => [
       r.companyName,
       r.poNumber || '',
@@ -60,7 +70,7 @@ export default function EmployerTab() {
       fmtDate(r.issuedAt),
       fmtDate(r.dueAt),
       r.status,
-      r.contactEmail || ''
+      r.contactEmail || '',
     ])
     downloadCsv('employer-invoices', headers, lines)
   }, [filtered])
@@ -79,8 +89,18 @@ export default function EmployerTab() {
       {employerInvoices.length > 0 && (
         <div style={{ color: '#6b7280', fontSize: 12, margin: '4px 0 8px' }}>
           Showing <b>{filtered.length}</b> of <b>{counts.total}</b> invoices
-          {status !== 'all' ? <> • status: <b>{status}</b></> : null}
-          {search.trim() ? <> • search: <b>{search.trim()}</b></> : null}
+          {status !== 'all' ? (
+            <>
+              {' '}
+              • status: <b>{status}</b>
+            </>
+          ) : null}
+          {search.trim() ? (
+            <>
+              {' '}
+              • search: <b>{search.trim()}</b>
+            </>
+          ) : null}
         </div>
       )}
 
@@ -91,7 +111,8 @@ export default function EmployerTab() {
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ padding: '1rem', color: '#6b7280' }}>
-            No invoices found{search || status !== 'all' ? ' for the current filters' : ''}.
+            No invoices found
+            {search || status !== 'all' ? ' for the current filters' : ''}.
           </div>
         ) : (
           <EmployerTable rows={filtered} onMarkPaid={onMarkPaid} />
@@ -99,7 +120,8 @@ export default function EmployerTab() {
       </div>
 
       <p style={{ color: '#6b7280', fontSize: 12, marginTop: 8 }}>
-        TODO: Attach invoices to companies in Firestore and surface PO / line items here.
+        TODO: Attach invoices to companies in Firestore and surface PO / line
+        items here.
       </p>
     </section>
   )

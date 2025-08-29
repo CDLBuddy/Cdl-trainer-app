@@ -65,7 +65,9 @@ if (IS_DEV) {
     } else {
       overlay.rules.forEach((r, i) => {
         if (!r || typeof r !== 'object') {
-          console.warn(`[overlays/common:merge-steps] Rule at index ${i} must be an object`)
+          console.warn(
+            `[overlays/common:merge-steps] Rule at index ${i} must be an object`
+          )
           return
         }
 
@@ -89,7 +91,9 @@ if (IS_DEV) {
             )
           }
         } else {
-          console.warn(`[overlays/common:merge-steps] Unknown op "${op}" at index ${i}`)
+          console.warn(
+            `[overlays/common:merge-steps] Unknown op "${op}" at index ${i}`
+          )
         }
       })
     }

@@ -43,7 +43,9 @@
   border-radius: var(--radius-sm, 8px);
   border: 1px solid color-mix(in oklab, var(--brand-light, #4e91ad), #000 30%);
   text-decoration: none;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
 }
 
 .tile:hover {

@@ -4,59 +4,59 @@
    ========================================== */
 :root {
   /* -------- Brand palette -------- */
-  --brand-dark:  #0e1b1b;
-  --brand-mid:   #004d66;
+  --brand-dark: #0e1b1b;
+  --brand-mid: #004d66;
   --brand-light: #4e91ad;
-  --accent:      #c4dbe8;
+  --accent: #c4dbe8;
 
   /* Common alias used around the app */
   --brand-primary: var(--brand-light);
 
   /* -------- Text & surfaces -------- */
   --text-light: #ffffff;
-  --text-dark:  #e0e0e0;
-  --card-bg:       rgba(255, 255, 255, 0.06);
-  --card-bg-dark:  rgba(10, 15, 20, 0.60);
+  --text-dark: #e0e0e0;
+  --card-bg: rgba(255, 255, 255, 0.06);
+  --card-bg-dark: rgba(10, 15, 20, 0.6);
   --app-bg: var(--brand-dark);
 
   /* -------- Feedback -------- */
-  --error:   #e53e3e;
+  --error: #e53e3e;
   --success: #48bb78;
   --warning: #f6ad55;
 
   /* -------- Toasts -------- */
-  --toast-bg:   rgba(0, 0, 0, 0.85);
+  --toast-bg: rgba(0, 0, 0, 0.85);
   --toast-text: #ffffff;
 
   /* -------- Layout / env -------- */
-  --safe-area-inset-top:    env(safe-area-inset-top, 20px);
+  --safe-area-inset-top: env(safe-area-inset-top, 20px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
 
   /* -------- Typography -------- */
   --font-body:
-    Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+    Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
 
   /* -------- Radii / elevation -------- */
   --radius-sm: 8px;
   --radius-md: 10px;
   --radius-lg: 14px;
 
-  --shadow-1: 0 6px 20px  rgba(0, 0, 0, 0.20);
+  --shadow-1: 0 6px 20px rgba(0, 0, 0, 0.2);
   --shadow-2: 0 10px 30px rgba(0, 0, 0, 0.25);
   --shadow-3: 0 14px 40px rgba(0, 0, 0, 0.31);
 
   /* -------- Focus rings -------- */
-  --ring:        0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 10%);
+  --ring: 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 10%);
   --ring-strong: 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 20%);
-  --ring-error:  0 0 0 3px color-mix(in oklab, var(--error),       #fff 12%);
+  --ring-error: 0 0 0 3px color-mix(in oklab, var(--error), #fff 12%);
 
   /* -------- Z layers -------- */
-  --z-sticky:   10;
-  --z-navbar:   1000;
+  --z-sticky: 10;
+  --z-navbar: 1000;
   --z-dropdown: 1200;
-  --z-modal:    1400;
-  --z-toast:    1600;
+  --z-modal: 1400;
+  --z-toast: 1600;
 }
 
 /* Optional: role-aware accent nuance (use if desired) */

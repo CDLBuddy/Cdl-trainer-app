@@ -25,7 +25,7 @@ function EmployerFilters({
   const statusId = useId()
 
   const onSearchKeyDown = useCallback(
-    (e) => {
+    e => {
       // Quality-of-life: ESC clears search
       if (e.key === 'Escape' && search) {
         e.stopPropagation()
@@ -57,7 +57,7 @@ function EmployerFilters({
           type="search"
           inputMode="search"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           onKeyDown={onSearchKeyDown}
           placeholder="Search company or PO…"
           aria-label="Search employer invoices"
@@ -78,7 +78,7 @@ function EmployerFilters({
         <select
           id={statusId}
           value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          onChange={e => setStatus(e.target.value)}
           aria-label="Filter by status"
           style={{
             padding: '6px 10px',

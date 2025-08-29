@@ -37,16 +37,16 @@ export function parseCsvToWalkthrough(csvText, meta = {}) {
     if (!cells || cells.length === 0) continue
 
     const sectionName = getStr(cells, map.section)
-    const script      = getStr(cells, map.script)
+    const script = getStr(cells, map.script)
     if (!sectionName && !script) continue // ignore empty
-    if (!script) continue                 // steps require script
+    if (!script) continue // steps require script
 
-    const stepLabel   = getStr(cells, map.stepLabel)
-    const mustSay     = getBool(cells, map.mustSay)
-    const required    = getBool(cells, map.required)
-    const passFail    = getBool(cells, map.passFail)
-    const skip        = getBool(cells, map.skip)
-    const tags        = getTags(cells, map.tags)
+    const stepLabel = getStr(cells, map.stepLabel)
+    const mustSay = getBool(cells, map.mustSay)
+    const required = getBool(cells, map.required)
+    const passFail = getBool(cells, map.passFail)
+    const skip = getBool(cells, map.skip)
+    const tags = getTags(cells, map.tags)
     const sectionCrit = getBool(cells, map.critical)
 
     const key = sectionName || 'Untitled'
@@ -63,10 +63,10 @@ export function parseCsvToWalkthrough(csvText, meta = {}) {
     /** @type {any} */
     const step = { script }
     if (stepLabel) step.label = stepLabel
-    if (mustSay)   step.mustSay = true
-    if (required)  step.required = true
-    if (passFail)  step.passFail = true
-    if (skip)      step.skip = true
+    if (mustSay) step.mustSay = true
+    if (required) step.required = true
+    if (passFail) step.passFail = true
+    if (skip) step.skip = true
     if (tags.length) step.tags = tags
 
     section.steps.push(step)
@@ -93,7 +93,10 @@ function _tokenizeCsv(text) {
   const src = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n')
 
   // Pass 1: detect delimiter from the first few *physical* lines
-  const sampleLines = src.split('\n').slice(0, 12).filter(l => l.trim() !== '' && !/^\s*#/.test(l))
+  const sampleLines = src
+    .split('\n')
+    .slice(0, 12)
+    .filter(l => l.trim() !== '' && !/^\s*#/.test(l))
   const delim = detectDelimiterFromSample(sampleLines)
 
   /** @type {string[][]} */
@@ -156,9 +159,12 @@ function detectDelimiterFromSample(lines) {
     for (let i = 0; i < s.length; i++) {
       const ch = s[i]
       if (ch === '"') {
-        if (inQ && s[i + 1] === '"') { i++; continue }
+        if (inQ && s[i + 1] === '"') {
+          i++
+          continue
+        }
         inQ = !inQ
-      } else if (!inQ && (ch in counts)) {
+      } else if (!inQ && ch in counts) {
         counts[ch]++
       }
     }
@@ -173,21 +179,48 @@ function detectDelimiterFromSample(lines) {
 function buildHeaderMap(headerRow = []) {
   const norm = headerRow.map(n => normalizeHeader(n))
   return {
-    section:   anyIndex(norm, ['section', 'part', 'area', 'section name', 'sectiontitle']),
-    stepLabel: anyIndex(norm, ['steplabel', 'label', 'item', 'title', 'step label']),
-    script:    anyIndex(norm, ['script', 'text', 'line', 'step', 'content']),
-    mustSay:   anyIndex(norm, ['mustsay', 'must', 'say', 'verbatim']),
-    required:  anyIndex(norm, ['required', 'req', 'need', 'mandatory']),
-    passFail:  anyIndex(norm, ['passfail', 'pass', 'pf']),
-    critical:  anyIndex(norm, ['critical', 'sectioncritical', 'pass/fail', 'iscritical']),
-    skip:      anyIndex(norm, ['skip', 'omit']),
-    tags:      anyIndex(norm, ['tags', 'tag']),
+    section: anyIndex(norm, [
+      'section',
+      'part',
+      'area',
+      'section name',
+      'sectiontitle',
+    ]),
+    stepLabel: anyIndex(norm, [
+      'steplabel',
+      'label',
+      'item',
+      'title',
+      'step label',
+    ]),
+    script: anyIndex(norm, ['script', 'text', 'line', 'step', 'content']),
+    mustSay: anyIndex(norm, ['mustsay', 'must', 'say', 'verbatim']),
+    required: anyIndex(norm, ['required', 'req', 'need', 'mandatory']),
+    passFail: anyIndex(norm, ['passfail', 'pass', 'pf']),
+    critical: anyIndex(norm, [
+      'critical',
+      'sectioncritical',
+      'pass/fail',
+      'iscritical',
+    ]),
+    skip: anyIndex(norm, ['skip', 'omit']),
+    tags: anyIndex(norm, ['tags', 'tag']),
   }
 }
 
 function defaultHeaderMap(_firstRow = []) {
   // section, stepLabel, script, mustSay, required, passFail, critical, skip, tags
-  return { section:0, stepLabel:1, script:2, mustSay:3, required:4, passFail:5, critical:6, skip:7, tags:8 }
+  return {
+    section: 0,
+    stepLabel: 1,
+    script: 2,
+    mustSay: 3,
+    required: 4,
+    passFail: 5,
+    critical: 6,
+    skip: 7,
+    tags: 8,
+  }
 }
 
 function normalizeHeader(v) {
@@ -220,22 +253,25 @@ function getBool(cells, i) {
 function getTags(cells, i) {
   const raw = getStr(cells, i)
   if (!raw) return []
-  return raw.split(/[|,]/g).map(s => s.trim()).filter(Boolean)
+  return raw
+    .split(/[|,]/g)
+    .map(s => s.trim())
+    .filter(Boolean)
 }
 
 /** Normalize to canonical walkthrough shape; adds meta if provided. */
 export function normalizeWalkthrough(w = {}, meta = {}) {
-  const id        = strOrU(meta.id ?? w.id)
-  const label     = strOrU(meta.label ?? w.label)
+  const id = strOrU(meta.id ?? w.id)
+  const label = strOrU(meta.label ?? w.label)
   const classCode = strOrU(meta.classCode ?? w.classCode)
-  const version   = Number(meta.version ?? w.version ?? 1) || 1
+  const version = Number(meta.version ?? w.version ?? 1) || 1
 
   const sections = Array.isArray(w.sections) ? w.sections : []
   const cleaned = sections
     .map(s => {
       const sectionName = String(s.section ?? '').trim() || 'Untitled'
-      const critical    = !!s.critical
-      const passFail    = !!s.passFail
+      const critical = !!s.critical
+      const passFail = !!s.passFail
 
       const steps = Array.isArray(s.steps)
         ? s.steps
@@ -246,10 +282,10 @@ export function normalizeWalkthrough(w = {}, meta = {}) {
               const out = { script }
               const lbl = String(st.label ?? st.stepLabel ?? '').trim()
               if (lbl) out.label = lbl
-              if (st.mustSay   != null) out.mustSay   = !!st.mustSay
-              if (st.required  != null) out.required  = !!st.required
-              if (st.passFail  != null) out.passFail  = !!st.passFail
-              if (st.skip      != null) out.skip      = !!st.skip
+              if (st.mustSay != null) out.mustSay = !!st.mustSay
+              if (st.required != null) out.required = !!st.required
+              if (st.passFail != null) out.passFail = !!st.passFail
+              if (st.skip != null) out.skip = !!st.skip
               const tags = Array.isArray(st.tags)
                 ? st.tags.map(t => String(t).trim()).filter(Boolean)
                 : []

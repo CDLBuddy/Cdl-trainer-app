@@ -162,7 +162,7 @@ export function getInvitePrefill(inv) {
   const { email, name, schoolId } = inv
   return {
     email: email ? String(email).toLowerCase() : undefined,
-    name:  name  ? String(name) : undefined,
+    name: name ? String(name) : undefined,
     schoolId: schoolId || undefined,
   }
 }

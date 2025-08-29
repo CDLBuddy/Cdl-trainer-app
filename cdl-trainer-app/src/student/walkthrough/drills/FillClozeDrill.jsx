@@ -24,7 +24,10 @@ export default function FillClozeDrill({
     if (!line || keywords.length === 0) {
       return { parts: [line], blanks: [] }
     }
-    const re = new RegExp(`\\b(${keywords.map(k => escapeRe(k)).join('|')})\\b`, 'gi')
+    const re = new RegExp(
+      `\\b(${keywords.map(k => escapeRe(k)).join('|')})\\b`,
+      'gi'
+    )
     const segs = []
     const found = []
     let i = 0
@@ -46,7 +49,8 @@ export default function FillClozeDrill({
   function check(e) {
     e?.preventDefault?.()
     const ok = blanks.every(
-      (b, i) => (inputs[i] || '').trim().toLowerCase() === String(b).toLowerCase()
+      (b, i) =>
+        (inputs[i] || '').trim().toLowerCase() === String(b).toLowerCase()
     )
     setResult(ok ? '✅ Correct!' : '❌ Try again!')
     if (ok && !alreadyComplete) onComplete?.()
@@ -87,7 +91,12 @@ export default function FillClozeDrill({
         )}
       </div>
 
-      <button className="btn" type="submit" style={{ marginTop: 8 }} disabled={alreadyComplete}>
+      <button
+        className="btn"
+        type="submit"
+        style={{ marginTop: 8 }}
+        disabled={alreadyComplete}
+      >
         Check
       </button>
 

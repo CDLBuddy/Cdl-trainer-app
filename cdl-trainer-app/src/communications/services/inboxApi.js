@@ -20,6 +20,7 @@
 // - Mark-read utilities are batched for fewer roundtrips.
 // ======================================================================
 
+import { getAuth } from 'firebase/auth'
 import {
   getFirestore,
   collection,
@@ -35,7 +36,6 @@ import {
   serverTimestamp,
   writeBatch,
 } from 'firebase/firestore'
-import { getAuth } from 'firebase/auth'
 
 const db = getFirestore()
 
@@ -73,12 +73,16 @@ export function coalesceWhen(m) {
  * @param {(err: unknown) => void} [onError]
  * @returns {() => void} unsubscribe
  */
-export function subscribeInbox({ uid, take = 50 } = {}, onNext, onError = () => {}) {
+export function subscribeInbox(
+  { uid, take = 50 } = {},
+  onNext,
+  onError = () => {}
+) {
   const q = query(inboxCol(uid), orderBy('createdAt', 'desc'), limit(take))
   return onSnapshot(
     q,
-    (snap) => {
-      const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+    snap => {
+      const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       onNext(rows)
     },
     onError
@@ -94,11 +98,7 @@ export function subscribeInbox({ uid, take = 50 } = {}, onNext, onError = () => 
  */
 export function subscribeUnreadCount({ uid } = {}, onNext, onError = () => {}) {
   const q = query(inboxCol(uid), where('readAt', '==', null))
-  return onSnapshot(
-    q,
-    (snap) => onNext(snap.size),
-    onError
-  )
+  return onSnapshot(q, snap => onNext(snap.size), onError)
 }
 
 /**
@@ -109,7 +109,7 @@ export function subscribeUnreadCount({ uid } = {}, onNext, onError = () => {}) {
 export async function fetchInbox({ uid, take = 50 } = {}) {
   const q = query(inboxCol(uid), orderBy('createdAt', 'desc'), limit(take))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
 }
 
 /**
@@ -118,7 +118,10 @@ export async function fetchInbox({ uid, take = 50 } = {}) {
  * @param {{ uid?: string, role?: string, schoolId?: string|null, companyId?: string|null, take?: number }} params
  * @returns {Promise<any[]>}
  */
-export async function listInAppForUser({ uid, /* role, schoolId, companyId, */ take = 50 } = {}) {
+export async function listInAppForUser({
+  uid,
+  /* role, schoolId, companyId, */ take = 50,
+} = {}) {
   // Role/scope can be used later if you switch to a shared collection with filters.
   return fetchInbox({ uid, take })
 }
@@ -166,7 +169,7 @@ export async function markAsRead({ uid, id }) {
 export async function markManyAsRead({ uid, ids = [] }) {
   if (!ids.length) return 0
   const batch = writeBatch(db)
-  ids.forEach((id) => {
+  ids.forEach(id => {
     const ref = doc(inboxCol(uid), id)
     batch.update(ref, { readAt: serverTimestamp(), status: 'read' })
   })
@@ -184,7 +187,9 @@ export async function markAllAsRead({ uid } = {}) {
   const snap = await getDocs(q)
   if (snap.empty) return 0
   const batch = writeBatch(db)
-  snap.forEach((d) => batch.update(d.ref, { readAt: serverTimestamp(), status: 'read' }))
+  snap.forEach(d =>
+    batch.update(d.ref, { readAt: serverTimestamp(), status: 'read' })
+  )
   await batch.commit()
   return snap.size
 }

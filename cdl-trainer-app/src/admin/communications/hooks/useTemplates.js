@@ -2,6 +2,7 @@
 // Template list + save helper. Keeps UI logic simple & testable.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import { listTemplates, upsertTemplate } from '../services'
 
 export function useTemplates() {
@@ -28,16 +29,24 @@ export function useTemplates() {
   useEffect(() => {
     alive.current = true
     refresh()
-    return () => { alive.current = false }
+    return () => {
+      alive.current = false
+    }
   }, [refresh])
 
-  const save = useCallback(async (tpl) => {
-    const res = await upsertTemplate(tpl)
-    await refresh()
-    return res
-  }, [refresh])
+  const save = useCallback(
+    async tpl => {
+      const res = await upsertTemplate(tpl)
+      await refresh()
+      return res
+    },
+    [refresh]
+  )
 
-  const empty = useMemo(() => !loading && !error && items.length === 0, [loading, error, items])
+  const empty = useMemo(
+    () => !loading && !error && items.length === 0,
+    [loading, error, items]
+  )
 
   return { items, loading, error, empty, refresh, save }
 }

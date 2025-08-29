@@ -1,11 +1,19 @@
 //src/admin/walkthroughs/Editor/hooks/useWalkthroughParsers.js
-import { ensureScriptShape } from '../services/wtValidation.js'
 import { parseCsv, parseMarkdown } from '@walkthrough-data/utils'
 
-const byId = (id) => /** @type {HTMLTextAreaElement|null} */ (document.getElementById(id))
+import { ensureScriptShape } from '../services/wtValidation.js'
 
-export function useWalkthroughParsers({ setScript, setActiveTab, setErrors, scrollTop, parseXlsx }) {
-  const toVisual = (sections) => {
+const byId = id =>
+  /** @type {HTMLTextAreaElement|null} */ (document.getElementById(id))
+
+export function useWalkthroughParsers({
+  setScript,
+  setActiveTab,
+  setErrors,
+  scrollTop,
+  parseXlsx,
+}) {
+  const toVisual = sections => {
     setScript(ensureScriptShape(sections))
     setErrors([])
     setActiveTab('visual')
@@ -42,9 +50,11 @@ export function useWalkthroughParsers({ setScript, setActiveTab, setErrors, scro
     }
   }
 
-  const handleXlsxFile = async (file) => {
+  const handleXlsxFile = async file => {
     if (!parseXlsx) {
-      setErrors(['XLSX parsing is not enabled in this build. Wire a `parseXlsx(file)` prop.'])
+      setErrors([
+        'XLSX parsing is not enabled in this build. Wire a `parseXlsx(file)` prop.',
+      ])
       return
     }
     try {

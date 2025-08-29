@@ -47,7 +47,7 @@
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
   color: var(--text-light);
 }
 
@@ -68,8 +68,15 @@
   background: color-mix(in oklab, var(--card-bg), #000 4%);
 }
 
-.kpiLabel { font-size: .8rem; color: var(--cd-muted); }
-.kpiValue { font-weight: 700; letter-spacing: .01em; color: var(--text-light); }
+.kpiLabel {
+  font-size: 0.8rem;
+  color: var(--cd-muted);
+}
+.kpiValue {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--text-light);
+}
 
 /* Lists */
 .list {
@@ -88,7 +95,10 @@
   border: 1px solid var(--cd-border);
   border-radius: var(--radius-sm);
   background: color-mix(in oklab, var(--card-bg), #000 2%);
-  transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .row:hover {
@@ -104,11 +114,21 @@
 }
 
 /* Meta / actions */
-.meta { font-size: .85rem; color: var(--cd-muted); }
-.actions { display: flex; gap: 8px; align-items: center; }
+.meta {
+  font-size: 0.85rem;
+  color: var(--cd-muted);
+}
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
 
 /* Empty state */
-.empty { color: var(--cd-muted); font-size: .95rem; }
+.empty {
+  color: var(--cd-muted);
+  font-size: 0.95rem;
+}
 
 /* Skeletons (minimal layout shift) */
 .skeleton {
@@ -116,18 +136,23 @@
   height: 1em;
   border-radius: 6px;
   min-width: 3ch;
-  background:
-    linear-gradient(90deg,
-      color-mix(in oklab, var(--cd-border), transparent 35%) 25%,
-      color-mix(in oklab, var(--brand-light), #fff 85%) 45%,
-      color-mix(in oklab, var(--cd-border), transparent 35%) 65%);
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--cd-border), transparent 35%) 25%,
+    color-mix(in oklab, var(--brand-light), #fff 85%) 45%,
+    color-mix(in oklab, var(--cd-border), transparent 35%) 65%
+  );
   background-size: 240% 100%;
   animation: cd-shimmer 1.2s ease-in-out infinite;
 }
 
 @keyframes cd-shimmer {
-  0% { background-position: 100% 0; }
-  100% { background-position: -140% 0; }
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -140% 0;
+  }
 }
 
 /* Utility: subtle pill (can be used from JSX inline) */
@@ -145,19 +170,33 @@
 }
 
 /* Density helpers (optional) */
-.compact .card { padding: var(--cd-pad); }
-.compact .kpi { padding: 8px 10px; }
+.compact .card {
+  padding: var(--cd-pad);
+}
+.compact .kpi {
+  padding: 8px 10px;
+}
 
 /* Responsive */
 @media (max-width: 880px) {
-  .kpis { grid-template-columns: 1fr; }
-  .header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .kpis {
+    grid-template-columns: 1fr;
+  }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .skeleton { animation: none; }
-  .row { transition: none; }
+  .skeleton {
+    animation: none;
+  }
+  .row {
+    transition: none;
+  }
 }
 
 /* Light-mode support (if you later toggle :root.light) */

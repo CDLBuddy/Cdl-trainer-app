@@ -12,13 +12,19 @@
 }
 
 @media (max-width: 1200px) {
-  .kpiRow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kpiRow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 @media (max-width: 720px) {
-  .kpiRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpiRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (max-width: 520px) {
-  .kpiRow { grid-template-columns: 1fr; }
+  .kpiRow {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Core card */
@@ -30,7 +36,10 @@
   border-radius: var(--radius-md);
   padding: 1rem;
   box-shadow: var(--shadow-1);
-  transition: transform .12s ease, box-shadow .12s ease, border-color .15s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    border-color 0.15s ease;
   will-change: transform;
 }
 
@@ -46,16 +55,16 @@
 .warn {
   background: color-mix(in oklab, var(--card-bg), var(--error) 12%);
   border-color: color-mix(in oklab, var(--error), #000 40%);
-  box-shadow: 0 2px 14px rgba(229,62,62,.18); /* based on --error */
+  box-shadow: 0 2px 14px rgba(229, 62, 62, 0.18); /* based on --error */
 }
 
 /* Content */
 .header {
   display: flex;
   align-items: center;
-  gap: .5rem;
-  font-size: .9rem;
-  opacity: .92;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  opacity: 0.92;
 }
 
 .emoji {
@@ -64,24 +73,24 @@
 }
 
 .value {
-  margin-top: .25rem;
+  margin-top: 0.25rem;
   display: flex;
   align-items: baseline;
-  gap: .5rem;
+  gap: 0.5rem;
   font-weight: 800;
   font-size: clamp(1.35rem, 1.1rem + 1.2vw, 1.9rem);
-  letter-spacing: .02em;
+  letter-spacing: 0.02em;
 }
 
 /* Optional "delta" chip (growth trend) */
 .deltaUp {
   color: var(--success);
-  font-size: .85rem;
+  font-size: 0.85rem;
   font-weight: 700;
 }
 .deltaDown {
   color: var(--error);
-  font-size: .85rem;
+  font-size: 0.85rem;
   font-weight: 700;
 }
 
@@ -97,18 +106,25 @@
   animation: kpiPulse 1.15s ease-in-out infinite;
 }
 @keyframes kpiPulse {
-  0% { background-position: 0% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* High-contrast / forced colors */
 @media (forced-colors: active) {
-  .kpiCard, .warn {
+  .kpiCard,
+  .warn {
     background: Canvas;
     color: CanvasText;
     border-color: ButtonText;
     box-shadow: none;
   }
   .kpiCard:focus-visible,
-  .kpiCard:hover { outline: 2px solid ButtonText; }
+  .kpiCard:hover {
+    outline: 2px solid ButtonText;
+  }
 }

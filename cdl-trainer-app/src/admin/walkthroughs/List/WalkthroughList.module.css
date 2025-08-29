@@ -36,7 +36,10 @@
 
 .headerRow {
   display: grid;
-  grid-template-columns: minmax(200px, 1fr) 120px 90px 180px 160px minmax(220px, 320px);
+  grid-template-columns: minmax(200px, 1fr) 120px 90px 180px 160px minmax(
+      220px,
+      320px
+    );
   padding: 10px 12px;
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
@@ -52,16 +55,21 @@
   padding: 0;
 }
 
-.hcellStatic { }
+.hcellStatic {
+}
 
-.loading, .empty {
+.loading,
+.empty {
   padding: 16px;
   color: #6b7280;
 }
 
 .row {
   display: grid;
-  grid-template-columns: minmax(200px, 1fr) 120px 90px 180px 160px minmax(220px, 320px);
+  grid-template-columns: minmax(200px, 1fr) 120px 90px 180px 160px minmax(
+      220px,
+      320px
+    );
   padding: 10px 12px;
   border-bottom: 1px solid #f3f4f6;
   align-items: center;
@@ -69,7 +77,8 @@
   outline: none;
 }
 
-.cell { }
+.cell {
+}
 
 .cellTrunc {
   overflow: hidden;

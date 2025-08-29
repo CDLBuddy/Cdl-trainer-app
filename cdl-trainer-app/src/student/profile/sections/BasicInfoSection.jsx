@@ -23,16 +23,19 @@ import s from './sections.module.css'
  */
 
 // --- tiny helpers -----------------------------------------------------------
-const norm = (s) => String(s ?? '').trim().replace(/\s+/g, ' ')
+const norm = s =>
+  String(s ?? '')
+    .trim()
+    .replace(/\s+/g, ' ')
 const joinNames = (first, last) => norm([first, last].filter(Boolean).join(' '))
 
 // naive splitter that handles middle names & suffixes reasonably
-const splitFullName = (full) => {
+const splitFullName = full => {
   const parts = norm(full).split(' ')
   if (parts.length === 0 || !parts[0]) return { first: '', last: '' }
   if (parts.length === 1) return { first: parts[0], last: '' }
   const suffixes = new Set(['jr', 'jr.', 'sr', 'sr.', 'ii', 'iii', 'iv'])
-  let first = parts[0]
+  const first = parts[0]
   let last = parts.slice(1).join(' ')
   // keep suffix with last
   const tail = parts[parts.length - 1].toLowerCase()
@@ -61,13 +64,13 @@ export default function BasicInfoSection({
       if (first) onChange?.('firstName', first)
       if (last) onChange?.('lastName', last)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // run once
 
   // --- Derived DOB bounds (YYYY-MM-DD) --------------------------------------
   const { minDob, maxDob } = useMemo(() => {
     const today = new Date()
-    const toISO = (d) => d.toISOString().slice(0, 10)
+    const toISO = d => d.toISOString().slice(0, 10)
 
     const youngest = new Date(today)
     youngest.setFullYear(youngest.getFullYear() - minAgeYears)
@@ -88,7 +91,7 @@ export default function BasicInfoSection({
 
   // --- Handlers --------------------------------------------------------------
   const handleFirst = useCallback(
-    (e) => {
+    e => {
       const first = norm(e.target.value)
       const last = norm(value.lastName || '')
       onChange?.('firstName', first)
@@ -98,7 +101,7 @@ export default function BasicInfoSection({
   )
 
   const handleLast = useCallback(
-    (e) => {
+    e => {
       const last = norm(e.target.value)
       const first = norm(value.firstName || '')
       onChange?.('lastName', last)
@@ -108,7 +111,7 @@ export default function BasicInfoSection({
   )
 
   const handleFullNameManual = useCallback(
-    (e) => {
+    e => {
       // Allow editing full name if you want — we still push into first/last
       const full = norm(e.target.value)
       onChange?.('name', full)
@@ -120,7 +123,7 @@ export default function BasicInfoSection({
   )
 
   const handleDob = useCallback(
-    (e) => {
+    e => {
       const val = e.target.value
       const isOutOfRange = !!val && (val < minDob || val > maxDob)
       setDobInvalid(isOutOfRange)
@@ -137,7 +140,7 @@ export default function BasicInfoSection({
   )
 
   const handleProfilePic = useCallback(
-    async (file) => {
+    async file => {
       if (!file) return
       if (typeof onUpload === 'function') {
         await onUpload(file, 'students/profile', 'profilePicUrl')
@@ -154,7 +157,11 @@ export default function BasicInfoSection({
   const fullName = value.name || joinNames(firstName, lastName)
 
   return (
-    <section id="basicInfo" className={s.section} aria-labelledby="basic-info-h3">
+    <section
+      id="basicInfo"
+      className={s.section}
+      aria-labelledby="basic-info-h3"
+    >
       <SectionHeader
         title="Basic Information"
         status={status}
@@ -273,7 +280,8 @@ export default function BasicInfoSection({
         </div>
 
         <small className={ui.hint}>
-          JPG/PNG/WebP, under 8&nbsp;MB. A clear face photo helps instructors recognize you.
+          JPG/PNG/WebP, under 8&nbsp;MB. A clear face photo helps instructors
+          recognize you.
         </small>
       </div>
     </section>

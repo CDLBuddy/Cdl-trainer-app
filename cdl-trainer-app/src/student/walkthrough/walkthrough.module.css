@@ -39,7 +39,9 @@
   background: color-mix(in oklab, var(--brand-mid), #000 70%);
   border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
   color: var(--text-light);
-  box-shadow: 0 2px 8px #0005, inset 0 1px 0 #ffffff10;
+  box-shadow:
+    0 2px 8px #0005,
+    inset 0 1px 0 #ffffff10;
 }
 
 /* ---------- Page meta row ---------- */
@@ -75,28 +77,27 @@
 }
 
 .critical {
-  background:
-    linear-gradient(
-      120deg,
-      color-mix(in oklab, var(--brand-dark), #000 4%),
-      color-mix(in oklab, var(--brand-mid), #000 10%) 100%
-    );
+  background: linear-gradient(
+    120deg,
+    color-mix(in oklab, var(--brand-dark), #000 4%),
+    color-mix(in oklab, var(--brand-mid), #000 10%) 100%
+  );
   border-color: color-mix(in oklab, var(--accent), transparent 45%);
 }
 
 .sectionTitle {
   display: flex;
   align-items: center;
-  gap: .6rem;
+  gap: 0.6rem;
   font-weight: 800;
   color: var(--accent);
-  letter-spacing: .01em;
-  margin-bottom: .4rem;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.4rem;
 }
 
 .flag {
   margin-left: auto;
-  font-size: .9rem;
+  font-size: 0.9rem;
   color: color-mix(in oklab, var(--text-light), transparent 25%);
 }
 
@@ -150,7 +151,7 @@
 }
 
 .progressLabel {
-  font-size: .92rem;
+  font-size: 0.92rem;
   color: color-mix(in oklab, var(--text-light), transparent 28%);
 }
 
@@ -173,7 +174,10 @@
   color: var(--text-light);
   font-weight: 700;
   cursor: pointer;
-  transition: transform .12s ease, box-shadow .12s ease, background .14s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.14s ease;
 }
 
 .tabBtn:hover,
@@ -224,11 +228,22 @@
 
 /* ---------- Responsive ---------- */
 @media (max-width: 760px) {
-  .sectionTitle { flex-wrap: wrap; }
-  .flag { margin-left: 0; }
-  .metaRow { flex-wrap: wrap; }
-  .footerRow { justify-content: stretch; }
-  .tabBtn { flex: 1 1 auto; justify-content: center; }
+  .sectionTitle {
+    flex-wrap: wrap;
+  }
+  .flag {
+    margin-left: 0;
+  }
+  .metaRow {
+    flex-wrap: wrap;
+  }
+  .footerRow {
+    justify-content: stretch;
+  }
+  .tabBtn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
 }
 
 /* ---------- Reduced motion ---------- */

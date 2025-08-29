@@ -10,7 +10,7 @@
 import { PROFILE_SCHEMA, TIERS } from './profileSchema.js'
 
 /* -------------------------------- Tunables -------------------------------- */
-const GATE_PERCENT = 80                     // students must finish CRITICAL to reach this
+const GATE_PERCENT = 80 // students must finish CRITICAL to reach this
 const LOCK_BELOW = GATE_PERCENT - 1
 
 // Declare CRITICAL requirements per tier.
@@ -27,21 +27,28 @@ const CRITICAL = {
     'emergencyPhone',
     'emergencyRelation',
     // Only when individual billing, ensure student is actually "paid"
-    { key: 'paymentStatus', when: { 'billing.mode': 'individual' }, predicate: (v) => String(v || '').toLowerCase() === 'paid' },
+    {
+      key: 'paymentStatus',
+      when: { 'billing.mode': 'individual' },
+      predicate: v => String(v || '').toLowerCase() === 'paid',
+    },
     // If "paid", a proof URL must exist (visibleWhen already handles the gating in schema)
-    { key: 'paymentProofUrl', when: { 'billing.mode': 'individual', paymentStatus: 'paid' } },
+    {
+      key: 'paymentProofUrl',
+      when: { 'billing.mode': 'individual', paymentStatus: 'paid' },
+    },
   ],
   btw: [
-    'cdlPermit',          // must at least be answered "yes"/"no"
+    'cdlPermit', // must at least be answered "yes"/"no"
     'driverLicenseUrl',
     'licenseExpiry',
     'medicalCardUrl',
     'medCardExpiry',
     // If they DO have a permit, require photo + expiry
     { key: 'permitPhotoUrl', when: { cdlPermit: 'yes' } },
-    { key: 'permitExpiry',   when: { cdlPermit: 'yes' } },
+    { key: 'permitExpiry', when: { cdlPermit: 'yes' } },
     // Vehicle plate photos only required if they bring their own vehicle (schema visibility handles it, too)
-    { key: 'truckPlateUrl',   when: { vehicleQualified: 'yes' } },
+    { key: 'truckPlateUrl', when: { vehicleQualified: 'yes' } },
     { key: 'trailerPlateUrl', when: { vehicleQualified: 'yes' } },
   ],
 }
@@ -73,7 +80,8 @@ function isFieldVisible(profile, field) {
 
 function isFieldRequiredForTier(profile, field, tier) {
   if (!field?.requiredIn || !field.requiredIn.includes(tier)) return false
-  if (field.requiredWhen && !satisfiesCond(profile, field.requiredWhen)) return false
+  if (field.requiredWhen && !satisfiesCond(profile, field.requiredWhen))
+    return false
   return true
 }
 
@@ -84,7 +92,9 @@ function passesValidate(value, validate = {}) {
   if (validate.pattern && typeof value === 'string') {
     try {
       if (!validate.pattern.test(value)) return false
-    } catch { /* ignore bad regex */ }
+    } catch {
+      /* ignore bad regex */
+    }
   }
 
   if (validate.future) {
@@ -92,7 +102,11 @@ function passesValidate(value, validate = {}) {
     if (Number.isNaN(+d)) return false
     const today = new Date()
     const dDay = new Date(d.getFullYear(), d.getMonth(), d.getDate())
-    const tDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    const tDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    )
     if (!(dDay > tDay)) return false // strictly in the future
   }
 
@@ -118,7 +132,7 @@ function fieldsForSections(sections) {
 
 function findFieldDefByKey(key) {
   for (const sectionKey of Object.keys(PROFILE_SCHEMA || {})) {
-    const found = (PROFILE_SCHEMA[sectionKey] || []).find((f) => f.key === key)
+    const found = (PROFILE_SCHEMA[sectionKey] || []).find(f => f.key === key)
     if (found) return found
   }
   return null
@@ -129,14 +143,19 @@ function fieldCounts(profile, field, tier) {
   if (!isFieldVisible(profile, field)) return false
   if (!isFieldRequiredForTier(profile, field, tier)) return false
   const value = getByPath(profile, field.key) ?? profile?.[field.key]
-  return field.validate ? passesValidate(value, field.validate) : !(value == null || value === '')
+  return field.validate
+    ? passesValidate(value, field.validate)
+    : !(value == null || value === '')
 }
 
 function totalWeightForTier(tier, profile) {
-  const sections = (TIERS?.[tier] || FB_TIERS[tier]) || []
+  const sections = TIERS?.[tier] || FB_TIERS[tier] || []
   let total = 0
   for (const { field } of fieldsForSections(sections)) {
-    if (isFieldVisible(profile, field) && isFieldRequiredForTier(profile, field, tier)) {
+    if (
+      isFieldVisible(profile, field) &&
+      isFieldRequiredForTier(profile, field, tier)
+    ) {
       total += Number(field.weight || 0)
     }
   }
@@ -144,7 +163,7 @@ function totalWeightForTier(tier, profile) {
 }
 
 function achievedWeightForTier(tier, profile) {
-  const sections = (TIERS?.[tier] || FB_TIERS[tier]) || []
+  const sections = TIERS?.[tier] || FB_TIERS[tier] || []
   let total = 0
   for (const { field } of fieldsForSections(sections)) {
     if (fieldCounts(profile, field, tier)) {
@@ -191,7 +210,7 @@ function criticalSatisfied(tier, profile) {
 function isVerified(sectionKey, verified) {
   if (!verified) return false
   if (verified === true) return true
-  const byAtLike = (x) => !!(x && (x.by || x.at))
+  const byAtLike = x => !!(x && (x.by || x.at))
   if (verified[sectionKey] === true) return true
   if (byAtLike(verified[sectionKey])) return true
   if (byAtLike(verified)) return true
@@ -229,11 +248,16 @@ export function getBTWReadiness(profile) {
  */
 export function getSectionStatus(sectionKey, profile, verifiedObj = {}) {
   const fields = PROFILE_SCHEMA?.[sectionKey] || []
-  const tiersToCheck = /** @type {Array<'enrollment'|'btw'>} */ (['enrollment', 'btw'])
+  const tiersToCheck = /** @type {Array<'enrollment'|'btw'>} */ ([
+    'enrollment',
+    'btw',
+  ])
 
   for (const field of fields) {
-    const requiredSomeTier = tiersToCheck.some((tier) =>
-      isFieldVisible(profile, field) && isFieldRequiredForTier(profile, field, tier)
+    const requiredSomeTier = tiersToCheck.some(
+      tier =>
+        isFieldVisible(profile, field) &&
+        isFieldRequiredForTier(profile, field, tier)
     )
     if (!requiredSomeTier) continue
 

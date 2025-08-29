@@ -40,7 +40,11 @@ export function useAdminSettings() {
   }, [])
 
   const email = useMemo(() => {
-    return auth?.currentUser?.email || localStorage.getItem('currentUserEmail') || null
+    return (
+      auth?.currentUser?.email ||
+      localStorage.getItem('currentUserEmail') ||
+      null
+    )
   }, [])
 
   // ------- state --------------------------------------------------------
@@ -52,11 +56,18 @@ export function useAdminSettings() {
   const mountedRef = useRef(true)
   const reqVersionRef = useRef(0)
 
-  useEffect(() => () => { mountedRef.current = false }, [])
+  useEffect(
+    () => () => {
+      mountedRef.current = false
+    },
+    []
+  )
 
   // keep snapshot for rollback on failure
   const snapshotRef = useRef({ brand: {}, prefs: {} })
-  useEffect(() => { snapshotRef.current = { brand, prefs } }, [brand, prefs])
+  useEffect(() => {
+    snapshotRef.current = { brand, prefs }
+  }, [brand, prefs])
 
   // ------- core loader (race-safe) -------------------------------------
   const load = useCallback(async () => {
@@ -90,62 +101,67 @@ export function useAdminSettings() {
   }, [schoolId, showToast])
 
   // initial fetch
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   // ------- actions (stable) --------------------------------------------
-  const actions = useMemo(() => ({
-    /**
-     * Merge + persist a partial prefs object.
-     * Works with subhooks: vm.actions.save({ [KEY]: partial })
-     */
-    async save(nextPartialPrefs = {}) {
-      if (!schoolId) {
-        showToast('Cannot save: missing school.', 'error')
-        return
-      }
+  const actions = useMemo(
+    () => ({
+      /**
+       * Merge + persist a partial prefs object.
+       * Works with subhooks: vm.actions.save({ [KEY]: partial })
+       */
+      async save(nextPartialPrefs = {}) {
+        if (!schoolId) {
+          showToast('Cannot save: missing school.', 'error')
+          return
+        }
 
-      const prev = snapshotRef.current.prefs
-      const optimistic = { ...prev, ...nextPartialPrefs }
-      setPrefs(optimistic)
+        const prev = snapshotRef.current.prefs
+        const optimistic = { ...prev, ...nextPartialPrefs }
+        setPrefs(optimistic)
 
-      try {
-        await updateSettings(schoolId, { prefs: optimistic })
-        snapshotRef.current = { ...snapshotRef.current, prefs: optimistic }
-        showToast('Settings saved', 'success')
-      } catch {
-        setPrefs(prev) // rollback
-        showToast('Failed to save settings', 'error')
-      }
-    },
+        try {
+          await updateSettings(schoolId, { prefs: optimistic })
+          snapshotRef.current = { ...snapshotRef.current, prefs: optimistic }
+          showToast('Settings saved', 'success')
+        } catch {
+          setPrefs(prev) // rollback
+          showToast('Failed to save settings', 'error')
+        }
+      },
 
-    /**
-     * Merge + persist branding (logoUrl, primaryColor, schoolName, …).
-     */
-    async saveBrand(partialBrand = {}) {
-      if (!schoolId) {
-        showToast('Cannot save: missing school.', 'error')
-        return
-      }
+      /**
+       * Merge + persist branding (logoUrl, primaryColor, schoolName, …).
+       */
+      async saveBrand(partialBrand = {}) {
+        if (!schoolId) {
+          showToast('Cannot save: missing school.', 'error')
+          return
+        }
 
-      const prev = snapshotRef.current.brand
-      const optimistic = { ...prev, ...partialBrand }
-      setBrand(optimistic)
+        const prev = snapshotRef.current.brand
+        const optimistic = { ...prev, ...partialBrand }
+        setBrand(optimistic)
 
-      try {
-        await updateSettings(schoolId, { brand: optimistic })
-        snapshotRef.current = { ...snapshotRef.current, brand: optimistic }
-        showToast('Branding updated', 'success')
-      } catch {
-        setBrand(prev) // rollback
-        showToast('Failed to update branding', 'error')
-      }
-    },
+        try {
+          await updateSettings(schoolId, { brand: optimistic })
+          snapshotRef.current = { ...snapshotRef.current, brand: optimistic }
+          showToast('Branding updated', 'success')
+        } catch {
+          setBrand(prev) // rollback
+          showToast('Failed to update branding', 'error')
+        }
+      },
 
-    /** Refetch from the source of truth. */
-    async refresh() {
-      await load()
-    },
-  }), [schoolId, showToast, load])
+      /** Refetch from the source of truth. */
+      async refresh() {
+        await load()
+      },
+    }),
+    [schoolId, showToast, load]
+  )
 
   // ------- return VM ----------------------------------------------------
   return {

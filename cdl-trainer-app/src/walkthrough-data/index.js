@@ -137,22 +137,31 @@ export function getWalkthroughLabel(classType) {
 export const DEFAULT_WALKTHROUGHS = (() => {
   /** @type {Record<string, WalkthroughScript>} */
   const out = Object.create(null)
-  const all = Array.isArray(DEFAULT_DATASETS) ? DEFAULT_DATASETS : listDefaultWalkthroughs()
+  const all = Array.isArray(DEFAULT_DATASETS)
+    ? DEFAULT_DATASETS
+    : listDefaultWalkthroughs()
 
   for (const ds of all) {
     const token = toToken(ds?.classCode)
     if (!token) {
-      if (IS_DEV) console.warn('[walkthrough-data] Missing/invalid classCode:', ds)
+      if (IS_DEV)
+        console.warn('[walkthrough-data] Missing/invalid classCode:', ds)
       continue
     }
     const script = Array.isArray(ds?.sections) ? ds.sections : []
     if (script.length === 0 && IS_DEV) {
-      console.warn('[walkthrough-data] Empty sections for dataset:', ds?.classCode)
+      console.warn(
+        '[walkthrough-data] Empty sections for dataset:',
+        ds?.classCode
+      )
     }
     if (!out[token] || out[token].length === 0) {
       out[token] = script
     } else if (IS_DEV) {
-      console.warn('[walkthrough-data] Duplicate dataset for token (first kept):', token)
+      console.warn(
+        '[walkthrough-data] Duplicate dataset for token (first kept):',
+        token
+      )
     }
   }
 

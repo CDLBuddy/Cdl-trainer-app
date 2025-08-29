@@ -38,7 +38,11 @@ export default function IndividualTab() {
 
   // Quick counts (optional)
   const counts = useMemo(() => {
-    let pending = 0, partial = 0, paid = 0, waived = 0, unreconciled = 0
+    let pending = 0,
+      partial = 0,
+      paid = 0,
+      waived = 0,
+      unreconciled = 0
     for (const r of individualPayments) {
       if (r.paymentStatus === 'pending') pending++
       else if (r.paymentStatus === 'partial') partial++
@@ -46,7 +50,14 @@ export default function IndividualTab() {
       else if (r.paymentStatus === 'waived') waived++
       if (!r.reconciled) unreconciled++
     }
-    return { pending, partial, paid, waived, unreconciled, total: individualPayments.length }
+    return {
+      pending,
+      partial,
+      paid,
+      waived,
+      unreconciled,
+      total: individualPayments.length,
+    }
   }, [individualPayments])
 
   // CSV export
@@ -98,28 +109,49 @@ export default function IndividualTab() {
       {individualPayments.length > 0 && (
         <div style={{ color: '#6b7280', fontSize: 12, margin: '4px 0 8px' }}>
           Showing <b>{filtered.length}</b> of <b>{counts.total}</b> records
-          {status !== 'all' && <> • status: <b>{status}</b></>}
+          {status !== 'all' && (
+            <>
+              {' '}
+              • status: <b>{status}</b>
+            </>
+          )}
           {onlyUnreconciled && <> • unreconciled only</>}
-          {search.trim() && <> • search: <b>{search.trim()}</b></>}
+          {search.trim() && (
+            <>
+              {' '}
+              • search: <b>{search.trim()}</b>
+            </>
+          )}
         </div>
       )}
 
       <div className="dashboard-card" style={{ padding: 0 }}>
         {loading ? (
           <div style={{ padding: '1rem' }}>
-            <div className="spinner" aria-label="Loading individual payments…" />
+            <div
+              className="spinner"
+              aria-label="Loading individual payments…"
+            />
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ padding: '1rem', color: '#6b7280' }}>
-            No students found{search || status !== 'all' || onlyUnreconciled ? ' for the current filters' : ''}.
+            No students found
+            {search || status !== 'all' || onlyUnreconciled
+              ? ' for the current filters'
+              : ''}
+            .
           </div>
         ) : (
-          <IndividualTable rows={filtered} onToggleReconciled={onToggleReconciled} />
+          <IndividualTable
+            rows={filtered}
+            onToggleReconciled={onToggleReconciled}
+          />
         )}
       </div>
 
       <p style={{ color: '#6b7280', fontSize: 12, marginTop: 8 }}>
-        TODO: Persist reconciliation flag to Firestore and add reviewed-by/at metadata.
+        TODO: Persist reconciliation flag to Firestore and add reviewed-by/at
+        metadata.
       </p>
     </section>
   )

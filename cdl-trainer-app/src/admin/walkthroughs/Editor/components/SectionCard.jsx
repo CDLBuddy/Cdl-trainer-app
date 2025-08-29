@@ -1,7 +1,9 @@
 //src/admin/walkthroughs/Editor/components/SectionCard.jsx
 import React from 'react'
-import StepRow from './StepRow.jsx'
+
 import cls from '../WalkthroughEditor.module.css'
+
+import StepRow from './StepRow.jsx'
 
 export default function SectionCard({
   index,
@@ -23,18 +25,33 @@ export default function SectionCard({
           className={cls.input}
           aria-label={`Section ${si + 1} title`}
           value={section.section}
-          onChange={(e) => onTitle(si, e.target.value)}
+          onChange={e => onTitle(si, e.target.value)}
           placeholder="Section title"
         />
 
         <label className={cls.flag}>
-          <input type="checkbox" checked={!!section.critical} onChange={() => onToggle(si, 'critical')} /> Critical
+          <input
+            type="checkbox"
+            checked={!!section.critical}
+            onChange={() => onToggle(si, 'critical')}
+          />{' '}
+          Critical
         </label>
         <label className={cls.flag}>
-          <input type="checkbox" checked={!!section.passFail} onChange={() => onToggle(si, 'passFail')} /> Pass/Fail
+          <input
+            type="checkbox"
+            checked={!!section.passFail}
+            onChange={() => onToggle(si, 'passFail')}
+          />{' '}
+          Pass/Fail
         </label>
 
-        <button type="button" className={cls.btn} onClick={() => onRemove(si)} disabled={!canRemove}>
+        <button
+          type="button"
+          className={cls.btn}
+          onClick={() => onRemove(si)}
+          disabled={!canRemove}
+        >
           Remove
         </button>
       </div>
@@ -54,7 +71,9 @@ export default function SectionCard({
       </div>
 
       <div className={cls.toolbar}>
-        <button type="button" className={cls.btn} onClick={() => onAddStep(si)}>+ Add Step</button>
+        <button type="button" className={cls.btn} onClick={() => onAddStep(si)}>
+          + Add Step
+        </button>
       </div>
     </div>
   )

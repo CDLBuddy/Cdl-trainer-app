@@ -14,22 +14,30 @@ const _onceKeys = new Set()
 async function _once(key, loader) {
   if (_onceKeys.has(key)) return
   _onceKeys.add(key)
-  try { await loader() } catch { /* non-fatal */ }
+  try {
+    await loader()
+  } catch {
+    /* non-fatal */
+  }
 }
 
 // Respect reduced-motion users (be polite with aggressive preloads)
 function prefersReducedMotion() {
-  try { return !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches } catch { return false }
+  try {
+    return !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+  } catch {
+    return false
+  }
 }
 export const isReducedMotion = prefersReducedMotion
 
 // ---- Lazy entries (use aliases to mirror eslint/vite config) -------------
 const _entries = {
   dashboard: () => import('@instructor/InstructorDashboard.jsx'),
-  profile:   () => import('@instructor/InstructorProfile.jsx'),
-  review:    () => import('@instructor/ChecklistReviewForInstructor.jsx'),
-  student:   () => import('@instructor/StudentProfileForInstructor.jsx'),
-  verify:    () => import('@instructor/ProfileVerify.jsx'), // NEW
+  profile: () => import('@instructor/InstructorProfile.jsx'),
+  review: () => import('@instructor/ChecklistReviewForInstructor.jsx'),
+  student: () => import('@instructor/StudentProfileForInstructor.jsx'),
+  verify: () => import('@instructor/ProfileVerify.jsx'), // NEW
   // add new screens here as you create them, e.g.:
   // attendance: () => import('@instructor/Attendance.jsx'),
 }
@@ -39,18 +47,20 @@ export async function preloadAboveTheFold() {
   if (typeof window === 'undefined') return
   await Promise.allSettled([
     _once('instructor:dashboard', _entries.dashboard),
-    _once('instructor:profile',   _entries.profile),
-    _once('instructor:review',    _entries.review),
-    _once('instructor:verify',    _entries.verify), // NEW (commonly used)
+    _once('instructor:profile', _entries.profile),
+    _once('instructor:review', _entries.review),
+    _once('instructor:verify', _entries.verify), // NEW (commonly used)
   ])
 }
 
 // ---- Public API: full warm (everything instructor) -----------------------
 export async function preloadAll() {
   if (typeof window === 'undefined') return
-  await Promise.allSettled(Object.entries(_entries).map(([key, loader]) =>
-    _once(`instructor:${key}`, loader)
-  ))
+  await Promise.allSettled(
+    Object.entries(_entries).map(([key, loader]) =>
+      _once(`instructor:${key}`, loader)
+    )
+  )
 }
 
 // ---- Public API: targeted warm by logical key ----------------------------
@@ -76,7 +86,9 @@ export default preloadAboveTheFold
 export function warmInstructorOnIdle(timeout = 2000) {
   if (typeof window === 'undefined' || prefersReducedMotion()) return () => {}
 
-  const run = () => { preloadAboveTheFold().catch(() => {}) }
+  const run = () => {
+    preloadAboveTheFold().catch(() => {})
+  }
 
   if ('requestIdleCallback' in window) {
     // @ts-ignore: not in standard lib
@@ -90,7 +102,9 @@ export function warmInstructorOnIdle(timeout = 2000) {
 /** Kick preloading soon (after a short delay). Useful post-login. */
 export function warmInstructorSoon(delay = 300) {
   if (typeof window === 'undefined' || prefersReducedMotion()) return () => {}
-  const t = setTimeout(() => { preloadAboveTheFold().catch(() => {}) }, delay)
+  const t = setTimeout(() => {
+    preloadAboveTheFold().catch(() => {})
+  }, delay)
   return () => clearTimeout(t)
 }
 
@@ -104,9 +118,10 @@ export function warmInstructorSoon(delay = 300) {
 export function preloadInstructorOnHover(elOrSelector) {
   if (typeof window === 'undefined') return () => {}
 
-  const el = typeof elOrSelector === 'string'
-    ? document.querySelector(elOrSelector)
-    : elOrSelector
+  const el =
+    typeof elOrSelector === 'string'
+      ? document.querySelector(elOrSelector)
+      : elOrSelector
 
   if (!el || typeof el.addEventListener !== 'function') return () => {}
 
@@ -122,7 +137,9 @@ export function preloadInstructorOnHover(elOrSelector) {
     try {
       el.removeEventListener('pointerenter', handler, { capture: false })
       el.removeEventListener('focus', handler, { capture: true })
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }
 
   return cleanup

@@ -1,5 +1,6 @@
 // src/student/profile/ui/CheckboxGroup.jsx
 import React, { useCallback, useId, useMemo } from 'react'
+
 import cls from './fields.module.css'
 
 /**
@@ -57,7 +58,7 @@ export default function CheckboxGroup({
 
   // Compose next selection (ordered by original options order)
   const computeNext = useCallback(
-    (toggledValue) => {
+    toggledValue => {
       const set = new Set(safeValues)
       set.has(toggledValue) ? set.delete(toggledValue) : set.add(toggledValue)
       const next = Array.from(set)
@@ -69,7 +70,7 @@ export default function CheckboxGroup({
   )
 
   const handleToggle = useCallback(
-    (value) => {
+    value => {
       if (disabled || readOnly) return
       const next = computeNext(value)
       if (typeof onChange === 'function') onChange(next)
@@ -101,7 +102,9 @@ export default function CheckboxGroup({
           {label}{' '}
           {required && (
             <>
-              <span className={cls.required} aria-hidden>*</span>
+              <span className={cls.required} aria-hidden>
+                *
+              </span>
               <span className="visually-hidden"> (required)</span>
             </>
           )}

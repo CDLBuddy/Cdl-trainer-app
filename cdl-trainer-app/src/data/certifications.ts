@@ -26,11 +26,16 @@ export interface CertificationRecord {
 const mem = new Map<string, CertificationRecord>()
 
 function newId() {
-  return `cert_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,7)}`
+  return `cert_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`
 }
 
 /** Create or update a certification record. */
-export async function save(record: Partial<CertificationRecord> & { payload: TPRCompletion; studentId: string }): Promise<CertificationRecord> {
+export async function save(
+  record: Partial<CertificationRecord> & {
+    payload: TPRCompletion
+    studentId: string
+  }
+): Promise<CertificationRecord> {
   const id = record.id || newId()
   const now = new Date().toISOString()
   const prev = mem.get(id)
@@ -55,7 +60,10 @@ export async function getById(id: string): Promise<CertificationRecord | null> {
   return mem.get(id) ?? null
 }
 
-export async function listByStudent(studentId: string, limit = 20): Promise<CertificationRecord[]> {
+export async function listByStudent(
+  studentId: string,
+  limit = 20
+): Promise<CertificationRecord[]> {
   return Array.from(mem.values())
     .filter(r => r.studentId === studentId)
     .sort((a, b) => (b.updatedAt! > a.updatedAt! ? 1 : -1))

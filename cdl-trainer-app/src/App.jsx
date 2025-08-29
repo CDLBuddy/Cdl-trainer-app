@@ -18,7 +18,7 @@ import SplashScreen from '@components/SplashScreen.jsx'
 import { useBrandingSync, useHideNavBar } from '@utils/layout-hooks.js'
 
 export default function AppLayout() {
-  const brand  = useBrandingSync()
+  const brand = useBrandingSync()
   const hideNav = useHideNavBar()
 
   // -------- Focus management: move focus to <main> on route changes ------
@@ -53,8 +53,8 @@ export default function AppLayout() {
       {/* Skip link for keyboard users */}
       <a
         href="#main"
-        onFocus={(e) => (e.currentTarget.style.top = '8px')}
-        onBlur={(e) => (e.currentTarget.style.top = '-40px')}
+        onFocus={e => (e.currentTarget.style.top = '8px')}
+        onBlur={e => (e.currentTarget.style.top = '-40px')}
         style={skipStyles}
       >
         Skip to content
@@ -64,7 +64,11 @@ export default function AppLayout() {
       {!hideNav && <NavBar brand={brand} />}
 
       {/* Route-level code-splitting fallback */}
-      <Suspense fallback={<SplashScreen message="Loading CDL Trainer…" showTip={false} />}>
+      <Suspense
+        fallback={
+          <SplashScreen message="Loading CDL Trainer…" showTip={false} />
+        }
+      >
         {/* Landmark for a11y + skip links */}
         <main
           id="main"

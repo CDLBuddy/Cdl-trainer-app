@@ -40,7 +40,9 @@ function QuickActions({
                 className={styles.actionBtn}
                 aria-label={a.label}
               >
-                {a.icon ? <span className={`${styles.icon} ${a.icon}`} /> : null}
+                {a.icon ? (
+                  <span className={`${styles.icon} ${a.icon}`} />
+                ) : null}
                 <span>{a.label}</span>
               </Link>
             )

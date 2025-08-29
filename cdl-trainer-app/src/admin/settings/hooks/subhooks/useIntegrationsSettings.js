@@ -14,23 +14,28 @@ export function useIntegrationsSettings({ vm }) {
     () =>
       vm?.prefs?.[KEY] || {
         stripeConnected: false,
-        stripeAccountId: '',        // reference only (no secrets)
+        stripeAccountId: '', // reference only (no secrets)
         quickbooksConnected: false,
-        quickbooksRealmId: '',      // reference only
-        zapierWebhookUrl: '',       // optional outbound automation
+        quickbooksRealmId: '', // reference only
+        zapierWebhookUrl: '', // optional outbound automation
       },
     [vm?.prefs]
   )
 
   const [draft, setDraft] = useState(initial)
-  useEffect(() => { setDraft(initial) }, [initial])
+  useEffect(() => {
+    setDraft(initial)
+  }, [initial])
 
   const update = useCallback(patch => setDraft(d => ({ ...d, ...patch })), [])
 
   async function save(partial = draft) {
     // small guard: URL sanity for zapierWebhookUrl
     const next = { ...partial }
-    if (next.zapierWebhookUrl && !/^https?:\/\/.+/i.test(next.zapierWebhookUrl)) {
+    if (
+      next.zapierWebhookUrl &&
+      !/^https?:\/\/.+/i.test(next.zapierWebhookUrl)
+    ) {
       // Don’t block save; just normalize
       next.zapierWebhookUrl = ''
     }

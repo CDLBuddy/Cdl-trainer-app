@@ -3,8 +3,8 @@ import React, { useId, useMemo, useState, useCallback } from 'react'
 
 import { getSectionStatus } from '../schema/calculators.js'
 import Field from '../ui/Field.jsx'
-import UploadField from '../ui/UploadField.jsx'
 import ui from '../ui/fields.module.css'
+import UploadField from '../ui/UploadField.jsx'
 
 import SectionHeader from './SectionHeader.jsx'
 import styles from './sections.module.css'
@@ -33,7 +33,7 @@ export default function MedicalSection({ value, onChange, onUpload }) {
   const setField = useCallback((k, val) => onChange?.(k, val), [onChange])
 
   const handleSelect = useCallback(
-    (file) => {
+    file => {
       if (!file) return
       // Parent handler persists to storage + sets medicalCardUrl
       onUpload?.(file, 'students/medical', 'medicalCardUrl')
@@ -42,7 +42,7 @@ export default function MedicalSection({ value, onChange, onUpload }) {
   )
 
   const handleExpiryChange = useCallback(
-    (e) => {
+    e => {
       const val = e.target.value
       const invalid = !!val && val < today
       setExpiryInvalid(invalid)
@@ -66,16 +66,23 @@ export default function MedicalSection({ value, onChange, onUpload }) {
         verifiedAt={verifiedAt}
       />
 
-      <h3 id={titleId} className="visually-hidden">Medical Card</h3>
+      <h3 id={titleId} className="visually-hidden">
+        Medical Card
+      </h3>
       <div id={hintId} className={styles.sub}>
-        Required before Behind-the-Wheel • Upload your DOT medical certificate and set its expiration date.
+        Required before Behind-the-Wheel • Upload your DOT medical certificate
+        and set its expiration date.
       </div>
 
       <div className={styles.grid2}>
         {/* Medical card upload */}
         <div className={styles.fieldGroup}>
           <UploadField
-            label={v.medicalCardUrl ? 'Replace Medical Card Image' : 'Upload Medical Card Image'}
+            label={
+              v.medicalCardUrl
+                ? 'Replace Medical Card Image'
+                : 'Upload Medical Card Image'
+            }
             currentUrl={v.medicalCardUrl}
             accept="image/*"
             maxSizeMB={8}
@@ -97,7 +104,8 @@ export default function MedicalSection({ value, onChange, onUpload }) {
             </div>
           ) : null}
           <small className={styles.subtle}>
-            JPG/PNG/WebP • Max 8&nbsp;MB • Ensure your name and dates are readable.
+            JPG/PNG/WebP • Max 8&nbsp;MB • Ensure your name and dates are
+            readable.
           </small>
         </div>
 
@@ -113,10 +121,15 @@ export default function MedicalSection({ value, onChange, onUpload }) {
             required
             aria-describedby={`${hintId} ${helpId}`}
             aria-invalid={expiryInvalid || undefined}
-            onInput={(e) => e.currentTarget.setCustomValidity('')}
+            onInput={e => e.currentTarget.setCustomValidity('')}
           />
-          <small id={helpId} className={expiryInvalid ? styles.errorText : styles.subtle}>
-            {expiryInvalid ? 'Expiration must be in the future.' : 'Must be a future date.'}
+          <small
+            id={helpId}
+            className={expiryInvalid ? styles.errorText : styles.subtle}
+          >
+            {expiryInvalid
+              ? 'Expiration must be in the future.'
+              : 'Must be a future date.'}
           </small>
         </Field>
       </div>

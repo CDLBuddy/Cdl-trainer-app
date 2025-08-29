@@ -8,6 +8,7 @@
 // ============================================================================
 
 import React, { useMemo } from 'react'
+
 import styles from './sections.module.css'
 
 /**
@@ -18,7 +19,8 @@ import styles from './sections.module.css'
 function normalizeStatus(v) {
   const s = String(v || '').toLowerCase()
   if (s === 'complete' || s === 'verified' || s === 'ok') return 'complete'
-  if (s === 'pending-verify' || s === 'pending' || s === 'awaiting') return 'pending-verify'
+  if (s === 'pending-verify' || s === 'pending' || s === 'awaiting')
+    return 'pending-verify'
   return 'missing'
 }
 
@@ -53,8 +55,8 @@ function formatWhen(value) {
       value && typeof value === 'object' && typeof value.toDate === 'function'
         ? value.toDate()
         : value instanceof Date
-        ? value
-        : new Date(value)
+          ? value
+          : new Date(value)
     if (!isFinite(+d)) return ''
     return `on ${d.toLocaleDateString()}`
   } catch {
@@ -90,10 +92,7 @@ export default function SectionHeader({
       : ''
 
   return (
-    <div
-      className={`${styles.sectionHeader} ${className}`}
-      data-status={s}
-    >
+    <div className={`${styles.sectionHeader} ${className}`} data-status={s}>
       <h3 className={styles.sectionTitle}>{title}</h3>
 
       <div className={styles.sectionMeta}>

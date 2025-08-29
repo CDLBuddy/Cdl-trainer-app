@@ -12,13 +12,16 @@ import PropTypes from 'prop-types'
 import React, { memo, useCallback, useEffect, useId } from 'react'
 
 import styles from './AddStudentDrawer.module.css'
-
 // Local UI atoms/molecules
-import { DrawerShell, FormActions, FormFields, OverlayChips } from './components'
-
+import {
+  DrawerShell,
+  FormActions,
+  FormFields,
+  OverlayChips,
+} from './components'
 // Hooks
 import { useAddStudentForm } from './hooks'
-import useInstructorsList from './hooks/useInstructorsList.js'
+import useInstructorsList from './hooks/useInstructorList.js'
 
 function AddStudentDrawer({ open = true, companyId, onClose }) {
   const {
@@ -56,7 +59,7 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
 
   // Keyboard: Cmd/Ctrl + Enter submits the form
   const onKeyDown = useCallback(
-    (e) => {
+    e => {
       const mod = e.metaKey || e.ctrlKey
       if (mod && e.key.toLowerCase() === 'enter' && canSave && !saving) {
         e.preventDefault()
@@ -86,8 +89,8 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
       >
         {/* Visually hidden description to give screen readers context */}
         <span id={descId} className="sr-only">
-          Fill in student details, set course and CDL class, then save to add the student
-          to this company. Overlays are derived automatically.
+          Fill in student details, set course and CDL class, then save to add
+          the student to this company. Overlays are derived automatically.
         </span>
 
         <FormFields
@@ -122,7 +125,12 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
 
         {/* Error region (also surfaced in footer via FormActions) */}
         {error && (
-          <div role="alert" id={errorId} className={styles.error} aria-live="polite">
+          <div
+            role="alert"
+            id={errorId}
+            className={styles.error}
+            aria-live="polite"
+          >
             {error}
           </div>
         )}

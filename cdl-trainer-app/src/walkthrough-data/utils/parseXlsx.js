@@ -10,9 +10,11 @@
 // - Auto column widths on export (configurable).
 // ============================================================================
 
-const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+const XLSX_MIME =
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 const BLOCKED_KEYS = new Set(['__proto__', 'prototype', 'constructor'])
-const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
+const isBrowser =
+  typeof window !== 'undefined' && typeof document !== 'undefined'
 
 /** Default limits tuned for typical admin uploads */
 const DEFAULT_LIMITS = Object.freeze({
@@ -72,8 +74,15 @@ async function toArrayBuffer(input) {
     return await input.arrayBuffer()
   }
   // Node Buffer support
-  if (typeof Buffer !== 'undefined' && typeof input === 'object' && Buffer.isBuffer?.(input)) {
-    return input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength)
+  if (
+    typeof Buffer !== 'undefined' &&
+    typeof input === 'object' &&
+    Buffer.isBuffer?.(input)
+  ) {
+    return input.buffer.slice(
+      input.byteOffset,
+      input.byteOffset + input.byteLength
+    )
   }
   // Typed arrays
   if (ArrayBuffer.isView?.(input)) {
@@ -97,21 +106,34 @@ function transformHeader(key, mode, trimHeader) {
   if (trimHeader) k = k.trim()
   if (!k) k = 'col_' + Math.random().toString(36).slice(2, 8)
   switch (mode) {
-    case 'lower': k = k.toLowerCase(); break
-    case 'camel': k = toCamel(k); break
-    case 'slug':  k = toSlug(k); break
-    default: /* preserve */ break
+    case 'lower':
+      k = k.toLowerCase()
+      break
+    case 'camel':
+      k = toCamel(k)
+      break
+    case 'slug':
+      k = toSlug(k)
+      break
+    default:
+      /* preserve */ break
   }
   if (BLOCKED_KEYS.has(k)) k = `_${k}`
   return k
 }
 function toCamel(s) {
-  const t = String(s).replace(/[_\s-]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ''))
+  const t = String(s).replace(/[_\s-]+(.)?/g, (_, c) =>
+    c ? c.toUpperCase() : ''
+  )
   const head = t.charAt(0).toLowerCase()
   return head + t.slice(1)
 }
 function toSlug(s) {
-  return String(s).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+  return String(s)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 /** Convert exceljs cell.value to a plain JS value */
@@ -123,8 +145,10 @@ function coerceValue(v, { coerceStrings, dateAsISO, valueMapper }) {
   // Rich text object → plain text
   if (v && typeof v === 'object') {
     if (v.text != null) v = v.text
-    else if (Array.isArray(v.richText)) v = v.richText.map(x => x?.text || '').join('')
-    else if (v.result != null) v = v.result // formula result
+    else if (Array.isArray(v.richText))
+      v = v.richText.map(x => x?.text || '').join('')
+    else if (v.result != null)
+      v = v.result // formula result
     else if (v.hyperlink && v.text) v = v.text
   }
   if (v instanceof Date) return dateAsISO ? v.toISOString() : v
@@ -141,7 +165,9 @@ function resolveWorksheet(workbook, selector) {
     return workbook.getWorksheet(selector) || null
   }
   if (selector instanceof RegExp) {
-    return workbook.worksheets?.find(ws => selector.test(String(ws?.name))) || null
+    return (
+      workbook.worksheets?.find(ws => selector.test(String(ws?.name))) || null
+    )
   }
   if (typeof selector === 'function') {
     return workbook.worksheets?.find(ws => !!selector(ws)) || null
@@ -188,12 +214,17 @@ export async function parseXlsxFile(file, options = {}) {
 
   // Basic type/size checks (browser only)
   if (isBrowser && typeof File !== 'undefined' && file instanceof File) {
-    const okType = file.type === XLSX_MIME || file.name?.toLowerCase().endsWith('.xlsx')
+    const okType =
+      file.type === XLSX_MIME || file.name?.toLowerCase().endsWith('.xlsx')
     if (!okType) {
-      throw new Error(`parseXlsxFile: expected .xlsx file, got "${file.type || file.name}"`)
+      throw new Error(
+        `parseXlsxFile: expected .xlsx file, got "${file.type || file.name}"`
+      )
     }
     if (file.size > maxBytes) {
-      throw new Error(`parseXlsxFile: file too large (${file.size} bytes > ${maxBytes})`)
+      throw new Error(
+        `parseXlsxFile: file too large (${file.size} bytes > ${maxBytes})`
+      )
     }
   }
 
@@ -204,7 +235,9 @@ export async function parseXlsxFile(file, options = {}) {
   try {
     await workbook.xlsx.load(buffer)
   } catch (err) {
-    throw new Error(`parseXlsxFile: failed to read workbook — ${String(err?.message || err)}`)
+    throw new Error(
+      `parseXlsxFile: failed to read workbook — ${String(err?.message || err)}`
+    )
   }
 
   const worksheet = resolveWorksheet(workbook, sheet)
@@ -217,7 +250,9 @@ export async function parseXlsxFile(file, options = {}) {
     throw new Error(`parseXlsxFile: too many rows (${metaRows} > ${maxRows})`)
   }
   if (metaCols > 0 && metaCols > maxCols) {
-    throw new Error(`parseXlsxFile: too many columns (${metaCols} > ${maxCols})`)
+    throw new Error(
+      `parseXlsxFile: too many columns (${metaCols} > ${maxCols})`
+    )
   }
 
   /** @type {any[]} */
@@ -226,21 +261,28 @@ export async function parseXlsxFile(file, options = {}) {
   /** @type {string[]|null} */
   let headers = null
 
-  worksheet.eachRow({ includeEmpty: !!includeEmptyRows }, (row) => {
+  worksheet.eachRow({ includeEmpty: !!includeEmptyRows }, row => {
     // Build a normalized flat array using actualCellCount or columnCount cap
-    const colCount = Math.min(Math.max(row.cellCount || row.actualCellCount || 0, 0), maxCols)
+    const colCount = Math.min(
+      Math.max(row.cellCount || row.actualCellCount || 0, 0),
+      maxCols
+    )
     const arr = []
     for (let c = 1; c <= colCount; c++) {
       const cell = row.getCell(c)
-      arr.push(coerceValue(cell?.value, { coerceStrings, dateAsISO, valueMapper }))
+      arr.push(
+        coerceValue(cell?.value, { coerceStrings, dateAsISO, valueMapper })
+      )
     }
 
     // If the row is entirely empty and we don't want empties → skip
-    const allEmpty = arr.every((v) => v == null || (typeof v === 'string' && v.trim() === ''))
+    const allEmpty = arr.every(
+      v => v == null || (typeof v === 'string' && v.trim() === '')
+    )
     if (allEmpty && !includeEmptyRows) return
 
     if (hasHeader && rowCount === 0) {
-      headers = arr.map((h) => transformHeader(h, headerCase, trimHeader))
+      headers = arr.map(h => transformHeader(h, headerCase, trimHeader))
     } else if (hasHeader && headers) {
       const pairs = headers.map((k, i) => [k, arr[i]])
       out.push(createSafeObject(pairs))
@@ -292,21 +334,25 @@ export async function exportXlsxFile(
 
   if (fromObjects) {
     if (!Array.isArray(data) || (data[0] && typeof data[0] !== 'object')) {
-      throw new TypeError('exportXlsxFile: expected array of objects when fromObjects=true')
+      throw new TypeError(
+        'exportXlsxFile: expected array of objects when fromObjects=true'
+      )
     }
     const keys =
       headers && headers.length
         ? headers
         : Array.from(
             new Set(
-              data.flatMap((row) => Object.keys(row || {})).filter((k) => !BLOCKED_KEYS.has(k))
+              data
+                .flatMap(row => Object.keys(row || {}))
+                .filter(k => !BLOCKED_KEYS.has(k))
             )
           )
 
     worksheet.addRow(keys) // header row
     for (const obj of data) {
       const safe = createSafeObject(Object.entries(obj || {}))
-      worksheet.addRow(keys.map((k) => safe[k] ?? ''))
+      worksheet.addRow(keys.map(k => safe[k] ?? ''))
     }
   } else {
     if (!Array.isArray(data)) {
@@ -320,19 +366,19 @@ export async function exportXlsxFile(
     const colCount = worksheet.columnCount
     for (let c = 1; c <= colCount; c++) {
       let maxLen = 8
-      worksheet.eachRow((row) => {
+      worksheet.eachRow(row => {
         const cell = row.getCell(c)
         const v = cell?.value
         const s =
           v == null
             ? ''
             : typeof v === 'string'
-            ? v
-            : v?.text != null
-            ? String(v.text)
-            : Array.isArray(v?.richText)
-            ? v.richText.map((x) => x?.text || '').join('')
-            : String(v)
+              ? v
+              : v?.text != null
+                ? String(v.text)
+                : Array.isArray(v?.richText)
+                  ? v.richText.map(x => x?.text || '').join('')
+                  : String(v)
         if (s.length > maxLen) maxLen = s.length
       })
       worksheet.getColumn(c).width = Math.min(maxLen + 2, maxColWidth)

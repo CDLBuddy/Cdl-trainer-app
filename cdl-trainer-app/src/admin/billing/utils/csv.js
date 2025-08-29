@@ -19,21 +19,19 @@
  *   - newline: line separator (default: "\r\n")
  */
 export function downloadCsv(name, headers, rows, opts = {}) {
-  const {
-    bom = true,
-    delimiter = ',',
-    newline = '\r\n',
-  } = opts
+  const { bom = true, delimiter = ',', newline = '\r\n' } = opts
 
   // Defensive guards
   const safeHeaders = Array.isArray(headers) ? headers : []
   const safeRows = Array.isArray(rows) ? rows : []
 
   // CSV escape: double-up quotes and wrap in quotes
-  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`
 
   const headerLine = safeHeaders.map(esc).join(delimiter)
-  const bodyLines = safeRows.map((r) => (Array.isArray(r) ? r : [r]).map(esc).join(delimiter))
+  const bodyLines = safeRows.map(r =>
+    (Array.isArray(r) ? r : [r]).map(esc).join(delimiter)
+  )
   const content = [headerLine, ...bodyLines].join(newline)
 
   // Add BOM for Excel friendliness unless explicitly disabled

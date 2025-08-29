@@ -6,10 +6,16 @@
 // - Designed for use in AddStudentDrawer's datalist
 // -----------------------------------------------------------------------------
 
-import { db, auth } from '@utils/firebase.js'
 import {
-  collection, query, where, orderBy, limit, getDocs,
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
 } from 'firebase/firestore'
+
+import { db, auth } from '@utils/firebase.js'
 
 /**
  * @param {{ schoolId?: string, max?: number }} [opts]
@@ -30,7 +36,12 @@ export async function getInstructors(opts = {}) {
 
   // Try to order by name; if the index is missing we'll retry without orderBy.
   try {
-    const q = query(col, ...clauses, orderBy('name', 'asc'), limit(Math.max(1, Math.min(200, max))))
+    const q = query(
+      col,
+      ...clauses,
+      orderBy('name', 'asc'),
+      limit(Math.max(1, Math.min(200, max)))
+    )
     const snap = await getDocs(q)
     return snap.docs.map(d => {
       const v = d.data() || {}

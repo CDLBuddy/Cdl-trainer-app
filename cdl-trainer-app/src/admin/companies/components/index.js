@@ -7,10 +7,10 @@
 // ======================================================================
 
 // Core table & chrome
-export { default as CompanyHeader }  from './CompanyHeader.jsx'
+export { default as CompanyHeader } from './CompanyHeader.jsx'
 export { default as CompanyFilters } from './CompanyFilters.jsx'
 export { default as CompaniesTable } from './CompaniesTable.jsx'
-export { default as CompanyRow }     from './CompanyRow.jsx'
+export { default as CompanyRow } from './CompanyRow.jsx'
 
 // Detail cards (Overview / Documents / Notes)
 export * from './detail/index.js'
@@ -26,7 +26,7 @@ export * from './detail/index.js'
 // Later, you can physically move these files into this folder without
 // changing any imports elsewhere.
 // ---------------------------------------------------------------------
-export { default as DrawerShell }  from '../add-student/components/DrawerShell.jsx'
+export { default as DrawerShell } from '../add-student/components/DrawerShell.jsx'
 export { default as OverlayChips } from '../add-student/components/OverlayChips.jsx'
 
 // ---------------------------------------------------------------------

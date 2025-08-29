@@ -7,9 +7,9 @@
 // - Pure module; no side effects
 // ======================================================================
 
-import automatic     from './automatic.js'       // E  = automatic transmission
-import noAir         from './no-air.js'          // L/Z = no full air brakes
-import noFifthWheel  from './no-fifth-wheel.js'  // O  = no fifth-wheel
+import automatic from './automatic.js' // E  = automatic transmission
+import noAir from './no-air.js' // L/Z = no full air brakes
+import noFifthWheel from './no-fifth-wheel.js' // O  = no fifth-wheel
 
 // Named exports so `import * as restrictions` works nicely
 export { automatic, noAir, noFifthWheel }
@@ -18,7 +18,9 @@ export { automatic, noAir, noFifthWheel }
 // Collections
 // ----------------------------------------------------------------------
 
-export const ALL = /** @type {const} */ (Object.freeze([automatic, noAir, noFifthWheel]))
+export const ALL = /** @type {const} */ (
+  Object.freeze([automatic, noAir, noFifthWheel])
+)
 
 export const BY_ID = Object.freeze(
   ALL.reduce((acc, ov) => {
@@ -51,7 +53,7 @@ function normalizeCode(code) {
 /** Lookup by CDL restriction code. Unknown codes return null. */
 export function getByCode(code) {
   const c = normalizeCode(code)
-  return c ? BY_CODE[c] ?? null : null
+  return c ? (BY_CODE[c] ?? null) : null
 }
 
 /**

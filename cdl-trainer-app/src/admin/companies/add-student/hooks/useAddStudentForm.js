@@ -10,18 +10,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { auth } from '@utils/firebase.js'
-import { listInstructors } from '@user-profile'
+
 import { deriveOverlays } from '@admin/utils/enrollmentAssignments.js'
+
+import { listInstructors } from '@user-profile'
 
 // Prefer direct import to avoid barrel drift
 import saveStudent from '../../add-student/services/saveStudent.js'
 
 /** simple helpers */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const s = (x) => (x == null ? '' : String(x).trim())
-const normEmail = (e) => s(e).toLowerCase()
-const isEmail = (e) => EMAIL_RE.test(normEmail(e))
-const onlyDigits = (p) => s(p).replace(/\D+/g, '')
+const s = x => (x == null ? '' : String(x).trim())
+const normEmail = e => s(e).toLowerCase()
+const isEmail = e => EMAIL_RE.test(normEmail(e))
+const onlyDigits = p => s(p).replace(/\D+/g, '')
 
 function getSchoolId() {
   return window.schoolId || localStorage.getItem('schoolId') || ''
@@ -68,7 +70,11 @@ export default function useAddStudentForm({ companyId = '', onClose }) {
   // Initial focus target for DrawerShell
   const firstFieldRef = useRef(null)
   const focusFirst = useCallback(() => {
-    try { firstFieldRef.current?.focus?.() } catch {/* noop */}
+    try {
+      firstFieldRef.current?.focus?.()
+    } catch {
+      /* noop */
+    }
   }, [])
 
   // Stable setter with trimming + normalization for common fields
@@ -112,7 +118,7 @@ export default function useAddStudentForm({ companyId = '', onClose }) {
         // Map to options: { value, label, name, email }
         const opts = list.map(u => ({
           value: u.email || u.uid || '',
-          label: u.name ? `${u.name} (${u.email})` : (u.email || 'Unknown'),
+          label: u.name ? `${u.name} (${u.email})` : u.email || 'Unknown',
           name: u.name || '',
           email: u.email || '',
         }))
@@ -124,7 +130,9 @@ export default function useAddStudentForm({ companyId = '', onClose }) {
       .finally(() => {
         if (mounted) setInstructorsLoading(false)
       })
-    return () => { mounted = false }
+    return () => {
+      mounted = false
+    }
   }, [])
 
   // Clear errors reactively when the form becomes valid again
@@ -147,45 +155,48 @@ export default function useAddStudentForm({ companyId = '', onClose }) {
   }
 
   // -------------------------- Handlers --------------------------------
-  const handleSubmit = useCallback(async (e) => {
-    e?.preventDefault?.()
-    if (saving) return
+  const handleSubmit = useCallback(
+    async e => {
+      e?.preventDefault?.()
+      if (saving) return
 
-    const msg = validate()
-    if (msg) {
-      setError(msg)
-      // best-effort focus: email first, else phone, else class
-      if (!isEmail(form.email || '')) {
-        firstFieldRef.current?.focus?.()
-      }
-      return
-    }
-
-    setSaving(true)
-    try {
-      const result = await saveStudent({
-        form: {
-          ...form,
-          // ensure display kept alongside id (FormFields sets both)
-          assignedInstructor: form.assignedInstructor,
-        },
-        overlays,
-        companyId,
-        actor,
-      })
-
-      if (!result?.ok) {
-        setError(result?.error || 'Failed to save student. Please try again.')
-        setSaving(false)
+      const msg = validate()
+      if (msg) {
+        setError(msg)
+        // best-effort focus: email first, else phone, else class
+        if (!isEmail(form.email || '')) {
+          firstFieldRef.current?.focus?.()
+        }
         return
       }
 
-      onClose?.(true)
-    } catch {
-      setError('Failed to save student. Please try again.')
-      setSaving(false)
-    }
-  }, [saving, form, overlays, companyId, actor, onClose])
+      setSaving(true)
+      try {
+        const result = await saveStudent({
+          form: {
+            ...form,
+            // ensure display kept alongside id (FormFields sets both)
+            assignedInstructor: form.assignedInstructor,
+          },
+          overlays,
+          companyId,
+          actor,
+        })
+
+        if (!result?.ok) {
+          setError(result?.error || 'Failed to save student. Please try again.')
+          setSaving(false)
+          return
+        }
+
+        onClose?.(true)
+      } catch {
+        setError('Failed to save student. Please try again.')
+        setSaving(false)
+      }
+    },
+    [saving, form, overlays, companyId, actor, onClose]
+  )
 
   // --------------------------- API ------------------------------------
   return {

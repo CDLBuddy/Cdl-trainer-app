@@ -48,16 +48,18 @@ export function toCompanyPayload(form = {}, opts = {}) {
 
   // Guard name here (keeps services simple; UI should also validate)
   const safeName =
-    name && NAME_RE.test(name) ? name : name /* still pass through */ || '(unnamed)'
+    name && NAME_RE.test(name)
+      ? name
+      : name /* still pass through */ || '(unnamed)'
 
   // --- baseline payload (compatible with companiesApi) ---------------------
   const payload = {
     // primary fields
     name: safeName,
     // legacy/compat fields your list/exports already use:
-    contact: '',            // (kept for compatibility; empty by default)
-    address: '',            // (optional; not collected in this drawer)
-    status: true,           // new companies start Active
+    contact: '', // (kept for compatibility; empty by default)
+    address: '', // (optional; not collected in this drawer)
+    status: true, // new companies start Active
 
     // new structured field
     billing: { mode: billingMode },

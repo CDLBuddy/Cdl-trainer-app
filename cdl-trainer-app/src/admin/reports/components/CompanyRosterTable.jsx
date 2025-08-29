@@ -8,16 +8,17 @@
 // - Memoized table + rows to reduce re-renders
 // ======================================================================
 
-import React from 'react'
 import PropTypes from 'prop-types'
-import StatusPill from './StatusPill.jsx'
+import React from 'react'
+
 import styles from './CompanyRosterTable.module.css'
+import StatusPill from './StatusPill.jsx'
 
 /* ------------------------------- Helpers -------------------------------- */
 
-const norm = (v) => (v == null ? '' : String(v).trim())
+const norm = v => (v == null ? '' : String(v).trim())
 
-const getFullName = (s) => {
+const getFullName = s => {
   const direct = norm(s?.fullName || s?.name)
   if (direct) return direct
   const fn = norm(s?.firstName || s?.first_name)
@@ -26,36 +27,47 @@ const getFullName = (s) => {
   return combo || norm(s?.email) || 'Student'
 }
 
-const getDOB = (s) => norm(s?.dob || s?.dateOfBirth || s?.birthDate)
+const getDOB = s => norm(s?.dob || s?.dateOfBirth || s?.birthDate)
 
-const getLicenseNum = (s) =>
+const getLicenseNum = s =>
   norm(s?.clpNumber || s?.clp || s?.licenseNumber || s?.license)
 
-const getLicenseState = (s) =>
-  norm(s?.clpState || s?.licenseState || s?.state)
+const getLicenseState = s => norm(s?.clpState || s?.licenseState || s?.state)
 
-const getTraining = (s) => {
+const getTraining = s => {
   const t = s?.training || s?.course || {}
   return {
-    classType: norm(t?.classType || t?.class || t?.program || '')
-      .replace(/^class\s*/i, '') || 'A',
+    classType:
+      norm(t?.classType || t?.class || t?.program || '').replace(
+        /^class\s*/i,
+        ''
+      ) || 'A',
     endorsement: norm(t?.endorsement || t?.endorse || ''),
     theory: {
       completed: !!(t?.theory?.completed ?? t?.theoryCompleted),
       completedAt: norm(t?.theory?.completedAt || t?.theoryCompletedAt),
     },
     btw: {
-      completed: !!(t?.btw?.completed ?? t?.behindTheWheelCompleted ?? t?.rangeCompleted),
+      completed: !!(
+        t?.btw?.completed ??
+        t?.behindTheWheelCompleted ??
+        t?.rangeCompleted
+      ),
       completedAt: norm(t?.btw?.completedAt || t?.btwCompletedAt),
       rangeHours: Number(t?.btw?.rangeHours ?? t?.rangeHours ?? 0) || 0,
-      publicRoadHours: Number(t?.btw?.publicRoadHours ?? t?.roadHours ?? 0) || 0,
+      publicRoadHours:
+        Number(t?.btw?.publicRoadHours ?? t?.roadHours ?? 0) || 0,
     },
     completionDate: norm(t?.completionDate || t?.completedAt),
   }
 }
 
-const isReadyForTPRFromTraining = (t) =>
-  Boolean(t.theory.completed && t.btw.completed && (t.completionDate || t.theory.completedAt || t.btw.completedAt))
+const isReadyForTPRFromTraining = t =>
+  Boolean(
+    t.theory.completed &&
+      t.btw.completed &&
+      (t.completionDate || t.theory.completedAt || t.btw.completedAt)
+  )
 
 const fmtDate = (v, fmt) => {
   if (!v) return ''
@@ -93,12 +105,25 @@ function CompanyRosterTable({
   'aria-label': ariaLabel = 'Company roster table',
 }) {
   // Stable collator + date formatter (fast + localized)
-  const collator = React.useMemo(() => new Intl.Collator(undefined, { sensitivity: 'base' }), [])
-  const dateFmt  = React.useMemo(() => new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: '2-digit' }), [])
+  const collator = React.useMemo(
+    () => new Intl.Collator(undefined, { sensitivity: 'base' }),
+    []
+  )
+  const dateFmt = React.useMemo(
+    () =>
+      new Intl.DateTimeFormat(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+      }),
+    []
+  )
 
   const rows = React.useMemo(() => {
     const list = Array.isArray(students) ? students : []
-    return [...list].sort((a, b) => collator.compare(getFullName(a), getFullName(b)))
+    return [...list].sort((a, b) =>
+      collator.compare(getFullName(a), getFullName(b))
+    )
   }, [students, collator])
 
   const showActions = !!onOpenStudent
@@ -120,7 +145,9 @@ function CompanyRosterTable({
         </thead>
         <tbody>
           {loading ? (
-            Array.from({ length: 7 }).map((_, i) => <RowSkeleton key={i} cols={showActions ? 8 : 7} />)
+            Array.from({ length: 7 }).map((_, i) => (
+              <RowSkeleton key={i} cols={showActions ? 8 : 7} />
+            ))
           ) : rows.length === 0 ? (
             <tr>
               <td className={styles.td} colSpan={showActions ? 8 : 7}>
@@ -135,7 +162,11 @@ function CompanyRosterTable({
               const st = getLicenseState(s)
               const t = getTraining(s)
               const ready = isReadyForTPRFromTraining(t)
-              const completed = t.completionDate || t.btw.completedAt || t.theory.completedAt || ''
+              const completed =
+                t.completionDate ||
+                t.btw.completedAt ||
+                t.theory.completedAt ||
+                ''
               const key = s.id || s.uid || s.email || `${name}-${idx}`
 
               return (
@@ -144,7 +175,9 @@ function CompanyRosterTable({
                     <div className={styles.name}>{name}</div>
                     {s?.email && (
                       <div className={styles.email}>
-                        <a href={`mailto:${String(s.email)}`}>{String(s.email)}</a>
+                        <a href={`mailto:${String(s.email)}`}>
+                          {String(s.email)}
+                        </a>
                       </div>
                     )}
                   </TD>
@@ -152,8 +185,12 @@ function CompanyRosterTable({
                   <TD>{lic || '—'}</TD>
                   <TD>{st || '—'}</TD>
                   <TD>
-                    <span className={styles.bold}>Class {t.classType || 'A'}</span>
-                    {t.endorsement ? <span className={styles.muted}> • {t.endorsement}</span> : null}
+                    <span className={styles.bold}>
+                      Class {t.classType || 'A'}
+                    </span>
+                    {t.endorsement ? (
+                      <span className={styles.muted}> • {t.endorsement}</span>
+                    ) : null}
                   </TD>
                   <TD>{completed ? fmtDate(completed, dateFmt) : '—'}</TD>
                   <TD>

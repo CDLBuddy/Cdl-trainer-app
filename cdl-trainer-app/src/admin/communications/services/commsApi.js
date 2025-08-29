@@ -7,6 +7,7 @@
 // - Includes small helpers for listing/fetching templates & messages
 // ============================================================================
 
+import { getAuth } from 'firebase/auth'
 import {
   getFirestore,
   addDoc,
@@ -22,7 +23,6 @@ import {
   serverTimestamp,
   Timestamp,
 } from 'firebase/firestore'
-import { getAuth } from 'firebase/auth'
 
 /** Resolve DB from your initialized Firebase app (already bootstrapped app-wide). */
 const db = getFirestore()
@@ -33,12 +33,14 @@ const CHANNELS = /** @type {const} */ (['inapp', 'email', 'sms'])
 /** Runtime feature flags (UI can still show channels conditionally). */
 const FLAGS = {
   email: (import.meta.env?.VITE_COMMS_EMAIL ?? '1') !== '0',
-  sms:   (import.meta.env?.VITE_COMMS_SMS   ?? '0') === '1',
+  sms: (import.meta.env?.VITE_COMMS_SMS ?? '0') === '1',
 }
 
 /** Small helpers */
-const genId = () => (globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`)
-const toTimestamp = (v) => {
+const genId = () =>
+  globalThis.crypto?.randomUUID?.() ??
+  `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`
+const toTimestamp = v => {
   if (!v) return null
   try {
     if (v instanceof Date) return Timestamp.fromDate(v)
@@ -46,7 +48,9 @@ const toTimestamp = (v) => {
     // Allow ISO strings
     const d = new Date(v)
     return Number.isNaN(d.getTime()) ? null : Timestamp.fromDate(d)
-  } catch { return null }
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -71,9 +75,9 @@ function normalizeChannels(channels) {
   const list = Array.isArray(channels) && channels.length ? channels : ['inapp']
   const filtered = list
     .map(String)
-    .map((c) => c.toLowerCase())
-    .filter((c) => CHANNELS.includes(c))
-    .filter((c) => (c === 'email' ? FLAGS.email : c === 'sms' ? FLAGS.sms : true))
+    .map(c => c.toLowerCase())
+    .filter(c => CHANNELS.includes(c))
+    .filter(c => (c === 'email' ? FLAGS.email : c === 'sms' ? FLAGS.sms : true))
 
   return filtered.length ? filtered : ['inapp']
 }
@@ -89,9 +93,10 @@ function normalizeSegment(seg) {
   }
   return {
     type: 'query',
-    query: s.query && typeof s.query === 'object'
-      ? s.query
-      : { kind: 'students:all' },
+    query:
+      s.query && typeof s.query === 'object'
+        ? s.query
+        : { kind: 'students:all' },
   }
 }
 
@@ -159,11 +164,12 @@ export async function queueMessage(payload) {
 export async function listMessages(opts = {}) {
   const take = Math.max(1, Math.min(500, Number(opts.take ?? 50)))
   const parts = [orderBy('createdAt', 'desc'), limit(take)]
-  if (opts.createdByUid) parts.unshift(where('createdBy.uid', '==', String(opts.createdByUid)))
+  if (opts.createdByUid)
+    parts.unshift(where('createdBy.uid', '==', String(opts.createdByUid)))
   if (opts.role) parts.unshift(where('role', '==', opts.role))
   const qs = query(collection(db, 'communications/messages'), ...parts)
   const snap = await getDocs(qs)
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
 }
 
 /** Fetch a single message (for detail drawers, etc.). */
@@ -179,9 +185,13 @@ export async function getMessage(id) {
  */
 export async function listTemplates(opts = {}) {
   const take = Math.max(1, Math.min(500, Number(opts.take ?? 200)))
-  const qs = query(collection(db, 'communications/templates'), orderBy('name'), limit(take))
+  const qs = query(
+    collection(db, 'communications/templates'),
+    orderBy('name'),
+    limit(take)
+  )
   const snap = await getDocs(qs)
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
 }
 
 /**
@@ -207,7 +217,9 @@ export async function upsertTemplate(tpl) {
     updatedAt: serverTimestamp(),
     // keep createdAt if present; otherwise set on first write
   }
-  await setDoc(doc(db, 'communications/templates', id), payload, { merge: true })
+  await setDoc(doc(db, 'communications/templates', id), payload, {
+    merge: true,
+  })
   return { id }
 }
 

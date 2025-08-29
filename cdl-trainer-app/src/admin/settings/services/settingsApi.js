@@ -8,12 +8,7 @@
 //   * prefs are shallow-merged into adminPrefs
 // ======================================================================
 
-import {
-  doc,
-  getDoc,
-  setDoc,
-  serverTimestamp,
-} from 'firebase/firestore'
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 
 import { db } from '@utils/firebase.js'
 
@@ -90,7 +85,9 @@ export async function updateSettings(schoolId, partial = {}) {
   if (partial.prefs && typeof partial.prefs === 'object') {
     // Fetch current prefs so we can merge safely
     const currentSnap = await getDoc(ref).catch(() => null)
-    const current = currentSnap?.exists() ? (currentSnap.data()?.adminPrefs || {}) : {}
+    const current = currentSnap?.exists()
+      ? currentSnap.data()?.adminPrefs || {}
+      : {}
 
     update.adminPrefs = { ...current, ...partial.prefs }
   }

@@ -5,19 +5,19 @@
 // - Groups Employer and Individual subcomponents
 // ======================================================================
 
-export { default as StatusPill } from './StatusPill/index.js';
+export { default as StatusPill } from './StatusPill/index.js'
 export {
   EMPLOYER_STATUSES,
   INDIVIDUAL_STATUSES,
   getAllowedStatuses,
-} from './StatusPill/index.js';
+} from './StatusPill/index.js'
 
 // Employer
-export { default as EmployerTab } from './Employer/EmployerTab.jsx';
-export { default as EmployerFilters } from './Employer/EmployerFilters.jsx';
-export { default as EmployerTable } from './Employer/EmployerTable.jsx';
+export { default as EmployerTab } from './Employer/EmployerTab.jsx'
+export { default as EmployerFilters } from './Employer/EmployerFilters.jsx'
+export { default as EmployerTable } from './Employer/EmployerTable.jsx'
 
 // Individual
-export { default as IndividualTab } from './Individual/IndividualTab.jsx';
-export { default as IndividualFilters } from './Individual/IndividualFilters.jsx';
-export { default as IndividualTable } from './Individual/IndividualTable.jsx';
+export { default as IndividualTab } from './Individual/IndividualTab.jsx'
+export { default as IndividualFilters } from './Individual/IndividualFilters.jsx'
+export { default as IndividualTable } from './Individual/IndividualTable.jsx'

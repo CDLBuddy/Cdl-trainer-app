@@ -20,8 +20,8 @@ export default function CompanyNotesCard({
   notes = [],
   loading = false,
   error = '',
-  onAdd,        // (text) => Promise<void> | void
-  onDelete,     // optional: (note) => Promise<void> | void
+  onAdd, // (text) => Promise<void> | void
+  onDelete, // optional: (note) => Promise<void> | void
   maxLength = 1000,
 }) {
   const [draft, setDraft] = useState('')
@@ -53,7 +53,7 @@ export default function CompanyNotesCard({
   }
 
   function onKeyDown(e) {
-    if ((e.key === 'Enter' && (e.metaKey || e.ctrlKey)) && canSubmit) {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && canSubmit) {
       e.preventDefault()
       handleAdd()
     }
@@ -65,12 +65,20 @@ export default function CompanyNotesCard({
   }, [notes?.length])
 
   return (
-    <section className={styles.card} aria-label="Company notes" aria-busy={!!loading}>
+    <section
+      className={styles.card}
+      aria-label="Company notes"
+      aria-busy={!!loading}
+    >
       <header className={styles.header}>
         <h3 className={styles.title}>Notes &amp; Activity</h3>
         <div className={styles.actions}>
           <small className={styles.meta}>
-            {loading ? <span className={styles.skeleton} style={{ width: 40 }} /> : countsLabel}
+            {loading ? (
+              <span className={styles.skeleton} style={{ width: 40 }} />
+            ) : (
+              countsLabel
+            )}
           </small>
         </div>
       </header>
@@ -108,14 +116,20 @@ export default function CompanyNotesCard({
           style={{ margin: 0, padding: 0, listStyle: 'none' }}
           aria-label="Notes"
         >
-          {notes.map((n) => (
-            <li key={n.id || n.createdAtLabel || n.text.slice(0, 16)} className={styles.row}>
+          {notes.map(n => (
+            <li
+              key={n.id || n.createdAtLabel || n.text.slice(0, 16)}
+              className={styles.row}
+            >
               <div style={{ display: 'grid', gap: 4 }}>
-                <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                <div
+                  style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+                >
                   {n.text}
                 </div>
                 <div className={styles.meta}>
-                  {n.author ? <strong>{n.author}</strong> : '—'}{n.createdAtLabel ? ` • ${n.createdAtLabel}` : ''}
+                  {n.author ? <strong>{n.author}</strong> : '—'}
+                  {n.createdAtLabel ? ` • ${n.createdAtLabel}` : ''}
                 </div>
               </div>
               {onDelete && (
@@ -151,7 +165,7 @@ export default function CompanyNotesCard({
           <textarea
             rows={3}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={e => setDraft(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Add a note… (⌘/Ctrl + Enter to save)"
             aria-label="Add a note"
@@ -165,10 +179,18 @@ export default function CompanyNotesCard({
               minHeight: 64,
             }}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <small className={styles.meta}>
               {tooLong ? (
-                <span style={{ color: '#b91c1c' }}>{remaining * -1} over limit</span>
+                <span style={{ color: '#b91c1c' }}>
+                  {remaining * -1} over limit
+                </span>
               ) : (
                 `${remaining} characters left`
               )}

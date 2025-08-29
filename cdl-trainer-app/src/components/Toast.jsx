@@ -1,5 +1,12 @@
 // src/components/Toast.jsx
-import React, { useEffect, useMemo, useRef, useState, useCallback, memo } from 'react'
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  memo,
+} from 'react'
 import { createPortal } from 'react-dom'
 
 /**
@@ -39,9 +46,11 @@ export const Toast = memo(function Toast({
   const startX = useRef(null)
 
   // timers/raf + bookkeeping
-  const timerRef = useRef(/** @type {ReturnType<typeof setTimeout> | null} */(null))
-  const rafIdRef = useRef(/** @type {number | null} */(null))
-  const progressElRef = useRef(/** @type {HTMLDivElement | null} */(null))
+  const timerRef = useRef(
+    /** @type {ReturnType<typeof setTimeout> | null} */ (null)
+  )
+  const rafIdRef = useRef(/** @type {number | null} */ (null))
+  const progressElRef = useRef(/** @type {HTMLDivElement | null} */ (null))
   const mountedAtRef = useRef(0)
   const remainingRef = useRef(Math.max(0, duration))
 
@@ -87,7 +96,9 @@ export const Toast = memo(function Toast({
 
   // Keyboard: ESC to dismiss
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') beginClose() }
+    const onKey = e => {
+      if (e.key === 'Escape') beginClose()
+    }
     if (typeof window !== 'undefined') {
       window.addEventListener('keydown', onKey)
       return () => window.removeEventListener('keydown', onKey)
@@ -106,27 +117,35 @@ export const Toast = memo(function Toast({
     }
   }, [])
 
-  const startTimers = useCallback((ms) => {
-    clearTimer()
-    stopRaf()
-    remainingRef.current = Math.max(0, ms)
-    mountedAtRef.current = performance.now()
+  const startTimers = useCallback(
+    ms => {
+      clearTimer()
+      stopRaf()
+      remainingRef.current = Math.max(0, ms)
+      mountedAtRef.current = performance.now()
 
-    if (ms > 0) {
-      timerRef.current = setTimeout(() => { beginClose() }, ms)
-      if (showProgress && progressElRef.current) {
-        // reset bar first for smooth resume
-        progressElRef.current.style.width = '100%'
-        rafIdRef.current = requestAnimationFrame(tickProgress)
+      if (ms > 0) {
+        timerRef.current = setTimeout(() => {
+          beginClose()
+        }, ms)
+        if (showProgress && progressElRef.current) {
+          // reset bar first for smooth resume
+          progressElRef.current.style.width = '100%'
+          rafIdRef.current = requestAnimationFrame(tickProgress)
+        }
       }
-    }
-  }, [beginClose, clearTimer, stopRaf, tickProgress, showProgress])
+    },
+    [beginClose, clearTimer, stopRaf, tickProgress, showProgress]
+  )
 
   // mount/prop-change timer setup
   useEffect(() => {
     if (duration <= 0) return () => {}
     startTimers(duration)
-    return () => { clearTimer(); stopRaf() }
+    return () => {
+      clearTimer()
+      stopRaf()
+    }
   }, [duration, startTimers, clearTimer, stopRaf])
 
   // Hover pause/resume
@@ -145,10 +164,10 @@ export const Toast = memo(function Toast({
   }, [onHoverChange, startTimers])
 
   // Swipe to dismiss (mobile)
-  const onTouchStart = useCallback((e) => {
+  const onTouchStart = useCallback(e => {
     startX.current = e.changedTouches[0].clientX
   }, [])
-  const onTouchMove = useCallback((e) => {
+  const onTouchMove = useCallback(e => {
     if (startX.current == null) return
     const dx = e.changedTouches[0].clientX - startX.current
     setDrag(dx)
@@ -165,11 +184,18 @@ export const Toast = memo(function Toast({
   // Palette via CSS vars; override-able from theme
   const palette = useMemo(() => {
     switch (type) {
-      case 'success': return { bg: 'var(--success,#48bb78)',           fg: '#fff' }
-      case 'error':   return { bg: 'var(--error,#e53e3e)',             fg: '#fff' }
-      case 'warning': return { bg: 'var(--warning,#d69e2e)',           fg: '#111' }
+      case 'success':
+        return { bg: 'var(--success,#48bb78)', fg: '#fff' }
+      case 'error':
+        return { bg: 'var(--error,#e53e3e)', fg: '#fff' }
+      case 'warning':
+        return { bg: 'var(--warning,#d69e2e)', fg: '#111' }
       case 'info':
-      default:        return { bg: 'var(--toast-bg, rgba(0,0,0,.85))', fg: 'var(--toast-text,#fff)' }
+      default:
+        return {
+          bg: 'var(--toast-bg, rgba(0,0,0,.85))',
+          fg: 'var(--toast-text,#fff)',
+        }
     }
   }, [type])
 
@@ -178,13 +204,29 @@ export const Toast = memo(function Toast({
   const containerStyle = useMemo(() => {
     const common = { position: 'fixed', zIndex: 99999, pointerEvents: 'none' }
     switch (position) {
-      case 'top':         return { ...common, top: baseOffset, left: '50%', transform: 'translateX(-50%)' }
-      case 'bottom':      return { ...common, bottom: baseOffset, left: '50%', transform: 'translateX(-50%)' }
-      case 'top-left':    return { ...common, top: baseOffset, left: baseOffset }
-      case 'top-right':   return { ...common, top: baseOffset, right: baseOffset }
-      case 'bottom-left': return { ...common, bottom: baseOffset, left: baseOffset }
+      case 'top':
+        return {
+          ...common,
+          top: baseOffset,
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }
+      case 'bottom':
+        return {
+          ...common,
+          bottom: baseOffset,
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }
+      case 'top-left':
+        return { ...common, top: baseOffset, left: baseOffset }
+      case 'top-right':
+        return { ...common, top: baseOffset, right: baseOffset }
+      case 'bottom-left':
+        return { ...common, bottom: baseOffset, left: baseOffset }
       case 'bottom-right':
-      default:            return { ...common, bottom: baseOffset, right: baseOffset }
+      default:
+        return { ...common, bottom: baseOffset, right: baseOffset }
     }
   }, [position, baseOffset])
 
@@ -194,7 +236,14 @@ export const Toast = memo(function Toast({
     return position.startsWith('top') ? index * 6 * per : -index * 6 * per
   }, [position, index])
 
-  const icon = type === 'success' ? '✅' : type === 'error' ? '⚠️' : type === 'warning' ? '🚧' : '💬'
+  const icon =
+    type === 'success'
+      ? '✅'
+      : type === 'error'
+        ? '⚠️'
+        : type === 'warning'
+          ? '🚧'
+          : '💬'
 
   // Resolve or create the portal root (SSR-safe)
   const portalTarget = useMemo(() => {
@@ -233,13 +282,17 @@ export const Toast = memo(function Toast({
           alignItems: 'center',
           gap: 10,
           transform: `translateX(${drag}px) translateY(${stackTranslateY}px)`,
-          transition: reduceMotion ? 'none' : 'transform .15s ease, opacity .18s ease',
+          transition: reduceMotion
+            ? 'none'
+            : 'transform .15s ease, opacity .18s ease',
           opacity: leaving ? 0 : 1,
           userSelect: 'none',
         }}
       >
         {/* icon */}
-        <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>{icon}</span>
+        <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>
+          {icon}
+        </span>
 
         {/* body */}
         <div style={{ flex: 1, fontWeight: 500, wordBreak: 'break-word' }}>
@@ -274,7 +327,13 @@ export const Toast = memo(function Toast({
         {action?.label && (
           <button
             className="toast-action"
-            onClick={() => { try { action.onClick?.() } finally { beginClose() } }}
+            onClick={() => {
+              try {
+                action.onClick?.()
+              } finally {
+                beginClose()
+              }
+            }}
             style={{
               background: 'transparent',
               border: '1px solid currentColor',
@@ -322,7 +381,11 @@ export const Toast = memo(function Toast({
  * - onClose: (id) => void
  * - position?: default stack position
  */
-export const ToastContainer = memo(function ToastContainer({ toasts, onClose, position = 'bottom-right' }) {
+export const ToastContainer = memo(function ToastContainer({
+  toasts,
+  onClose,
+  position = 'bottom-right',
+}) {
   return (
     <>
       {toasts.map((t, i) => (

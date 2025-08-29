@@ -26,7 +26,9 @@ export function useSecuritySettings({ vm }) {
   )
 
   const [draft, setDraft] = useState(initial)
-  useEffect(() => { setDraft(initial) }, [initial])
+  useEffect(() => {
+    setDraft(initial)
+  }, [initial])
 
   const update = useCallback(patch => setDraft(d => ({ ...d, ...patch })), [])
 

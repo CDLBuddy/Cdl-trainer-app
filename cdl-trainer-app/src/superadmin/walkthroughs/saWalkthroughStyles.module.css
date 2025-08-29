@@ -4,31 +4,31 @@
    -------------------------------------------------------------------------- */
 
 :root {
-  --sa-fg: #111827;           /* gray-900 */
-  --sa-fg-muted: #6b7280;     /* gray-500 */
-  --sa-border: #e5e7eb;       /* gray-200 */
-  --sa-border-strong: #d1d5db;/* gray-300 */
-  --sa-bg-soft: #f9fafb;      /* gray-50 */
-  --sa-bg: #ffffff;           /* white */
+  --sa-fg: #111827; /* gray-900 */
+  --sa-fg-muted: #6b7280; /* gray-500 */
+  --sa-border: #e5e7eb; /* gray-200 */
+  --sa-border-strong: #d1d5db; /* gray-300 */
+  --sa-bg-soft: #f9fafb; /* gray-50 */
+  --sa-bg: #ffffff; /* white */
 
-  --sa-primary-bg: #111827;   /* gray-900 */
+  --sa-primary-bg: #111827; /* gray-900 */
   --sa-primary-fg: #ffffff;
 
   --sa-secondary-bg: #ffffff;
   --sa-secondary-fg: #111827;
 
-  --sa-danger-bg: #fee2e2;    /* red-100 */
-  --sa-danger-fg: #b91c1c;    /* red-700 */
-  --sa-danger-border: #fca5a5;/* red-300 */
+  --sa-danger-bg: #fee2e2; /* red-100 */
+  --sa-danger-fg: #b91c1c; /* red-700 */
+  --sa-danger-border: #fca5a5; /* red-300 */
 
-  --sa-link: #2563eb;         /* blue-600 */
-  --sa-warn-border: #f59e0b;  /* amber-500 */
-  --sa-warn-bg: #fffbeb;      /* amber-50 */
-  --sa-warn-fg: #92400e;      /* amber-800 */
+  --sa-link: #2563eb; /* blue-600 */
+  --sa-warn-border: #f59e0b; /* amber-500 */
+  --sa-warn-bg: #fffbeb; /* amber-50 */
+  --sa-warn-fg: #92400e; /* amber-800 */
 
-  --sa-note-border: #c7d2fe;  /* indigo-200 */
-  --sa-note-bg: #eef2ff;      /* indigo-50 */
-  --sa-note-fg: #3730a3;      /* indigo-800 */
+  --sa-note-border: #c7d2fe; /* indigo-200 */
+  --sa-note-bg: #eef2ff; /* indigo-50 */
+  --sa-note-fg: #3730a3; /* indigo-800 */
 
   --sa-radius: 10px;
   --sa-radius-sm: 8px;
@@ -39,36 +39,36 @@
   --sa-gap: 12px;
   --sa-pad: 16px;
 
-  --sa-shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
-  --sa-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --sa-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --sa-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --sa-fg: #e5e7eb;
     --sa-fg-muted: #9ca3af;
-    --sa-border: #1f2937;            /* gray-800 */
-    --sa-border-strong: #374151;     /* gray-700 */
-    --sa-bg-soft: #0b1220;           /* near-navy */
-    --sa-bg: #0f172a;                /* slate-900 */
+    --sa-border: #1f2937; /* gray-800 */
+    --sa-border-strong: #374151; /* gray-700 */
+    --sa-bg-soft: #0b1220; /* near-navy */
+    --sa-bg: #0f172a; /* slate-900 */
 
-    --sa-primary-bg: #2563eb;        /* blue-600 */
+    --sa-primary-bg: #2563eb; /* blue-600 */
     --sa-primary-fg: #ffffff;
 
-    --sa-secondary-bg: #111827;      /* gray-900 */
+    --sa-secondary-bg: #111827; /* gray-900 */
     --sa-secondary-fg: #e5e7eb;
 
-    --sa-danger-bg: #2b0e11;         /* dark red-ish */
-    --sa-danger-fg: #fca5a5;         /* red-300 */
-    --sa-danger-border: #7f1d1d;     /* red-900 */
+    --sa-danger-bg: #2b0e11; /* dark red-ish */
+    --sa-danger-fg: #fca5a5; /* red-300 */
+    --sa-danger-border: #7f1d1d; /* red-900 */
 
-    --sa-link: #60a5fa;              /* blue-400 */
-    --sa-warn-border: #fbbf24;       /* amber-400 */
-    --sa-warn-bg: #2a1f0a;           /* dark amber */
+    --sa-link: #60a5fa; /* blue-400 */
+    --sa-warn-border: #fbbf24; /* amber-400 */
+    --sa-warn-bg: #2a1f0a; /* dark amber */
     --sa-warn-fg: #f59e0b;
 
-    --sa-note-border: #818cf8;       /* indigo-400 */
-    --sa-note-bg: #14163a;           /* dark indigo */
+    --sa-note-border: #818cf8; /* indigo-400 */
+    --sa-note-bg: #14163a; /* dark indigo */
     --sa-note-fg: #c7d2fe;
   }
 }
@@ -124,7 +124,10 @@
   border: 1px solid transparent;
   cursor: pointer;
   box-shadow: var(--sa-shadow-sm);
-  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease;
 }
 
 .primary {
@@ -169,9 +172,9 @@
 .primary:disabled,
 .secondary:disabled,
 .danger:disabled,
-.primary[aria-disabled="true"],
-.secondary[aria-disabled="true"],
-.danger[aria-disabled="true"] {
+.primary[aria-disabled='true'],
+.secondary[aria-disabled='true'],
+.danger[aria-disabled='true'] {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
@@ -271,7 +274,7 @@
 /* Form elements inside .filters
    -------------------------------------------------------------------------- */
 .filters select,
-.filters input[type="text"],
+.filters input[type='text'],
 .filters input,
 .filters textarea {
   background: var(--sa-bg);

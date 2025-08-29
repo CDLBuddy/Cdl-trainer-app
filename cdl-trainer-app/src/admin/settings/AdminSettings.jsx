@@ -30,16 +30,16 @@ import {
 
 // Keep the order stable
 const TABS = /** @type const */ ([
-  { key: 'branding',      label: 'Branding',      Comp: Branding },
-  { key: 'courses',       label: 'Courses',       Comp: Courses },
-  { key: 'users',         label: 'Users',         Comp: Users },
-  { key: 'billing',       label: 'Billing',       Comp: Billing },
-  { key: 'compliance',    label: 'Compliance',    Comp: Compliance },
+  { key: 'branding', label: 'Branding', Comp: Branding },
+  { key: 'courses', label: 'Courses', Comp: Courses },
+  { key: 'users', label: 'Users', Comp: Users },
+  { key: 'billing', label: 'Billing', Comp: Billing },
+  { key: 'compliance', label: 'Compliance', Comp: Compliance },
   { key: 'notifications', label: 'Notifications', Comp: Notifications },
 ])
 
 const TAB_KEYS = TABS.map(t => t.key)
-const isValidKey = (k) => TAB_KEYS.includes(k)
+const isValidKey = k => TAB_KEYS.includes(k)
 
 // Initial tab from hash or session (fallback to first)
 function getInitialTab() {
@@ -49,7 +49,9 @@ function getInitialTab() {
   try {
     const saved = sessionStorage.getItem('admin.settings.tab') || ''
     if (isValidKey(saved)) return saved
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return TABS[0].key
 }
 
@@ -59,7 +61,11 @@ export default function AdminSettings() {
 
   // Persist per session
   useEffect(() => {
-    try { sessionStorage.setItem('admin.settings.tab', tab) } catch { /* ignore */ }
+    try {
+      sessionStorage.setItem('admin.settings.tab', tab)
+    } catch {
+      /* ignore */
+    }
   }, [tab])
 
   // Keep hash in sync (without scrolling the page)
@@ -86,41 +92,49 @@ export default function AdminSettings() {
     const label = TABS.find(t => t.key === tab)?.label || 'Settings'
     const prev = document.title
     document.title = `${label} · Admin Settings`
-    return () => { document.title = prev }
+    return () => {
+      document.title = prev
+    }
   }, [tab])
 
-  const activeTab = useMemo(() => TABS.find(t => t.key === tab) || TABS[0], [tab])
-  const panelId   = `settings-panel-${activeTab.key}`
-  const tabId     = `settings-tab-${activeTab.key}`
+  const activeTab = useMemo(
+    () => TABS.find(t => t.key === tab) || TABS[0],
+    [tab]
+  )
+  const panelId = `settings-panel-${activeTab.key}`
+  const tabId = `settings-tab-${activeTab.key}`
 
   // Keyboard nav on the tablist
-  const onKeyTabs = useCallback((e) => {
-    const idx = TAB_KEYS.indexOf(tab)
-    if (idx < 0) return
+  const onKeyTabs = useCallback(
+    e => {
+      const idx = TAB_KEYS.indexOf(tab)
+      if (idx < 0) return
 
-    let next = null
-    if (e.key === 'ArrowRight') {
-      e.preventDefault()
-      next = TAB_KEYS[(idx + 1) % TAB_KEYS.length]
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault()
-      next = TAB_KEYS[(idx - 1 + TAB_KEYS.length) % TAB_KEYS.length]
-    } else if (e.key === 'Home') {
-      e.preventDefault()
-      next = TAB_KEYS[0]
-    } else if (e.key === 'End') {
-      e.preventDefault()
-      next = TAB_KEYS[TAB_KEYS.length - 1]
-    }
-    if (next && next !== tab) {
-      setTab(next)
-      // After state applies, move focus to the newly active tab
-      queueMicrotask(() => {
-        const btn = tabRefs.current.get(next)
-        btn?.focus()
-      })
-    }
-  }, [tab])
+      let next = null
+      if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        next = TAB_KEYS[(idx + 1) % TAB_KEYS.length]
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        next = TAB_KEYS[(idx - 1 + TAB_KEYS.length) % TAB_KEYS.length]
+      } else if (e.key === 'Home') {
+        e.preventDefault()
+        next = TAB_KEYS[0]
+      } else if (e.key === 'End') {
+        e.preventDefault()
+        next = TAB_KEYS[TAB_KEYS.length - 1]
+      }
+      if (next && next !== tab) {
+        setTab(next)
+        // After state applies, move focus to the newly active tab
+        queueMicrotask(() => {
+          const btn = tabRefs.current.get(next)
+          btn?.focus()
+        })
+      }
+    },
+    [tab]
+  )
 
   const Active = activeTab.Comp
 
@@ -136,7 +150,7 @@ export default function AdminSettings() {
         className="u-toolbar"
         style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}
       >
-        {TABS.map((t) => (
+        {TABS.map(t => (
           <TabButton
             key={t.key}
             id={`settings-tab-${t.key}`}
@@ -144,7 +158,7 @@ export default function AdminSettings() {
             controls={`settings-panel-${t.key}`}
             onSelect={() => setTab(t.key)}
             // capture ref for focus management
-            ref={(el) => {
+            ref={el => {
               if (el) tabRefs.current.set(t.key, el)
               else tabRefs.current.delete(t.key)
             }}
@@ -161,7 +175,9 @@ export default function AdminSettings() {
         aria-labelledby={tabId}
         className="dashboard-card"
       >
-        <Suspense fallback={<div style={{ padding: 12 }}>Loading section…</div>}>
+        <Suspense
+          fallback={<div style={{ padding: 12 }}>Loading section…</div>}
+        >
           <Active />
         </Suspense>
       </section>

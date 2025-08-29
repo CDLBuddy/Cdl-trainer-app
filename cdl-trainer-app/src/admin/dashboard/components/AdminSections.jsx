@@ -5,7 +5,15 @@ import { useNavigate } from 'react-router-dom'
 /**
  * Small reusable card that makes the entire surface clickable (and keyboard-accessible).
  */
-function CardLink({ emoji, title, description, to, cta = 'Open', badge, disabled = false }) {
+function CardLink({
+  emoji,
+  title,
+  description,
+  to,
+  cta = 'Open',
+  badge,
+  disabled = false,
+}) {
   const navigate = useNavigate()
   const go = useCallback(() => {
     if (!disabled && to) navigate(to)
@@ -18,7 +26,7 @@ function CardLink({ emoji, title, description, to, cta = 'Open', badge, disabled
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled ? 'true' : 'false'}
       onClick={go}
-      onKeyDown={(e) => {
+      onKeyDown={e => {
         if (disabled) return
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
@@ -37,9 +45,18 @@ function CardLink({ emoji, title, description, to, cta = 'Open', badge, disabled
       }}
       disabled={disabled}
     >
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: 8,
+          flexWrap: 'wrap',
+        }}
+      >
         <h3 style={{ margin: 0 }}>
-          <span aria-hidden style={{ marginRight: 6 }}>{emoji}</span>
+          <span aria-hidden style={{ marginRight: 6 }}>
+            {emoji}
+          </span>
           {title}
         </h3>
         {badge && (
@@ -65,7 +82,7 @@ function CardLink({ emoji, title, description, to, cta = 'Open', badge, disabled
         <button
           type="button"
           className={`btn wide ${disabled ? 'outline' : ''}`}
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             go()
           }}

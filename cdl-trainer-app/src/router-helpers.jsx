@@ -42,7 +42,9 @@ export function RequireNotLoggedIn({ children, loadingText = 'Loading…' }) {
   let fromQuery = null
   try {
     fromQuery = new URLSearchParams(location?.search || '').get('from')
-  } catch { /* ignore parse errors */ }
+  } catch {
+    /* ignore parse errors */
+  }
 
   const candidate = sanitizeReturnPath(fromState || fromQuery || '')
   const dest = candidate || getDashboardRoute(role || 'student')

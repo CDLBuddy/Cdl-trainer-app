@@ -19,12 +19,15 @@ import React, {
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 
 import { getDashboardRoute, getTopNavForRole } from '@navigation/navConfig.js'
-import { getCachedBrandingSummary, subscribeBrandingUpdated } from '@utils/school-branding.js'
+import {
+  getCachedBrandingSummary,
+  subscribeBrandingUpdated,
+} from '@utils/school-branding.js'
 
 // Central helpers (all dynamic under the hood — no static imports of role modules)
 import {
-  prefetchOnIntent,     // returns { onMouseEnter, onFocus, onTouchStart }
-  warmRoutesOnSession,  // schedules idle warm for public + role shells
+  prefetchOnIntent, // returns { onMouseEnter, onFocus, onTouchStart }
+  warmRoutesOnSession, // schedules idle warm for public + role shells
 } from '@/utils/route-preload.js'
 
 import { useSession } from '../session/useSession.js'
@@ -81,7 +84,8 @@ function NavBar({ brand: brandProp }) {
 
   // Branding (prop wins; else cached + live updates)
   const [brand, setBrand] = useState(() => {
-    if (brandProp && (brandProp.logoUrl || brandProp.schoolName)) return brandProp
+    if (brandProp && (brandProp.logoUrl || brandProp.schoolName))
+      return brandProp
     return getCachedBrandingSummary()
   })
 
@@ -109,7 +113,11 @@ function NavBar({ brand: brandProp }) {
   // Close dropdowns on outside click + ESC
   useEffect(() => {
     function handleClickOutside(e) {
-      if (profileOpen && profileRef.current && !profileRef.current.contains(e.target)) {
+      if (
+        profileOpen &&
+        profileRef.current &&
+        !profileRef.current.contains(e.target)
+      ) {
         setProfileOpen(false)
       }
     }
@@ -135,7 +143,8 @@ function NavBar({ brand: brandProp }) {
     const prevPaddingRight = body.style.paddingRight
 
     if (menuOpen) {
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth
       body.style.overflow = 'hidden'
       if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`
     } else {
@@ -179,11 +188,12 @@ function NavBar({ brand: brandProp }) {
   const userMenu = useMemo(() => {
     if (!role) return []
     return [
-      { label: 'Profile',   action: () => navigate(`/${role}/profile`) },
+      { label: 'Profile', action: () => navigate(`/${role}/profile`) },
       { label: 'Dashboard', action: () => navigate(getDashboardRoute(role)) },
       {
         label: 'Logout',
-        action: () => (typeof logout === 'function' ? logout() : navigate('/login')),
+        action: () =>
+          typeof logout === 'function' ? logout() : navigate('/login'),
       },
     ]
   }, [navigate, role, logout])
@@ -235,7 +245,9 @@ function NavBar({ brand: brandProp }) {
           loading="lazy"
           decoding="async"
         />
-        <span className={styles.brand}>{brand?.schoolName || 'CDL Trainer'}</span>
+        <span className={styles.brand}>
+          {brand?.schoolName || 'CDL Trainer'}
+        </span>
       </button>
 
       {/* Desktop links / mobile panel */}
@@ -275,7 +287,9 @@ function NavBar({ brand: brandProp }) {
           onClick={handleThemeSwitch}
           type="button"
         >
-          <span role="img" aria-label="Theme">🌓</span>
+          <span role="img" aria-label="Theme">
+            🌓
+          </span>
         </button>
       </div>
 

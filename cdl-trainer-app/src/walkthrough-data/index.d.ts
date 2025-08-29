@@ -7,7 +7,7 @@
 // ======================================================================
 
 /** Prefer path without the .d.ts suffix so TS resolves cleanly. */
-export type * from './schema';
+export type * from './schema'
 
 /* ----------------------------------------------------------------------
    If you must support older tooling that doesn’t understand

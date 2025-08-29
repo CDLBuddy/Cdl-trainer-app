@@ -18,12 +18,12 @@
 /** @typedef {import('@/types/eldt').TprCsvRow} TprCsvRow */
 
 // ---- Namespaced imports (for default bundle + back-compat) --------------
+import * as exporters from './exporters.js'
+import * as fieldMaps from './fieldMaps.js'
+import * as mappers from './mappers.js'
 import * as reportsApi from './reportsApi.js'
-import * as tprClient  from './tprClient.js'
-import * as fieldMaps  from './fieldMaps.js'
-import * as mappers    from './mappers.js'
+import * as tprClient from './tprClient.js'
 import * as validators from './validators.js'
-import * as exporters  from './exporters.js'
 
 // ---- Tree-shakeable named re-exports (preferred) ------------------------
 export {
@@ -32,10 +32,7 @@ export {
   normalizeCompany,
 } from './reportsApi.js'
 
-export {
-  toTPRCompletion,
-  toTPRCompletions,
-} from './mappers.js'
+export { toTPRCompletion, toTPRCompletions } from './mappers.js'
 
 export {
   validateTPRPayload,
@@ -70,11 +67,11 @@ export { reportsApi, tprClient, fieldMaps, mappers, validators, exporters }
 // ---- Code-splitting helpers (unchanged) ----------------------------------
 export const lazy = {
   reportsApi: () => import('./reportsApi.js'),
-  tprClient:  () => import('./tprClient.js'),
-  fieldMaps:  () => import('./fieldMaps.js'),
-  mappers:    () => import('./mappers.js'),
+  tprClient: () => import('./tprClient.js'),
+  fieldMaps: () => import('./fieldMaps.js'),
+  mappers: () => import('./mappers.js'),
   validators: () => import('./validators.js'),
-  exporters:  () => import('./exporters.js'),
+  exporters: () => import('./exporters.js'),
 }
 
 // ---- Convenient default bundle (useful in tests/scripts) -----------------

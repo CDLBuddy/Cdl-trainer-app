@@ -20,7 +20,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  */
 
 export default function useCompanyNotes(companyId) {
-  const [notes, setNotes] = useState(/** @type {Note[]} */([]))
+  const [notes, setNotes] = useState(/** @type {Note[]} */ ([]))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const aliveRef = useRef(true)
@@ -40,7 +40,6 @@ export default function useCompanyNotes(companyId) {
       if (!aliveRef.current) return
       setNotes([]) // placeholder: return [] until Firestore implemented
     } catch (err) {
-       
       console.error('[useCompanyNotes] load failed', err)
       if (!aliveRef.current) return
       setError('Failed to load notes.')
@@ -53,11 +52,13 @@ export default function useCompanyNotes(companyId) {
   useEffect(() => {
     aliveRef.current = true
     refresh()
-    return () => { aliveRef.current = false }
+    return () => {
+      aliveRef.current = false
+    }
   }, [refresh])
 
   // Optimistic add (rollback on error later if needed)
-  const add = useCallback(async (text) => {
+  const add = useCallback(async text => {
     if (!text?.trim()) return
     const optimistic = {
       id: Math.random().toString(36).slice(2),
@@ -70,7 +71,6 @@ export default function useCompanyNotes(companyId) {
       // TODO: Firestore write
       await new Promise(r => setTimeout(r, 180))
     } catch (err) {
-       
       console.error('[useCompanyNotes] add failed', err)
       setError('Failed to add note.')
       // Rollback: remove optimistic note

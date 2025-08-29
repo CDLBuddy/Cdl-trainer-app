@@ -39,7 +39,7 @@ function OverlayChips({ overlays = [], className = '', ariaLabel }) {
       className={[styles.chips, className].filter(Boolean).join(' ')}
       aria-label={ariaLabel || 'Assigned overlays'}
     >
-      {items.map((o) => (
+      {items.map(o => (
         <li key={o} className={styles.chip} title={o}>
           <span className={styles.chipText}>{o}</span>
         </li>

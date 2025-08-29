@@ -1,20 +1,25 @@
 // Path: /src/admin/companies/company-detail/components/RosterTable.jsx
-import React, { memo } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
+
 import styles from './RosterTable.module.css'
-import SortableTH from './SortableTH.jsx'
 import RowBar from './RowBar.jsx'
+import SortableTH from './SortableTH.jsx'
 
 function RosterTable({
   rows = [],
   companyName = 'company',
-  sortKey, sortDir, toggleSort,
+  sortKey,
+  sortDir,
+  toggleSort,
   onVerify,
   visuallyHidden,
 }) {
   if (!Array.isArray(rows) || rows.length === 0) {
-    return <div className={styles.empty}>No students found for this company.</div>
+    return (
+      <div className={styles.empty}>No students found for this company.</div>
+    )
   }
 
   return (
@@ -74,7 +79,9 @@ function RosterTable({
               label="Readiness"
               active={sortKey === 'enroll' || sortKey === 'btw'}
               dir={sortDir}
-              onClick={() => toggleSort(sortKey === 'enroll' ? 'btw' : 'enroll')}
+              onClick={() =>
+                toggleSort(sortKey === 'enroll' ? 'btw' : 'enroll')
+              }
               title="Click to sort Enroll/BTW"
             />
             <th scope="col">Actions</th>
@@ -82,9 +89,10 @@ function RosterTable({
         </thead>
 
         <tbody>
-          {rows.map((r) => {
+          {rows.map(r => {
             const billing = String(r.billing?.mode || '—')
-            const billingLabel = billing.charAt(0).toUpperCase() + billing.slice(1)
+            const billingLabel =
+              billing.charAt(0).toUpperCase() + billing.slice(1)
             return (
               <tr key={r.email} tabIndex={-1}>
                 <td>{r.name}</td>

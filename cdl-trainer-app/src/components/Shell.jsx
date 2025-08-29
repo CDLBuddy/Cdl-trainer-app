@@ -38,7 +38,9 @@ import styles from './Shell.module.css'
 
 /** Infer a role slug from a path like "/student/..." */
 function roleFromPath(path = '') {
-  const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(String(path))
+  const m = /^\/(student|instructor|admin|superadmin)(?:\/|$)/i.exec(
+    String(path)
+  )
   return (m && m[1].toLowerCase()) || null
 }
 
@@ -71,8 +73,13 @@ function Shell({
       }))
       if (detail?.primaryColor) {
         try {
-          document.documentElement.style.setProperty('--brand-primary', detail.primaryColor)
-        } catch { /* noop */ }
+          document.documentElement.style.setProperty(
+            '--brand-primary',
+            detail.primaryColor
+          )
+        } catch {
+          /* noop */
+        }
       }
     })
     return unsub
@@ -80,7 +87,7 @@ function Shell({
 
   const logo = brand?.logoUrl || '/default-logo.svg'
   const name = brand?.schoolName || 'CDL Trainer'
-  const sub  = brand?.subHeadline || ''
+  const sub = brand?.subHeadline || ''
 
   /* -------------------------- Role-Aware Navigation ------------------------- */
   const rail = useMemo(() => {
@@ -99,7 +106,9 @@ function Shell({
     if (typeof logout === 'function') {
       logout()
     } else {
-      try { localStorage.clear() } catch {
+      try {
+        localStorage.clear()
+      } catch {
         // intentionally ignore errors when clearing localStorage
       }
       navigate('/login', { replace: true })
@@ -157,7 +166,8 @@ function Shell({
     if (/\/profile($|\/)/i.test(path)) return 'profile'
     if (/checklist/i.test(path)) return 'checklists'
     if (/walkthrough/i.test(path)) return 'walkthrough'
-    if (/practice-tests|test-engine|test-review|test-results/i.test(path)) return 'practiceTests'
+    if (/practice-tests|test-engine|test-review|test-results/i.test(path))
+      return 'practiceTests'
     return 'dashboard'
   }, [])
 
@@ -190,20 +200,29 @@ function Shell({
   }, [aiOpen, openCoach, closeCoach])
 
   /* ----------------------------- Link prefetching ---------------------------- */
-  const handleRailPrefetch = useCallback((to) => {
-    // Resolve role from link; fall back to current nav role
-    const r = roleFromPath(to) || navRole
-    try {
-      const maybe = preloadRoutesForRole?.(r, to)
-      void maybe
-    } catch { /* best-effort only */ }
-  }, [navRole])
+  const handleRailPrefetch = useCallback(
+    to => {
+      // Resolve role from link; fall back to current nav role
+      const r = roleFromPath(to) || navRole
+      try {
+        const maybe = preloadRoutesForRole?.(r, to)
+        void maybe
+      } catch {
+        /* best-effort only */
+      }
+    },
+    [navRole]
+  )
 
   /* --------------------------------- Render --------------------------------- */
   return (
     <div className={styles.root} data-user-role={navRole}>
       {/* SR-only live region */}
-      <span id="route-change-live" aria-live="polite" className={styles.srOnly} />
+      <span
+        id="route-change-live"
+        aria-live="polite"
+        className={styles.srOnly}
+      />
 
       {/* Header */}
       <header className={styles.header}>
@@ -264,7 +283,15 @@ function Shell({
                 fill="none"
                 aria-hidden="true"
               >
-                <rect x="4" y="4" width="12" height="16" rx="2" stroke="#ffb3b3" strokeWidth="2" />
+                <rect
+                  x="4"
+                  y="4"
+                  width="12"
+                  height="16"
+                  rx="2"
+                  stroke="#ffb3b3"
+                  strokeWidth="2"
+                />
                 <path
                   d="M17 15l4-3-4-3m4 3H10"
                   stroke="#ffb3b3"
@@ -302,7 +329,9 @@ function Shell({
       {/* Footer */}
       {showFooter && (
         <footer className={styles.footer}>
-          <div>© {new Date().getFullYear()} CDL Trainer • Powered by CDL Buddy</div>
+          <div>
+            © {new Date().getFullYear()} CDL Trainer • Powered by CDL Buddy
+          </div>
           <div style={{ opacity: 0.85 }}>
             <a
               href="https://cdltrainerapp.com/help"

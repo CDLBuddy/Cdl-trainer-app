@@ -10,25 +10,24 @@
   /* Tunables */
   --section-pad: clamp(14px, 2.2vw, 18px);
   --section-radius: 14px;
-  --section-shadow:
-    0 14px 40px #0005,
-    inset 0 1px 0 #ffffff10;
-  --section-border: 1px solid color-mix(in oklab, var(--accent, #4fb0c6), transparent 54%);
-  --section-bg: var(--card-bg, rgba(255,255,255,.06));
+  --section-shadow: 0 14px 40px #0005, inset 0 1px 0 #ffffff10;
+  --section-border: 1px solid
+    color-mix(in oklab, var(--accent, #4fb0c6), transparent 54%);
+  --section-bg: var(--card-bg, rgba(255, 255, 255, 0.06));
   --section-outline: color-mix(in oklab, var(--accent, #4fb0c6), #000 35%);
 
   /* Status chip palettes */
-  --ok-bg: rgba(16,185,129,.12);
+  --ok-bg: rgba(16, 185, 129, 0.12);
   --ok-fg: #065f46;
-  --ok-br: rgba(16,185,129,.4);
+  --ok-br: rgba(16, 185, 129, 0.4);
 
-  --warn-bg: rgba(245,158,11,.12);
+  --warn-bg: rgba(245, 158, 11, 0.12);
   --warn-fg: #92400e;
-  --warn-br: rgba(245,158,11,.4);
+  --warn-br: rgba(245, 158, 11, 0.4);
 
-  --pending-bg: rgba(59,130,246,.12);
+  --pending-bg: rgba(59, 130, 246, 0.12);
   --pending-fg: #1e40af;
-  --pending-br: rgba(59,130,246,.4);
+  --pending-br: rgba(59, 130, 246, 0.4);
 
   --error-fg: #b91c1c; /* red-700-ish */
   --muted-fg: color-mix(in oklab, var(--text-light, #fff), transparent 30%);
@@ -134,7 +133,7 @@
 /* Utility text styles referenced by sections */
 .subtle {
   color: var(--subtle-fg);
-  font-size: .875rem;
+  font-size: 0.875rem;
 }
 
 .errorText {
@@ -144,7 +143,7 @@
 
 /* Read-only card (CDL section) */
 .readonlyCard {
-  border: 1px solid rgba(0,0,0,.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
   padding: 12px 14px;
   background: var(--panel, #fff);
@@ -154,14 +153,18 @@
 /* Visually-hidden helper inside modules (use plain "visually-hidden" for global) */
 .srOnly {
   position: absolute !important;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0, 0, 0, 0);
-  white-space: nowrap; border: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Flag invalid fields inside a section (reinforces input styles) */
-.section [aria-invalid="true"] {
+.section [aria-invalid='true'] {
   outline: 2px solid var(--error-fg);
   outline-offset: 1px;
 }
@@ -227,8 +230,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: .75rem;
-  margin: 1.25rem 0 .5rem;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0.5rem;
 }
 
 .sectionTitle {
@@ -241,13 +244,13 @@
 .sectionMeta {
   display: flex;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
   white-space: nowrap;
 }
 
 .sectionSubtle {
   color: var(--muted-foreground, #6b7280);
-  font-size: .875rem; /* ~14px */
+  font-size: 0.875rem; /* ~14px */
 }
 
 /* ------------------------------ Status chips ------------------------------ */

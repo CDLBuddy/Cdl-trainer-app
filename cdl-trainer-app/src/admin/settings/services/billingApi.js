@@ -9,20 +9,32 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 
 import { db } from '@utils/firebase.js'
 
-const PATH = (schoolId) => doc(db, 'schools', schoolId)
+const PATH = schoolId => doc(db, 'schools', schoolId)
 
 /** Read billing prefs with sensible defaults */
 export async function getBillingPrefs(schoolId) {
-  if (!schoolId) return { mode: 'employer', currency: 'USD', invoicePrefix: '', acceptedMethods: ['card'], defaultTermsNetDays: 15, autopay: false }
+  if (!schoolId)
+    return {
+      mode: 'employer',
+      currency: 'USD',
+      invoicePrefix: '',
+      acceptedMethods: ['card'],
+      defaultTermsNetDays: 15,
+      autopay: false,
+    }
   const snap = await getDoc(PATH(schoolId))
   const data = snap.exists() ? snap.data() : {}
   const p = data.adminPrefs?.billing || {}
   return {
-    mode: p.mode || 'employer',                // 'student' | 'employer'
+    mode: p.mode || 'employer', // 'student' | 'employer'
     currency: p.currency || 'USD',
     invoicePrefix: p.invoicePrefix || '',
-    acceptedMethods: Array.isArray(p.acceptedMethods) ? p.acceptedMethods : ['card'],
-    defaultTermsNetDays: Number.isFinite(p.defaultTermsNetDays) ? p.defaultTermsNetDays : 15,
+    acceptedMethods: Array.isArray(p.acceptedMethods)
+      ? p.acceptedMethods
+      : ['card'],
+    defaultTermsNetDays: Number.isFinite(p.defaultTermsNetDays)
+      ? p.defaultTermsNetDays
+      : 15,
     autopay: !!p.autopay,
   }
 }
@@ -41,7 +53,10 @@ export async function saveBillingPrefs(schoolId, partial = {}) {
 
   await setDoc(
     PATH(schoolId),
-    { adminPrefs: { ...adminPrefs, billing: next }, updatedAt: serverTimestamp() },
+    {
+      adminPrefs: { ...adminPrefs, billing: next },
+      updatedAt: serverTimestamp(),
+    },
     { merge: true }
   )
   return next

@@ -15,13 +15,21 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { preloadInstructorCore } from './preload.js'
 
 // ---- Lazy pages you actually use ---------------------------------------
-const InstructorDashboard          = lazy(() => import('@instructor/InstructorDashboard.jsx'))
-const InstructorProfile            = lazy(() => import('@instructor/InstructorProfile.jsx'))
-const StudentProfileForInstructor  = lazy(() => import('@instructor/StudentProfileForInstructor.jsx'))
-const ChecklistReviewForInstructor = lazy(() => import('@instructor/ChecklistReviewForInstructor.jsx'))
+const InstructorDashboard = lazy(
+  () => import('@instructor/InstructorDashboard.jsx')
+)
+const InstructorProfile = lazy(
+  () => import('@instructor/InstructorProfile.jsx')
+)
+const StudentProfileForInstructor = lazy(
+  () => import('@instructor/StudentProfileForInstructor.jsx')
+)
+const ChecklistReviewForInstructor = lazy(
+  () => import('@instructor/ChecklistReviewForInstructor.jsx')
+)
 
 // NEW: Verify a student's profile (per-section checked by instructor)
-const ProfileVerify               = lazy(() => import('@instructor/ProfileVerify.jsx'))
+const ProfileVerify = lazy(() => import('@instructor/ProfileVerify.jsx'))
 
 // ---- Local loading UI (accessible) -------------------------------------
 function Loading({ text = 'Loading instructor page…' }) {
@@ -49,7 +57,6 @@ class InstructorSectionErrorBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     if (import.meta.env.DEV) {
-       
       console.error('[InstructorRouter] render error:', error, info)
     }
   }
@@ -64,7 +71,11 @@ class InstructorSectionErrorBoundary extends React.Component {
         >
           <h2>Instructor area failed to load</h2>
           <p style={{ color: '#b22' }}>{String(this.state.err)}</p>
-          <button className="btn" onClick={() => window.location.reload()} style={{ marginTop: 16 }}>
+          <button
+            className="btn"
+            onClick={() => window.location.reload()}
+            style={{ marginTop: 16 }}
+          >
             Reload
           </button>
         </div>
@@ -85,8 +96,9 @@ export default function InstructorRouter() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const prefersReduced =
-      !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+    const prefersReduced = !!window.matchMedia?.(
+      '(prefers-reduced-motion: reduce)'
+    )?.matches
 
     const run = () => {
       if (!prefersReduced) {
@@ -113,8 +125,14 @@ export default function InstructorRouter() {
 
           {/* Core */}
           <Route path="profile" element={<InstructorProfile />} />
-          <Route path="student-profile/:studentId" element={<StudentProfileForInstructor />} />
-          <Route path="checklist-review" element={<ChecklistReviewForInstructor />} />
+          <Route
+            path="student-profile/:studentId"
+            element={<StudentProfileForInstructor />}
+          />
+          <Route
+            path="checklist-review"
+            element={<ChecklistReviewForInstructor />}
+          />
 
           {/* NEW: Per-student verification screen */}
           <Route path="verify/:studentId" element={<ProfileVerify />} />

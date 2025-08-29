@@ -29,12 +29,11 @@ import {
 } from './components'
 import styles from './dashboard.module.css'
 import { useDashboardData } from './hooks/useDashboardData.js'
-
 // Centralized external resource helpers
 import { getResourcesForSchool, getSchedulerURL } from './links.js'
 
 /* -------------------------------- helpers ------------------------------- */
-const clampPct = (n) => {
+const clampPct = n => {
   const x = Number.isFinite(n) ? n : 0
   return Math.max(0, Math.min(100, Math.round(x)))
 }
@@ -50,14 +49,22 @@ function StudentDashboard() {
   // KPIs (guard against NaN)
   const enrollPct = clampPct(getEnrollmentReadiness(profile))
   const btwPct = clampPct(getBTWReadiness(profile))
-  const lastScore = Number.isFinite(profile?.lastTestScore) ? profile.lastTestScore : null
+  const lastScore = Number.isFinite(profile?.lastTestScore)
+    ? profile.lastTestScore
+    : null
 
   // Next actions (omit Payment if employer-paid)
   const billingMode = String(profile?.billing?.mode || '').toLowerCase()
   const isEmployerPaid = billingMode === 'employer'
-  const nextActionsRaw = useMemo(() => getNextActions(profile, 3) || [], [profile])
+  const nextActionsRaw = useMemo(
+    () => getNextActions(profile, 3) || [],
+    [profile]
+  )
   const nextActions = useMemo(
-    () => (isEmployerPaid ? nextActionsRaw.filter(a => a.section !== 'payment') : nextActionsRaw),
+    () =>
+      isEmployerPaid
+        ? nextActionsRaw.filter(a => a.section !== 'payment')
+        : nextActionsRaw,
     [isEmployerPaid, nextActionsRaw]
   )
 
@@ -68,14 +75,23 @@ function StudentDashboard() {
   useEffect(() => {
     const prev = document.title
     document.title = 'Student Dashboard • CDL Trainer'
-    return () => { document.title = prev }
+    return () => {
+      document.title = prev
+    }
   }, [])
 
-  const goProfile = useCallback(() => navigate(StudentRoutes.profile()), [navigate])
+  const goProfile = useCallback(
+    () => navigate(StudentRoutes.profile()),
+    [navigate]
+  )
 
   /* ------------------------- External resources -------------------------- */
   const schoolId = useMemo(
-    () => profile?.schoolId || window.schoolId || localStorage.getItem('schoolId') || '',
+    () =>
+      profile?.schoolId ||
+      window.schoolId ||
+      localStorage.getItem('schoolId') ||
+      '',
     [profile?.schoolId]
   )
 
@@ -116,12 +132,20 @@ function StudentDashboard() {
           <KpiCard
             title="Enrollment Readiness"
             value={enrollPct}
-            hint={enrollPct < 100 ? 'Complete the required enrollment items.' : 'Enrollment complete!'}
+            hint={
+              enrollPct < 100
+                ? 'Complete the required enrollment items.'
+                : 'Enrollment complete!'
+            }
           />
           <KpiCard
             title="BTW Readiness"
             value={btwPct}
-            hint={btwPct < 100 ? 'Finish permit, license, medical (and vehicle if applicable).' : 'Ready for scheduling!'}
+            hint={
+              btwPct < 100
+                ? 'Finish permit, license, medical (and vehicle if applicable).'
+                : 'Ready for scheduling!'
+            }
           />
           <KpiCard
             title="Last Practice Score"
@@ -148,7 +172,11 @@ function StudentDashboard() {
         <QuickLinks items={externalLinks} ariaLabel="Helpful CDL resources" />
 
         {/* What’s New */}
-        <UpdatesCard loading={updatesLoading} error={updatesError} update={latestUpdate} />
+        <UpdatesCard
+          loading={updatesLoading}
+          error={updatesError}
+          update={latestUpdate}
+        />
 
         {/* Helpful tips */}
         <TipsRow />

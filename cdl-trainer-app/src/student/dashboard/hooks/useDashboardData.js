@@ -13,9 +13,11 @@
 // -----------------------------------------------------------------------------
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+
 import { useSession } from '@session/useSession.js'
-import { getLatestUpdate } from '../services/updatesApi.js'
+
 import { getResourcesForSchool, getSchedulerURL } from '../services'
+import { getLatestUpdate } from '../services/updatesApi.js'
 
 /**
  * @typedef {Object} DashboardData
@@ -50,12 +52,18 @@ export function useDashboardData(opts = {}) {
       user?.profile?.schoolId || user?.schoolId || user?.organizationId || ''
     const fromStorage = localStorage.getItem('schoolId') || ''
     const fromWindow = window.schoolId || ''
-    const id = String(schoolIdOverride || fromProfile || fromStorage || fromWindow || '').trim()
+    const id = String(
+      schoolIdOverride || fromProfile || fromStorage || fromWindow || ''
+    ).trim()
 
     setSchoolId(id)
     if (id) {
-      try { localStorage.setItem('schoolId', id) } catch {}
-      try { window.schoolId = id } catch {}
+      try {
+        localStorage.setItem('schoolId', id)
+      } catch {}
+      try {
+        window.schoolId = id
+      } catch {}
     }
   }, [user, schoolIdOverride])
 
@@ -79,9 +87,9 @@ export function useDashboardData(opts = {}) {
   }, [isAllSet, schoolId])
 
   // --- "What's New" (latest update) ----------------------------------------
-  const [latestUpdate, setLatestUpdate]   = useState(null)
+  const [latestUpdate, setLatestUpdate] = useState(null)
   const [updatesLoading, setUpdatesLoading] = useState(true)
-  const [updatesError, setUpdatesError]     = useState(null)
+  const [updatesError, setUpdatesError] = useState(null)
 
   const refreshUpdates = () => {
     let alive = true
@@ -99,7 +107,9 @@ export function useDashboardData(opts = {}) {
         if (alive) setUpdatesLoading(false)
       }
     })()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }
 
   useEffect(() => {

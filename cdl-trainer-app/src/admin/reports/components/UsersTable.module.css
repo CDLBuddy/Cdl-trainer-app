@@ -12,8 +12,8 @@
   --utx-ink-muted: color-mix(in oklab, var(--utx-ink), #000 35%);
   --utx-border: color-mix(in oklab, var(--accent, #c4dbe8), #000 65%);
   --utx-border-strong: color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
-  --utx-surface: var(--card-bg, rgba(255,255,255,0.06));
-  --utx-surface-dark: var(--card-bg-dark, rgba(10,15,20,0.60));
+  --utx-surface: var(--card-bg, rgba(255, 255, 255, 0.06));
+  --utx-surface-dark: var(--card-bg-dark, rgba(10, 15, 20, 0.6));
   --utx-brand: var(--brand-light, #4e91ad);
   --utx-success: var(--success, #48bb78);
   --utx-error: var(--error, #e53e3e);
@@ -27,17 +27,20 @@
     color-mix(in oklab, var(--utx-surface), transparent 0%) 0%,
     var(--utx-surface) 100%
   );
-  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
   scrollbar-gutter: stable both-edges; /* prevent layout shift when scrollbars appear */
 }
 
 /* Subtle edge fade to hint scroll (non-intrusive) */
 .tableWrap::after {
-  content: "";
+  content: '';
   pointer-events: none;
   position: sticky;
-  right: 0; top: 0; bottom: 0; width: 12px;
-  background: linear-gradient(to right, transparent, rgba(0,0,0,.18));
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.18));
   display: block;
   margin-left: auto;
 }
@@ -46,7 +49,7 @@
 .tableWrap:focus-within {
   box-shadow:
     0 0 0 2px color-mix(in oklab, var(--utx-brand), #fff 16%),
-    var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+    var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
 }
 
 /* ---------- Table ---------- */
@@ -54,7 +57,7 @@
   width: 100%;
   border-collapse: collapse;
   color: var(--utx-ink);
-  font-size: .95rem;
+  font-size: 0.95rem;
 }
 
 /* Head */
@@ -64,14 +67,13 @@
   z-index: 1;
   text-align: left;
   font-weight: 800;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
   padding: 10px 12px;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in oklab, var(--utx-surface-dark), #000 8%) 0%,
-      color-mix(in oklab, var(--utx-surface-dark), #000 2%) 100%
-    );
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--utx-surface-dark), #000 8%) 0%,
+    color-mix(in oklab, var(--utx-surface-dark), #000 2%) 100%
+  );
   border-bottom: 1px solid var(--utx-border-strong);
   backdrop-filter: saturate(110%) blur(2px);
 }
@@ -82,8 +84,12 @@
   border-bottom: 1px solid color-mix(in oklab, var(--utx-border), #000 15%);
   vertical-align: middle;
 }
-.tdRight { text-align: right; }
-.tdCenter { text-align: center; }
+.tdRight {
+  text-align: right;
+}
+.tdCenter {
+  text-align: center;
+}
 
 /* Zebra rows */
 .table tbody tr:nth-child(odd) .td {
@@ -110,11 +116,11 @@
   padding: 4px 10px;
   border-radius: 999px;
   font-weight: 800;
-  font-size: .85rem;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.10);
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: inherit;
-  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.20));
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
 }
 
 .pillWarn {
@@ -126,24 +132,30 @@
 /* ---------- Row action button ---------- */
 .rowAction {
   appearance: none;
-  border: 1px solid rgba(255,255,255,.15);
-  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
   color: inherit;
   padding: 6px 10px;
   border-radius: 8px;
   font-weight: 700;
   cursor: pointer;
-  transition: box-shadow .15s ease, background .15s ease, border-color .15s ease;
+  transition:
+    box-shadow 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 .rowAction:hover,
 .rowAction:focus-visible {
-  background: rgba(255,255,255,.10);
+  background: rgba(255, 255, 255, 0.1);
   border-color: color-mix(in oklab, var(--utx-brand), #fff 18%);
   outline: none;
-  box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--utx-brand), #fff 12%));
+  box-shadow: var(
+    --ring,
+    0 0 0 3px color-mix(in oklab, var(--utx-brand), #fff 12%)
+  );
 }
 .rowAction:disabled {
-  opacity: .55;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
@@ -155,37 +167,57 @@
   width: 100%;
   background: linear-gradient(
     90deg,
-    rgba(255,255,255,.06) 25%,
-    rgba(255,255,255,.16) 50%,
-    rgba(255,255,255,.06) 75%
+    rgba(255, 255, 255, 0.06) 25%,
+    rgba(255, 255, 255, 0.16) 50%,
+    rgba(255, 255, 255, 0.06) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.2s ease-in-out infinite;
 }
 
 @keyframes shimmer {
-  from { background-position: -200% 0; }
-  to   { background-position: 200% 0; }
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
 }
 
 /* ---------- Helpers ---------- */
-.muted { opacity: .7; }
+.muted {
+  opacity: 0.7;
+}
 
 /* ---------- Responsive tweaks ---------- */
 @media (max-width: 880px) {
-  .td, .th { padding: 8px 10px; }
-  .table { font-size: .92rem; }
+  .td,
+  .th {
+    padding: 8px 10px;
+  }
+  .table {
+    font-size: 0.92rem;
+  }
 }
 
 @media (max-width: 640px) {
-  .td, .th { padding: 7px 8px; }
-  .table { font-size: .90rem; }
+  .td,
+  .th {
+    padding: 7px 8px;
+  }
+  .table {
+    font-size: 0.9rem;
+  }
 }
 
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .skel { animation: none; }
-  .rowAction { transition: none; }
+  .skel {
+    animation: none;
+  }
+  .rowAction {
+    transition: none;
+  }
 }
 
 /* ---------- High contrast / forced colors ---------- */
@@ -195,8 +227,14 @@
     background: Canvas;
     box-shadow: none;
   }
-  .th, .td { border-color: ButtonText; background: Canvas; color: CanvasText; }
-  .pill, .pillWarn {
+  .th,
+  .td {
+    border-color: ButtonText;
+    background: Canvas;
+    color: CanvasText;
+  }
+  .pill,
+  .pillWarn {
     border: 1px solid ButtonText !important;
     background: Canvas !important;
     color: CanvasText !important;

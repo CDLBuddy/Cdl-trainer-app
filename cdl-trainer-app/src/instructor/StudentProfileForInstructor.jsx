@@ -1,5 +1,11 @@
 //src/instructor/StudentProfileForInstructor.jsx
-import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import {
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  serverTimestamp,
+} from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 

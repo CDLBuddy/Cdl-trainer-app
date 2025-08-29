@@ -19,15 +19,15 @@ import {
   limit,
 } from 'firebase/firestore'
 
-import { db } from '@utils/firebase.js'
 import { updateUserProfileFields } from '@user-profile/firestore' // ⬅️ new alias
+import { db } from '@utils/firebase.js'
 
 // -------------------------- tiny helpers --------------------------
-const S = (x) => (x == null ? '' : String(x).trim())
-const SL = (x) => S(x).toLowerCase()
-const SU = (x) => S(x).toUpperCase()
-const digits = (x) => S(x).replace(/\D+/g, '')
-const nonEmpty = (v) => (Array.isArray(v) ? v.filter(Boolean) : v)
+const S = x => (x == null ? '' : String(x).trim())
+const SL = x => S(x).toLowerCase()
+const SU = x => S(x).toUpperCase()
+const digits = x => S(x).replace(/\D+/g, '')
+const nonEmpty = v => (Array.isArray(v) ? v.filter(Boolean) : v)
 
 function normalizeBilling(input) {
   const mode = S(input || 'employer').toLowerCase()
@@ -98,7 +98,9 @@ export default async function saveStudent({
     // tolerate read errors; we'll create a new doc
   }
 
-  const studentRef = existing ? doc(db, 'students', existing.id) : doc(studentsCol)
+  const studentRef = existing
+    ? doc(db, 'students', existing.id)
+    : doc(studentsCol)
   const studentId = studentRef.id
   const now = serverTimestamp()
 
@@ -165,7 +167,8 @@ export default async function saveStudent({
     console.error('[saveStudent] failed:', e)
     return {
       ok: false,
-      error: 'Failed to save student. Please check your connection and try again.',
+      error:
+        'Failed to save student. Please check your connection and try again.',
     }
   }
 }

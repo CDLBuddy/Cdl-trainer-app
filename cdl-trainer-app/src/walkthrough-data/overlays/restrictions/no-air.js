@@ -57,25 +57,58 @@ export default {
     // ------------------------------------------------------------------
     { op: 'removeStep', match: { section: 'Brake Check', tag: 'air-brake' } },
     { op: 'removeStep', match: { section: 'Brake Check', tag: 'air-lines' } },
-    { op: 'removeStep', match: { section: 'Brake Check', tag: 'low-air-warning' } },
-    { op: 'removeStep', match: { section: 'Brake Check', tag: 'spring-brake' } },
-    { op: 'removeStep', match: { section: 'Brake Check', tag: 'air-governor' } },
-    { op: 'removeStep', match: { section: 'Brake Check', tag: 'build-up-rate' } },
+    {
+      op: 'removeStep',
+      match: { section: 'Brake Check', tag: 'low-air-warning' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Brake Check', tag: 'spring-brake' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Brake Check', tag: 'air-governor' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Brake Check', tag: 'build-up-rate' },
+    },
     { op: 'removeStep', match: { section: 'Brake Check', tag: 'leak-test' } },
-    { op: 'removeStep', match: { section: 'Brake Check', tag: 'applied-leak' } },
-    { op: 'removeStep', match: { section: 'Brake Check', tag: 'air-compressor' } },
+    {
+      op: 'removeStep',
+      match: { section: 'Brake Check', tag: 'applied-leak' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Brake Check', tag: 'air-compressor' },
+    },
     { op: 'removeStep', match: { section: 'Brake Check', tag: 'cut-in' } },
     { op: 'removeStep', match: { section: 'Brake Check', tag: 'cut-out' } },
 
     // A couple of common alternate headings
     { op: 'removeStep', match: { section: 'Brake Checks', tag: 'air-brake' } },
-    { op: 'removeStep', match: { section: 'Service Brake Check', tag: 'air-brake' } },
+    {
+      op: 'removeStep',
+      match: { section: 'Service Brake Check', tag: 'air-brake' },
+    },
 
     // In-cab air gauge / low-air warning often appears under in-cab
-    { op: 'removeStep', match: { section: 'In-Cab Inspection', tag: 'air-gauge' } },
-    { op: 'removeStep', match: { section: 'In-Cab Inspection', tag: 'low-air-warning' } },
-    { op: 'removeStep', match: { section: 'In Cab Inspection',  tag: 'air-gauge' } }, // alt spelling
-    { op: 'removeStep', match: { section: 'In Cab Inspection',  tag: 'low-air-warning' } },
+    {
+      op: 'removeStep',
+      match: { section: 'In-Cab Inspection', tag: 'air-gauge' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'In-Cab Inspection', tag: 'low-air-warning' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'In Cab Inspection', tag: 'air-gauge' },
+    }, // alt spelling
+    {
+      op: 'removeStep',
+      match: { section: 'In Cab Inspection', tag: 'low-air-warning' },
+    },
 
     // ------------------------------------------------------------------
     // Append a concise reminder about what *does* apply for these vehicles.

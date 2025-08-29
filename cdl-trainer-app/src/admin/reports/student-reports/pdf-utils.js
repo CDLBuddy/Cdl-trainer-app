@@ -14,26 +14,27 @@ import { buildTprCsvRow, toCsv, toISODate } from './cert-template.js'
 const hasWindow = typeof window !== 'undefined'
 const BOM = '\uFEFF' // Excel-friendly
 
-const esc = (v) =>
+const esc = v =>
   String(v ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
 
-const fmtHours = (n) => {
+const fmtHours = n => {
   const x = Number(n)
   return Number.isFinite(x) ? x.toFixed(1) : '0.0'
 }
 
 // Get a stable header order from the CSV row literal (keeps buildTprCsvRow order)
-const getHeaders = (row) => Object.keys(row || {})
+const getHeaders = row => Object.keys(row || {})
 
 /** Build CSV text (with BOM) from a single cert, using stable headers. */
 export function csvFromCert(cert, { addBOM = true, headers } = {}) {
   const row = buildTprCsvRow(cert || {})
-  const hdrs = Array.isArray(headers) && headers.length ? headers : getHeaders(row)
+  const hdrs =
+    Array.isArray(headers) && headers.length ? headers : getHeaders(row)
   const csv = toCsv([row], hdrs)
-  return addBOM ? (BOM + csv) : csv
+  return addBOM ? BOM + csv : csv
 }
 
 function buildPrintableHTML(cert = {}) {
@@ -43,9 +44,9 @@ function buildPrintableHTML(cert = {}) {
   const u = r.trainee || {}
 
   const theoryCompletedAt =
-    (t.theory && t.theory.completedAt) ? toISODate(t.theory.completedAt) : ''
+    t.theory && t.theory.completedAt ? toISODate(t.theory.completedAt) : ''
   const btwCompletedAt =
-    (t.btw && t.btw.completedAt) ? toISODate(t.btw.completedAt) : ''
+    t.btw && t.btw.completedAt ? toISODate(t.btw.completedAt) : ''
 
   // Build one CSV row + headers once so the table AND the download use the same order
   const csvRow = buildTprCsvRow(r)
@@ -128,12 +129,16 @@ function buildPrintableHTML(cert = {}) {
       <div class="label" style="margin-bottom:6px;">TPR CSV Fields</div>
       <table class="meta" aria-label="TPR completion fields">
         <tbody>
-          ${headers.map(h => `
+          ${headers
+            .map(
+              h => `
             <tr>
               <th scope="row">${esc(h)}</th>
               <td>${esc(csvRow[h] ?? '')}</td>
             </tr>
-          `).join('')}
+          `
+            )
+            .join('')}
         </tbody>
       </table>
     </div>
@@ -221,7 +226,9 @@ export function openPrintableCert(cert) {
     w.document.open()
     w.document.write(html)
     w.document.close()
-    try { w.focus() } catch {}
+    try {
+      w.focus()
+    } catch {}
     return true
   } catch {
     return false
@@ -235,23 +242,30 @@ export function openPrintableCert(cert) {
  *  - a CSV string, or
  *  - an array of objects + optional headers (header inference if omitted).
  */
-export function downloadCsv(rowsOrCsv, filename = 'tpr-completions.csv', headers) {
+export function downloadCsv(
+  rowsOrCsv,
+  filename = 'tpr-completions.csv',
+  headers
+) {
   if (!hasWindow) return
   let csv = ''
 
   if (typeof rowsOrCsv === 'string') {
     csv = rowsOrCsv
   } else if (Array.isArray(rowsOrCsv)) {
-    const cols = Array.isArray(headers) && headers.length
-      ? headers
-      : Array.from(new Set(rowsOrCsv.flatMap((r) => Object.keys(r || {}))))
-    const escapeCell = (v) => {
+    const cols =
+      Array.isArray(headers) && headers.length
+        ? headers
+        : Array.from(new Set(rowsOrCsv.flatMap(r => Object.keys(r || {}))))
+    const escapeCell = v => {
       const s = String(v ?? '')
       const q = s.replace(/"/g, '""')
       return /[",\n]/.test(q) ? `"${q}"` : q
     }
     const head = cols.map(escapeCell).join(',')
-    const body = rowsOrCsv.map((row) => cols.map((c) => escapeCell(row?.[c])).join(',')).join('\n')
+    const body = rowsOrCsv
+      .map(row => cols.map(c => escapeCell(row?.[c])).join(','))
+      .join('\n')
     csv = BOM + head + '\n' + body
   } else {
     csv = BOM // empty CSV with BOM so Excel opens as UTF-8
@@ -264,7 +278,10 @@ export function downloadCsv(rowsOrCsv, filename = 'tpr-completions.csv', headers
   a.download = filename
   document.body.appendChild(a)
   a.click()
-  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 0)
+  setTimeout(() => {
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }, 0)
 }
 
 /* ------------------------------ Clipboard -------------------------------- */
@@ -276,7 +293,9 @@ export async function copy(text) {
       await navigator.clipboard.writeText(s)
       return true
     }
-  } catch { /* fall through */ }
+  } catch {
+    /* fall through */
+  }
 
   try {
     const ta = document.createElement('textarea')

@@ -42,7 +42,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 let _alertsClientPromise = null
 const loadAlertsClient = async () => {
   if (_alertsClientPromise) return _alertsClientPromise
-  _alertsClientPromise = import('../services/dashboardApi.js').then((m) => {
+  _alertsClientPromise = import('../services/dashboardApi.js').then(m => {
     // dashboardApi exports both named `alerts` and default { alerts }
     return m.alerts ?? m.default?.alerts
   })
@@ -53,7 +53,10 @@ const loadAlertsClient = async () => {
 /* Utilities                                                                  */
 /* -------------------------------------------------------------------------- */
 
-const asSeverity = (t) => (t === 'warning' || t === 'error' || t === 'info' || t === 'success' ? t : 'info')
+const asSeverity = t =>
+  t === 'warning' || t === 'error' || t === 'info' || t === 'success'
+    ? t
+    : 'info'
 
 /** Map service row → AlertItem (stable keys) */
 function mapServiceAlertRow(row) {
@@ -72,7 +75,9 @@ function mapServiceAlertRow(row) {
 
 function cryptoRandomId() {
   try {
-    return (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2))
+    return (
+      globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)
+    )
   } catch {
     return Math.random().toString(36).slice(2)
   }
@@ -88,9 +93,9 @@ function cryptoRandomId() {
  * @returns {AlertsResult}
  */
 export function useDashboardAlerts({ schoolId, take = 8 } = {}) {
-  const [items, setItems] = useState(/** @type {AlertItem[]} */([]))
+  const [items, setItems] = useState(/** @type {AlertItem[]} */ ([]))
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(/** @type {Error|null} */(null))
+  const [error, setError] = useState(/** @type {Error|null} */ (null))
 
   // Track latest request to drop stale responses (e.g., fast re-mounts)
   const reqIdRef = useRef(0)

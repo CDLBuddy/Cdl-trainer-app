@@ -1,5 +1,6 @@
 // src/student/profile/ui/Select.jsx
 import React, { forwardRef, useId, useMemo } from 'react'
+
 import cls from './fields.module.css'
 
 /**
@@ -54,7 +55,7 @@ const Select = forwardRef(function Select(
   }, [rest.id, label, reactId])
 
   const hintId = hint ? `${id}_hint` : undefined
-  const errId  = error ? `${id}_err`  : undefined
+  const errId = error ? `${id}_err` : undefined
   const describedBy = [hintId, errId].filter(Boolean).join(' ') || undefined
 
   const hasOptionsArray = Array.isArray(options) && options.length > 0
@@ -64,7 +65,10 @@ const Select = forwardRef(function Select(
   const effectiveDisabled = !!(rest.disabled || readOnly)
 
   return (
-    <div className={`${cls.field} ${className}`} aria-invalid={!!error || undefined}>
+    <div
+      className={`${cls.field} ${className}`}
+      aria-invalid={!!error || undefined}
+    >
       {label && (
         <div className={cls.labelRow}>
           <label
@@ -73,7 +77,11 @@ const Select = forwardRef(function Select(
           >
             {label}
           </label>
-          {required && <span className={cls.required} aria-hidden>*</span>}
+          {required && (
+            <span className={cls.required} aria-hidden>
+              *
+            </span>
+          )}
         </div>
       )}
 
@@ -82,7 +90,9 @@ const Select = forwardRef(function Select(
         <input type="hidden" name={rest.name} value={value ?? ''} />
       )}
 
-      <div className={`${cls.controlWrap || ''} ${cls.selectWrap || ''} ${cls[`size_${size}`] || ''}`.trim()}>
+      <div
+        className={`${cls.controlWrap || ''} ${cls.selectWrap || ''} ${cls[`size_${size}`] || ''}`.trim()}
+      >
         {startAdornment ? (
           <span className={cls.adornmentStart || ''} aria-hidden>
             {startAdornment}
@@ -98,7 +108,7 @@ const Select = forwardRef(function Select(
           aria-describedby={describedBy}
           required={required || undefined}
           value={value ?? ''}
-          onChange={(e) => !readOnly && onChange?.(e.target.value)}
+          onChange={e => !readOnly && onChange?.(e.target.value)}
           disabled={effectiveDisabled}
           {...rest}
         >
@@ -109,7 +119,7 @@ const Select = forwardRef(function Select(
           )}
 
           {hasOptionsArray
-            ? options.map((opt) => (
+            ? options.map(opt => (
                 <option
                   key={String(opt.value)}
                   value={opt.value}

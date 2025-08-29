@@ -8,7 +8,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 
 import { db } from '@utils/firebase.js'
 
-const PATH = (schoolId) => doc(db, 'schools', schoolId)
+const PATH = schoolId => doc(db, 'schools', schoolId)
 
 export async function getUsersPrefs(schoolId) {
   if (!schoolId) {
@@ -26,7 +26,10 @@ export async function getUsersPrefs(schoolId) {
     inviteEmailTemplate: p.inviteEmailTemplate || 'default',
     defaultRole: p.defaultRole || 'student',
     requireProfileBeforeEnroll: p.requireProfileBeforeEnroll !== false,
-    requiredFields: Array.isArray(p.requiredFields) && p.requiredFields.length ? p.requiredFields : ['name', 'phone', 'address'],
+    requiredFields:
+      Array.isArray(p.requiredFields) && p.requiredFields.length
+        ? p.requiredFields
+        : ['name', 'phone', 'address'],
   }
 }
 
@@ -40,7 +43,10 @@ export async function saveUsersPrefs(schoolId, partial = {}) {
 
   await setDoc(
     PATH(schoolId),
-    { adminPrefs: { ...adminPrefs, users: next }, updatedAt: serverTimestamp() },
+    {
+      adminPrefs: { ...adminPrefs, users: next },
+      updatedAt: serverTimestamp(),
+    },
     { merge: true }
   )
   return next

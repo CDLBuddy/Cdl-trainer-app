@@ -1,5 +1,6 @@
 //src/admin/walkthroughs/Upload/components/Tabs.jsx
 import React from 'react'
+
 import cls from '../WalkthroughUpload.module.css'
 
 const items = ['markdown', 'csv', 'xlsx', 'json']
@@ -7,7 +8,7 @@ const items = ['markdown', 'csv', 'xlsx', 'json']
 export default function Tabs({ value, onChange }) {
   return (
     <div className={cls.tabs}>
-      {items.map((t) => (
+      {items.map(t => (
         <button
           key={t}
           type="button"

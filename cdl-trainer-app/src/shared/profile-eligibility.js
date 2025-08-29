@@ -13,8 +13,11 @@
  * @returns {boolean} True if eligible (all required fields present & valid).
  */
 export function isProfileEligible(user, settings) {
-  const requiredFields =
-    settings?.users?.requiredFields ?? ['name', 'phone', 'address']
+  const requiredFields = settings?.users?.requiredFields ?? [
+    'name',
+    'phone',
+    'address',
+  ]
 
   return requiredFields.every(field => {
     const value = user?.[field]

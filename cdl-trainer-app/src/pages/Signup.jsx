@@ -8,32 +8,49 @@
 // ======================================================================
 
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
-import { doc, setDoc, getDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore'
+import {
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp,
+  collection,
+  getDocs,
+} from 'firebase/firestore'
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { auth, db } from '@utils/firebase.js'
 import { getInvite, consumeInvite, isValidInvite } from '@utils/invites.js'
-import { getCurrentSchoolBranding, setCurrentSchool } from '@utils/school-branding.js'
+import {
+  getCurrentSchoolBranding,
+  setCurrentSchool,
+} from '@utils/school-branding.js'
 import { getBlankUserProfile } from '@utils/userProfile.js'
 
 // Dynamic “required fields” supported on signup via invite/settings
 const FIELD_DEFS = /** @type const */ ({
-  phone:        { label: 'Phone',          type: 'tel',  placeholder: '(555) 555-5555' },
-  address:      { label: 'Address',        type: 'text', placeholder: 'Street, City, ST' },
-  dob:          { label: 'Date of Birth',  type: 'date' },
-  permitNumber: { label: 'Permit Number',  type: 'text', placeholder: 'If applicable' },
+  phone: { label: 'Phone', type: 'tel', placeholder: '(555) 555-5555' },
+  address: { label: 'Address', type: 'text', placeholder: 'Street, City, ST' },
+  dob: { label: 'Date of Birth', type: 'date' },
+  permitNumber: {
+    label: 'Permit Number',
+    type: 'text',
+    placeholder: 'If applicable',
+  },
 })
 
-const isEmail = (v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v || ''))
+const isEmail = v => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v || ''))
 
 export default function Signup() {
   const navigate = useNavigate()
 
   // -------- invite id from query string --------------------------------
   const inviteId = useMemo(() => {
-    try { return new URLSearchParams(window.location.search).get('invite') || '' }
-    catch { return '' }
+    try {
+      return new URLSearchParams(window.location.search).get('invite') || ''
+    } catch {
+      return ''
+    }
   }, [])
 
   // -------- form state --------------------------------------------------
@@ -45,13 +62,24 @@ export default function Signup() {
   const [showPwd, setShowPwd] = useState(false)
   const [showConfirmPwd, setShowConfirmPwd] = useState(false)
 
-  const [schoolId, setSchoolId] = useState(localStorage.getItem('schoolId') || '')
+  const [schoolId, setSchoolId] = useState(
+    localStorage.getItem('schoolId') || ''
+  )
   const [schools, setSchools] = useState([])
-  const [showSchoolSelect, setShowSchoolSelect] = useState(!localStorage.getItem('schoolId'))
+  const [showSchoolSelect, setShowSchoolSelect] = useState(
+    !localStorage.getItem('schoolId')
+  )
 
   // Dynamic required fields + their values
-  const [requiredFields, setRequiredFields] = useState/** @type {string[]} */([])
-  const [extra, setExtra] = useState({ phone: '', address: '', dob: '', permitNumber: '' })
+  const [requiredFields, setRequiredFields] = useState(
+    /** @type {string[]} */ []
+  )
+  const [extra, setExtra] = useState({
+    phone: '',
+    address: '',
+    dob: '',
+    permitNumber: '',
+  })
 
   // Branding
   const [brandTitle, setBrandTitle] = useState('CDL Trainer')
@@ -108,7 +136,7 @@ export default function Signup() {
         }
 
         if (inv.email) setEmail(String(inv.email).toLowerCase())
-        if (inv.name)  setName(String(inv.name))
+        if (inv.name) setName(String(inv.name))
 
         // Invite-specified required fields win
         if (Array.isArray(inv.requiredFields) && inv.requiredFields.length) {
@@ -118,7 +146,9 @@ export default function Signup() {
         if (alive) setError('Unable to load invite. Please request a new link.')
       }
     })()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [inviteId])
 
   // -------- load schools when user must choose one ----------------------
@@ -126,7 +156,9 @@ export default function Signup() {
     const fetchSchools = async () => {
       try {
         const snap = await getDocs(collection(db, 'schools'))
-        const list = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(s => !s.disabled)
+        const list = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(s => !s.disabled)
         setSchools(list)
       } catch {
         setSchools([])
@@ -148,7 +180,9 @@ export default function Signup() {
         setBrandLogo(s.logoUrl || '/default-logo.svg')
       }
     })()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [inviteId, schoolId])
 
   // -------- fallback required fields from school settings ---------------
@@ -158,31 +192,39 @@ export default function Signup() {
       if (inviteId || !schoolId) return
       try {
         // Keep in sync with your settingsApi storage path if that changes.
-        const sSnap = await getDoc(doc(db, 'settings', schoolId)).catch(() => null)
+        const sSnap = await getDoc(doc(db, 'settings', schoolId)).catch(
+          () => null
+        )
         if (!alive) return
         const prefs = sSnap?.data()?.prefs || {}
         const req = prefs?.users?.requiredFields
         if (Array.isArray(req) && req.length) setRequiredFields(req)
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     })()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [inviteId, schoolId])
 
   // -------- handlers ----------------------------------------------------
-  const onExtraChange = useCallback((e) => {
+  const onExtraChange = useCallback(e => {
     const { name, value } = e.target
     setExtra(prev => ({ ...prev, [name]: value }))
   }, [])
 
-  const handleSignup = async (e) => {
+  const handleSignup = async e => {
     e.preventDefault()
     setError('')
 
     // Basic checks
-    if (!name || !email || !pwd || !confirm) return setError('Please fill out all fields.')
+    if (!name || !email || !pwd || !confirm)
+      return setError('Please fill out all fields.')
     if (!isEmail(email)) return setError('Please enter a valid email address.')
     if (pwd !== confirm) return setError('Passwords do not match.')
-    if (pwd.length < 6) return setError('Password must be at least 6 characters.')
+    if (pwd.length < 6)
+      return setError('Password must be at least 6 characters.')
 
     // Choose the school
     const selectedSchoolId = schoolId
@@ -203,11 +245,19 @@ export default function Signup() {
     setLoading(true)
     try {
       // 1) Auth
-      const { user } = await createUserWithEmailAndPassword(auth, email.trim(), pwd)
+      const { user } = await createUserWithEmailAndPassword(
+        auth,
+        email.trim(),
+        pwd
+      )
       if (user) await updateProfile(user, { displayName: name })
 
       // 2) Profile document
-      const blank = getBlankUserProfile({ user, userRole: 'student', schoolIdVal: selectedSchoolId })
+      const blank = getBlankUserProfile({
+        user,
+        userRole: 'student',
+        schoolIdVal: selectedSchoolId,
+      })
       const profile = {
         ...blank,
         name,
@@ -219,7 +269,9 @@ export default function Signup() {
 
       // 3) Simple profile progress: name + required fields present
       const total = (requiredFields?.length || 0) + 1
-      const filled = requiredFields.filter(k => String(extra[k]||'').trim()).length + (name ? 1 : 0)
+      const filled =
+        requiredFields.filter(k => String(extra[k] || '').trim()).length +
+        (name ? 1 : 0)
       profile.profileProgress = Math.round((filled / Math.max(1, total)) * 100)
 
       await setDoc(doc(db, 'users', user.email), profile)
@@ -234,7 +286,11 @@ export default function Signup() {
 
       // 5) Mark invite consumed (if any)
       if (inviteId) {
-        try { await consumeInvite(inviteId) } catch { /* idempotent / best effort */ }
+        try {
+          await consumeInvite(inviteId)
+        } catch {
+          /* idempotent / best effort */
+        }
       }
 
       // 6) Local cache
@@ -247,28 +303,45 @@ export default function Signup() {
     } catch (err) {
       setLoading(false)
       const code = err?.code || ''
-      if (code === 'auth/email-already-in-use') setError('Email already in use. Try logging in.')
-      else if (code === 'auth/invalid-email')   setError('Invalid email address.')
+      if (code === 'auth/email-already-in-use')
+        setError('Email already in use. Try logging in.')
+      else if (code === 'auth/invalid-email') setError('Invalid email address.')
       else setError('Signup failed: ' + (err?.message || err))
     }
   }
 
   // -------- render ------------------------------------------------------
   return (
-    <div className="signup-card fade-in" style={{ maxWidth: 520, margin: '34px auto' }}>
+    <div
+      className="signup-card fade-in"
+      style={{ maxWidth: 520, margin: '34px auto' }}
+    >
       <h2 style={{ textAlign: 'center' }}>
         {brandLogo && (
           <img
             src={brandLogo}
             alt="School Logo"
-            style={{ height: 38, maxWidth: 96, verticalAlign: 'middle', marginBottom: '0.15em', borderRadius: 8 }}
+            style={{
+              height: 38,
+              maxWidth: 96,
+              verticalAlign: 'middle',
+              marginBottom: '0.15em',
+              borderRadius: 8,
+            }}
           />
         )}
         Sign Up for {brandTitle}
       </h2>
 
       {inviteId && (
-        <p style={{ textAlign:'center', margin:'6px 0 14px', color:'#7aa', fontSize:13 }}>
+        <p
+          style={{
+            textAlign: 'center',
+            margin: '6px 0 14px',
+            color: '#7aa',
+            fontSize: 13,
+          }}
+        >
           This account will be created under your invited school.
         </p>
       )}
@@ -283,7 +356,7 @@ export default function Signup() {
             required
             autoComplete="name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={e => setName(e.target.value)}
           />
         </div>
 
@@ -296,15 +369,15 @@ export default function Signup() {
             required
             autoComplete="username"
             value={email}
-            onChange={(e) => setEmail(e.target.value.toLowerCase())}
+            onChange={e => setEmail(e.target.value.toLowerCase())}
             readOnly={Boolean(inviteId)}
           />
         </div>
 
         {/* Dynamic required fields */}
-        {requiredFields.map((key) => {
+        {requiredFields.map(key => {
           const def = FIELD_DEFS[key] || { label: key, type: 'text' }
-          const id  = `signup-extra-${key}`
+          const id = `signup-extra-${key}`
           return (
             <div className="form-group" key={key}>
               <label htmlFor={id}>{def.label}</label>
@@ -334,14 +407,22 @@ export default function Signup() {
               autoComplete="new-password"
               style={{ paddingRight: '2.3rem' }}
               value={pwd}
-              onChange={(e) => setPwd(e.target.value)}
+              onChange={e => setPwd(e.target.value)}
             />
             <button
               type="button"
-              onClick={() => setShowPwd((p) => !p)}
+              onClick={() => setShowPwd(p => !p)}
               aria-pressed={showPwd}
               aria-label={showPwd ? 'Hide password' : 'Show password'}
-              style={{ position:'absolute', right:7, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer' }}
+              style={{
+                position: 'absolute',
+                right: 7,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+              }}
             >
               {showPwd ? '🙈' : '👁'}
             </button>
@@ -360,14 +441,26 @@ export default function Signup() {
               autoComplete="new-password"
               style={{ paddingRight: '2.3rem' }}
               value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
+              onChange={e => setConfirm(e.target.value)}
             />
             <button
               type="button"
-              onClick={() => setShowConfirmPwd((p) => !p)}
+              onClick={() => setShowConfirmPwd(p => !p)}
               aria-pressed={showConfirmPwd}
-              aria-label={showConfirmPwd ? 'Hide confirmation password' : 'Show confirmation password'}
-              style={{ position:'absolute', right:7, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer' }}
+              aria-label={
+                showConfirmPwd
+                  ? 'Hide confirmation password'
+                  : 'Show confirmation password'
+              }
+              style={{
+                position: 'absolute',
+                right: 7,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+              }}
             >
               {showConfirmPwd ? '🙈' : '👁'}
             </button>
@@ -383,34 +476,59 @@ export default function Signup() {
               name="school"
               required
               value={schoolId}
-              onChange={(e) => setSchoolId(e.target.value)}
+              onChange={e => setSchoolId(e.target.value)}
             >
               <option value="">Select a School</option>
-              {schools.map((s) => (
-                <option value={s.id} key={s.id}>{s.name}</option>
+              {schools.map(s => (
+                <option value={s.id} key={s.id}>
+                  {s.name}
+                </option>
               ))}
             </select>
           </div>
         )}
 
         {error && (
-          <div role="alert" style={{ color:'var(--error,#ff6b6b)', marginBottom:10, fontWeight:500, textAlign:'center' }}>
+          <div
+            role="alert"
+            style={{
+              color: 'var(--error,#ff6b6b)',
+              marginBottom: 10,
+              fontWeight: 500,
+              textAlign: 'center',
+            }}
+          >
             {error}
           </div>
         )}
 
-        <button className="btn primary" type="submit" style={{ marginTop:'0.7em' }} disabled={loading}>
+        <button
+          className="btn primary"
+          type="submit"
+          style={{ marginTop: '0.7em' }}
+          disabled={loading}
+        >
           {loading ? 'Creating Account…' : 'Create Account'}
         </button>
 
-        <div className="signup-footer" style={{ marginTop:'1.1rem' }}>
+        <div className="signup-footer" style={{ marginTop: '1.1rem' }}>
           Already have an account?
-          <button className="btn outline" type="button" onClick={() => navigate('/login')} style={{ marginLeft:6 }}>
+          <button
+            className="btn outline"
+            type="button"
+            onClick={() => navigate('/login')}
+            style={{ marginLeft: 6 }}
+          >
             Log In
           </button>
         </div>
 
-        <button className="btn outline" type="button" style={{ marginTop:'0.8rem', width:'100%' }} onClick={() => navigate('/')}>
+        <button
+          className="btn outline"
+          type="button"
+          style={{ marginTop: '0.8rem', width: '100%' }}
+          onClick={() => navigate('/')}
+        >
           ⬅ Back
         </button>
       </form>

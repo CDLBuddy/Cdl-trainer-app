@@ -66,7 +66,11 @@ export default function PracticeTests() {
           if (attempts.length) {
             // robust timestamp extraction
             const toDate = v =>
-              (typeof v?.toDate === 'function' ? v.toDate() : v ? new Date(v) : new Date(0))
+              typeof v?.toDate === 'function'
+                ? v.toDate()
+                : v
+                  ? new Date(v)
+                  : new Date(0)
             const latest = attempts.sort(
               (a, b) => toDate(b.timestamp) - toDate(a.timestamp)
             )[0]
@@ -80,7 +84,6 @@ export default function PracticeTests() {
         if (!cancelled) setTestScores(next)
       } catch (e) {
         if (!cancelled) {
-           
           console.error('Error loading test results:', e)
           showToast('Could not load your test results.', 'error')
         }
@@ -88,7 +91,9 @@ export default function PracticeTests() {
         if (!cancelled) setLoading(false)
       }
     })()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [navigate, showToast])
 
   const pctComplete = useMemo(
@@ -97,7 +102,7 @@ export default function PracticeTests() {
   )
 
   const startTest = useCallback(
-    (test) => {
+    test => {
       showToast(`Starting "${test}"…`)
       navigate(`/student/test-engine/${encodeURIComponent(test)}`)
     },
@@ -105,7 +110,7 @@ export default function PracticeTests() {
   )
 
   const reviewTest = useCallback(
-    (test) => {
+    test => {
       showToast(`Loading your last "${test}" result…`)
       navigate(`/student/test-review/${encodeURIComponent(test)}`)
     },
@@ -114,7 +119,12 @@ export default function PracticeTests() {
 
   if (loading) {
     return (
-      <div className="screen-wrapper" role="status" aria-live="polite" style={{ textAlign: 'center', marginTop: 40 }}>
+      <div
+        className="screen-wrapper"
+        role="status"
+        aria-live="polite"
+        style={{ textAlign: 'center', marginTop: 40 }}
+      >
         <div className="spinner" />
         <p>Loading practice tests…</p>
       </div>
@@ -122,8 +132,14 @@ export default function PracticeTests() {
   }
 
   return (
-    <div className="screen-wrapper fade-in" style={{ maxWidth: 600, margin: '0 auto', padding: 20 }}>
-      <h2 className="dash-head" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div
+      className="screen-wrapper fade-in"
+      style={{ maxWidth: 600, margin: '0 auto', padding: 20 }}
+    >
+      <h2
+        className="dash-head"
+        style={{ display: 'flex', alignItems: 'center', gap: 10 }}
+      >
         🧪 Student Practice Tests
         <span style={{ marginLeft: 'auto', fontSize: '1em' }}>
           <span className="progress-label" title="Tests Passed">
@@ -132,7 +148,11 @@ export default function PracticeTests() {
         </span>
       </h2>
 
-      <div className="progress-track" aria-label="Completion progress" style={{ marginBottom: '1.3rem' }}>
+      <div
+        className="progress-track"
+        aria-label="Completion progress"
+        style={{ marginBottom: '1.3rem' }}
+      >
         <div className="progress-fill" style={{ width: `${pctComplete}%` }} />
       </div>
 
@@ -141,7 +161,7 @@ export default function PracticeTests() {
       </p>
 
       <div className="test-list">
-        {TESTS.map((name) => {
+        {TESTS.map(name => {
           const data = testScores[name]
 
           const mainBtn = (
@@ -166,23 +186,43 @@ export default function PracticeTests() {
 
           const scoreBadge = data ? (
             data.passed ? (
-              <span className="badge badge-success" aria-label={`${name} passed with ${data.pct}%`}>
+              <span
+                className="badge badge-success"
+                aria-label={`${name} passed with ${data.pct}%`}
+              >
                 ✅ {data.pct}%
               </span>
             ) : (
-              <span className="badge badge-fail" aria-label={`${name} scored ${data.pct}%`}>
+              <span
+                className="badge badge-fail"
+                aria-label={`${name} scored ${data.pct}%`}
+              >
                 ❌ {data.pct}%
               </span>
             )
           ) : (
-            <span className="badge badge-neutral" aria-label={`${name} not attempted`}>
+            <span
+              className="badge badge-neutral"
+              aria-label={`${name} not attempted`}
+            >
               ⏳ Not attempted
             </span>
           )
 
           return (
-            <div className="glass-card" key={name} style={{ marginBottom: '1.2rem', padding: 18 }}>
-              <h3 style={{ marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div
+              className="glass-card"
+              key={name}
+              style={{ marginBottom: '1.2rem', padding: 18 }}
+            >
+              <h3
+                style={{
+                  marginBottom: '0.6rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                }}
+              >
                 {name} {scoreBadge}
               </h3>
               <div className="btn-grid">

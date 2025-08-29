@@ -34,8 +34,14 @@ function downloadBlob(filename, mime, data) {
   try {
     const blob = data instanceof Blob ? data : new Blob([data], { type: mime })
     const navAny = /** @type {any} */ (navigator)
-    if (typeof navAny?.msSaveOrOpenBlob === 'function') { navAny.msSaveOrOpenBlob(blob, filename); return }
-    if (typeof navAny?.msSaveBlob === 'function') { navAny.msSaveBlob(blob, filename); return }
+    if (typeof navAny?.msSaveOrOpenBlob === 'function') {
+      navAny.msSaveOrOpenBlob(blob, filename)
+      return
+    }
+    if (typeof navAny?.msSaveBlob === 'function') {
+      navAny.msSaveBlob(blob, filename)
+      return
+    }
 
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -53,8 +59,13 @@ function downloadBlob(filename, mime, data) {
     try {
       const text = data instanceof Blob ? '' : String(data ?? '')
       const win = window.open()
-      if (win) { win.document.write(`<pre>${escapeHtml(text)}</pre>`); win.document.close() }
-    } catch { /* ignore */ }
+      if (win) {
+        win.document.write(`<pre>${escapeHtml(text)}</pre>`)
+        win.document.close()
+      }
+    } catch {
+      /* ignore */
+    }
   }
 }
 
@@ -74,8 +85,13 @@ function normalizeColumns(rows, columns, headerLabels) {
   const defs = []
   if (Array.isArray(columns) && columns.length) {
     for (const c of columns) {
-      if (typeof c === 'string') defs.push({ key: c, label: headerLabels?.[c] || c })
-      else if (c && typeof c.key === 'string') defs.push({ key: c.key, label: c.label || headerLabels?.[c.key] || c.key })
+      if (typeof c === 'string')
+        defs.push({ key: c, label: headerLabels?.[c] || c })
+      else if (c && typeof c.key === 'string')
+        defs.push({
+          key: c.key,
+          label: c.label || headerLabels?.[c.key] || c.key,
+        })
     }
     return defs
   }
@@ -86,7 +102,7 @@ function normalizeColumns(rows, columns, headerLabels) {
       for (const k of Object.keys(r)) if (!seen.has(k)) seen.add(k)
     }
   }
-  return Array.from(seen).map((k) => ({ key: k, label: headerLabels?.[k] || k }))
+  return Array.from(seen).map(k => ({ key: k, label: headerLabels?.[k] || k }))
 }
 
 function normalizeCell(v) {
@@ -95,7 +111,11 @@ function normalizeCell(v) {
   const t = typeof v
   if (t === 'string') return v
   if (t === 'number' || t === 'boolean' || t === 'bigint') return String(v)
-  try { return JSON.stringify(v) } catch { return String(v) }
+  try {
+    return JSON.stringify(v)
+  } catch {
+    return String(v)
+  }
 }
 
 /** Guard against Excel formula injection (='@+-) */
@@ -120,22 +140,26 @@ function escapeCsvCell(s, delimiter, quote) {
   return quote + s.replaceAll(quote, quote + quote) + quote
 }
 
-function buildCsv(rows, opts = /** @type {CsvOptions} */({})) {
+function buildCsv(rows, opts = /** @type {CsvOptions} */ ({})) {
   const delimiter = opts.delimiter ?? ','
   const eol = opts.eol ?? '\r\n' // Excel friendly
   const quote = '"'
   const escapeFormulas = opts.escapeFormulas !== false
 
   const cols = normalizeColumns(rows, opts.columns, opts.headerLabels)
-  const header = cols.map(c => escapeCsvCell(String(c.label ?? c.key), delimiter, quote)).join(delimiter)
+  const header = cols
+    .map(c => escapeCsvCell(String(c.label ?? c.key), delimiter, quote))
+    .join(delimiter)
 
   const lines = [header]
   for (const r of rows) {
-    const line = cols.map(({ key }) => {
-      const raw = normalizeCell(r?.[key])
-      const safe = sanitizeForExcel(String(raw), escapeFormulas)
-      return escapeCsvCell(safe, delimiter, quote)
-    }).join(delimiter)
+    const line = cols
+      .map(({ key }) => {
+        const raw = normalizeCell(r?.[key])
+        const safe = sanitizeForExcel(String(raw), escapeFormulas)
+        return escapeCsvCell(safe, delimiter, quote)
+      })
+      .join(delimiter)
     lines.push(line)
   }
 
@@ -151,9 +175,10 @@ function buildCsv(rows, opts = /** @type {CsvOptions} */({})) {
  * @param {string|CsvOptions} filenameOrOptions
  */
 export function toCSV(rows = [], filenameOrOptions = 'report.csv') {
-  const opts = typeof filenameOrOptions === 'string'
-    ? /** @type {CsvOptions} */({ filename: filenameOrOptions })
-    : (filenameOrOptions || {})
+  const opts =
+    typeof filenameOrOptions === 'string'
+      ? /** @type {CsvOptions} */ ({ filename: filenameOrOptions })
+      : filenameOrOptions || {}
 
   const filename = ensureExt(opts.filename || 'report.csv', '.csv')
   // Always build so headers appear when rows are empty but `columns` are provided
@@ -165,13 +190,17 @@ export function toCSV(rows = [], filenameOrOptions = 'report.csv') {
 
 function safeStringify(v, space = 2) {
   const seen = new WeakSet()
-  return JSON.stringify(v, function (k, val) {
-    if (val && typeof val === 'object') {
-      if (seen.has(val)) return '[Circular]'
-      seen.add(val)
-    }
-    return val
-  }, space)
+  return JSON.stringify(
+    v,
+    function (k, val) {
+      if (val && typeof val === 'object') {
+        if (seen.has(val)) return '[Circular]'
+        seen.add(val)
+      }
+      return val
+    },
+    space
+  )
 }
 
 /**
@@ -180,16 +209,23 @@ function safeStringify(v, space = 2) {
  * @param {string|JsonOptions} filenameOrOptions
  */
 export function toJSON(rows = [], filenameOrOptions = 'report.json') {
-  const opts = typeof filenameOrOptions === 'string'
-    ? /** @type {JsonOptions} */({ filename: filenameOrOptions })
-    : (filenameOrOptions || {})
+  const opts =
+    typeof filenameOrOptions === 'string'
+      ? /** @type {JsonOptions} */ ({ filename: filenameOrOptions })
+      : filenameOrOptions || {}
 
   const filename = ensureExt(opts.filename || 'report.json', '.json')
-  const prettySpaces = opts.pretty === false ? 0 : (typeof opts.pretty === 'number' ? opts.pretty : 2)
+  const prettySpaces =
+    opts.pretty === false
+      ? 0
+      : typeof opts.pretty === 'number'
+        ? opts.pretty
+        : 2
 
   let content
   try {
-    content = JSON.stringify(rows ?? [], opts.replacer ?? null, prettySpaces) + '\n'
+    content =
+      JSON.stringify(rows ?? [], opts.replacer ?? null, prettySpaces) + '\n'
   } catch {
     content = safeStringify(rows ?? [], prettySpaces) + '\n'
   }

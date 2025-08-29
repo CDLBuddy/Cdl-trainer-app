@@ -13,16 +13,18 @@ export function useAuditSettings({ vm }) {
   const initial = useMemo(
     () =>
       vm?.prefs?.[KEY] || {
-        trackExports: true,         // CSV/PDF data exports
+        trackExports: true, // CSV/PDF data exports
         trackUserDeletions: true,
         trackBillingChanges: true,
-        redactSensitiveFields: true // when true, masks tokens/PII in logs
+        redactSensitiveFields: true, // when true, masks tokens/PII in logs
       },
     [vm?.prefs]
   )
 
   const [draft, setDraft] = useState(initial)
-  useEffect(() => { setDraft(initial) }, [initial])
+  useEffect(() => {
+    setDraft(initial)
+  }, [initial])
 
   const update = useCallback(patch => setDraft(d => ({ ...d, ...patch })), [])
 

@@ -49,10 +49,7 @@ export default function OrderStepsDrill({
     if (ok && !alreadyComplete) onComplete?.()
   }
 
-  const numbered = useMemo(
-    () => order.map((s, i) => `${i + 1}. ${s}`),
-    [order]
-  )
+  const numbered = useMemo(() => order.map((s, i) => `${i + 1}. ${s}`), [order])
 
   return (
     <div>
@@ -70,8 +67,7 @@ export default function OrderStepsDrill({
               background: 'color-mix(in oklab, var(--brand-dark), #fff 4%)',
               padding: '8px 12px',
               borderRadius: 10,
-              border:
-                '1px solid color-mix(in oklab, var(--accent), #000 40%)',
+              border: '1px solid color-mix(in oklab, var(--accent), #000 40%)',
               margin: '8px 0',
               display: 'flex',
               alignItems: 'center',

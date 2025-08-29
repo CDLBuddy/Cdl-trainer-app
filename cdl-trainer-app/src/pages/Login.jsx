@@ -52,7 +52,7 @@ function Login() {
   const supportEmail = schoolBrand.contactEmail || supportEmailDefault
 
   // ---- Handlers ----
-  const handleLogin = async (e) => {
+  const handleLogin = async e => {
     e.preventDefault()
     setError('')
     if (!email || !pwd) {
@@ -114,7 +114,9 @@ function Login() {
   }
 
   const handleLogoutAndBack = async () => {
-    try { await signOut(auth) } catch {
+    try {
+      await signOut(auth)
+    } catch {
       // intentionally ignore signOut errors
     }
     navigate('/')
@@ -162,7 +164,7 @@ function Login() {
             required
             autoComplete="username"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
           />
         </div>
 
@@ -179,7 +181,7 @@ function Login() {
               autoComplete="current-password"
               style={{ paddingRight: '2.3rem' }}
               value={pwd}
-              onChange={(e) => setPwd(e.target.value)}
+              onChange={e => setPwd(e.target.value)}
             />
             <button
               type="button"
@@ -196,9 +198,9 @@ function Login() {
                 fontSize: '1.17em',
                 cursor: 'pointer',
               }}
-              onClick={() => setShowPwd((p) => !p)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') setShowPwd((p) => !p)
+              onClick={() => setShowPwd(p => !p)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') setShowPwd(p => !p)
               }}
               tabIndex={0}
             >
@@ -271,7 +273,10 @@ function Login() {
         </button>
       </form>
 
-      <div className="login-footer" style={{ marginTop: '1.2rem', color: '#ccc' }}>
+      <div
+        className="login-footer"
+        style={{ marginTop: '1.2rem', color: '#ccc' }}
+      >
         New?{' '}
         <button
           className="btn outline"

@@ -14,12 +14,7 @@ import {
   toCsv,
   toISODate,
 } from './cert-template.js'
-
-import {
-  openPrintableCert,
-  downloadCsv,
-  copy,
-} from './pdf-utils.js'
+import { openPrintableCert, downloadCsv, copy } from './pdf-utils.js'
 
 export {
   buildCertPayload,
@@ -56,7 +51,8 @@ export function csvFromCert(cert, headers) {
   ]
 
   const row = buildTprCsvRow(cert)
-  const cols = Array.isArray(headers) && headers.length ? headers : DEFAULT_HEADERS
+  const cols =
+    Array.isArray(headers) && headers.length ? headers : DEFAULT_HEADERS
 
   // Build body without BOM, then prepend BOM and ensure final newline
   const body = toCsv([row], cols).replace(/^\uFEFF/, '')

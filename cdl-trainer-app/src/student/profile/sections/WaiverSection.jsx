@@ -35,7 +35,7 @@ export default function WaiverSection({ value, onChange, policyUrl = '' }) {
   // - On check: set date if missing.
   // - On uncheck: clear signature + date.
   const toggleSigned = useCallback(
-    (checked) => {
+    checked => {
       set('waiverSigned', checked)
       if (checked) {
         if (!v.waiverSignatureDate) {
@@ -62,9 +62,12 @@ export default function WaiverSection({ value, onChange, policyUrl = '' }) {
         verifiedAt={verifiedAt}
       />
 
-      <h3 id={titleId} className="visually-hidden">Student Waiver</h3>
+      <h3 id={titleId} className="visually-hidden">
+        Student Waiver
+      </h3>
       <div id={hintId} className={styles.sub}>
-        Required for Enrollment • Read, acknowledge, and type your full legal name as your electronic signature.
+        Required for Enrollment • Read, acknowledge, and type your full legal
+        name as your electronic signature.
         {policyUrl ? (
           <>
             {' '}
@@ -82,7 +85,7 @@ export default function WaiverSection({ value, onChange, policyUrl = '' }) {
           <input
             type="checkbox"
             checked={signed}
-            onChange={(e) => toggleSigned(e.target.checked)}
+            onChange={e => toggleSigned(e.target.checked)}
             aria-describedby={hintId}
           />
           <span>I have read and agree to the waiver and school policies.</span>
@@ -93,7 +96,7 @@ export default function WaiverSection({ value, onChange, policyUrl = '' }) {
           label="Signature (full legal name)"
           placeholder="e.g., Alex J. Johnson"
           value={v.waiverSignature || ''}
-          onChange={(val) => set('waiverSignature', val)}
+          onChange={val => set('waiverSignature', val)}
           required={signatureRequired}
           disabled={signatureDisabled}
           autoComplete="name"
@@ -111,14 +114,15 @@ export default function WaiverSection({ value, onChange, policyUrl = '' }) {
             type="date"
             label="Signature Date"
             value={v.waiverSignatureDate || ''}
-            onChange={(val) => set('waiverSignatureDate', val)}
+            onChange={val => set('waiverSignatureDate', val)}
           />
         )}
 
         {/* Tiny legal note */}
         <p className={styles.subtle} role="note">
-          By checking the box and providing your name, you acknowledge this electronic signature
-          has the same legal effect as a handwritten signature.
+          By checking the box and providing your name, you acknowledge this
+          electronic signature has the same legal effect as a handwritten
+          signature.
         </p>
       </div>
     </section>

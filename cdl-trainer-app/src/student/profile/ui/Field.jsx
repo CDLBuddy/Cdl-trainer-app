@@ -1,5 +1,6 @@
 // src/student/profile/ui/Field.jsx
 import React, { forwardRef, useId, useMemo, useCallback } from 'react'
+
 import cls from './fields.module.css'
 
 /**
@@ -47,8 +48,8 @@ const Field = forwardRef(function Field(
     showCounter = false,
     onEnter,
     autoSelect = false,
-    ariaDescribedBy,          // custom alias (sections use this)
-    ariaInvalid,              // custom alias (sections use this)
+    ariaDescribedBy, // custom alias (sections use this)
+    ariaInvalid, // custom alias (sections use this)
     children,
     ...rest
   },
@@ -68,27 +69,30 @@ const Field = forwardRef(function Field(
   const errId = error ? `${baseId}_err` : undefined
 
   // Allow callers to pass either ariaDescribedBy (camel) or native 'aria-describedby'
-  const externalDescribedBy = [
-    ariaDescribedBy,
-    rest['aria-describedby'], // if someone passes the native prop explicitly
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .trim() || undefined
+  const externalDescribedBy =
+    [
+      ariaDescribedBy,
+      rest['aria-describedby'], // if someone passes the native prop explicitly
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .trim() || undefined
 
-  const describedBy = [hintId, errId, externalDescribedBy].filter(Boolean).join(' ') || undefined
+  const describedBy =
+    [hintId, errId, externalDescribedBy].filter(Boolean).join(' ') || undefined
 
   const lengthCount = typeof value === 'string' ? value.length : 0
   const maxLen = typeof rest.maxLength === 'number' ? rest.maxLength : undefined
 
-  const handleChange = useCallback(
-    (e) => onChange?.(e.target.value),
-    [onChange]
-  )
+  const handleChange = useCallback(e => onChange?.(e.target.value), [onChange])
 
   const handleKeyDown = useCallback(
-    (e) => {
-      if (e.key === 'Enter' && typeof onEnter === 'function' && as !== 'textarea') {
+    e => {
+      if (
+        e.key === 'Enter' &&
+        typeof onEnter === 'function' &&
+        as !== 'textarea'
+      ) {
         onEnter()
       }
       rest.onKeyDown?.(e)
@@ -97,7 +101,7 @@ const Field = forwardRef(function Field(
   )
 
   const handleFocus = useCallback(
-    (e) => {
+    e => {
       if (autoSelect && typeof e.target?.select === 'function') {
         // Slight delay to avoid interfering with browser focus paint
         setTimeout(() => e.target.select(), 0)
@@ -109,7 +113,7 @@ const Field = forwardRef(function Field(
 
   // Prevent accidental number scroll changes unless caller opts in via rest.onWheel
   const handleWheel = useCallback(
-    (e) => {
+    e => {
       if (type === 'number' && !rest.onWheel) {
         // blur to prevent value step changes, then refocus
         e.currentTarget.blur()
@@ -138,7 +142,9 @@ const Field = forwardRef(function Field(
       onFocus={handleFocus}
       onWheel={handleWheel}
       // provide a default rows for textarea if not given
-      {...(as === 'textarea' && typeof rest.rows === 'undefined' ? { rows: 3 } : null)}
+      {...(as === 'textarea' && typeof rest.rows === 'undefined'
+        ? { rows: 3 }
+        : null)}
       {...rest}
     />
   )
@@ -157,7 +163,11 @@ const Field = forwardRef(function Field(
           >
             {label}
           </label>
-          {required && <span className={cls.required} aria-hidden>*</span>}
+          {required && (
+            <span className={cls.required} aria-hidden>
+              *
+            </span>
+          )}
           {showCounter && maxLen != null && (
             <span className={cls.counter} aria-live="polite">
               {lengthCount} / {maxLen}

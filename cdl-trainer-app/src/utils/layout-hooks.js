@@ -25,9 +25,9 @@ import {
  * You can pass your own patterns into useHideNavBar() to override/extend.
  */
 export const NAVBAR_HIDDEN_PATHS = [
-  /^\/$/,              // welcome
-  /^\/login$/,         // auth
-  /^\/signup$/,        // auth
+  /^\/$/, // welcome
+  /^\/login$/, // auth
+  /^\/signup$/, // auth
   /^\/reset-password/, // auth flow (prefix)
 ]
 

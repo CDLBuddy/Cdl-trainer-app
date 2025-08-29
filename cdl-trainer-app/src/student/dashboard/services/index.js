@@ -29,4 +29,5 @@ export { getLatestUpdateOnce as getLatestUpdate } from './dashboardApi.js'
 // ---- Optional namespace export --------------------------------------------
 // Enables: `import * as DashboardApi from '@student/dashboard/services'`
 import * as DashboardApi from './dashboardApi.js'
+
 export default DashboardApi

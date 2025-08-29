@@ -23,7 +23,9 @@ export const FIELD = /** @type const */ ({
  */
 function coerce(form, companyId) {
   return {
-    email: String(form?.email || '').trim().toLowerCase(),
+    email: String(form?.email || '')
+      .trim()
+      .toLowerCase(),
     course: String(form?.course || '').trim(),
     cdlClass: String(form?.cdlClass || ''),
     companyId: String(companyId || ''),
@@ -32,7 +34,11 @@ function coerce(form, companyId) {
 
 /** Lightweight email validator for reuse. */
 export function isEmailValid(email) {
-  return EMAIL_RE.test(String(email || '').trim().toLowerCase())
+  return EMAIL_RE.test(
+    String(email || '')
+      .trim()
+      .toLowerCase()
+  )
 }
 
 /**
@@ -64,16 +70,32 @@ export function validateDetailed(form, companyId) {
   const v = coerce(form, companyId)
 
   if (!isEmailValid(v.email)) {
-    return { valid: false, error: 'Please enter a valid email.', field: FIELD.EMAIL }
+    return {
+      valid: false,
+      error: 'Please enter a valid email.',
+      field: FIELD.EMAIL,
+    }
   }
   if (!v.course) {
-    return { valid: false, error: 'Please enter a course.', field: FIELD.COURSE }
+    return {
+      valid: false,
+      error: 'Please enter a course.',
+      field: FIELD.COURSE,
+    }
   }
   if (!v.cdlClass) {
-    return { valid: false, error: 'Please select a CDL class.', field: FIELD.CDL_CLASS }
+    return {
+      valid: false,
+      error: 'Please select a CDL class.',
+      field: FIELD.CDL_CLASS,
+    }
   }
   if (!v.companyId) {
-    return { valid: false, error: 'Missing companyId; cannot attach student.', field: FIELD.COMPANY_ID }
+    return {
+      valid: false,
+      error: 'Missing companyId; cannot attach student.',
+      field: FIELD.COMPANY_ID,
+    }
   }
   return { valid: true, error: '' }
 }
@@ -85,7 +107,9 @@ export function validateDetailed(form, companyId) {
  * @returns {boolean}
  */
 export function canSave(formWithCompany, saving) {
-  const email = String(formWithCompany?.email || '').trim().toLowerCase()
+  const email = String(formWithCompany?.email || '')
+    .trim()
+    .toLowerCase()
   const course = String(formWithCompany?.course || '').trim()
   const cdlClass = String(formWithCompany?.cdlClass || '')
   const companyId = String(formWithCompany?.companyId || '')

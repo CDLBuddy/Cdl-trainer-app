@@ -56,8 +56,8 @@ export function isSessionLike(v) {
     'isLoggedIn' in obj &&
     'role' in obj &&
     'user' in obj &&
-    (typeof obj.loading === 'boolean') &&
-    (typeof obj.isLoggedIn === 'boolean')
+    typeof obj.loading === 'boolean' &&
+    typeof obj.isLoggedIn === 'boolean'
   return !!ok
 }
 

@@ -21,15 +21,21 @@ export const hasWindow = () => typeof window !== 'undefined'
 // ---------- polite environment checks ---------------------------------------
 export function prefersReducedMotion() {
   if (!hasWindow()) return false
-  try { return !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches }
-  catch { return false }
+  try {
+    return !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+  } catch {
+    return false
+  }
 }
 export const isReducedMotion = prefersReducedMotion
 
 export function isConstrainedNetwork() {
   if (!hasWindow()) return false
   try {
-    const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection
+    const c =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection
     if (!c) return false
     if (c.saveData === true) return true
     return /\b(slow-2g|2g|3g)\b/i.test(String(c.effectiveType || ''))
@@ -44,7 +50,11 @@ const _cache = new Map()
 function _memo(key, loader) {
   if (_cache.has(key)) return _cache.get(key)
   const p = (async () => {
-    try { return await loader() } catch { /* ignore: best-effort warm */ }
+    try {
+      return await loader()
+    } catch {
+      /* ignore: best-effort warm */
+    }
   })()
   _cache.set(key, p)
   return p
@@ -55,35 +65,45 @@ function _memo(key, loader) {
 /** @type {const} */
 const entries = {
   // Routes
-  dashboard:      () => import('@admin/dashboard/AdminDashboard.jsx'),
-  profile:        () => import('@admin/AdminProfile.jsx'),
-  companies:      () => import('@admin/companies/AdminCompanies.jsx'),
+  dashboard: () => import('@admin/dashboard/AdminDashboard.jsx'),
+  profile: () => import('@admin/AdminProfile.jsx'),
+  companies: () => import('@admin/companies/AdminCompanies.jsx'),
   // ⬇️ UPDATED PATH
-  companyDetail:  () => import('@admin/companies/company-detail/CompanyDetail.jsx'), // /companies/:id
+  companyDetail: () =>
+    import('@admin/companies/company-detail/CompanyDetail.jsx'), // /companies/:id
   communications: () => import('@admin/communications/AdminCommunications.jsx'),
-  billing:        () => import('@admin/billing/Billing.jsx'),
-  settings:       () => import('@admin/settings/AdminSettings.jsx'),
-  walkthroughs:   () => import('@admin/walkthroughs/WalkthroughManager.jsx'),
+  billing: () => import('@admin/billing/Billing.jsx'),
+  settings: () => import('@admin/settings/AdminSettings.jsx'),
+  walkthroughs: () =>
+    import('@admin/walkthroughs/Manager/WalkthroughManager.jsx'),
 
   // Reports: warm the route chunk AND heavy services/bundles.
-  reports:        async () => {
+  reports: async () => {
     await import('@admin/reports/AdminReports.jsx')
     try {
       const { prefetchReports } = await import('@admin/reports')
       await prefetchReports?.()
-    } catch { /* ignore: optional in some builds */ }
+    } catch {
+      /* ignore: optional in some builds */
+    }
   },
 
   // Non-route overlays/drawers worth pre-warming.
-  addStudent:     () => import('@admin/companies/add-student/AddStudentDrawer.jsx'),
-  addCompany:     () => import('@admin/companies/add-company/AddCompanyDrawer.jsx'),
+  addStudent: () => import('@admin/companies/add-student/AddStudentDrawer.jsx'),
+  addCompany: () => import('@admin/companies/add-company/AddCompanyDrawer.jsx'),
   studentReportDrawer: async () => {
-    try { await import('@admin/reports/StudentReportDrawer.jsx') }
-    catch { /* optional feature */ }
+    try {
+      await import('@admin/reports/student-reports/StudentReportsDrawer.jsx')
+    } catch {
+      /* optional feature */
+    }
   },
 }
 
-export const ADMIN_ENTRY_KEYS = /** @type {readonly (keyof typeof entries)[]} */ (Object.freeze(Object.keys(entries)))
+export const ADMIN_ENTRY_KEYS =
+  /** @type {readonly (keyof typeof entries)[]} */ (
+    Object.freeze(Object.keys(entries))
+  )
 /** @typedef {keyof typeof entries} AdminEntryKey */
 
 // ---------- public API: above-the-fold (light/core) -------------------------
@@ -116,8 +136,10 @@ export async function preloadRoute(name) {
 
 // ---------- back-compat aliases ---------------------------------------------
 export const preloadAdminCore = preloadAboveTheFold
-export const preloadAdminAll  = preloadAll
-export async function preloadAdminRoutes() { return preloadAll() }
+export const preloadAdminAll = preloadAll
+export async function preloadAdminRoutes() {
+  return preloadAll()
+}
 export default preloadAboveTheFold
 
 // ======================================================================
@@ -129,9 +151,12 @@ export default preloadAboveTheFold
  * Skips on reduced-motion or constrained networks.
  */
 export function warmAdminOnIdle(timeout = 1200) {
-  if (!hasWindow() || isConstrainedNetwork() || prefersReducedMotion()) return () => {}
+  if (!hasWindow() || isConstrainedNetwork() || prefersReducedMotion())
+    return () => {}
 
-  const run = () => { preloadAboveTheFold().catch(() => {}) }
+  const run = () => {
+    preloadAboveTheFold().catch(() => {})
+  }
 
   // Prefer a true idle tick if available
   // @ts-ignore – not always in DOM libs
@@ -140,7 +165,8 @@ export function warmAdminOnIdle(timeout = 1200) {
     const id = window.requestIdleCallback(run, { timeout })
     return () => {
       // @ts-ignore
-      if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(id)
+      if (typeof window.cancelIdleCallback === 'function')
+        window.cancelIdleCallback(id)
     }
   }
 
@@ -158,7 +184,10 @@ export function preloadAdminOnHover(elOrGetter) {
   const el = typeof elOrGetter === 'function' ? elOrGetter() : elOrGetter
   if (!el || typeof el.addEventListener !== 'function') return () => {}
 
-  const handler = () => { preloadAboveTheFold().catch(() => {}); cleanup() }
+  const handler = () => {
+    preloadAboveTheFold().catch(() => {})
+    cleanup()
+  }
 
   el.addEventListener('pointerenter', handler, { once: true })
   el.addEventListener('focus', handler, { once: true, capture: true })
@@ -167,7 +196,9 @@ export function preloadAdminOnHover(elOrGetter) {
     try {
       el.removeEventListener('pointerenter', handler)
       el.removeEventListener('focus', handler, { capture: true })
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }
   return cleanup
 }
@@ -184,13 +215,13 @@ export function prefetchAdminByPath(path = '') {
     entries.companies()
     return entries.companyDetail()
   }
-  if (p.includes('/admin/companies'))       return entries.companies()
-  if (p.includes('/admin/communications'))  return entries.communications()
-  if (p.includes('/admin/billing'))         return entries.billing()
-  if (p.includes('/admin/reports'))         return entries.reports()
-  if (p.includes('/admin/profile'))         return entries.profile()
-  if (p.includes('/admin/settings'))        return entries.settings()
-  if (p.includes('/admin/walkthroughs'))    return entries.walkthroughs()
+  if (p.includes('/admin/companies')) return entries.companies()
+  if (p.includes('/admin/communications')) return entries.communications()
+  if (p.includes('/admin/billing')) return entries.billing()
+  if (p.includes('/admin/reports')) return entries.reports()
+  if (p.includes('/admin/profile')) return entries.profile()
+  if (p.includes('/admin/settings')) return entries.settings()
+  if (p.includes('/admin/walkthroughs')) return entries.walkthroughs()
   return entries.dashboard()
 }
 
@@ -215,10 +246,15 @@ export function preloadIfIdle(key, timeout = 800) {
   // @ts-ignore
   if (typeof window.requestIdleCallback === 'function') {
     // @ts-ignore
-    const id = window.requestIdleCallback(() => _memo(`admin:${key}`, loader), { timeout })
+    const id = window.requestIdleCallback(() => _memo(`admin:${key}`, loader), {
+      timeout,
+    })
     return () => window.cancelIdleCallback?.(id)
   }
-  const t = setTimeout(() => _memo(`admin:${key}`, loader), Math.min(timeout, 1200))
+  const t = setTimeout(
+    () => _memo(`admin:${key}`, loader),
+    Math.min(timeout, 1200)
+  )
   return () => clearTimeout(t)
 }
 

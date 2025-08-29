@@ -16,11 +16,11 @@ export * from './lists.js'
 // Optional grouped namespaces (ergonomic default import)
 // NOTE: Using the default namespace may pull more code into a given chunk
 // than strictly necessary. Prefer named imports in performance-critical code.
+import * as firestore from './firestore.js'
 import * as helpers from './helpers.js'
+import * as lists from './lists.js'
 import * as normalize from './normalize.js'
 import * as progress from './progress.js'
-import * as firestore from './firestore.js'
-import * as lists from './lists.js'
 
 /**
  * @typedef {object} UserProfileLib

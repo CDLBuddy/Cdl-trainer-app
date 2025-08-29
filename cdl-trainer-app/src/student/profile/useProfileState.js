@@ -8,7 +8,9 @@
 // ============================================================================
 
 import * as React from 'react'
+
 import { auth } from '@utils/firebase.js'
+
 import { getUserProfile, subscribeUserProfile } from '@user-profile'
 
 /**
@@ -36,11 +38,13 @@ import { getUserProfile, subscribeUserProfile } from '@user-profile'
 function shallowEqual(a, b) {
   if (Object.is(a, b)) return true
   if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false
-  const ka = Object.keys(a), kb = Object.keys(b)
+  const ka = Object.keys(a),
+    kb = Object.keys(b)
   if (ka.length !== kb.length) return false
   for (let i = 0; i < ka.length; i++) {
     const k = ka[i]
-    if (!Object.prototype.hasOwnProperty.call(b, k) || !Object.is(a[k], b[k])) return false
+    if (!Object.prototype.hasOwnProperty.call(b, k) || !Object.is(a[k], b[k]))
+      return false
   }
   return true
 }
@@ -49,18 +53,19 @@ function shallowEqual(a, b) {
  * useProfileState(email?, options?)
  * If email is omitted and fallbackToAuth is true, we’ll use the current user.
  */
-export function useProfileState(email, {
-  initial = null,
-  realtime = true,
-  fallbackToAuth = true,
-} = {}) {
+export function useProfileState(
+  email,
+  { initial = null, realtime = true, fallbackToAuth = true } = {}
+) {
   // Resolve effective email (once per render) with auth fallback
   const effectiveEmail = React.useMemo(() => {
     if (email) return email
     if (!fallbackToAuth) return ''
     try {
       return auth?.currentUser?.email || ''
-    } catch { return '' }
+    } catch {
+      return ''
+    }
   }, [email, fallbackToAuth])
 
   const [profile, _setProfile] = React.useState(initial)
@@ -71,7 +76,7 @@ export function useProfileState(email, {
   const latestEmailRef = React.useRef(effectiveEmail)
 
   // Shallow setter avoids extra renders for identical objects
-  const setProfile = React.useCallback((next) => {
+  const setProfile = React.useCallback(next => {
     _setProfile(prev => {
       const value = typeof next === 'function' ? next(prev) : next
       return shallowEqual(prev || null, value || null) ? prev : value
@@ -118,7 +123,7 @@ export function useProfileState(email, {
 
       if (realtime && effectiveEmail) {
         try {
-          unsub = subscribeUserProfile(effectiveEmail, (live) => {
+          unsub = subscribeUserProfile(effectiveEmail, live => {
             if (!active || latestEmailRef.current !== effectiveEmail) return
             if (live) setProfile(live)
           })
@@ -130,28 +135,39 @@ export function useProfileState(email, {
 
     return () => {
       active = false
-      try { unsub() } catch {}
+      try {
+        unsub()
+      } catch {}
     }
   }, [effectiveEmail, realtime, refresh, setProfile])
 
   /* -------------------------- Derived helpers -------------------------- */
 
-  const select = React.useCallback((path, fallback = undefined) => {
-    if (!profile || !path) return fallback
-    const val = path.split('.').reduce((acc, k) => (acc == null ? acc : acc[k]), profile)
-    return val == null ? fallback : val
-  }, [profile])
+  const select = React.useCallback(
+    (path, fallback = undefined) => {
+      if (!profile || !path) return fallback
+      const val = path
+        .split('.')
+        .reduce((acc, k) => (acc == null ? acc : acc[k]), profile)
+      return val == null ? fallback : val
+    },
+    [profile]
+  )
 
   const billingMode = String(select('billing.mode', '')).toLowerCase()
   const isEmployerPaid = billingMode === 'employer'
-  const isIndividual   = billingMode === 'individual'
-  const hasVehicle     = String(select('vehicleQualified', '')).toLowerCase() === 'yes'
+  const isIndividual = billingMode === 'individual'
+  const hasVehicle =
+    String(select('vehicleQualified', '')).toLowerCase() === 'yes'
 
   // verified may be: true | {} | {section:boolean|{by,at}}
   const verifiedRaw = select('verified', {})
-  const verified = (verifiedRaw === true)
-    ? { global: true }
-    : (verifiedRaw && typeof verifiedRaw === 'object' ? verifiedRaw : {})
+  const verified =
+    verifiedRaw === true
+      ? { global: true }
+      : verifiedRaw && typeof verifiedRaw === 'object'
+        ? verifiedRaw
+        : {}
 
   return {
     profile,

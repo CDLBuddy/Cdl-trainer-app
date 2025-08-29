@@ -10,8 +10,8 @@ import React, {
 
 import { askCDLAI } from '@utils/aiApi.js'
 import { auth } from '@utils/firebase.js'
-import { getUserInitials } from '@/utils/ui-helpers.js'
 
+import { getUserInitials } from '@/utils/ui-helpers.js'
 // 👉 unified comms (shared for student/instructor/admin recipients)
 import { InboxList, useUnreadAnnouncements } from '@communications'
 
@@ -24,8 +24,8 @@ function sanitize(html) {
   if (!html) return ''
   return String(html)
     .replace(/<\s*script/gi, '&lt;script') // no scripts
-    .replace(/on\w+="[^"]*"/gi, '')        // no inline handlers
-    .replace(/javascript:/gi, '')          // strip js: urls
+    .replace(/on\w+="[^"]*"/gi, '') // no inline handlers
+    .replace(/javascript:/gi, '') // strip js: urls
 }
 
 function usePerUserKey(base) {
@@ -84,7 +84,9 @@ function AICoachModal({ open, onClose, context = 'dashboard' }) {
   })
 
   // When the announcements drawer opens, consider all read
-  useEffect(() => { if (annOpen) markAllRead() }, [annOpen, markAllRead])
+  useEffect(() => {
+    if (annOpen) markAllRead()
+  }, [annOpen, markAllRead])
 
   // Starter suggestions by context
   const starterPrompts = useMemo(
@@ -432,7 +434,11 @@ function AICoachModal({ open, onClose, context = 'dashboard' }) {
 
         {/* Inline right-side announcements drawer */}
         {annOpen && (
-          <div className={styles.sideDrawer} role="dialog" aria-label="Announcements">
+          <div
+            className={styles.sideDrawer}
+            role="dialog"
+            aria-label="Announcements"
+          >
             <InboxList
               role={userRole}
               schoolId={schoolId}
@@ -440,7 +446,11 @@ function AICoachModal({ open, onClose, context = 'dashboard' }) {
               title="Announcements"
             />
             <div className={styles.drawerActions}>
-              <button className="btn" type="button" onClick={() => setAnnOpen(false)}>
+              <button
+                className="btn"
+                type="button"
+                onClick={() => setAnnOpen(false)}
+              >
                 Close
               </button>
             </div>

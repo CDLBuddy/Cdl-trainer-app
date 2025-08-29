@@ -30,7 +30,10 @@ function fromGlobals(): ProviderProfile {
   }
 }
 
-export async function getProviderProfile(schoolId?: string, opts?: { signal?: AbortSignal }): Promise<ProviderProfile> {
+export async function getProviderProfile(
+  schoolId?: string,
+  opts?: { signal?: AbortSignal }
+): Promise<ProviderProfile> {
   const key = String(schoolId || 'default')
   const hit = cache.get(key)
   if (hit) return hit

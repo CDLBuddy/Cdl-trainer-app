@@ -5,7 +5,7 @@ import React, { forwardRef } from 'react'
 import styles from '../AddCompanyDrawer.module.css'
 
 const MODE_OPTIONS = [
-  { value: 'employer',  label: 'Employer-billed' },
+  { value: 'employer', label: 'Employer-billed' },
   { value: 'individual', label: 'Student-paid' },
 ]
 
@@ -22,13 +22,16 @@ const FormFields = forwardRef(function FormFields(
       {/* Name */}
       <label className={styles.field}>
         <span className={styles.label}>
-          Name <span className={styles.req} aria-hidden="true">*</span>
+          Name{' '}
+          <span className={styles.req} aria-hidden="true">
+            *
+          </span>
         </span>
         <input
           ref={firstFieldRef}
           type="text"
           value={values.name}
-          onChange={(e) => onChange('name', e.target.value)}
+          onChange={e => onChange('name', e.target.value)}
           placeholder="Acme Logistics, Inc."
           aria-required="true"
           aria-invalid={Boolean(errors?.name) || undefined}
@@ -46,12 +49,16 @@ const FormFields = forwardRef(function FormFields(
         <span className={styles.label}>Billing Mode</span>
         <select
           value={values.billingMode}
-          onChange={(e) => onChange('billingMode', e.target.value)}
+          onChange={e => onChange('billingMode', e.target.value)}
           aria-invalid={Boolean(errors?.billingMode) || undefined}
-          aria-describedby={errors?.billingMode ? 'company-billing-error' : undefined}
+          aria-describedby={
+            errors?.billingMode ? 'company-billing-error' : undefined
+          }
         >
-          {MODE_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          {MODE_OPTIONS.map(opt => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
         </select>
         {errors?.billingMode && (
@@ -67,15 +74,16 @@ const FormFields = forwardRef(function FormFields(
         <input
           type="email"
           value={values.contactEmail}
-          onChange={(e) => onChange('contactEmail', e.target.value)}
+          onChange={e => onChange('contactEmail', e.target.value)}
           placeholder="ap@acmelogistics.com"
           inputMode="email"
         />
       </label>
 
       <p className={styles.tip}>
-        Tip: Choose <strong>Employer-billed</strong> if invoices are paid by the company.  
-        Choose <strong>Student-paid</strong> if trainees pay individually.
+        Tip: Choose <strong>Employer-billed</strong> if invoices are paid by the
+        company. Choose <strong>Student-paid</strong> if trainees pay
+        individually.
       </p>
     </>
   )

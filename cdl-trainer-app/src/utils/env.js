@@ -9,13 +9,13 @@
 
 /* ------------------------------- Sources -------------------------------- */
 
-const hasVite   = typeof import.meta !== 'undefined' && !!import.meta.env
-const hasNode   = typeof process !== 'undefined' && !!process.env
+const hasVite = typeof import.meta !== 'undefined' && !!import.meta.env
+const hasNode = typeof process !== 'undefined' && !!process.env
 const hasWindow = typeof window !== 'undefined' && !!window.__ENV__
 
-const srcNode   = hasNode   ? process.env       : {}
-const srcVite   = hasVite   ? import.meta.env   : {}
-const srcWindow = hasWindow ? window.__ENV__    : {}
+const srcNode = hasNode ? process.env : {}
+const srcVite = hasVite ? import.meta.env : {}
+const srcWindow = hasWindow ? window.__ENV__ : {}
 
 /* ------------------------------ Utilities ------------------------------- */
 
@@ -24,7 +24,10 @@ const pickRelevant = (obj = {}) => {
   for (const [k, v] of Object.entries(obj)) {
     if (
       k.startsWith('VITE_') ||
-      k === 'MODE' || k === 'DEV' || k === 'PROD' || k === 'BASE_URL' ||
+      k === 'MODE' ||
+      k === 'DEV' ||
+      k === 'PROD' ||
+      k === 'BASE_URL' ||
       k === 'NODE_ENV'
     ) {
       out[k] = v
@@ -42,9 +45,11 @@ const merged = {
 
 // Normalize MODE/DEV/PROD to sane booleans/strings
 const NODE_ENV = String(merged.NODE_ENV || '').toLowerCase()
-const MODE     = String(merged.MODE || NODE_ENV || '').toLowerCase() || 'production'
-const DEV      = typeof merged.DEV  === 'boolean' ? merged.DEV  : (MODE === 'development')
-const PROD     = typeof merged.PROD === 'boolean' ? merged.PROD : (MODE === 'production')
+const MODE = String(merged.MODE || NODE_ENV || '').toLowerCase() || 'production'
+const DEV =
+  typeof merged.DEV === 'boolean' ? merged.DEV : MODE === 'development'
+const PROD =
+  typeof merged.PROD === 'boolean' ? merged.PROD : MODE === 'production'
 
 /* ------------------------------- Exported -------------------------------- */
 
@@ -55,7 +60,7 @@ export const ENV = Object.freeze({
   PROD,
 })
 
-export const __DEV__  = !!ENV.DEV
+export const __DEV__ = !!ENV.DEV
 export const __PROD__ = !!ENV.PROD
 
 /* ----------------------------- Typed getters ----------------------------- */
@@ -87,12 +92,21 @@ export function envInt(name, fallback = 0) {
 export function envJSON(name, fallback = null) {
   const raw = env(name, '')
   if (!raw) return fallback
-  try { return JSON.parse(raw) } catch { return fallback }
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return fallback
+  }
 }
 
 /** Quick guard for URLs (returns fallback if not a plausible URL). */
 export function envURL(name, fallback = '') {
   const raw = env(name, '')
   if (!raw) return fallback
-  try { new URL(raw); return raw } catch { return fallback }
+  try {
+    new URL(raw)
+    return raw
+  } catch {
+    return fallback
+  }
 }

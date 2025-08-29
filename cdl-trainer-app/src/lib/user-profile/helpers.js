@@ -13,10 +13,13 @@
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /** Lowercase + trim. Safe for undefined/null. */
-export const normalizeEmail = (e) => String(e || '').trim().toLowerCase()
+export const normalizeEmail = e =>
+  String(e || '')
+    .trim()
+    .toLowerCase()
 
 /** Validate an email after normalization. */
-export const isEmail = (e) => EMAIL_RE.test(normalizeEmail(e))
+export const isEmail = e => EMAIL_RE.test(normalizeEmail(e))
 
 /* ───────────────────────────── Objects ─────────────────────────── */
 
@@ -57,7 +60,7 @@ export function getByPath(obj, path) {
 export const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 /** Zero-pad helper. */
-const pad2 = (n) => String(n).padStart(2, '0')
+const pad2 = n => String(n).padStart(2, '0')
 
 /**
  * Convert a value to local YYYY-MM-DD (no timezone surprises).

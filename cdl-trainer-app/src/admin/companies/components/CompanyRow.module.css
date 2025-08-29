@@ -23,13 +23,15 @@
 
 /* Row container ----------------------------------------------------------- */
 .row {
-  transition: background-color .15s ease, opacity .15s ease;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
 }
 .row:hover {
   background: color-mix(in srgb, var(--brand) 6%, transparent);
 }
-.row[aria-busy="true"] {
-  opacity: .7;
+.row[aria-busy='true'] {
+  opacity: 0.7;
   pointer-events: none;
 }
 
@@ -49,9 +51,13 @@
   background: var(--field-bg);
   color: inherit;
   outline: none;
-  transition: border-color .15s ease, box-shadow .15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
-.input::placeholder { color: var(--field-mute); }
+.input::placeholder {
+  color: var(--field-mute);
+}
 .input:focus {
   border-color: var(--brand);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 25%, transparent);
@@ -70,8 +76,13 @@
 }
 
 /* Created/by column ------------------------------------------------------- */
-.created { font-size: .93em; }
-.by      { font-size: .87em; color: var(--field-mute); }
+.created {
+  font-size: 0.93em;
+}
+.by {
+  font-size: 0.87em;
+  color: var(--field-mute);
+}
 
 /* Actions ----------------------------------------------------------------- */
 .actions {

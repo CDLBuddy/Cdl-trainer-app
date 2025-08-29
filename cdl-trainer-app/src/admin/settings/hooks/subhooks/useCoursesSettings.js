@@ -33,11 +33,13 @@ export function useCoursesSettings({ vm } = {}) {
   )
 
   const [draft, setDraft] = useState(initial)
-  useEffect(() => { setDraft(initial) }, [initial])
+  useEffect(() => {
+    setDraft(initial)
+  }, [initial])
 
   // Mutators
   const update = useCallback(
-    (patch) => setDraft(d => normalizeDraft({ ...d, ...patch })),
+    patch => setDraft(d => normalizeDraft({ ...d, ...patch })),
     []
   )
   const reset = useCallback(() => setDraft(initial), [initial])
@@ -49,14 +51,18 @@ export function useCoursesSettings({ vm } = {}) {
 
   // Persistence
   const save = useCallback(
-    async (partial) => {
+    async partial => {
       const payload = normalizeDraft(partial ? { ...draft, ...partial } : draft)
-      if (!vm?.actions?.save) return { ok: false, error: 'Save action is unavailable.' }
+      if (!vm?.actions?.save)
+        return { ok: false, error: 'Save action is unavailable.' }
       try {
         await vm.actions.save({ [KEY]: payload })
         return { ok: true }
       } catch (err) {
-        return { ok: false, error: err?.message || 'Failed to save course settings.' }
+        return {
+          ok: false,
+          error: err?.message || 'Failed to save course settings.',
+        }
       }
     },
     [draft, vm?.actions]

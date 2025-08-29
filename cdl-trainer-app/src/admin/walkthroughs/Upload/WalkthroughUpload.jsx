@@ -1,8 +1,7 @@
 // Path: /src/admin/walkthroughs/WalkthroughUpload.jsx
-/* eslint-disable react-refresh/only-export-components */
+
 import React from 'react'
-import cls from './WalkthroughUpload.module.css'
-import { useUpload } from './hooks'
+
 import {
   MetaFields,
   Tabs,
@@ -13,6 +12,8 @@ import {
   ErrorsCard,
   StatsBar,
 } from './components'
+import { useUpload } from './hooks'
+import cls from './WalkthroughUpload.module.css'
 
 export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
   const up = useUpload({ onImported, parseXlsx })
@@ -71,7 +72,11 @@ export default function WalkthroughUpload({ onImported, onCancel, parseXlsx }) {
       <StatsBar stats={up.stats} />
 
       <div className={cls.footer}>
-        {onCancel && <button type="button" className={cls.btn} onClick={onCancel}>Cancel</button>}
+        {onCancel && (
+          <button type="button" className={cls.btn} onClick={onCancel}>
+            Cancel
+          </button>
+        )}
         <button
           type="button"
           className={cls.btnPrimary}

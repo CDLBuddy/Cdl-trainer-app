@@ -16,21 +16,42 @@ export default {
     // ------------------------------------------------------------------
 
     // In-Cab Inspection – drop clutch/manual gear checks
-    { op: 'removeStep', match: { section: 'In-Cab Inspection',          tag: 'clutch' } },
-    { op: 'removeStep', match: { section: 'In-Cab Inspection',          tag: 'manual-transmission' } },
-    { op: 'removeStep', match: { section: 'In-Cab Inspection',          tag: 'gear-check' } },
+    {
+      op: 'removeStep',
+      match: { section: 'In-Cab Inspection', tag: 'clutch' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'In-Cab Inspection', tag: 'manual-transmission' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'In-Cab Inspection', tag: 'gear-check' },
+    },
 
     // Alternate spellings occasionally used by some scripts
-    { op: 'removeStep', match: { section: 'In Cab Inspection',          tag: 'clutch' } },
-    { op: 'removeStep', match: { section: 'In Cab Inspection',          tag: 'manual-transmission' } },
+    {
+      op: 'removeStep',
+      match: { section: 'In Cab Inspection', tag: 'clutch' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'In Cab Inspection', tag: 'manual-transmission' },
+    },
 
     // Engine start / cab check variants
-    { op: 'removeStep', match: { section: 'Engine Start',               tag: 'clutch' } },
-    { op: 'removeStep', match: { section: 'Cab Check/Start Engine',     tag: 'clutch' } },
-    { op: 'removeStep', match: { section: 'Cab Check/Start Engine',     tag: 'manual-transmission' } },
+    { op: 'removeStep', match: { section: 'Engine Start', tag: 'clutch' } },
+    {
+      op: 'removeStep',
+      match: { section: 'Cab Check/Start Engine', tag: 'clutch' },
+    },
+    {
+      op: 'removeStep',
+      match: { section: 'Cab Check/Start Engine', tag: 'manual-transmission' },
+    },
 
     // Brake check sections sometimes include a “clutch hold” step
-    { op: 'removeStep', match: { section: 'Brake Check',                tag: 'clutch' } },
+    { op: 'removeStep', match: { section: 'Brake Check', tag: 'clutch' } },
 
     // ------------------------------------------------------------------
     // Append a concise automatic-specific reminder (non-destructive).
