@@ -287,3 +287,34 @@ export const __private = {
   criticalSatisfied,
   isVerified,
 }
+
+/** Minimal shim that composes "next actions" from existing readiness helpers.
+ * Returns an array of { id, label, done }.
+ * You can make this smarter later; this unblocks the build safely.
+ */
+export function getNextActions(profile = {}) {
+  const actions = [];
+  try {
+    if (typeof getEnrollmentReadiness === 'function') {
+      const enr = getEnrollmentReadiness(profile) || {};
+      if (Array.isArray(enr.missing) && enr.missing.length) {
+        actions.push(...enr.missing.map(key => ({
+          id: `enroll:${key}`,
+          label: `Add ${String(key).replace(/_/g, ' ')}`,
+          done: false,
+        })));
+      }
+    }
+    if (typeof getBTWReadiness === 'function') {
+      const btw = getBTWReadiness(profile) || {};
+      if (Array.isArray(btw.missing) && btw.missing.length) {
+        actions.push(...btw.missing.map(key => ({
+          id: `btw:${key}`,
+          label: `Complete ${String(key).replace(/_/g, ' ')}`,
+          done: false,
+        })));
+      }
+    }
+  } catch { /* no-op */ }
+  return actions;
+}

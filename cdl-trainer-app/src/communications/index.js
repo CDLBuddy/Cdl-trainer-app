@@ -69,3 +69,6 @@ export function preloadOnHover(elOrGetter, preloadFn = preloadInboxList) {
     }
   }
 }
+
+// Re-export hooks so consumers can import from '@communications'
+export { useUnreadAnnouncements } from './hooks';

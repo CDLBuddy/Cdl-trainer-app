@@ -206,3 +206,14 @@ export const PROFILE_SCHEMA = {
     },
   ],
 }
+
+// ---- TIERS enum (exported for calculators & callers) ----------------------
+export const TIERS = Object.freeze({
+  BASE: 'base',
+  VERIFY: 'verify',
+  FULL: 'full',
+  // lowercase aliases (some callers use dot access with these)
+  base: 'base',
+  verify: 'verify',
+  full: 'full',
+});

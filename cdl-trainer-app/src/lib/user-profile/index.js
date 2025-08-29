@@ -1,4 +1,4 @@
-// Path: src/lib/user-profile/index.js
+// src/lib/user-profile/index.js
 // ======================================================================
 // User Profile Library (barrel)
 // - Named exports for tree-shaking
@@ -6,21 +6,28 @@
 // - Zero side effects
 // ======================================================================
 
-// Named re-exports (preferred: enables tree-shaking)
+// Tree-shakable re-exports (preferred)
 export * from './firestore.js'
 export * from './helpers.js'
 export * from './lists.js'
 export * from './normalize.js'
 export * from './progress.js'
 
-// Optional grouped namespaces (ergonomic default import)
-// NOTE: Using the default namespace may pull more code into a given chunk
-// than strictly necessary. Prefer named imports in performance-critical code.
+// Namespace imports so we can safely expose compat names
 import * as firestore from './firestore.js'
 import * as helpers from './helpers.js'
 import * as lists from './lists.js'
 import * as normalize from './normalize.js'
 import * as progress from './progress.js'
+
+// ---- Back-compat named exports (no hard dependency on source files) ------
+// If a function doesn't exist in its module yet, these will be `undefined`,
+// which is fine and avoids Rollup “not exported by” errors.
+export const subscribeUserProfile    = firestore.subscribeUserProfile
+export const onUserProfileSnapshot   = firestore.onUserProfileSnapshot
+export const updateUserProfile       = firestore.updateUserProfile
+export const updateUserProfileFields = helpers.updateUserProfileFields
+export const getBlankUserProfile     = helpers.getBlankUserProfile
 
 /**
  * @typedef {object} UserProfileLib
@@ -31,6 +38,7 @@ import * as progress from './progress.js'
  * @property {typeof import('./lists.js')}     lists
  */
 
+// Optional ergonomic default namespace
 /** @type {UserProfileLib} */
 const UserProfile = { helpers, normalize, progress, firestore, lists }
 export default UserProfile

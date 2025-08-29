@@ -1,12 +1,17 @@
 // src/components/ToastProvider.jsx
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import { __DEV__ } from '@utils/env.js'
 
 import { __bindToastCompat } from './toast-compat.js'
 import { ToastContainer } from './Toast.jsx'
 import ToastContext from './ToastContext.js'
-
 /**
  * @typedef {'info'|'success'|'error'|'warning'} ToastType
  * @typedef {'bottom-right'|'bottom-left'|'bottom'|'top-right'|'top-left'|'top'} ToastPosition
@@ -22,6 +27,8 @@ import ToastContext from './ToastContext.js'
  * @property {boolean=} showProgress
  * @property {() => void=} onClose
  */
+
+// useToast hook is now in a separate file
 
 export default function ToastProvider({
   children,
@@ -310,3 +317,5 @@ export default function ToastProvider({
     </ToastContext.Provider>
   )
 }
+
+export { ToastContext }
