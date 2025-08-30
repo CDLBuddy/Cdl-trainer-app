@@ -1,4 +1,7 @@
-import React, { useMemo, useState } from 'react'
+// src/student/walkthrough/drills/TypePhraseDrill.jsx
+import PropTypes from 'prop-types'
+import React, { useId, useMemo, useState } from 'react'
+import styles from './TypePhraseDrill.module.css'
 
 /**
  * TypePhraseDrill
@@ -16,66 +19,97 @@ export default function TypePhraseDrill({
   alreadyComplete = false,
   strict = true,
 }) {
+  const uid = useId()
+  const statusId = `${uid}-status`
+  const inputId = `${uid}-input`
   const [val, setVal] = useState('')
   const [result, setResult] = useState(null)
+  const [showHint, setShowHint] = useState(false)
 
   const normalize = useMemo(
     () =>
       strict
-        ? s => s.trim().replace(/\s+/g, ' ').toLowerCase()
-        : s =>
-            s
+        ? (s) =>
+            String(s ?? '')
+              .normalize('NFKC')
+              .trim()
+              .replace(/\s+/g, ' ')
               .toLowerCase()
-              .replace(/[^\p{L}\p{N}\s]/gu, '') // drop punctuation in lenient mode
+        : (s) =>
+            String(s ?? '')
+              .normalize('NFKC')
+              .toLowerCase()
+              .replace(/[^\p{L}\p{N}\s]/gu, '') // strip punctuation in lenient mode
               .trim()
               .replace(/\s+/g, ' '),
     [strict]
   )
 
-  function check(e) {
+  const handleSubmit = (e) => {
     e?.preventDefault?.()
     const ok = normalize(val) === normalize(phrase)
-    setResult(
-      ok ? '✅ Perfect! You memorized it.' : '❌ Not quite right. Try again!'
-    )
+    setResult(ok ? '✅ Perfect! You memorized it.' : '❌ Not quite right. Try again!')
     if (ok && !alreadyComplete) onComplete?.()
   }
 
+  const remaining = Math.max(0, Math.abs(phrase.length - val.length))
+
   return (
-    <form onSubmit={check}>
-      <h3 style={{ margin: '0 0 6px' }}>
-        Type the Pass/Fail Phrase Word-for-Word
+    <form className={styles.root} onSubmit={handleSubmit} aria-describedby={statusId}>
+      <h3 className={styles.title}>
+        Type the Pass/Fail Phrase {strict ? 'Word-for-Word' : '(Lenient)'}
       </h3>
+
+      <label className="sr-only" htmlFor={inputId}>Type the phrase</label>
       <textarea
+        id={inputId}
+        className={styles.input}
         rows={4}
-        style={{
-          width: '100%',
-          background: 'var(--card-bg)',
-          color: 'var(--text-light)',
-          border: '1px solid color-mix(in oklab, var(--accent), #000 40%)',
-          borderRadius: 10,
-          padding: '10px 12px',
-        }}
         placeholder="Type the full phrase here"
         aria-label="Type phrase"
+        aria-describedby={statusId}
         value={val}
         disabled={alreadyComplete}
-        onChange={e => setVal(e.target.value)}
+        onChange={(e) => setVal(e.target.value)}
       />
-      <div
-        style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center' }}
-      >
+
+      <div className={styles.controls}>
         <button className="btn" type="submit" disabled={alreadyComplete}>
-          Check
+          {alreadyComplete ? 'Completed' : 'Check'}
         </button>
-        <span style={{ fontSize: '.95em', opacity: 0.65 }}>
-          Hint: <em>{phrase}</em>
-          {!strict && ' (lenient mode)'}
+
+        <button
+          type="button"
+          className="btn outline"
+          onClick={() => setShowHint((s) => !s)}
+          aria-pressed={showHint ? 'true' : 'false'}
+        >
+          {showHint ? 'Hide Hint' : 'Show Hint'}
+        </button>
+
+        <span className={styles.meta} aria-hidden>
+          {strict ? 'Strict match' : 'Punctuation ignored'}
+          {' · '}
+          {remaining ? `${remaining} char ${remaining === 1 ? '' : 's'} off` : 'length matches'}
         </span>
       </div>
-      <div aria-live="polite" style={{ marginTop: 6 }}>
+
+      {showHint && (
+        <div className={styles.hint} role="note">
+          <strong>Hint:</strong> <em>{phrase}</em>
+        </div>
+      )}
+
+      <div id={statusId} className={styles.status} aria-live="polite">
         {result}
       </div>
     </form>
   )
+}
+
+TypePhraseDrill.propTypes = {
+  phrase: PropTypes.string,
+  onComplete: PropTypes.func,
+  alreadyComplete: PropTypes.bool,
+  strict: PropTypes.bool,
 }

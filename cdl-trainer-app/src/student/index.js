@@ -7,8 +7,8 @@
 // ======================================================================
 
 // ---- Pages -------------------------------------------------------------
-// Dashboard lives under src/student/dashboard; export named to avoid path coupling
-export { DashboardPage, StudentDashboard } from './dashboard/index.js'
+// Student Dashboard lives under src/student/dashboard
+export { StudentDashboard } from './dashboard/index.js'
 
 // Profile: explicitly reference the file with a default export
 export { default as Profile } from './profile/Profile.jsx'

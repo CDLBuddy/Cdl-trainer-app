@@ -1,0 +1,101 @@
+/* Path: src/student/walkthrough/components/DrillTabs.module.css */
+/* ==========================================================================
+   Drill Tabs (module)
+   - Uses theme tokens (see src/styles/theme.css)
+   - Keyboard-visible focus, hover/active transitions
+   - Compact on small screens; wraps nicely
+   ========================================================================== */
+
+.drillTabs {
+  --pill-bg: color-mix(in oklab, var(--card-bg, #0b0f14), #ffffff 6%);
+  --pill-bd: color-mix(in oklab, var(--accent, #c4dbe8), #000 40%);
+  --pill-fg: var(--text-light, #fff);
+  --pill-fg-muted: color-mix(in oklab, var(--pill-fg), #ffffff 55%);
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0 14px;
+}
+
+.tabBtn {
+  appearance: none;
+  border: 1px solid var(--pill-bd);
+  background: var(--pill-bg);
+  color: var(--pill-fg-muted);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  position: relative;
+  transition:
+    transform .12s ease,
+    box-shadow .12s ease,
+    background-color .15s ease,
+    color .15s ease,
+    border-color .15s ease;
+}
+
+.tabBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.2));
+  color: var(--pill-fg);
+  border-color: color-mix(in oklab, var(--brand-light, #4e91ad), #000 35%);
+}
+
+.tabBtn:active {
+  transform: translateY(0);
+}
+
+.tabBtn:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--shadow-1, 0 6px 20px rgba(0,0,0,.2)),
+    var(--ring, 0 0 0 3px color-mix(in oklab, var(--brand-light), #fff 10%));
+  color: var(--pill-fg);
+}
+
+/* Active tab (current) */
+.active {
+  background: color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 88%);
+  color: #0b0f14;
+  border-color: color-mix(in oklab, var(--brand-light, #4e91ad), #000 30%);
+}
+
+/* Completed tab (adds a subtle glow/ring) */
+.done {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--success, #48bb78), #000 25%),
+    0 0 0 0 transparent;
+}
+
+.done::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--success, #48bb78), #fff 65%);
+  opacity: .25;
+}
+
+/* High-contrast safety */
+@media (forced-colors: active) {
+  .tabBtn { border-color: CanvasText; }
+  .active { background: Highlight; color: HighlightText; }
+  .done::after { box-shadow: none; border: 2px solid Highlight; }
+}
+
+/* Compact on small screens */
+@media (max-width: 640px) {
+  .drillTabs { gap: 8px; }
+  .tabBtn { padding: 9px 12px; font-weight: 700; }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .tabBtn {
+    transition: none;
+  }
+}

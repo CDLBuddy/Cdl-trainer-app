@@ -1,0 +1,96 @@
+/* ==========================================================================
+   ScriptViewer (module)
+   - Themed with global tokens (theme.css)
+   - Semantic list styling and critical-state accent
+   ========================================================================== */
+
+.card {
+  background: var(--card-bg, rgba(255,255,255,.06));
+  border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 55%);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0,0,0,.2));
+}
+
+.section + .section {
+  border-top: 1px dashed color-mix(in oklab, var(--accent, #c4dbe8), #000 60%);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.title {
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+  line-height: 1.25;
+  color: var(--text-light, #fff);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flag {
+  font-size: .85rem;
+  font-weight: 700;
+  color: color-mix(in oklab, var(--error, #e53e3e), #fff 10%);
+}
+
+/* Critical styling hint on the section container */
+.isCritical {
+  --ring-col: color-mix(in oklab, var(--error, #e53e3e), #fff 15%);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--error, #e53e3e), transparent 70%);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.steps {
+  margin: 0;
+  padding: 0 0 0 18px; /* indent ordered list */
+  display: grid;
+  gap: 8px;
+}
+
+.step {
+  list-style: decimal;
+  color: var(--text-light, #fff);
+  line-height: 1.45;
+}
+
+.stepLabel {
+  color: color-mix(in oklab, var(--text-light, #fff), #ffffff 30%);
+}
+
+.stepText {
+  /* keep it readable */
+}
+
+.badgeMust,
+.badgePF {
+  margin-left: 6px;
+  font-style: normal;
+  font-size: .9rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+}
+
+.badgeMust {
+  color: color-mix(in oklab, var(--brand-light, #4e91ad), #fff 10%);
+  border-color: color-mix(in oklab, var(--brand-light, #4e91ad), #000 40%);
+}
+
+.badgePF {
+  color: color-mix(in oklab, var(--error, #e53e3e), #fff 10%);
+  border-color: color-mix(in oklab, var(--error, #e53e3e), #000 40%);
+}
+
+.empty {
+  margin: 0;
+  color: color-mix(in oklab, var(--text-light, #fff), #ffffff 40%);
+  font-style: italic;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .isCritical { box-shadow: none; }
+}

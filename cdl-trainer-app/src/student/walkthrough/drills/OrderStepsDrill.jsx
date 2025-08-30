@@ -1,4 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react'
+// src/student/walkthrough/drills/OrderStepsDrill.jsx
+import PropTypes from 'prop-types'
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import styles from './OrderStepsDrill.module.css'
 
 /**
  * OrderStepsDrill
@@ -14,76 +17,111 @@ export default function OrderStepsDrill({
   onComplete,
   alreadyComplete = false,
 }) {
-  const [order, setOrder] = useState(() => shuffle(steps))
-  const [result, setResult] = useState(null)
+  const uid = useId()
+  const statusId = `${uid}-status`
+  const listLabelId = `${uid}-label`
 
-  // If canonical steps change while mounted, reshuffle
-  useEffect(() => setOrder(shuffle(steps)), [steps])
+  // Canonical items with stable ids (duplicate-safe)
+  const items = useMemo(
+    () => (steps || []).map((text, id) => ({ id, text: String(text || '') })),
+    [steps]
+  )
 
-  function move(idx, dir) {
+  // Local order holds array of ids (not strings)
+  const [order, setOrder] = useState(() => shuffle(items.map(i => i.id)))
+  const [checked, setChecked] = useState(false)
+  const [allCorrect, setAllCorrect] = useState(false)
+
+  // When canonical steps change, reshuffle (avoids stale state)
+  useEffect(() => {
+    setOrder(shuffle(items.map(i => i.id)))
+    setChecked(false)
+    setAllCorrect(false)
+  }, [items])
+
+  // Resolve the visible list from order indices
+  const visible = useMemo(() => order.map(id => items.find(it => it.id === id)), [order, items])
+
+  // Helpers
+  const move = useCallback((idx, dir) => {
     if (alreadyComplete) return
     const j = idx + dir
     if (j < 0 || j >= order.length) return
     const next = [...order]
     ;[next[idx], next[j]] = [next[j], next[idx]]
     setOrder(next)
-  }
+  }, [order, alreadyComplete])
 
-  function onDragStart(e, idx) {
+  const onDragStart = useCallback((e, fromIdx) => {
     e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/plain', String(idx))
-  }
-  function onDrop(e, idx) {
+    e.dataTransfer.setData('text/plain', String(fromIdx))
+  }, [])
+
+  const onDrop = useCallback((e, toIdx) => {
     if (alreadyComplete) return
-    const from = Number(e.dataTransfer.getData('text/plain'))
+    const fromIdx = Number(e.dataTransfer.getData('text/plain'))
+    if (Number.isNaN(fromIdx)) return
     const next = [...order]
-    const [moved] = next.splice(from, 1)
-    next.splice(idx, 0, moved)
+    const [moved] = next.splice(fromIdx, 1)
+    next.splice(toIdx, 0, moved)
     setOrder(next)
     e.preventDefault()
-  }
+  }, [order, alreadyComplete])
 
-  function check() {
-    const ok = steps.every((s, i) => order[i] === s)
-    setResult(ok ? '✅ Correct order!' : '❌ Try again!')
-    if (ok && !alreadyComplete) onComplete?.()
-  }
+  const onKeyReorder = useCallback((e, idx) => {
+    if (alreadyComplete) return
+    const k = e.key.toLowerCase()
+    if (k === 'arrowup') { e.preventDefault(); move(idx, -1) }
+    if (k === 'arrowdown') { e.preventDefault(); move(idx, +1) }
+    // Home/End jump
+    if (k === 'home') { e.preventDefault(); setOrder(prev => moveToIndex(prev, idx, 0)) }
+    if (k === 'end')  { e.preventDefault(); setOrder(prev => moveToIndex(prev, idx, prev.length - 1)) }
+  }, [alreadyComplete, move])
 
-  const numbered = useMemo(() => order.map((s, i) => `${i + 1}. ${s}`), [order])
+  const check = useCallback(() => {
+    // correct iff order === [0,1,2,...]
+    const ok = order.every((id, pos) => id === pos)
+    setChecked(true)
+    setAllCorrect(ok)
+    if (ok && !alreadyComplete) queueMicrotask(() => onComplete?.())
+  }, [order, alreadyComplete, onComplete])
+
+  const reshuffle = useCallback(() => {
+    setOrder(shuffle(items.map(i => i.id)))
+    setChecked(false)
+    setAllCorrect(false)
+  }, [items])
 
   return (
-    <div>
-      <h3 style={{ margin: '0 0 6px' }}>Put the Steps in Order</h3>
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-        {order.map((step, idx) => (
+    <div className={styles.root}>
+      <h3 id={listLabelId} className={styles.title}>Put the steps in order</h3>
+
+      <ul
+        className={styles.list}
+        role="list"
+        aria-labelledby={listLabelId}
+        aria-describedby={statusId}
+      >
+        {visible.map((it, idx) => (
           <li
-            key={`${idx}_${step.slice(0, 16)}`}
+            key={`${it.id}-${it.text.slice(0, 24)}`}
+            className={styles.item}
             draggable={!alreadyComplete}
             onDragStart={e => onDragStart(e, idx)}
             onDragOver={e => e.preventDefault()}
             onDrop={e => onDrop(e, idx)}
-            aria-label={`Step ${idx + 1}`}
-            style={{
-              background: 'color-mix(in oklab, var(--brand-dark), #fff 4%)',
-              padding: '8px 12px',
-              borderRadius: 10,
-              border: '1px solid color-mix(in oklab, var(--accent), #000 40%)',
-              margin: '8px 0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 10,
-              cursor: alreadyComplete ? 'default' : 'grab',
-              boxShadow: '0 2px 8px #0005, inset 0 1px 0 #ffffff10',
-            }}
+            aria-label={`Step ${idx + 1}: ${it.text}`}
           >
-            <span style={{ color: 'var(--text-light)' }}>{numbered[idx]}</span>
+            <span className={styles.num}>{idx + 1}.</span>
+            <span className={styles.text}>{it.text}</span>
+
             {!alreadyComplete && (
-              <span style={{ display: 'inline-flex', gap: 6 }}>
+              <span className={styles.controls}>
                 <button
                   type="button"
-                  className="btn outline"
+                  className={`${styles.ctrlBtn} btn outline`}
                   onClick={() => move(idx, -1)}
+                  onKeyDown={e => onKeyReorder(e, idx)}
                   disabled={idx === 0}
                   aria-label="Move up"
                 >
@@ -91,8 +129,9 @@ export default function OrderStepsDrill({
                 </button>
                 <button
                   type="button"
-                  className="btn outline"
-                  onClick={() => move(idx, 1)}
+                  className={`${styles.ctrlBtn} btn outline`}
+                  onClick={() => move(idx, +1)}
+                  onKeyDown={e => onKeyReorder(e, idx)}
                   disabled={idx === order.length - 1}
                   aria-label="Move down"
                 >
@@ -104,28 +143,31 @@ export default function OrderStepsDrill({
         ))}
       </ul>
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-        <button className="btn" onClick={check} disabled={alreadyComplete}>
-          Check Order
+      <div className={styles.actions}>
+        <button className="btn" onClick={check} disabled={alreadyComplete || allCorrect}>
+          {allCorrect ? 'Completed' : 'Check Order'}
         </button>
         {!alreadyComplete && (
-          <button
-            className="btn outline"
-            type="button"
-            onClick={() => setOrder(shuffle(steps))}
-          >
+          <button className="btn outline" type="button" onClick={reshuffle}>
             Reshuffle
           </button>
         )}
       </div>
 
-      <div aria-live="polite" style={{ marginTop: 6 }}>
-        {result}
+      <div id={statusId} className={styles.status} aria-live="polite">
+        {checked && (allCorrect ? '✅ Correct order! Nicely done.' : '❌ Not quite—adjust and try again.')}
       </div>
     </div>
   )
 }
 
+OrderStepsDrill.propTypes = {
+  steps: PropTypes.arrayOf(PropTypes.string),
+  onComplete: PropTypes.func,
+  alreadyComplete: PropTypes.bool,
+}
+
+/* ---------- local utils ---------- */
 function shuffle(arr = []) {
   const out = [...arr]
   for (let i = out.length - 1; i > 0; i--) {
@@ -133,4 +175,11 @@ function shuffle(arr = []) {
     ;[out[i], out[j]] = [out[j], out[i]]
   }
   return out
+}
+function moveToIndex(arr, from, to) {
+  if (from === to) return arr
+  const next = [...arr]
+  const [m] = next.splice(from, 1)
+  next.splice(to, 0, m)
+  return next
 }

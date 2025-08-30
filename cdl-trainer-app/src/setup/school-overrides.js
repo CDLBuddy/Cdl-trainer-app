@@ -1,35 +1,29 @@
-//src/setup/school-overrides.js
+// src/setup/school-overrides.js
 //-----------------------------------------------------------------------------
 // School-specific resource overrides (runs once on app boot)
 // - Attaches/merges `window.schoolWebsites` and `window.schoolScheduling`
-// - Accepts JSON maps via env:
-//     VITE_SCHOOL_WEBSITES_MAP='{"browning-mountain":"https://browningmountaintraining.com/"}'
-//     VITE_SCHOOL_SCHEDULING_MAP='{"browning-mountain":"https://calendly.com/..."}'
-// - Keys are normalized to lowercase for consistent lookups
-// - Never clobbers existing values already on window
-// - Safe in production; extra console hints in dev
-// -----------------------------------------------------------------------------
-//
-// ⚠️ Make sure this file is imported BEFORE your app renders, e.g. in main.jsx:
-//   import '@/setup/school-overrides.js'
-// -----------------------------------------------------------------------------
+// - Accepts JSON maps via env (VITE_SCHOOL_WEBSITES_MAP / VITE_SCHOOL_SCHEDULING_MAP)
+// - Keys normalized to lowercase; idempotent; dev logs only
+// - Emits "school-overrides:ready" CustomEvent when done
+// - Exports tiny helpers: getSchoolWebsite(id), getSchoolScheduling(id)
+//-----------------------------------------------------------------------------
+
+// Small local normalize used by both the IIFE and exported helpers
+const __normalizeKey = (id) => String(id || '').trim().toLowerCase()
 
 ;(function initSchoolOverrides(win) {
   if (typeof win === 'undefined') return
 
-  const DEV = !!import.meta.env.DEV
+  const DEV = !!import.meta.env?.DEV
 
-  const normKey = id =>
-    String(id || '')
-      .trim()
-      .toLowerCase()
+  const normKey = __normalizeKey
 
-  const asStringMap = obj =>
+  const asStringMap = (obj) =>
     Object.fromEntries(
-      Object.entries(obj || {}).map(([k, v]) => [normKey(k), String(v || '')])
+      Object.entries(obj || {}).map(([k, v]) => [normKey(k), String(v ?? '')])
     )
 
-  const readJSON = raw => {
+  const readJSON = (raw) => {
     if (!raw) return {}
     try {
       const v = JSON.parse(raw)
@@ -42,14 +36,10 @@
 
   // ---- Defaults (only used if not present via env or existing window maps) ---
   const DEFAULT_WEBSITES = {
-    // Tweak/remove as needed; helpful starter if you use this school
     'browning-mountain': 'https://browningmountaintraining.com/',
   }
 
   // ---- Env-driven maps (optional) -------------------------------------------
-  // Example:
-  //   VITE_SCHOOL_WEBSITES_MAP='{"my-school":"https://mysite.com"}'
-  //   VITE_SCHOOL_SCHEDULING_MAP='{"my-school":"https://calendly.com/my-school/btw"}'
   const ENV_WEBSITES = readJSON(import.meta.env.VITE_SCHOOL_WEBSITES_MAP)
   const ENV_SCHEDULING = readJSON(import.meta.env.VITE_SCHOOL_SCHEDULING_MAP)
 
@@ -64,7 +54,7 @@
     ...existingWeb,
   }
   const scheduling = {
-    /* no defaults */ ...asStringMap(ENV_SCHEDULING),
+    ...asStringMap(ENV_SCHEDULING),
     ...existingSch,
   }
 
@@ -78,7 +68,7 @@
     try {
       localStorage.setItem('schoolId', seedId)
     } catch {
-      // Intentionally ignore errors when setting localStorage
+      /* ignore */
     }
     if (DEV) console.warn('[school-overrides] Seeded schoolId:', seedId)
   }
@@ -87,4 +77,27 @@
     console.warn('[school-overrides] websites:', win.schoolWebsites)
     console.warn('[school-overrides] scheduling:', win.schoolScheduling)
   }
+
+  // Let listeners know we’re ready (debug tooling, etc.)
+  try {
+    win.dispatchEvent(new CustomEvent('school-overrides:ready'))
+  } catch {
+    /* ignore */
+  }
 })(typeof window !== 'undefined' ? window : undefined)
+
+// ---- Tiny helpers (safe to import anywhere) ---------------------------------
+
+/** Get the marketing/website URL for a school id (or empty string). */
+export function getSchoolWebsite(id) {
+  if (typeof window === 'undefined') return ''
+  const key = __normalizeKey(id)
+  return window.schoolWebsites?.[key] || ''
+}
+
+/** Get the external scheduling URL (Calendly, etc.) for a school id. */
+export function getSchoolScheduling(id) {
+  if (typeof window === 'undefined') return ''
+  const key = __normalizeKey(id)
+  return window.schoolScheduling?.[key] || ''
+}

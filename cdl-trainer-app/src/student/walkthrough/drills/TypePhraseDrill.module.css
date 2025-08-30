@@ -1,0 +1,42 @@
+/* src/student/walkthrough/drills/TypePhraseDrill.module.css */
+
+.root { display: grid; gap: 10px; }
+.title { margin: 0; font-weight: 800; color: var(--text-light); }
+
+.input {
+  width: 100%;
+  background: var(--card-bg);
+  color: var(--text-light);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  border-radius: 10px;
+  padding: 10px 12px;
+  resize: vertical;
+  min-height: 96px;
+  box-shadow: inset 0 1px 0 #ffffff10;
+}
+
+.controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.meta {
+  font-size: .95rem;
+  color: color-mix(in oklab, var(--text-light), transparent 28%);
+}
+
+.hint {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--brand-mid), #000 70%);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  color: var(--text-light);
+  box-shadow: 0 2px 8px #0005, inset 0 1px 0 #ffffff10;
+}
+
+.status {
+  font-size: 0.96rem;
+  color: color-mix(in oklab, var(--text-light), transparent 20%);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .input { transition: none !important; }
+}

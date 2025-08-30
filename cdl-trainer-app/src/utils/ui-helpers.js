@@ -3,10 +3,10 @@
 // React + Vite friendly UI helpers
 // Centralized tips, checklists, progress, etc.
 // Toaster is provided by compat shim + ToastProvider.
+// Robust to mixed eldtProgress keys (email OR studentId).
 // ===================================================
 
 // --- FIREBASE IMPORTS -------------------------------------------------
-// Prefer aliases to avoid resolver edge cases (configure in vite.config.js)
 import {
   addDoc,
   collection,
@@ -20,19 +20,21 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
 } from 'firebase/firestore'
 
 import { showToast } from '@components/toast-compat.js'
 import { auth, db } from '@utils/firebase.js'
 
-// Back-compat: several files import the toast hook and helpers from here.
-// Keep these exports so you don’t have to edit every caller at once.
+// ===================================================
+// LEGACY-TO-COMPAT TOAST EXPORTS (keep for callers)
+// ===================================================
 export function registerToastHandler() {
-  // Legacy no-op (kept for compatibility).
-  // Historically used to bind a global toast function before React was mounted.
+  /* legacy no-op; kept for compatibility */
 }
+
+// Light heuristic for a suggested next step
 export function getNextChecklistAlert(progress = {}) {
-  // Lightweight heuristic to suggest the next checklist step
   const order = [
     'profileComplete',
     'permitUploaded',
@@ -49,12 +51,7 @@ export function getNextChecklistAlert(progress = {}) {
   }
   const next = order.find(k => progress?.[k] !== true)
   if (!next) return null
-  return {
-    key: next,
-    title: 'Next step',
-    message: labels[next],
-    type: 'info',
-  }
+  return { key: next, title: 'Next step', message: labels[next], type: 'info' }
 }
 
 // ===================================================
@@ -95,11 +92,7 @@ export function formatDate(dateInput) {
   if (!dateInput) return '-'
   const d = dateInput?.toDate ? dateInput.toDate() : new Date(dateInput)
   if (Number.isNaN(d.getTime())) return '-'
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 // ===================================================
@@ -134,7 +127,6 @@ const STATIC_TIPS = [
 ]
 
 export function getRandomAITip() {
-  // Simple deterministic rotation by weekday
   return STATIC_TIPS[new Date().getDay() % STATIC_TIPS.length]
 }
 
@@ -152,11 +144,7 @@ export async function getAITipOfTheDay() {
 // ===================================================
 // TYPEWRITER HEADLINE (legacy optional)
 // ===================================================
-const _headlines = [
-  'CDL Buddy',
-  'Your CDL Prep Coach',
-  'Study Smarter, Not Harder',
-]
+const _headlines = ['CDL Buddy', 'Your CDL Prep Coach', 'Study Smarter, Not Harder']
 let _hw = 0
 let _hc = 0
 
@@ -180,17 +168,9 @@ export function startTypewriter(custom = null) {
 // ===================================================
 // "WHAT'S NEW" / LATEST UPDATE
 // ===================================================
-/**
- * Fetch the latest update from Firestore.
- * @returns {Promise<object|null>}
- */
 export async function fetchLatestUpdate() {
   try {
-    const q = query(
-      collection(db, 'updates'),
-      orderBy('date', 'desc'),
-      limit(1)
-    )
+    const q = query(collection(db, 'updates'), orderBy('date', 'desc'), limit(1))
     const snap = await getDocs(q)
     if (!snap.empty) {
       const docSnap = snap.docs[0]
@@ -198,22 +178,17 @@ export async function fetchLatestUpdate() {
     }
     const fallback = await getDoc(doc(db, 'updates', 'latest'))
     return fallback.exists() ? fallback.data() : null
-  } catch (_e) {
-    // Non-fatal: UI can show "No recent updates."
+  } catch {
     return null
   }
 }
 
-/**
- * Legacy imperative renderer (safe: avoids unsafe HTML injection).
- * Renders into #latest-update-card if present.
- */
 export async function showLatestUpdate() {
   const root = document.getElementById('latest-update-card')
   if (!root) return
 
   // Loading state
-  root.innerHTML = '' // clear
+  root.innerHTML = ''
   const loading = document.createElement('div')
   loading.style.padding = '18px'
   loading.style.textAlign = 'center'
@@ -221,7 +196,7 @@ export async function showLatestUpdate() {
   root.appendChild(loading)
 
   const update = await fetchLatestUpdate()
-  root.innerHTML = '' // clear
+  root.innerHTML = ''
 
   if (!update) {
     const empty = document.createElement('div')
@@ -240,7 +215,6 @@ export async function showLatestUpdate() {
 
   const content = document.createElement('div')
   content.className = 'update-content'
-  // Escape user-provided content to avoid XSS
   content.innerHTML = escapeHTML(update.content || '(No details)')
 
   const date = document.createElement('div')
@@ -256,12 +230,6 @@ export async function showLatestUpdate() {
 // ===================================================
 // ROLE HELPERS
 // ===================================================
-
-/**
- * Render a small role badge (HTML string).
- * Note: result is a string; when inserting into the DOM, prefer element.textContent
- * for the role label if you’re not expecting HTML.
- */
 export function getRoleBadge(input) {
   const role =
     input?.includes && input.includes('@')
@@ -274,11 +242,7 @@ export function getRoleBadge(input) {
             : 'student'
       : input || 'student'
 
-  const safeRole =
-    typeof role === 'string'
-      ? role.replace(/[^\w-]/g, '').toLowerCase()
-      : 'student'
-
+  const safeRole = typeof role === 'string' ? role.replace(/[^\w-]/g, '').toLowerCase() : 'student'
   const label = safeRole.charAt(0).toUpperCase() + safeRole.slice(1)
   return `<span class="role-badge ${safeRole}">${escapeHTML(label)}</span>`
 }
@@ -298,7 +262,7 @@ export async function getCurrentUserRoleAsync(userObj = null) {
     if (!auth?.currentUser) return getCurrentUserRole(userObj)
     const token = await auth.currentUser.getIdTokenResult(true)
     return token.claims.role || getCurrentUserRole(userObj)
-  } catch (_e) {
+  } catch {
     return getCurrentUserRole(userObj)
   }
 }
@@ -308,16 +272,13 @@ export function getCurrentSchoolId(userObj = null) {
 }
 
 export function showRoleToast(message, role = null, duration = 3200) {
-  const type =
-    role === 'admin' ? 'error' : role === 'instructor' ? 'success' : 'info'
-  // Compat supports both (msg,type,duration) and (msg,duration,type)
+  const type = role === 'admin' ? 'error' : role === 'instructor' ? 'success' : 'info'
   showToast(message, type, duration)
 }
 
 // ===================================================
 // ASYNC LOADER WRAPPER
 // ===================================================
-/** Wrap a promise-returning function with a page overlay loader. */
 export async function withLoader(taskFn) {
   showPageTransitionLoader()
   try {
@@ -328,98 +289,127 @@ export async function withLoader(taskFn) {
 }
 
 // ===================================================
-// FIRESTORE: ELDT PROGRESS HELPERS
+// FIRESTORE: ELDT PROGRESS HELPERS (robust to key type)
+// - Some code writes eldtProgress/<email>, others use eldtProgress/<studentId>.
+// - We read *both* and write to *both* when we can resolve a mapping.
 // ===================================================
+
+/** lowercased, trimmed string */
+const S = v => (v == null ? '' : String(v).trim())
+const SL = v => S(v).toLowerCase()
+
+/** try to map an email → studentId by looking up /students */
+async function findStudentIdByEmail(email) {
+  try {
+    if (!email || !email.includes('@')) return ''
+    const q = query(collection(db, 'students'), where('email', '==', SL(email)), limit(1))
+    const snap = await getDocs(q)
+    if (!snap.empty) return snap.docs[0].id
+  } catch {
+    /* non-fatal */
+  }
+  return ''
+}
+
+/**
+ * Resolve all progress doc ids we should touch for a given user identifier.
+ * - If an email is provided, returns [email, studentId?]
+ * - If a non-email id is provided, returns [id]
+ */
+async function resolveProgressDocIds(userIdOrEmail) {
+  const id = S(userIdOrEmail)
+  if (!id) return []
+  if (id.includes('@')) {
+    const sid = await findStudentIdByEmail(id)
+    return sid ? [SL(id), sid] : [SL(id)]
+  }
+  return [id]
+}
 
 /**
  * Upsert progress fields for a user; optionally append to history.
- * @param {string} userId
+ * Writes to all resolved eldtProgress docs (email + studentId when known).
+ * @param {string} userIdOrEmail
  * @param {object} fields
  * @param {{role?: 'student'|'instructor'|'admin'|'superadmin', logHistory?: boolean}} options
  */
-export async function updateELDTProgress(userId, fields, options = {}) {
+export async function updateELDTProgress(userIdOrEmail, fields, options = {}) {
+  const ids = await resolveProgressDocIds(userIdOrEmail)
+  if (!ids.length) return false
+
   try {
     const { role = 'student', logHistory = false } = options
-    const progressRef = doc(db, 'eldtProgress', userId)
-    const snap = await getDoc(progressRef)
+    const baseUpdate = { ...fields, lastUpdated: serverTimestamp(), role }
 
-    const updateObj = {
-      ...fields,
-      lastUpdated: serverTimestamp(),
-      role,
-    }
-
-    // Automatically add timestamp fields for *_Complete booleans
-    Object.keys(fields).forEach(k => {
+    // stamp *_Complete booleans
+    for (const k of Object.keys(fields)) {
       if (k.endsWith('Complete') && fields[k] === true) {
-        updateObj[`${k}At`] = serverTimestamp()
+        baseUpdate[`${k}At`] = serverTimestamp()
       }
-    })
-
-    if (snap.exists()) {
-      await updateDoc(progressRef, updateObj)
-    } else {
-      await setDoc(progressRef, { userId, ...updateObj })
     }
 
-    if (logHistory) {
-      const historyRef = collection(progressRef, 'history')
-      await addDoc(historyRef, {
-        ...fields,
-        updatedAt: serverTimestamp(),
-        updatedBy: userId,
-        role,
+    // write to all resolved doc ids
+    await Promise.all(
+      ids.map(async id => {
+        const ref = doc(db, 'eldtProgress', id)
+        const snap = await getDoc(ref)
+        if (snap.exists()) await updateDoc(ref, baseUpdate)
+        else await setDoc(ref, { userId: id, ...baseUpdate })
+        if (logHistory) {
+          const historyRef = collection(ref, 'history')
+          await addDoc(historyRef, {
+            ...fields,
+            updatedAt: serverTimestamp(),
+            updatedBy: id,
+            role,
+          })
+        }
       })
-    }
+    )
     return true
-  } catch (_e) {
-    console.error('❌ Error updating eldtProgress:', _e)
-    showToast(`Failed to update progress: ${_e?.message || _e}`, 'error', 4000)
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('❌ Error updating eldtProgress:', e)
+    showToast(`Failed to update progress: ${e?.message || e}`, 'error', 4000)
     return false
   }
 }
 
-export async function getUserProgress(userId) {
-  const progressRef = doc(db, 'eldtProgress', userId)
-  const snap = await getDoc(progressRef)
-  return snap.exists() ? snap.data() : {}
+/**
+ * Read progress for a user by email OR studentId.
+ * Prefers the email doc when present, else falls back to studentId.
+ */
+export async function getUserProgress(userIdOrEmail) {
+  const ids = await resolveProgressDocIds(userIdOrEmail)
+  if (!ids.length) return {}
+  // Prefer the first id (email if given); if empty, try the next
+  for (let i = 0; i < ids.length; i++) {
+    try {
+      const ref = doc(db, 'eldtProgress', ids[i])
+      const snap = await getDoc(ref)
+      if (snap.exists()) return snap.data() || {}
+    } catch {
+      /* try next id */
+    }
+  }
+  return {}
 }
 
 // --- CHECKLIST MILESTONES ---------------------------------------------
 export async function markStudentProfileComplete(studentEmail) {
-  await updateELDTProgress(
-    studentEmail,
-    { profileComplete: true },
-    { role: 'student' }
-  )
+  await updateELDTProgress(studentEmail, { profileComplete: true }, { role: 'student' })
 }
 export async function markStudentPermitUploaded(studentEmail) {
-  await updateELDTProgress(
-    studentEmail,
-    { permitUploaded: true },
-    { role: 'student' }
-  )
+  await updateELDTProgress(studentEmail, { permitUploaded: true }, { role: 'student' })
 }
 export async function markStudentVehicleUploaded(studentEmail) {
-  await updateELDTProgress(
-    studentEmail,
-    { vehicleUploaded: true },
-    { role: 'student' }
-  )
+  await updateELDTProgress(studentEmail, { vehicleUploaded: true }, { role: 'student' })
 }
 export async function markStudentWalkthroughComplete(studentEmail) {
-  await updateELDTProgress(
-    studentEmail,
-    { walkthroughComplete: true },
-    { role: 'student' }
-  )
+  await updateELDTProgress(studentEmail, { walkthroughComplete: true }, { role: 'student' })
 }
 export async function markStudentTestPassed(studentEmail) {
-  await updateELDTProgress(
-    studentEmail,
-    { practiceTestPassed: true },
-    { role: 'student' }
-  )
+  await updateELDTProgress(studentEmail, { practiceTestPassed: true }, { role: 'student' })
 }
 export async function verifyStudentProfile(studentEmail, instructorEmail) {
   await updateELDTProgress(
@@ -459,11 +449,7 @@ export async function adminUnlockStudentModule(studentEmail, adminEmail) {
 export async function adminFlagStudent(studentEmail, adminEmail, note = '') {
   await updateELDTProgress(
     studentEmail,
-    {
-      adminFlagged: true,
-      adminNote: String(note || ''),
-      lastActionBy: adminEmail || null,
-    },
+    { adminFlagged: true, adminNote: String(note || ''), lastActionBy: adminEmail || null },
     { role: 'admin', logHistory: true }
   )
 }
@@ -483,15 +469,11 @@ export async function adminResetStudentProgress(studentEmail, _adminEmail) {
 export async function incrementStudentStudyMinutes(studentEmail, minutes) {
   const m = Number(minutes) || 0
   if (!m) return
-  await updateELDTProgress(
-    studentEmail,
-    { studyMinutes: increment(m) },
-    { role: 'student' }
-  )
+  await updateELDTProgress(studentEmail, { studyMinutes: increment(m) }, { role: 'student' })
 }
 export async function logStudySession(studentEmail, minutes, context = '') {
-  const progressRef = doc(db, 'eldtProgress', studentEmail)
-  const historyRef = collection(progressRef, 'studySessions')
+  const ref = doc(db, 'eldtProgress', SL(studentEmail))
+  const historyRef = collection(ref, 'studySessions')
   await addDoc(historyRef, {
     minutes: Number(minutes) || 0,
     context: String(context || ''),

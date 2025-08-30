@@ -1,0 +1,81 @@
+/*src/student/walkthrough/components/ProgressBar.module.css*/
+/* ==========================================================================
+   Progress Bar (module)
+   - Themed via tokens from src/styles/theme.css
+   - Works with native <progress> styling fallbacks
+   ========================================================================== */
+
+.wrap {
+  margin: 10px 0 16px;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.heading {
+  font-size: .95rem;
+  color: var(--text-light, #fff);
+}
+
+.perc {
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in oklab, var(--text-light, #fff), #ffffff 40%);
+  font-size: .9rem;
+}
+
+/* Native progress element */
+.progress {
+  width: 100%;
+  height: 12px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: color-mix(in oklab, var(--card-bg, #0b0f14), #ffffff 7%);
+  border: 1px solid color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
+  border-radius: 999px;
+  overflow: hidden;
+  display: block;
+}
+
+/* WebKit */
+.progress::-webkit-progress-bar {
+  background: color-mix(in oklab, var(--card-bg, #0b0f14), #ffffff 7%);
+  border-radius: 999px;
+}
+.progress::-webkit-progress-value {
+  background: color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 15%);
+  border-right: 1px solid color-mix(in oklab, var(--brand-light, #4e91ad), #000 35%);
+  border-radius: 999px;
+  transition: width .25s ease;
+}
+
+/* Firefox */
+.progress::-moz-progress-bar {
+  background: color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 15%);
+  border-right: 1px solid color-mix(in oklab, var(--brand-light, #4e91ad), #000 35%);
+  border-radius: 999px;
+  transition: width .25s ease;
+}
+
+.caption {
+  display: block;
+  margin-top: 6px;
+  font-size: .9rem;
+  color: color-mix(in oklab, var(--text-light, #fff), #ffffff 35%);
+}
+
+/* High-contrast */
+@media (forced-colors: active) {
+  .progress { border-color: CanvasText; }
+  .progress::-webkit-progress-value,
+  .progress::-moz-progress-bar { background: Highlight; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .progress::-webkit-progress-value,
+  .progress::-moz-progress-bar { transition: none; }
+}

@@ -1,0 +1,77 @@
+/* src/student/walkthrough/drills/VisualRecallDrill.module.css */
+
+.root { display: grid; gap: 12px; }
+.title { margin: 0; font-weight: 800; color: var(--text-light); }
+
+.mediaRow {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 700px) {
+  .mediaRow {
+    grid-template-columns: auto 1fr;
+    align-items: start;
+  }
+}
+
+.figure { margin: 0; }
+.image {
+  max-width: min(260px, 40vw);
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  box-shadow: 0 2px 8px #0005, inset 0 1px 0 #ffffff10;
+  background: color-mix(in oklab, var(--brand-dark), #fff 3%);
+}
+.figcap {
+  margin-top: 6px;
+  font-size: .9rem;
+  color: color-mix(in oklab, var(--text-light), transparent 28%);
+}
+
+.question {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--brand-mid), #000 70%);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  color: var(--text-light);
+  box-shadow: 0 2px 8px #0005, inset 0 1px 0 #ffffff10;
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.input {
+  flex: 1 1 200px;
+  min-width: 160px;
+  background: var(--card-bg);
+  color: var(--text-light);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.hint {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--brand-mid), #000 70%);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  color: var(--text-light);
+  box-shadow: 0 2px 8px #0005, inset 0 1px 0 #ffffff10;
+}
+
+.status {
+  font-size: 0.96rem;
+  color: color-mix(in oklab, var(--text-light), transparent 20%);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .image { transition: none !important; }
+}

@@ -1,9 +1,31 @@
-// src/student/dashboard/components/QuickLinks.jsx
+// Path: src/student/dashboard/components/QuickLinks.jsx
 import PropTypes from 'prop-types'
 import React, { memo, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 import cls from './QuickLinks.module.css'
+
+/** Very small URL guard: disallow javascript: and data: schemes */
+function isSafeUrl(href = '') {
+  const v = String(href || '').trim()
+  if (!v) return false
+  const lower = v.toLowerCase()
+  if (lower.startsWith('javascript:') || lower.startsWith('data:')) return false
+  return true
+}
+
+/** Infer whether a link is external (http/https/mailto/tel) */
+function inferExternal(href = '') {
+  const v = String(href || '').trim()
+  if (!v) return false
+  if (/^(mailto:|tel:)/i.test(v)) return true
+  try {
+    const u = new URL(v)
+    return u.protocol === 'http:' || u.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
 
 /**
  * QuickLinks — compact row of actions.
@@ -11,7 +33,7 @@ import cls from './QuickLinks.module.css'
  * Each item may be:
  *  - internal route:  { to: '/student/profile', label: 'Profile', icon?: node }
  *  - external URL:    { href: 'https://fmcsa.dot.gov', label: 'FMCSA', icon?: node }
- *  - you can still pass `to` for external + set `external: true` (compat)
+ *  - `to` can still be used for externals (compat); we normalize to `href`.
  *
  * Optional per-item props:
  *  - icon?: ReactNode
@@ -50,23 +72,20 @@ function QuickLinks({
 
   const safeItems = useMemo(() => {
     if (!Array.isArray(items)) return []
-    return items.filter(Boolean).map(it => {
-      // normalize fields
+    return items.filter(Boolean).map((it) => {
       const href = it.href || it.to || ''
-      const isAbsolute = /^https?:\/\//i.test(href)
+      const safe = isSafeUrl(href) || !href.startsWith('javascript:')
+      const inferredExternal = inferExternal(href)
+      const external = it.external ?? inferredExternal
+      const isHttp = /^https?:\/\//i.test(href)
       const isProto = /^(mailto:|tel:)/i.test(href)
-
-      // if caller didn't force external, infer from URL
-      const external = (it.external ?? isAbsolute) || isProto
-
-      // default new tab: yes for http(s) externals, no for mailto/tel (unless caller opts in)
-      const newTab =
-        it.newTab !== undefined ? it.newTab : isAbsolute ? true : false
+      const newTab = it.newTab !== undefined ? it.newTab : isHttp ? true : false
 
       return {
         ...it,
         href,
-        external,
+        safe,
+        external: external || isProto,
         newTab,
       }
     })
@@ -76,7 +95,7 @@ function QuickLinks({
 
   return (
     <nav className={className} aria-label={ariaLabel}>
-      {safeItems.map(it => {
+      {safeItems.map((it) => {
         const {
           id,
           label,
@@ -87,16 +106,21 @@ function QuickLinks({
           disabled,
           title,
           onClick,
+          safe,
         } = it
-        const key = id || href || label || Math.random().toString(36).slice(2)
 
-        const Icon = icon ? (
-          <span className={cls.icon} aria-hidden>
-            {icon}
-          </span>
-        ) : null
+        // Solid key without Math.random (deterministic for hydration)
+        const key = id || href || label
 
-        if (disabled) {
+        const Icon =
+          icon != null ? (
+            <span className={cls.icon} aria-hidden>
+              {icon}
+            </span>
+          ) : null
+
+        // Disabled or unsafe → inert pill (keyboard focus skipped with tabIndex={-1})
+        if (disabled || !safe || (!href && !external)) {
           return (
             <span
               key={key}
@@ -137,7 +161,7 @@ function QuickLinks({
           )
         }
 
-        // Internal (spa route)
+        // Internal (SPA route)
         return (
           <Link
             key={key}

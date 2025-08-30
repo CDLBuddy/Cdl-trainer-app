@@ -27,7 +27,7 @@ import {
   TipsRow,
   UpdatesCard,
 } from './components'
-import styles from './dashboard.module.css'
+import styles from './StudentDashboard.module.css'
 import { useDashboardData } from './hooks/useDashboardData.js'
 // Centralized external resource helpers
 import { getResourcesForSchool, getSchedulerURL } from './links.js'
@@ -186,5 +186,3 @@ function StudentDashboard() {
 }
 
 export default StudentDashboard
-// Back-compat named export so barrels that re-export DashboardPage keep working.
-export { StudentDashboard as DashboardPage }

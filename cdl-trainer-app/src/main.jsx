@@ -2,7 +2,7 @@
 // ============================================================
 // App bootstrap (React + Vite + Data Router)
 // - Global styles
-// - School overrides (per-school links/scheduling)  <-- added
+// - School overrides (per-school links/scheduling)
 // - Branding pre-load (theme-color + live updates)
 // - Top-level providers (Toast, Session)
 // - Route preloading (public + role-aware, idle/network-aware)
@@ -12,6 +12,7 @@
 
 // 🔹 Must run before anything reads window.schoolWebsites / schoolScheduling
 import '@/setup/school-overrides.js'
+
 // Global styles
 import './styles/index.css'
 
@@ -20,14 +21,13 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 
 import SplashScreen from '@components/SplashScreen.jsx'
-import ToastProvider from '@components/useToast.js'
+import ToastProvider from '@components/ToastProvider.jsx' // ← FIXED
 import { useAuthStatus } from '@utils/auth.js'
 import { __DEV__ } from '@utils/env.js'
 import { warmRoutesOnSession } from '@utils/route-preload.js'
 import { getCurrentSchoolBranding } from '@utils/school-branding.js'
 
 import { SessionProvider, syncSessionDebug } from '@session'
-// Providers & utils
 
 // Router
 import { router } from './router.jsx'
@@ -35,19 +35,20 @@ import { router } from './router.jsx'
 /* ------------------------------------------------------------------ */
 /* Bootstrap (brand color hint)                                       */
 /* ------------------------------------------------------------------ */
-
 void (async () => {
   try {
     const brand = await getCurrentSchoolBranding()
     const meta = document.querySelector('meta[name="theme-color"]')
-    if (meta && brand?.primaryColor)
+    if (meta && brand?.primaryColor) {
       meta.setAttribute('content', brand.primaryColor)
+    }
 
-    // React to later branding switches (e.g., school switcher)
-    window.addEventListener('branding:updated', e => {
+    const onBrandingUpdated = (e) => {
       const b = e?.detail
       if (meta && b?.primaryColor) meta.setAttribute('content', b.primaryColor)
-    })
+    }
+    window.addEventListener('branding:updated', onBrandingUpdated)
+    // No removal here since this is app bootstrap; listener should live for app lifetime
   } catch (err) {
     if (__DEV__) console.warn('[bootstrap] Branding fetch failed:', err)
   }
@@ -57,7 +58,6 @@ void (async () => {
 /* Session root: exposes auth to context + warms routes on change     */
 /* Also mirrors a couple of legacy globals used by older modules.     */
 /* ------------------------------------------------------------------ */
-
 export function SessionRoot({ children }) {
   const auth = useAuthStatus() // { loading, isLoggedIn, role, user }
 
@@ -100,12 +100,14 @@ export function SessionRoot({ children }) {
       try {
         localStorage.setItem('schoolId', schoolId)
       } catch {
-        // Intentionally left blank: fallback if localStorage is unavailable
+        /* ignore */
       }
       // keep a window property too (older code checks window.schoolId first)
+      // @ts-ignore - augmenting window for legacy code
       window.schoolId = schoolId
     }
     if (email) {
+      // @ts-ignore - augmenting window for legacy code
       window.currentUserEmail = email
     }
   }, [value.user])
@@ -116,7 +118,6 @@ export function SessionRoot({ children }) {
 /* ------------------------------------------------------------------ */
 /* Optional: tiny top-level error boundary                            */
 /* ------------------------------------------------------------------ */
-
 export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)
@@ -158,13 +159,11 @@ export class ErrorBoundary extends React.Component {
 /* ------------------------------------------------------------------ */
 /* Mount                                                              */
 /* ------------------------------------------------------------------ */
-
 const container = document.getElementById('root')
 if (!container) {
   console.error('Root node "#root" not found in index.html')
   throw new Error('Root node "#root" not found')
 }
-
 const root = createRoot(container)
 
 root.render(
@@ -184,15 +183,6 @@ root.render(
     </ToastProvider>
   </React.StrictMode>
 )
-
-/* ------------------------------------------------------------------ */
-/* Optional: Service Worker (only if you ship /sw.js)                 */
-/* ------------------------------------------------------------------ */
-// if ('serviceWorker' in navigator && import.meta.env.PROD) {
-//   window.addEventListener('load', () => {
-//     navigator.serviceWorker.register('/sw.js').catch(() => {})
-//   })
-// }
 
 /* ------------------------------------------------------------------ */
 /* Vite HMR hygiene                                                   */

@@ -1,0 +1,57 @@
+/*src/student/walkthrough/drills/FillClozeDrill.module.css*/
+.root {
+  display: grid;
+  gap: 12px;
+}
+
+.prompt {
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.row {
+  display: grid;
+  gap: 8px;
+  align-items: start;
+}
+
+.tokenList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.token {
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--brand-mid), #000 70%);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 40%);
+  font-size: 0.9rem;
+}
+
+.input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid color-mix(in oklab, var(--accent), #000 45%);
+  background: color-mix(in oklab, var(--brand-dark), #fff 4%);
+  color: var(--text-light);
+  padding: 10px 12px;
+}
+
+.answer {
+  border-left: 3px solid color-mix(in oklab, var(--brand-light), #000 20%);
+  padding-left: 10px;
+  color: var(--text-light);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.hint {
+  color: color-mix(in oklab, var(--text-light), transparent 35%);
+  font-size: 0.9rem;
+}
