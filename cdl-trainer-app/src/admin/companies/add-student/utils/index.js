@@ -28,9 +28,9 @@ export const lazy = {
 }
 
 // ---- Frozen default bundle (nice for tests or ad-hoc scripts) ------------
+import * as transformsNS from './transforms.js'
 import trapFocusDefault from './trapFocus.js'
 import * as validationsNS from './validations.js'
-import * as transformsNS from './transforms.js'
 
 const utils = Object.freeze({
   trapFocus: trapFocusDefault,

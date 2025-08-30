@@ -5,6 +5,7 @@
 // - Aliases aligned with src structure (incl. @communications, @lib, @setup)
 // - Optional visualizer & inspect (opt-in via env vars)
 // - Stable vendor manualChunks for better browser caching
+// - CSS Modules tuned for ergonomic classnames
 // ======================================================================
 
 import { defineConfig, loadEnv } from 'vite'
@@ -14,7 +15,7 @@ import { fileURLToPath } from 'node:url'
 
 // ESM-safe __dirname
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
-const r = (p) => path.resolve(__dirname, p)
+const r = p => path.resolve(__dirname, p)
 
 // Optional bundle analyzer — run with VISUALIZE=1 (or VITE_VISUALIZE=1)
 async function maybeVisualizer(enabled) {
@@ -39,15 +40,15 @@ async function maybeInspect(enabled) {
 export default defineConfig(async ({ mode }) => {
   // Load both VITE_* and bare envs so VISUALIZE/INSPECT work either way
   const envVite = loadEnv(mode, process.cwd(), 'VITE_')
-  const envAll  = loadEnv(mode, process.cwd(), '')
+  const envAll = loadEnv(mode, process.cwd(), '')
 
-  const isProd  = mode === 'production'
+  const isProd = mode === 'production'
   const analyze = (envVite.VITE_VISUALIZE ?? envAll.VISUALIZE) ? true : false
-  const inspect = (envVite.VITE_INSPECT   ?? envAll.INSPECT)   ? true : false
+  const inspect = (envVite.VITE_INSPECT ?? envAll.INSPECT) ? true : false
   const lanHost = (envVite.VITE_LAN ?? envAll.VITE_LAN) === '1'
 
   const visualizerPlugin = await maybeVisualizer(analyze)
-  const inspectPlugin    = await maybeInspect(inspect)
+  const inspectPlugin = await maybeInspect(inspect)
 
   return {
     plugins: [
@@ -64,8 +65,11 @@ export default defineConfig(async ({ mode }) => {
         // ===== Shared Communications =====
         '@communications': r('src/communications'),
 
-        // ===== lib (user-profile module) =====
+        // ===== lib =====
         '@lib': r('src/lib'),
+        '@lib/scheduling': r('src/lib/scheduling'),
+
+        // user-profile convenience
         '@user-profile': r('src/lib/user-profile'),
         '@user-profile/helpers': r('src/lib/user-profile/helpers.js'),
         '@user-profile/normalize': r('src/lib/user-profile/normalize.js'),
@@ -116,12 +120,21 @@ export default defineConfig(async ({ mode }) => {
 
         // Admin
         '@admin': r('src/admin'),
+        '@admin/dashboard': r('src/admin/dashboard'),
         '@admin-walkthroughs': r('src/admin/walkthroughs'),
 
         '@superadmin': r('src/superadmin'),
       },
       // Ensure one copy of React in the graph
       dedupe: ['react', 'react-dom'],
+    },
+
+    css: {
+      // CSS Modules ergonomics: .foo-bar -> styles.fooBar
+      modules: {
+        localsConvention: 'camelCaseOnly',
+      },
+      // (optional) postcss handled via postcss.config.js if present
     },
 
     server: {
@@ -149,6 +162,11 @@ export default defineConfig(async ({ mode }) => {
         'firebase/auth',
         'firebase/firestore',
         'firebase/storage',
+      // FullCalendar (widget)
+        '@fullcalendar/react',
+        '@fullcalendar/daygrid',
+        '@fullcalendar/timegrid',
+        '@fullcalendar/interaction',
       ],
       esbuildOptions: { target: 'es2020' },
     },
@@ -157,9 +175,9 @@ export default defineConfig(async ({ mode }) => {
       target: 'es2020',
       sourcemap: !isProd,
       cssCodeSplit: true,
-      cssMinify: true,                 // Vite 5+ flag
-      reportCompressedSize: false,     // faster builds; use visualizer when needed
-      chunkSizeWarningLimit: 1024,     // router + firebase can be chunky
+      cssMinify: true,
+      reportCompressedSize: false, // faster builds; use visualizer when needed
+      chunkSizeWarningLimit: 1024, // router + firebase can be chunky
       rollupOptions: {
         output: {
           manualChunks: {
@@ -171,6 +189,13 @@ export default defineConfig(async ({ mode }) => {
               'firebase/auth',
               'firebase/firestore',
               'firebase/storage',
+            ],
+            // optional: split calendar libs to a stable chunk
+            'vendor-calendar': [
+              '@fullcalendar/react',
+              '@fullcalendar/daygrid',
+              '@fullcalendar/timegrid',
+              '@fullcalendar/interaction',
             ],
           },
         },

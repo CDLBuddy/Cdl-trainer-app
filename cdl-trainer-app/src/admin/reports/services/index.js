@@ -63,7 +63,6 @@ export { exporters, fieldMaps, mappers, reportsApi, tprClient, validators }
 // ---- Code-splitting helpers (unchanged) ----------------------------------
 export const lazy = {
   reportsApi: () => import('./reportsApi.js'),
-  tprClient: () => import('./tprClient.js'),
   fieldMaps: () => import('./fieldMaps.js'),
   mappers: () => import('./mappers.js'),
   validators: () => import('./validators.js'),

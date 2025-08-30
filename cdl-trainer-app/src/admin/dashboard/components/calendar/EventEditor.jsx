@@ -1,10 +1,13 @@
 // Path: src/admin/dashboard/components/calendar/EventEditor.jsx
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
-import styles from './EventEditor.module.css'
+import React, { memo, useEffect, useId, useMemo, useRef, useState } from 'react'
+
 import { useToast } from '@components/useToast.js'
 
-/** Deterministic pastel-ish color from a string (e.g., instructorId) */
+import styles from './EventEditor.module.css'
+
+/* ───────────────────────── Color helpers ───────────────────────── */
+
 function colorFromSeed(seed = '') {
   let h = 0
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0
@@ -12,25 +15,33 @@ function colorFromSeed(seed = '') {
   return `hsl(${hue} 65% 48%)`
 }
 
-/* ----- local date helpers (datetime-local expects local w/o Z) ----- */
+function normalizeColor(v) {
+  if (!v) return ''
+  const s = String(v).trim()
+  if (/^#?[0-9a-fA-F]{3,8}$/.test(s)) return s.startsWith('#') ? s : `#${s}`
+  if (/^hsla?\(/i.test(s)) return s
+  return ''
+}
+
+/* ─────────────────────── Local date helpers ─────────────────────── */
+
+const pad = n => String(n).padStart(2, '0')
+
 function toLocalDateInput(iso) {
   if (!iso) return ''
   const d = new Date(iso)
   if (Number.isNaN(+d)) return ''
-  const pad = n => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 function toLocalDatetimeInput(iso) {
   if (!iso) return ''
   const d = new Date(iso)
   if (Number.isNaN(+d)) return ''
-  const pad = n => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 function fromLocalDateInput(v) {
-  // Treat as local date at midnight local time
   if (!v) return ''
-  const d = new Date(v + 'T00:00:00')
+  const d = new Date(`${v}T00:00:00`)
   return Number.isNaN(+d) ? '' : d.toISOString()
 }
 function fromLocalDatetimeInput(v) {
@@ -39,7 +50,9 @@ function fromLocalDatetimeInput(v) {
   return Number.isNaN(+d) ? '' : d.toISOString()
 }
 
-export default function EventEditor({
+/* ─────────────────────────── Component ─────────────────────────── */
+
+function EventEditor({
   open,
   initial,
   instructors = [],
@@ -50,10 +63,10 @@ export default function EventEditor({
   const toast = useToast()
   const [v, setV] = useState(initial || {})
   const sheetRef = useRef(null)
+  const firstFieldRef = useRef(null)
   const titleId = useId()
   const descId = useId()
 
-  // Memoized instructor options (stable labels)
   const instructorOptions = useMemo(
     () =>
       (instructors || []).map(i => ({
@@ -63,7 +76,6 @@ export default function EventEditor({
     [instructors]
   )
 
-  // Default color by instructor when none selected
   const autoColor = useMemo(
     () => colorFromSeed(String(v.instructorId || 'default')),
     [v.instructorId]
@@ -73,7 +85,13 @@ export default function EventEditor({
     setV(initial || {})
   }, [initial])
 
-  // Close on ESC, handle Cmd/Ctrl+Enter submit, focus trap
+  useEffect(() => {
+    if (open) {
+      const t = setTimeout(() => firstFieldRef.current?.focus?.(), 0)
+      return () => clearTimeout(t)
+    }
+  }, [open])
+
   useEffect(() => {
     if (!open) return
     const onKey = e => {
@@ -88,13 +106,14 @@ export default function EventEditor({
         handleSubmit()
       }
       if (e.key === 'Tab') {
-        // very small focus trap
         const root = sheetRef.current
         if (!root) return
-        const f = root.querySelectorAll(
+        const all = root.querySelectorAll(
           'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'
         )
-        const focusables = Array.from(f).filter(el => !el.hasAttribute('disabled'))
+        const focusables = Array.from(all).filter(
+          el => !el.hasAttribute('disabled') && el.getAttribute('tabindex') !== '-1'
+        )
         if (!focusables.length) return
         const first = focusables[0]
         const last = focusables[focusables.length - 1]
@@ -109,33 +128,53 @@ export default function EventEditor({
     }
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
-  }, [open, onClose]) // handleSubmit is stable below via closure
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, onClose])
 
   if (!open) return null
 
   const set = (k, val) => setV(prev => ({ ...prev, [k]: val }))
 
-  const handleSubmit = () => {
+  const validate = () => {
     if (!v?.title?.trim()) {
       toast.warn?.('Title is required.')
-      return
+      return false
     }
     if (!v?.start || !v?.end) {
       toast.warn?.('Start and End required.')
-      return
+      return false
     }
-    onSave?.(v)
+    const s = new Date(v.start)
+    const e = new Date(v.end)
+    if (Number.isNaN(+s) || Number.isNaN(+e)) {
+      toast.error?.('Invalid date/time.')
+      return false
+    }
+    if (e < s) {
+      toast.warn?.('End time must be after start time.')
+      return false
+    }
+    return true
   }
 
-  // When allDay flips, adapt inputs
+  const handleSubmit = () => {
+    const color = normalizeColor(v.color) || autoColor
+    const payload = { ...v, color }
+    if (!validate()) return
+    onSave?.(payload)
+  }
+
   const onToggleAllDay = checked => {
-    // Convert current start/end to date-only if switching on
     if (checked) {
       const start = toLocalDateInput(v.start || new Date().toISOString())
       const end = toLocalDateInput(v.end || v.start || new Date().toISOString())
-      setV(prev => ({ ...prev, allDay: true, start: fromLocalDateInput(start), end: fromLocalDateInput(end) }))
+      setV(prev => ({
+        ...prev,
+        allDay: true,
+        start: fromLocalDateInput(start),
+        end: fromLocalDateInput(end),
+      }))
     } else {
-      // Switch back to datetime, keep same day at 08:00–09:00 as reasonable default
       const startDate = toLocalDateInput(v.start || new Date().toISOString())
       const endDate = toLocalDateInput(v.end || v.start || new Date().toISOString())
       const start = fromLocalDatetimeInput(`${startDate}T08:00`)
@@ -151,11 +190,14 @@ export default function EventEditor({
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={descId}
-      onClick={e => {
-        if (e.target === e.currentTarget) onClose?.()
-      }}
     >
-      <div className={styles.scrim} />
+      {/* Make scrim a real interactive element to satisfy a11y rules */}
+      <button
+        type="button"
+        className={styles.scrim}
+        aria-label="Close editor"
+        onClick={() => onClose?.()}
+      />
       <section className={styles.sheet} ref={sheetRef}>
         <header className={styles.header}>
           <h3 id={titleId}>{v?.id ? 'Edit Event' : 'New Event'}</h3>
@@ -183,6 +225,7 @@ export default function EventEditor({
           <label className={styles.row}>
             <span className={styles.label}>Title</span>
             <input
+              ref={firstFieldRef}
               className={styles.input}
               value={v.title || ''}
               onChange={e => set('title', e.target.value)}
@@ -302,13 +345,13 @@ export default function EventEditor({
                 <input
                   type="color"
                   className={styles.color}
-                  value={v.color || autoColor}
+                  value={normalizeColor(v.color) || autoColor}
                   onChange={e => set('color', e.target.value)}
                   aria-label="Pick event color"
                 />
                 <input
                   className={styles.input}
-                  value={v.color || autoColor}
+                  value={normalizeColor(v.color) || autoColor}
                   onChange={e => set('color', e.target.value)}
                   placeholder="#4e91ad"
                 />
@@ -317,9 +360,7 @@ export default function EventEditor({
                   className={styles.btn}
                   onClick={() => {
                     set('color', autoColor)
-                    // Soft nudge so users know what's happening
-                    // (no-op if you don't have a ToastProvider)
-                    try { /* optional */ } finally {}
+                    toast.info?.('Color reset based on instructor.')
                   }}
                   title="Reset to default by instructor"
                 >
@@ -378,3 +419,13 @@ EventEditor.propTypes = {
   onDelete: PropTypes.func,
   onClose: PropTypes.func,
 }
+
+EventEditor.defaultProps = {
+  initial: null,
+  instructors: [],
+  onSave: undefined,
+  onDelete: undefined,
+  onClose: undefined,
+}
+
+export default memo(EventEditor)

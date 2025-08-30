@@ -27,8 +27,8 @@ export const lazy = {
 
 // ---- Convenient default bundle (useful in tests/scripts) ------------------
 import useAddStudentForm from './useAddStudentForm.js'
-import useInstructorOptions from './useInstructorOptions.js'
 import useInstructorList from './useInstructorList.js'
+import useInstructorOptions from './useInstructorOptions.js'
 
 const hooks = Object.freeze({
   useAddStudentForm,

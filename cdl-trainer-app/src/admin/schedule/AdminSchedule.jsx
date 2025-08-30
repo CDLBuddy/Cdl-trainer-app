@@ -5,9 +5,12 @@
 // ======================================================================
 
 import React, { Suspense, useMemo, useState } from 'react'
+
 import Shell from '@components/Shell.jsx'
-import { useAuthSchoolGuard } from '@admin/dashboard/hooks'
+
 import { useInstructorOptions } from '@admin/companies/add-student/hooks'
+import { useAuthSchoolGuard } from '@admin/dashboard/hooks'
+
 const CalendarWidget = React.lazy(() =>
   import('@admin/dashboard/components/calendar/CalendarWidget.jsx')
 )

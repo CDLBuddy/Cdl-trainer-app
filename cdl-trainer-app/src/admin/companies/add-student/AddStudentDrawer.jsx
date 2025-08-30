@@ -9,11 +9,10 @@
 //             autofocus first field, instructor dropdown fed from Firestore.
 // ============================================================================
 
-import React, { memo, useCallback, useEffect, useId } from 'react'
 import PropTypes from 'prop-types'
+import React, { memo, useCallback, useEffect, useId } from 'react'
 
 import styles from './AddStudentDrawer.module.css'
-
 // Local UI atoms/molecules (barrel)
 import {
   DrawerShell,
@@ -21,7 +20,6 @@ import {
   FormFields,
   OverlayChips,
 } from './components/index.js'
-
 // Hooks
 import { useAddStudentForm } from './hooks/index.js'
 import useInstructorList from './hooks/useInstructorList.js'
@@ -89,7 +87,6 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
           e.preventDefault()
           handleSubmit()
         }}
-        onKeyDown={onFormKeyDown}
         className={styles.form}
         aria-describedby={error ? errorId : descId}
         aria-busy={saving ? 'true' : 'false'}
@@ -108,6 +105,7 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
           firstFieldRef={firstFieldRef}
           instructors={instructors}
           instructorsLoading={!!instructorsLoading}
+          onFirstFieldKeyDown={onFormKeyDown}
         />
 
         {/* Instructor list status (non-blocking; SR-friendly) */}

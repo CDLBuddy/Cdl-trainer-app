@@ -20,7 +20,7 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 
 import SplashScreen from '@components/SplashScreen.jsx'
-import ToastProvider from '@components/ToastProvider.jsx'
+import ToastProvider from '@components/useToast.js'
 import { useAuthStatus } from '@utils/auth.js'
 import { __DEV__ } from '@utils/env.js'
 import { warmRoutesOnSession } from '@utils/route-preload.js'

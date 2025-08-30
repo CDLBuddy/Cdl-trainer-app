@@ -1,0 +1,9 @@
+{
+    "window.menuBarVisibility": "compact",
+    "security.workspace.trust.untrustedFiles": "open",
+    "workbench.editor.empty.hint": "hidden",
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "chatgpt.apiBase": ""
+}

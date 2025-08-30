@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import { useToast } from '@components/ToastProvider.jsx'
+import { useToast } from '@components/useToast'
 
 import { useComposeMessage, useTemplates } from '../hooks'
 

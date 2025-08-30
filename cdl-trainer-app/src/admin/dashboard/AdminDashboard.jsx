@@ -12,6 +12,8 @@ import React, { lazy, Suspense, useCallback, useMemo } from 'react'
 
 import Shell from '@components/Shell.jsx'
 
+// Re-use instructor options from Add-Student module
+import { useInstructorOptions } from '@admin/companies/add-student/hooks'
 import {
   useAuthSchoolGuard,
   useCompaniesSnapshot,  // -> { loading, rows, total, error, refresh }
@@ -19,9 +21,6 @@ import {
   useDashboardKpis,     // -> { loading, data,  error, refresh }
   useRecentActivity,    // -> { loading, data,  error, refresh }
 } from '@admin/dashboard/hooks'
-
-// Re-use instructor options from Add-Student module
-import { useInstructorOptions } from '@admin/companies/add-student/hooks'
 
 import styles from './AdminDashboard.module.css'
 
@@ -102,7 +101,7 @@ export default function AdminDashboard() {
 
   // Instructor options for the calendar’s editor (active + “Unassigned”)
   const { options: instructorOptions = [], loading: instrLoading } =
-    useInstructorOptions({ schoolId, activeOnly: true, withUnassigned: true, max: 200 })
+    useInstructorOptions({ schoolId })
 
   const isLoading =
     guardLoading || kpiLoading || coLoading || alertLoading || actLoading
@@ -241,11 +240,12 @@ export default function AdminDashboard() {
             <CalendarWidget
               schoolId={schoolId}
               mode="admin"
+              instructorId={null}
               instructors={instructorOptions}
               compact
               onRequestExpand={() => {
                 // Navigate to a fuller calendar view if/when you add that route
-                try { window.location.assign('/admin/schedule') } catch {}
+                try { window.location.assign('/admin/schedule') } catch { /* ignore navigation errors */ }
               }}
             />
             {instrLoading && <p className="u-muted" style={{ marginTop: 4 }}>Loading instructors…</p>}

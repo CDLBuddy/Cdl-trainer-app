@@ -1,8 +1,10 @@
 // src/admin/dashboard/components/InstructorScheduleCard.jsx
 import React from 'react'
-import CalendarWidget from './calendar/CalendarWidget.jsx'
+
+
 import useInstructorsList from '@admin/companies/add-student/hooks/useInstructorList.js'
-import { auth } from '@utils/firebase.js'
+
+import CalendarWidget from './calendar/CalendarWidget.jsx'
 
 export default function InstructorScheduleCard({ schoolId, onExpand }) {
   const { instructors = [] } = useInstructorsList({ withUnassigned: false, activeOnly: true, max: 500 })

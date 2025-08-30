@@ -213,7 +213,6 @@ export async function loadDashboardSnapshot(opts = {}) {
   ])
 
   // Defer to our shared helpers for links/scheduling
-  const { getResourcesForSchool, getSchedulerURL } = await import('../links.js')
   const links = getResourcesForSchool(schoolId)
   const scheduler = getSchedulerURL(schoolId)
 

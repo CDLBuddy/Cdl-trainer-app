@@ -39,22 +39,18 @@ import { createContext } from 'react'
 /**
  * Full Toast API exposed via context. Safe no-ops without a provider.
  * Matching both legacy and modern method names.
- * @typedef {ToastCallable & {
- *   // legacy shorthands
- *   show: (message: string, type?: ToastType, duration?: number, opts?: object) => string|number|void,
- *   showToast: (message: string, type?: ToastType, duration?: number, opts?: object) => string|number|void,
- *   // typed helpers
- *   success: (message: string, opts?: ToastOptions) => string|number|void,
- *   error:   (message: string, opts?: ToastOptions) => string|number|void,
- *   info:    (message: string, opts?: ToastOptions) => string|number|void,
- *   warn:    (message: string, opts?: ToastOptions) => string|number|void,
- *   // control
- *   dismiss: (id?: string|number) => void,
- *   hideToast: (id?: string|number) => void,      // alias → dismiss
- *   clear:   () => void,
- *   clearToasts: () => void,                       // alias → clear
- *   update:  (id: string|number, patch: Partial<ToastOptions & { message?: string, type?: ToastType }>) => void,
- * }} ToastAPI
+ * @typedef {ToastCallable & Object} ToastAPI
+ * @property {(message: string, type?: ToastType, duration?: number, opts?: object) => string|number|void} show
+ * @property {(message: string, type?: ToastType, duration?: number, opts?: object) => string|number|void} showToast
+ * @property {(message: string, opts?: ToastOptions) => string|number|void} success
+ * @property {(message: string, opts?: ToastOptions) => string|number|void} error
+ * @property {(message: string, opts?: ToastOptions) => string|number|void} info
+ * @property {(message: string, opts?: ToastOptions) => string|number|void} warn
+ * @property {(id?: string|number) => void} dismiss
+ * @property {(id?: string|number) => void} hideToast
+ * @property {() => void} clear
+ * @property {() => void} clearToasts
+ * @property {(id: string|number, patch: Partial<ToastOptions & { message?: string, type?: ToastType }>) => void} update
  */
 
 /** @type {ToastAPI} */

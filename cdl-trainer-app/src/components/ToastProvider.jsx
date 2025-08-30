@@ -8,13 +8,14 @@ import React, {
 } from 'react'
 
 import { __DEV__ } from '@utils/env.js'
-import ToastContext from './ToastContext.js'
+
 import { ToastContainer } from './Toast.jsx'
+import ToastContext from './ToastContext.js'
 
 // Bridge for non-React callers (optional; guard at runtime)
 let bindCompat = null
 try {
-  // eslint-disable-next-line import/no-unresolved
+   
   // @ts-ignore: optional module
   bindCompat = (await import('./toast-compat.js')).__bindToastCompat || null
 } catch {

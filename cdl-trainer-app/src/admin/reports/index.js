@@ -40,9 +40,7 @@ export async function prefetchReports() {
       import('./student-reports/pdf-utils.js').catch(() => {}),
 
       // Warm TPR services used by useTPRSubmit
-      import('./hooks/useTPRSubmit.js')
-        .then(m => m.prefetchTPRServices?.())
-        .catch(() => {}),
+      import('./hooks').then(m => m.prefetchTPRServices?.()).catch(() => {}),
     ])
   } catch {
     // best-effort prefetch; silently ignore

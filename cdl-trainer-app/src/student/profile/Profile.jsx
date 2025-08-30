@@ -8,9 +8,9 @@
 // - Section status plumbing for headers
 // ============================================================================
 
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/useToast.js'
@@ -20,6 +20,7 @@ import {
   markStudentProfileComplete,
   markStudentVehicleUploaded,
 } from '@utils/ui-helpers.js'
+
 import { getWalkthroughLabel } from '@walkthrough-data'
 
 // 🔁 Use the barrel under src/lib/user-profile + the DATA-level subscriber

@@ -38,5 +38,6 @@ export { useScriptState as useScriptsState } from './hooks/useScriptState.js'
 /* ───────────── Optional default namespace ───────────── */
 import * as hooksNS from './hooks/index.js'
 import * as servicesNS from './services/index.js'
+
 const shared = { services: servicesNS, hooks: hooksNS }
 export default shared

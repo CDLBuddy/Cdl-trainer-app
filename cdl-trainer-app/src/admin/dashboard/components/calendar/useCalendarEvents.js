@@ -8,6 +8,9 @@
 // ======================================================================
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+import { useToast } from '@components/useToast.js'
+
 import {
   subscribeSchoolEvents,
   subscribeInstructorEvents,
@@ -16,7 +19,6 @@ import {
   deleteEventById as __deleteEvent,
   upsertEvent as __upsertEvent,
 } from '@lib/scheduling/firestore.js'
-import { useToast } from '@components/useToast.js'
 
 /** @typedef {'confirmed'|'tentative'|'cancelled'} EventStatus */
 
@@ -97,7 +99,7 @@ export default function useCalendarEvents({ schoolId, mode = 'admin', instructor
     mountedRef.current = true
     return () => {
       mountedRef.current = false
-      try { unsubRef.current?.() } catch {}
+      try { unsubRef.current?.() } catch { /* intentionally ignored */ }
     }
   }, [])
 
@@ -107,13 +109,13 @@ export default function useCalendarEvents({ schoolId, mode = 'admin', instructor
       setEvents([])
       setLoading(false)
       setError(null)
-      try { unsubRef.current?.() } catch {}
+      try { unsubRef.current?.() } catch { /* intentionally ignored */ }
       return
     }
 
     setLoading(true)
     setError(null)
-    try { unsubRef.current?.() } catch {}
+    try { unsubRef.current?.() } catch { /* intentionally ignored */ }
 
     try {
       unsubRef.current =
@@ -137,7 +139,7 @@ export default function useCalendarEvents({ schoolId, mode = 'admin', instructor
       }
     }
 
-    return () => { try { unsubRef.current?.() } catch {} }
+    return () => { try { unsubRef.current?.() } catch { /* intentionally ignored */ } }
   }, [schoolId, mode, instructorId, toast])
 
   // ---- CRUD (stable callbacks + toasts) -----------------------------------

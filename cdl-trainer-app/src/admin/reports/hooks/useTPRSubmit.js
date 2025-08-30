@@ -18,7 +18,6 @@ async function loadServices() {
       const [mappers, validators, tprClient] = await Promise.all([
         import('../services/mappers.js'),
         import('../services/validators.js'),
-        import('../services/tprClient.js'),
       ])
       return {
         toCompletion: mappers?.toTPRCompletion || (x => x),

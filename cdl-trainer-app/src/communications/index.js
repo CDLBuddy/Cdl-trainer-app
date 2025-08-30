@@ -18,9 +18,9 @@ export { default as Announcements } from './components/InboxList.jsx'
 //   const InboxList  = React.lazy(loadInboxList)
 //   const InboxBell  = React.lazy(loadInboxBell)
 //   // (optional) somewhere idle/hover: preloadInboxList()
-export const loadInboxList = /* @__PURE__ */ () =>
+export const loadInboxList =  () =>
   import('./components/InboxList.jsx')
-export const loadInboxBell = /* @__PURE__ */ () =>
+export const loadInboxBell =  () =>
   import('./components/InboxBell.jsx')
 
 // --- Optional: tiny preloads (best-effort; safe to call multiple times)

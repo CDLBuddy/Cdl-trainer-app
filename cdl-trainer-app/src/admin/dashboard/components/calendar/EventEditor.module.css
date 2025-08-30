@@ -9,19 +9,35 @@
 .portal {
   position: fixed;
   inset: 0;
-  z-index: 100000;
+  z-index: var(--z-modal, 1400);
   display: grid;
   place-items: center;
 }
+
+/* Scrim is a <button>: reset native button styles + a11y focus */
 .scrim {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, .45);
+
+  appearance: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: default;
+  color: transparent;
+  font: inherit;
+}
+.scrim:focus { outline: none; }
+.scrim:focus-visible {
+  outline: none;
+  box-shadow: var(--ring, 0 0 0 3px rgba(78,145,173,.25)) inset;
 }
 
 /* ---- Sheet / modal container ------------------------------------------ */
-/* New name used by the upgraded component */
-.sheet {
+/* Support both .sheet (new) and .modal (legacy) */
+.sheet,
+.modal {
   position: relative;
   width: min(720px, 96vw);
   background: var(--card-bg, #0b0f14);
@@ -33,10 +49,9 @@
   max-height: 90vh;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,.08);
+  transform: translateY(0);
+  will-change: transform, opacity;
 }
-
-/* Back-compat alias for older code that referenced `.modal` */
-.modal { composes: sheet; }
 
 /* ---- Header ------------------------------------------------------------ */
 .header {
@@ -46,26 +61,32 @@
   padding: 12px 16px;
   border-bottom: 1px solid rgba(255,255,255,.08);
 }
-.icon {
+
+/* Support both .icon (new) and .iconBtn (legacy) */
+.icon,
+.iconBtn {
   background: transparent;
   border: 0;
   color: inherit;
   font-size: 18px;
   cursor: pointer;
+  border-radius: 8px;
+  padding: 4px 8px;
 }
-/* Back-compat alias */
-.iconBtn { composes: icon; }
+.icon:focus,
+.iconBtn:focus { outline: none; }
+.icon:focus-visible,
+.iconBtn:focus-visible { box-shadow: var(--ring); }
 
 /* ---- Form body --------------------------------------------------------- */
-/* New name used by upgraded component */
-.form {
+/* Support both .form (new) and .body (legacy) */
+.form,
+.body {
   display: grid;
   gap: 12px;
   padding: 12px 16px;
   overflow: auto;
 }
-/* Back-compat alias */
-.body { composes: form; }
 
 .hint {
   color: var(--text-dark, #9aa8b2);
@@ -73,10 +94,7 @@
   font-size: .95rem;
 }
 
-.row {
-  display: grid;
-  gap: 6px;
-}
+.row { display: grid; gap: 6px; }
 .rowCheck {
   display: inline-flex;
   align-items: center;
@@ -100,6 +118,14 @@ select,
   background: rgba(255,255,255,.04);
   color: inherit;
   padding: 10px;
+  min-height: 38px;
+}
+.input:focus,
+.textarea:focus,
+select:focus {
+  outline: none;
+  box-shadow: var(--ring);
+  border-color: color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 25%);
 }
 .textarea { resize: vertical; }
 
@@ -125,17 +151,17 @@ select,
 }
 
 /* ---- Footer / actions -------------------------------------------------- */
-/* New name */
-.actions {
+/* Support both .actions (new) and .footer (legacy) */
+.actions,
+.footer {
   display: flex;
   gap: 10px;
   align-items: center;
   padding: 12px 16px;
   border-top: 1px solid rgba(255,255,255,.08);
 }
-/* Back-compat alias */
-.footer { composes: actions; }
 
+/* Buttons */
 .btn,
 .btnGhost,
 .btnPrimary,
@@ -149,12 +175,21 @@ select,
   color: inherit;
   font-weight: 700;
 }
+.btn:focus,
+.btnGhost:focus,
+.btnPrimary:focus,
+.btnDanger:focus { outline: none; }
+.btn:focus-visible,
+.btnGhost:focus-visible,
+.btnPrimary:focus-visible,
+.btnDanger:focus-visible { box-shadow: var(--ring); }
+
 .btnPrimary {
   border-color: var(--brand-light, #4e91ad);
   background: color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 90%);
   color: #0b0f14;
 }
-.btnGhost { /* inherits base */ }
+/* .btnGhost inherits base styles from .btn */
 .btnDanger {
   border-color: #e53e3e;
   background: #e53e3e;

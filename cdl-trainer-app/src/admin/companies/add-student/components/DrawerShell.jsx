@@ -3,8 +3,9 @@ import PropTypes from 'prop-types'
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import styles from './DrawerShell.module.css'
 import { trapFocus } from '../utils' // barrel export
+
+import styles from './DrawerShell.module.css'
 
 // Respect prefers-reduced-motion: shorten/disable transitions
 function getAnimMs() {

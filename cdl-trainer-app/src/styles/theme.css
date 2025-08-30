@@ -58,6 +58,21 @@
   --z-modal: 1400;
   --z-toast: 1600;
 }
+/* -------- Calendar (theming hooks) -------- */
+:root {
+  --calendar-toolbar-bg: color-mix(in oklab, var(--card-bg), #000 8%);
+  --calendar-toolbar-border: color-mix(in oklab, var(--accent), #000 70%);
+  --calendar-grid-border: color-mix(in oklab, var(--accent), #000 78%);
+  --calendar-page-bg: transparent;
+  --calendar-text: var(--text-light);
+  --calendar-muted: var(--text-dark);
+  --calendar-now: var(--brand-light);
+  --calendar-event-ring: rgba(0,0,0,.25);
+  --calendar-event-shadow: 0 6px 18px rgba(0,0,0,.25);
+  /* Event badges fall back to brand if event.color not provided */
+  --calendar-event-bg: color-mix(in oklab, var(--brand-light), #000 12%);
+  --calendar-event-border: color-mix(in oklab, var(--brand-light), #000 35%);
+}
 
 /* Optional: role-aware accent nuance (use if desired) */
 /*

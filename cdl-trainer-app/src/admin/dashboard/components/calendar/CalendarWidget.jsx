@@ -1,27 +1,26 @@
 // Path: src/admin/dashboard/components/calendar/CalendarWidget.jsx
-import React, { useMemo, useState } from 'react'
-import PropTypes from 'prop-types'
-import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import '@fullcalendar/daygrid/index.css'
-import '@fullcalendar/timegrid/index.css'
+import FullCalendar from '@fullcalendar/react'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import PropTypes from 'prop-types'
+import React, { useMemo, useState } from 'react'
 
-import useCalendarEvents from './useCalendarEvents.js'
-import EventEditor from './EventEditor.jsx'
-import styles from './CalendarWidget.module.css'
 import { useToast } from '@components/useToast.js'
 
+import styles from './CalendarWidget.module.css'
+import EventEditor from './EventEditor.jsx'
+import useCalendarEvents from './useCalendarEvents.js'
+
 // Map our domain event -> FullCalendar EventInput
-const mapToFC = e => ({
+const mapToFC = (e) => ({
   id: e.id,
   title: e.title || '(Untitled)',
   start: e.start,
   end: e.end,
   allDay: !!e.allDay,
   extendedProps: e,
-  // Fallbacks (CSS var is preferred, but FC props ensure color even if CSS var is missed)
+  // Fallbacks (FC props ensure color even if CSS var/attr is missed)
   backgroundColor: e.color,
   borderColor: e.color,
   textColor: '#fff',
@@ -45,8 +44,11 @@ export default function CalendarWidget({
 
   const fcEvents = useMemo(() => events.map(mapToFC), [events])
 
-  const openCreateAt = date => {
-    // Click from dayGrid supplies a Date at local midnight
+  const findInstructorLabel = (id) =>
+    (instructors || []).find((i) => i?.value === id)?.label || ''
+
+  const openCreateAt = (date) => {
+    // dayGrid click provides a Date; default to 1h duration
     const startISO = date.toISOString()
     const endISO = new Date(date.getTime() + 60 * 60 * 1000).toISOString()
     setEditor({
@@ -57,17 +59,16 @@ export default function CalendarWidget({
         end: endISO,
         allDay: false,
         instructorId: instructorId || '',
-        instructorName:
-          instructors.find(i => i.value === instructorId)?.label || '',
+        instructorName: findInstructorLabel(instructorId),
         schoolId,
         status: 'confirmed',
-        color: undefined, // allow default-by-instructor unless user picks
+        color: undefined, // let theme/defaults kick in unless user picks
       },
     })
   }
 
   return (
-    <div className={styles.card}>
+    <div className={styles.card} aria-busy={loading ? 'true' : 'false'}>
       <header className={styles.header}>
         <h3 className={styles.title}>
           {mode === 'admin' ? 'Instructor Schedule' : 'My Schedule'}
@@ -75,7 +76,7 @@ export default function CalendarWidget({
         <div className={styles.actions}>
           {error && (
             <span className={styles.err} role="status" aria-live="polite">
-              {error}
+              {String(error)}
             </span>
           )}
           {onRequestExpand && (
@@ -109,8 +110,8 @@ export default function CalendarWidget({
           editable={mode === 'admin'}
           events={fcEvents}
           eventTimeFormat={{ hour: 'numeric', minute: '2-digit' }}
-          // Create via selection
-          select={sel => {
+          // Create via drag/select
+          select={(sel) => {
             if (mode !== 'admin') return
             setEditor({
               open: true,
@@ -120,20 +121,18 @@ export default function CalendarWidget({
                 end: sel.endStr,
                 allDay: !!sel.allDay,
                 instructorId: instructorId || '',
-                instructorName:
-                  instructors.find(i => i.value === instructorId)?.label ||
-                  '',
+                instructorName: findInstructorLabel(instructorId),
                 schoolId,
                 status: 'confirmed',
               },
             })
           }}
           // Click to view/edit
-          eventClick={info =>
+          eventClick={(info) =>
             setEditor({ open: true, value: info.event.extendedProps })
           }
-          // Drag/drop + resize save
-          eventResize={chg => {
+          // Drag/resize save
+          eventResize={(chg) => {
             if (mode !== 'admin') return
             const e = chg.event
             const ex = e.extendedProps
@@ -144,7 +143,7 @@ export default function CalendarWidget({
               allDay: e.allDay,
             })
           }}
-          eventDrop={chg => {
+          eventDrop={(chg) => {
             if (mode !== 'admin') return
             const e = chg.event
             const ex = e.extendedProps
@@ -155,14 +154,17 @@ export default function CalendarWidget({
               allDay: e.allDay,
             })
           }}
-          // Quick create from empty slot
-          dateClick={arg => {
+          // Quick create on empty cell
+          dateClick={(arg) => {
             if (mode === 'admin') openCreateAt(arg.date)
           }}
-          // Apply per-event CSS var so CalendarWidget.module.css can theme
-          eventDidMount={info => {
-            const c = info.event.extendedProps?.color
-            if (c) info.el.style.setProperty('--evt', c)
+          // Per-event color theming (works with our vendor/fullcalendar.css rules)
+          eventDidMount={(info) => {
+            const color = info.event.extendedProps?.color
+            if (color && info.el) {
+              info.el.setAttribute('data-color', color) // CSS attr() path
+              info.el.style.setProperty('--evt', color) // CSS var fallback
+            }
           }}
           loading={loading}
         />
@@ -173,11 +175,11 @@ export default function CalendarWidget({
         initial={editor.value}
         instructors={instructors}
         onClose={() => setEditor({ open: false, value: null })}
-        onDelete={async id => {
+        onDelete={async (id) => {
           await remove(id)
           setEditor({ open: false, value: null })
         }}
-        onSave={async val => {
+        onSave={async (val) => {
           if (!val.title?.trim()) {
             toast.warn?.('Title is required.')
             return

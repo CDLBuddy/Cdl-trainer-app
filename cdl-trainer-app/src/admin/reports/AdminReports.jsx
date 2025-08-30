@@ -24,6 +24,7 @@ import {
   useReports,
   useStudentCert,
   useTPRSubmit,
+  prefetchTPRServices,
 } from './hooks'
 
 // Toast (UX pings)
@@ -95,12 +96,9 @@ const prefetchDialogs = () => {
   import('./components/BulkUploadDialog.jsx')
   import('./components/SubmitToTPRDialog.jsx')
   import('./student-reports/StudentReportsDrawer.jsx')
+  // Prefetch mappers/validators/tprClient used by useTPRSubmit
+  // prefetchTPRServices is now imported above with other hooks
 }
-/** Prefetch mappers/validators/tprClient used by useTPRSubmit */
-const prefetchTPRServices = () =>
-  import('./hooks/useTPRSubmit.js')
-    .then(m => m.prefetchTPRServices?.())
-    .catch(() => {})
 
 /* --------------------------------- Page ---------------------------------- */
 export default function AdminReports({ currentSchoolId, currentRole }) {

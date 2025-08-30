@@ -43,7 +43,6 @@ function FormActions({
     <footer
       className={styles.footer}
       data-testid="form-actions"
-      onKeyDown={onKeyDown}
     >
       {/* Left side: error message (if any) */}
       {error ? (
@@ -80,6 +79,7 @@ function FormActions({
         aria-disabled={!saveEnabled ? 'true' : 'false'}
         aria-busy={saving ? 'true' : 'false'}
         onClick={formId ? undefined : onSubmit}
+        onKeyDown={onKeyDown}
         title={saveEnabled ? 'Save (⌘/Ctrl+Enter)' : undefined}
         data-testid="btn-save"
       >
