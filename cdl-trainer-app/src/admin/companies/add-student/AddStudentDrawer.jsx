@@ -1,3 +1,4 @@
+// Path: src/admin/companies/add-student/AddStudentDrawer.jsx
 // ============================================================================
 // AddStudentDrawer
 // - Composable drawer to add a student under a company
@@ -8,21 +9,29 @@
 //             autofocus first field, instructor dropdown fed from Firestore.
 // ============================================================================
 
-import PropTypes from 'prop-types'
 import React, { memo, useCallback, useEffect, useId } from 'react'
+import PropTypes from 'prop-types'
 
 import styles from './AddStudentDrawer.module.css'
-// Local UI atoms/molecules
+
+// Local UI atoms/molecules (barrel)
 import {
   DrawerShell,
   FormActions,
   FormFields,
   OverlayChips,
-} from './components'
-// Hooks
-import { useAddStudentForm } from './hooks'
-import useInstructorsList from './hooks/useInstructorList.js'
+} from './components/index.js'
 
+// Hooks
+import { useAddStudentForm } from './hooks/index.js'
+import useInstructorList from './hooks/useInstructorList.js'
+
+/**
+ * @param {Object} props
+ * @param {boolean=} props.open
+ * @param {string=} props.companyId
+ * @param {(result:boolean)=>void=} props.onClose
+ */
 function AddStudentDrawer({ open = true, companyId, onClose }) {
   const {
     form,
@@ -35,21 +44,18 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
     firstFieldRef,
   } = useAddStudentForm({ companyId, onClose })
 
-  // Live instructors list with helpful defaults:
-  // - include an "(Unassigned)" option
-  // - only active instructors
-  // - reasonable cap (can raise later)
+  // Live instructors list with helpful defaults
   const {
-    instructors,
+    instructors = [],
     loading: instructorsLoading,
     error: instructorsError,
-  } = useInstructorsList({ withUnassigned: true, activeOnly: true, max: 200 })
+  } = useInstructorList({ withUnassigned: true, activeOnly: true, max: 200 })
 
   // Stable ids for description and error region
   const descId = useId()
   const errorId = error ? `${descId}-error` : undefined
 
-  // Close helper
+  // Close helper (boolean contract preserved)
   const closeFalse = useCallback(() => onClose?.(false), [onClose])
 
   // Autofocus: when opened, move focus to first field (hook provides ref)
@@ -58,7 +64,7 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
   }, [open, firstFieldRef])
 
   // Keyboard: Cmd/Ctrl + Enter submits the form
-  const onKeyDown = useCallback(
+  const onFormKeyDown = useCallback(
     e => {
       const mod = e.metaKey || e.ctrlKey
       if (mod && e.key.toLowerCase() === 'enter' && canSave && !saving) {
@@ -79,7 +85,11 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
     >
       <form
         id="add-student-form"
-        onSubmit={handleSubmit}
+        onSubmit={e => {
+          e.preventDefault()
+          handleSubmit()
+        }}
+        onKeyDown={onFormKeyDown}
         className={styles.form}
         aria-describedby={error ? errorId : descId}
         aria-busy={saving ? 'true' : 'false'}
@@ -88,7 +98,7 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
       >
         {/* Visually hidden description to give screen readers context */}
         <span id={descId} className="sr-only">
-          Fill in student details, set course and CDL class, then save to add
+          Fill in student details, set Course and CDL Class, then save to add
           the student to this company. Overlays are derived automatically.
         </span>
 
@@ -97,9 +107,9 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
           set={set}
           firstFieldRef={firstFieldRef}
           instructors={instructors}
-          instructorsLoading={instructorsLoading}
-          onKeyDown={onKeyDown}
+          instructorsLoading={!!instructorsLoading}
         />
+
         {/* Instructor list status (non-blocking; SR-friendly) */}
         {(instructorsLoading || instructorsError) && (
           <div
@@ -107,7 +117,7 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
             aria-live="polite"
             style={{ marginTop: 4, marginBottom: 8 }}
           >
-            {instructorsLoading ? 'Loading instructors…' : instructorsError}
+            {instructorsLoading ? 'Loading instructors…' : String(instructorsError)}
           </div>
         )}
 
@@ -116,28 +126,29 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
           <div className={styles.labelRow}>
             <span className={styles.labelStrong}>Overlays (derived)</span>
           </div>
-          <OverlayChips overlays={overlays} ariaLabel="Derived overlays" />
+          <OverlayChips overlays={overlays || []} ariaLabel="Derived overlays" />
           <small className={styles.hint}>
             Saved automatically based on Course &amp; CDL Class.
           </small>
         </div>
 
         {/* Error region (also surfaced in footer via FormActions) */}
-        {error && (
+        {!!error && (
           <div
             role="alert"
             id={errorId}
             className={styles.error}
             aria-live="polite"
+            aria-atomic="true"
           >
-            {error}
+            {String(error)}
           </div>
         )}
 
         {/* Footer actions (Submit / Cancel) */}
         <FormActions
-          saving={saving}
-          canSave={canSave}
+          saving={!!saving}
+          canSave={!!canSave}
           error={error}
           onCancel={closeFalse}
           onSubmit={handleSubmit}
@@ -150,7 +161,8 @@ function AddStudentDrawer({ open = true, companyId, onClose }) {
 
 AddStudentDrawer.propTypes = {
   open: PropTypes.bool,
-  companyId: PropTypes.string, // can be undefined for general add
+  /** Company under which to create the student (optional) */
+  companyId: PropTypes.string,
   /** onClose receives a boolean: true if saved, false if cancelled */
   onClose: PropTypes.func,
 }

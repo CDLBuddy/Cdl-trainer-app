@@ -1,28 +1,94 @@
-/* src/admin/companies/add-student/AddStudentDrawer.module.css */
+/* Path: src/admin/companies/add-student/AddStudentDrawer.module.css */
 /* ============================================================================
-   Add Student • Drawer Form
-   - Theme-aware (uses tokens from src/styles/theme.css)
-   - Clean spacing, readable labels, accessible focus/error states
+   Add Student • Drawer Form (deluxe)
+   - Theme-aware (tokens in src/styles/theme.css)
+   - Light/Dark/HC friendly; reduced motion respected
+   - Form consistency, focus/error states, responsive grid helpers
+   - Includes :global(.sr-only) for the JSX usage in AddStudentDrawer.jsx
    ========================================================================== */
 
-/* Form layout */
+/* -------------------- Design Tokens (scoped fallbacks) -------------------- */
+:root {
+  --asd-card-bg: var(--card-bg, #fff);
+  --asd-text-strong: var(--text-strong, #111);
+  --asd-text: var(--text, #1e293b);
+  --asd-text-light: var(--text-light, #334155);
+  --asd-text-muted: var(--text-dark, #64748b);
+
+  --asd-brand: var(--brand, #2b6b82);
+  --asd-brand-light: var(--brand-light, #4e91ad);
+
+  --asd-error: var(--error, #e53e3e);
+  --asd-radius-sm: var(--radius-sm, 8px);
+  --asd-radius-md: var(--radius-md, 10px);
+
+  --asd-ring: var(--ring, 0 0 0 3px rgba(78,145,173,.25));
+  --asd-input-bg: var(--input-bg, rgba(255,255,255,.04));
+}
+
+/* Prefer user dark scheme if no explicit theme tokens present */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --asd-card-bg: var(--card-bg, #0b0f14);
+    --asd-text-strong: var(--text-strong, #e5e7eb);
+    --asd-text: var(--text, #e2e8f0);
+    --asd-text-light: var(--text-light, #e0e0e0);
+    --asd-text-muted: var(--text-dark, #9aa8b2);
+    --asd-input-bg: var(--input-bg, rgba(255,255,255,.06));
+  }
+}
+
+/* --------------------------- Global utility ------------------------------- */
+/* You used className="sr-only" directly in JSX; expose a global utility */
+:global(.sr-only) {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* ---------------------------- Form layout -------------------------------- */
 .form {
   display: grid;
   gap: 14px;
 }
 
-/* Grouped block (for derived overlays, etc.) */
+/* Simple responsive helper if you later add two-column rows */
+.row {
+  display: grid;
+  gap: 12px;
+}
+@media (min-width: 720px) {
+  .row.grid2 { grid-template-columns: 1fr 1fr; }
+  .row.grid3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ----------------------------- Blocks ------------------------------------ */
 .block {
   display: grid;
   gap: 8px;
-  background: color-mix(in oklab, var(--card-bg, #fff), transparent 0%);
+  background:
+    /* modern browsers */
+    color-mix(in oklab, var(--asd-card-bg), transparent 0%);
   border: 1px solid
-    color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 70%);
-  border-radius: var(--radius-md, 10px);
+    color-mix(in oklab, var(--asd-brand-light), #ffffff 70%);
+  border-radius: var(--asd-radius-md);
   padding: 12px;
 }
 
-/* Row for block header + actions */
+/* Fallbacks for engines without color-mix support */
+@supports not (color: oklab(0% 0 0)) {
+  .block {
+    background: var(--asd-card-bg);
+    border-color: var(--asd-brand-light);
+  }
+}
+
 .labelRow {
   display: flex;
   align-items: baseline;
@@ -30,67 +96,107 @@
   gap: 8px;
 }
 
-/* Emphasized label */
 .labelStrong {
   font-weight: 700;
   font-size: 0.95rem;
-  color: var(--text-light, #e0e0e0);
+  color: var(--asd-text-light);
 }
 
 /* Small helper text */
 .hint {
-  color: var(--text-dark, #9aa8b2);
+  color: var(--asd-text-muted);
   font-size: 0.9rem;
 }
 
-/* Inline error region (alert) */
+/* ----------------------------- Errors ------------------------------------ */
 .error {
-  color: var(--error, #e53e3e);
-  background: color-mix(in oklab, var(--error, #e53e3e), #ffffff 92%);
-  border: 1px solid color-mix(in oklab, var(--error, #e53e3e), #ffffff 55%);
+  color: var(--asd-error);
+  background: color-mix(in oklab, var(--asd-error), #ffffff 92%);
+  border: 1px solid color-mix(in oklab, var(--asd-error), #ffffff 55%);
   padding: 10px 12px;
-  border-radius: var(--radius-md, 10px);
+  border-radius: var(--asd-radius-md);
+}
+@supports not (color: oklab(0% 0 0)) {
+  .error {
+    background: rgba(229, 62, 62, 0.08); /* #e53e3e with alpha */
+    border-color: rgba(229, 62, 62, 0.35);
+  }
+}
+/* Help users relying on Windows High Contrast / forced colors */
+@media (forced-colors: active) {
+  .error {
+    border: 1px solid Highlight;
+    color: CanvasText;
+    background: Canvas;
+  }
 }
 
-/* Footer action row (buttons live in DrawerShell via FormActions) */
+/* --------------------------- Footer actions ------------------------------- */
 .footer {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
 }
 
-/* -------------------- Nice-to-haves -------------------- */
-
-/* Make any inputs inside the form feel consistent, but defer to local styles */
+/* ---------------------- Inputs (consistent feel) -------------------------- */
 .form :where(input, select, textarea) {
-  border-radius: var(--radius-sm, 8px);
-  border: 1px solid
-    color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 75%);
-  background: var(--card-bg, #ffffff0f);
-  color: var(--text-light, #e0e0e0);
+  border-radius: var(--asd-radius-sm);
+  border: 1px solid color-mix(in oklab, var(--asd-brand-light), #ffffff 75%);
+  background: var(--asd-input-bg);
+  color: var(--asd-text-light);
+  padding: 10px 12px;
+  min-height: 38px;
+}
+@supports not (color: oklab(0% 0 0)) {
+  .form :where(input, select, textarea) {
+    border-color: var(--asd-brand-light);
+  }
 }
 
 .form :where(input:focus, select:focus, textarea:focus) {
   outline: none;
-  box-shadow: var(--ring, 0 0 0 3px rgba(78, 145, 173, 0.25));
-  border-color: var(--brand-light, #4e91ad);
+  box-shadow: var(--asd-ring);
+  border-color: var(--asd-brand-light);
 }
 
-/* Respect reduced motion users (no future animations here, but safe default) */
+/* Mark invalid fields (either native :invalid or explicit [data-invalid]) */
+.form :where(input:invalid, select:invalid, textarea:invalid),
+.form :where([data-invalid="true"]) {
+  border-color: var(--asd-error);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--asd-error), transparent 65%);
+}
+@supports not (color: oklab(0% 0 0)) {
+  .form :where(input:invalid, select:invalid, textarea:invalid),
+  .form :where([data-invalid="true"]) {
+    box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.3);
+  }
+}
+
+/* Disabled controls */
+.form :where(input[disabled], select[disabled], textarea[disabled]) {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ----------------------------- Busy state -------------------------------- */
+.form[aria-busy="true"] {
+  cursor: progress;
+}
+.form[aria-busy="true"] :where(button, input, select, textarea) {
+  pointer-events: none;
+}
+
+/* ------------------------ Reduced motion users ---------------------------- */
 @media (prefers-reduced-motion: reduce) {
   * {
-    animation-duration: 0.001ms !important;
+    animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
-/* Narrow screens: tighten vertical rhythm a bit */
+/* ----------------------------- Responsive -------------------------------- */
 @media (max-width: 480px) {
-  .form {
-    gap: 12px;
-  }
-  .block {
-    padding: 10px;
-  }
+  .form { gap: 12px; }
+  .block { padding: 10px; }
 }

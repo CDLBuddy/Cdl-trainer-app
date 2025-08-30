@@ -1,10 +1,11 @@
-// src/components/ToastContext.js
+// Path: src/components/ToastContext.js
 // ======================================================================
 // Central toast context (pure module — no components, no re-exports).
-// - Exposes a callable API with helpers (success/error/info/warn)
-// - Includes legacy helpers (show, showToast)
-// - Adds update(id, patch) so in-place changes are possible
-// - Kept side-effect free to avoid circular imports/chunk order issues
+// - Callable API + helper methods (success/error/info/warn)
+// - Legacy helpers kept (show, showToast)
+// - Compat aliases added (hideToast → dismiss, clearToasts → clear)
+// - update(id, patch) supported (provider may ignore if not implemented)
+// - PURE: no components, no provider imports (avoid circular deps)
 // ======================================================================
 
 // @ts-check
@@ -17,10 +18,10 @@ import { createContext } from 'react'
 
 /**
  * Options accepted by the callable toast function.
- * NOTE: Keep in sync with ToastProvider + toast-compat.
+ * Keep in sync with ToastProvider.
  * @typedef {Object} ToastOptions
  * @property {ToastType=} type
- * @property {number=} duration              // ms; 0/undefined = stick around until dismissed
+ * @property {number=} duration                 // ms; 0/undefined = sticky
  * @property {ToastPosition=} position
  * @property {ToastAction=} action
  * @property {boolean=} dismissible
@@ -32,60 +33,52 @@ import { createContext } from 'react'
  *   toast('Saved!', { type: 'success', duration: 2000 })
  *   toast.success('Saved!')
  * Returns a toast id when the provider supplies one; otherwise void (no-op default).
- * @typedef {(message: string, options?: ToastOptions) => string|void} ToastCallable
+ * @typedef {(message: string, options?: ToastOptions) => string|number|void} ToastCallable
  */
 
 /**
- * Full Toast API exposed via context. All methods are safe to call even
- * without a provider (no-ops).
+ * Full Toast API exposed via context. Safe no-ops without a provider.
+ * Matching both legacy and modern method names.
  * @typedef {ToastCallable & {
- *   show: (message: string, type?: ToastType, duration?: number, opts?: object) => string|void,   // legacy
- *   showToast: (message: string, type?: ToastType, duration?: number, opts?: object) => string|void, // legacy alias
- *   success: (message: string, opts?: ToastOptions) => string|void,
- *   error:   (message: string, opts?: ToastOptions) => string|void,
- *   info:    (message: string, opts?: ToastOptions) => string|void,
- *   warn:    (message: string, opts?: ToastOptions) => string|void,
- *   dismiss: (id?: string) => void,
+ *   // legacy shorthands
+ *   show: (message: string, type?: ToastType, duration?: number, opts?: object) => string|number|void,
+ *   showToast: (message: string, type?: ToastType, duration?: number, opts?: object) => string|number|void,
+ *   // typed helpers
+ *   success: (message: string, opts?: ToastOptions) => string|number|void,
+ *   error:   (message: string, opts?: ToastOptions) => string|number|void,
+ *   info:    (message: string, opts?: ToastOptions) => string|number|void,
+ *   warn:    (message: string, opts?: ToastOptions) => string|number|void,
+ *   // control
+ *   dismiss: (id?: string|number) => void,
+ *   hideToast: (id?: string|number) => void,      // alias → dismiss
  *   clear:   () => void,
- *   update:  (id: string, patch: Partial<ToastOptions & { message?: string, type?: ToastType }>) => void,
+ *   clearToasts: () => void,                       // alias → clear
+ *   update:  (id: string|number, patch: Partial<ToastOptions & { message?: string, type?: ToastType }>) => void,
  * }} ToastAPI
  */
 
 /** @type {ToastAPI} */
 export const defaultToast = Object.assign(
-  /** @type {ToastCallable} */ (
-    () => {
-      /* no-op */
-    }
-  ),
+  /** @type {ToastCallable} */ (() => {
+    /* no-op callable */
+  }),
   {
-    show: () => {
-      /* no-op */
-    },
-    showToast: () => {
-      /* no-op */
-    },
-    success: () => {
-      /* no-op */
-    },
-    error: () => {
-      /* no-op */
-    },
-    info: () => {
-      /* no-op */
-    },
-    warn: () => {
-      /* no-op */
-    },
-    dismiss: () => {
-      /* no-op */
-    },
-    clear: () => {
-      /* no-op */
-    },
-    update: () => {
-      /* no-op */
-    },
+    // legacy shorthands (no-ops)
+    show: () => {},
+    showToast: () => {},
+
+    // helpers (no-ops)
+    success: () => {},
+    error: () => {},
+    info: () => {},
+    warn: () => {},
+
+    // controls (no-ops)
+    dismiss: () => {},
+    hideToast: () => {},      // compat alias
+    clear: () => {},
+    clearToasts: () => {},    // compat alias
+    update: () => {},
   }
 )
 
@@ -99,6 +92,4 @@ const ToastContext = createContext(defaultToast)
 export default ToastContext
 export { ToastContext } // named alias for convenience
 
-// IMPORTANT:
-// Keep this file PURE. Do not re-export ToastProvider/useToast/etc here.
-// That prevents circular imports between context <-> provider.
+// IMPORTANT: Keep this file PURE. Do not import ToastProvider/useToast here.

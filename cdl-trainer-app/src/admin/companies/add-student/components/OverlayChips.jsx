@@ -9,15 +9,16 @@ import styles from './OverlayChips.module.css'
  *
  * Props:
  *  - overlays: string[] (default [])
- *  - className?: string  extra classes for container
- *  - ariaLabel?: string  accessibility label for the chip list
+ *  - className?: string   extra classes for container
+ *  - ariaLabel?: string   accessibility label for the chip list
+ *  - focusable?: boolean  make individual chips tabbable (default false)
  */
-function OverlayChips({ overlays = [], className = '', ariaLabel }) {
+function OverlayChips({ overlays = [], className = '', ariaLabel, focusable = false }) {
   // Normalize early: trim strings, drop empties, dedupe (stable order)
   const items = useMemo(() => {
     const seen = new Set()
     const out = []
-    for (const raw of overlays) {
+    for (const raw of overlays || []) {
       const v = String(raw ?? '').trim()
       if (!v || seen.has(v)) continue
       seen.add(v)
@@ -28,7 +29,12 @@ function OverlayChips({ overlays = [], className = '', ariaLabel }) {
 
   if (items.length === 0) {
     return (
-      <span className={styles.hint} role="status" aria-live="polite">
+      <span
+        className={styles.hint}
+        role="status"
+        aria-live="polite"
+        data-testid="overlaychips-empty"
+      >
         (none)
       </span>
     )
@@ -38,9 +44,16 @@ function OverlayChips({ overlays = [], className = '', ariaLabel }) {
     <ul
       className={[styles.chips, className].filter(Boolean).join(' ')}
       aria-label={ariaLabel || 'Assigned overlays'}
+      data-testid="overlaychips-list"
     >
-      {items.map(o => (
-        <li key={o} className={styles.chip} title={o}>
+      {items.map((o) => (
+        <li
+          key={o}
+          className={styles.chip}
+          title={o}
+          aria-label={o}
+          {...(focusable ? { tabIndex: 0 } : {})}
+        >
           <span className={styles.chipText}>{o}</span>
         </li>
       ))}
@@ -52,6 +65,7 @@ OverlayChips.propTypes = {
   overlays: PropTypes.arrayOf(PropTypes.string),
   className: PropTypes.string,
   ariaLabel: PropTypes.string,
+  focusable: PropTypes.bool,
 }
 
 export default memo(OverlayChips)

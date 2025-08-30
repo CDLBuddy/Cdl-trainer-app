@@ -1,29 +1,51 @@
-// src/components/useToast.js
+// Path: src/components/useToast.js
 // @ts-check
-import { useContext, useEffect, useRef } from 'react'
+// ======================================================================
+// useToast hook
+// - Reads the ToastContext and returns a stable API (or a no-op fallback)
+// - Dev-only one-time warning if <ToastProvider> is missing
+// - SSR-safe, Vite + Node (process.env) compatible dev checks
+// ======================================================================
 
+import { useContext, useEffect, useRef } from 'react'
 import ToastContext, { defaultToast } from './ToastContext.js'
 
+/**
+ * @typedef {Object} ToastAPI
+ * @property {(msg:string, type?:"success"|"info"|"warning"|"error", opts?:any) => void} showToast
+ * @property {() => void} clearToasts
+ * @property {(id?:string|number) => void} hideToast
+ */
+
+/**
+ * Hook: returns the Toast Provider API, or a no-op fallback.
+ * @returns {ToastAPI}
+ */
 export function useToast() {
-  const api = useContext(ToastContext)
+  /** @type {ToastAPI} */
+  const api = useContext(ToastContext) || defaultToast
+
+  // Warn exactly once in dev if the provider is missing
   const warned = useRef(false)
 
   useEffect(() => {
-    // Determine "dev" in a TS-friendly way (works with CJS tsconfig too)
-    let isDev =
-      typeof process !== 'undefined' &&
-      !!process.env &&
-      process.env.NODE_ENV === 'development'
-
-    if (!isDev) {
-      // Prefer Vite’s flag when available, but guard for TS checkers that
-      // disallow `import.meta` under non-ES module targets.
-      // @ts-ignore -- Allowed in Vite/ESM builds; safe to ignore for CJS checking
-      isDev = typeof import.meta !== 'undefined' && !!import.meta.env?.DEV
+    // Prefer Vite flag when present; fall back to NODE_ENV
+    // Avoids TS complaints in non-ESM environments.
+    /** @type {boolean} */
+    let isDev = false
+    try {
+      // @ts-ignore - import.meta is ESM/Vite; guarded by try/catch
+      isDev = !!(typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV)
+    } catch {
+      // ignore
+    }
+    if (!isDev && typeof process !== 'undefined' && process?.env?.NODE_ENV === 'development') {
+      isDev = true
     }
 
     if (isDev && api === defaultToast && !warned.current) {
-      console.warn('[useToast] No <ToastProvider> found; toast() is a no-op.')
+      // SSR-safe console usage; will only log client-side after mount
+      console.warn('[useToast] No <ToastProvider> found; toast calls will be no-ops.')
       warned.current = true
     }
   }, [api])

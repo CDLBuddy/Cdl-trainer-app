@@ -1,42 +1,93 @@
-/* FormFields.module.css */
-/* Input grid + labels + compact helpers */
+/* Path: src/admin/companies/add-student/components/FormFields.module.css */
+/* Form fields for Add Student -- theme-aware, a11y-friendly */
 
-.group {
+.block {
   display: grid;
   gap: 8px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-@media (max-width: 720px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.field {
-  display: grid;
-  gap: 6px;
+  background: color-mix(in oklab, var(--card-bg, #fff), transparent 0%);
+  border: 1px solid
+    color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 70%);
+  border-radius: var(--radius-md, 10px);
+  padding: 12px;
 }
 
 .label {
-  font-size: 0.92rem;
-  color: var(--text-2, #6b7280);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-light, #e0e0e0);
 }
 
+.subLabel {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-light, #e0e0e0);
+}
+
+.req {
+  color: var(--error, #e53e3e);
+}
+
+.hint {
+  color: var(--text-dark, #9aa8b2);
+  font-size: 0.88rem;
+}
+
+/* Inputs */
 .input,
 .select {
-  padding: 8px 10px;
-  border: 1px solid var(--border-1, #e5e7eb);
-  border-radius: 10px;
-  background: var(--surface-1, #fff);
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid
+    color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 75%);
+  background: var(--card-bg, #ffffff0f);
+  color: var(--text-light, #e0e0e0);
+  padding: 10px 12px;
+  min-height: 38px;
 }
 
-.help {
-  font-size: 0.85rem;
-  color: var(--text-3, #9aa3af);
+.input::placeholder {
+  color: color-mix(in oklab, currentColor, transparent 40%);
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  box-shadow: var(--ring, 0 0 0 3px rgba(78, 145, 173, 0.25));
+  border-color: var(--brand-light, #4e91ad);
+}
+
+/* Invalid decoration (either native :invalid or aria-invalid="true") */
+.input:invalid,
+.select:invalid,
+.input[aria-invalid='true'],
+.select[aria-invalid='true'] {
+  border-color: var(--error, #e53e3e);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--error, #e53e3e), transparent 65%);
+}
+
+.select:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+/* Fallbacks for environments without color-mix/oklab */
+@supports not (color: oklab(0% 0 0)) {
+  .block {
+    background: var(--card-bg, #0b0f14);
+    border-color: var(--brand-light, #4e91ad);
+  }
+  .input,
+  .select {
+    border-color: var(--brand-light, #4e91ad);
+  }
+  .input:invalid,
+  .select:invalid,
+  .input[aria-invalid='true'],
+  .select[aria-invalid='true'] {
+    box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.3);
+  }
+}
+
+/* Small screens */
+@media (max-width: 480px) {
+  .block { padding: 10px; }
 }

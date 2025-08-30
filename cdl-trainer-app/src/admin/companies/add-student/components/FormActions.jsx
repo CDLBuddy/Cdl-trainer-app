@@ -1,6 +1,6 @@
 // Path: src/admin/companies/add-student/components/FormActions.jsx
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { memo, useCallback, useId } from 'react'
 
 import styles from './FormActions.module.css'
 
@@ -15,7 +15,7 @@ import styles from './FormActions.module.css'
  * - onSubmit: (e?: React.FormEvent | React.MouseEvent) => void
  * - formId?: string   // optional: if your inputs live in a <form id="...">
  */
-export default function FormActions({
+function FormActions({
   saving = false,
   canSave = false,
   error = '',
@@ -23,23 +23,50 @@ export default function FormActions({
   onSubmit,
   formId,
 }) {
+  const alertId = useId()
+  const saveEnabled = !saving && !!canSave
+
+  // Cmd/Ctrl + Enter quick submit (only when there's no external <form id>)
+  const onKeyDown = useCallback(
+    (e) => {
+      if (formId) return
+      const mod = e.metaKey || e.ctrlKey
+      if (mod && e.key.toLowerCase() === 'enter' && saveEnabled) {
+        e.preventDefault()
+        onSubmit?.(e)
+      }
+    },
+    [formId, saveEnabled, onSubmit]
+  )
+
   return (
-    <footer className={styles.footer}>
+    <footer
+      className={styles.footer}
+      data-testid="form-actions"
+      onKeyDown={onKeyDown}
+    >
       {/* Left side: error message (if any) */}
       {error ? (
-        <div role="alert" aria-live="polite" className={styles.alert}>
-          {error}
+        <div
+          id={alertId}
+          role="alert"
+          aria-live="polite"
+          className={styles.alert}
+          data-testid="form-error"
+        >
+          {String(error)}
         </div>
       ) : (
-        <div style={{ marginRight: 'auto' }} />
+        <div className={styles.spacer} />
       )}
 
       {/* Cancel button */}
       <button
         type="button"
-        className="btn outline"
+        className={styles.btnOutline}
         onClick={onCancel}
         aria-label="Cancel and close form"
+        data-testid="btn-cancel"
       >
         Cancel
       </button>
@@ -48,10 +75,13 @@ export default function FormActions({
       <button
         type={formId ? 'submit' : 'button'}
         form={formId || undefined}
-        className="btn primary"
-        disabled={saving || !canSave}
-        onClick={formId ? undefined : onSubmit}
+        className={styles.btnPrimary}
+        disabled={!saveEnabled}
+        aria-disabled={!saveEnabled ? 'true' : 'false'}
         aria-busy={saving ? 'true' : 'false'}
+        onClick={formId ? undefined : onSubmit}
+        title={saveEnabled ? 'Save (⌘/Ctrl+Enter)' : undefined}
+        data-testid="btn-save"
       >
         {saving ? 'Saving…' : 'Save'}
       </button>
@@ -67,3 +97,5 @@ FormActions.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   formId: PropTypes.string,
 }
+
+export default memo(FormActions)

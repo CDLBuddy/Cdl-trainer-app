@@ -4,6 +4,7 @@
 // - Fast, focused overview; no user-table here
 // - Uses static data hooks + lazy UI widgets (no mixed import modes)
 // - Resilient empty/error states and one-click refresh
+// - Includes Scheduler calendar (admin creates/edits events for instructors)
 // ======================================================================
 
 // @ts-check
@@ -13,27 +14,29 @@ import Shell from '@components/Shell.jsx'
 
 import {
   useAuthSchoolGuard,
-  useCompaniesSnapshot, // -> { loading, rows, total, error, refresh }
-  useDashboardAlerts, // -> { loading, items, error, stats, refresh }
-  useDashboardKpis, // -> { loading, data, error, refresh }
-  useRecentActivity, // -> { loading, data,  error, refresh }
+  useCompaniesSnapshot,  // -> { loading, rows, total, error, refresh }
+  useDashboardAlerts,   // -> { loading, items, error, stats, refresh }
+  useDashboardKpis,     // -> { loading, data,  error, refresh }
+  useRecentActivity,    // -> { loading, data,  error, refresh }
 } from '@admin/dashboard/hooks'
+
+// Re-use instructor options from Add-Student module
+import { useInstructorOptions } from '@admin/companies/add-student/hooks'
 
 import styles from './AdminDashboard.module.css'
 
-// ---- Data hooks (STATIC imports from the hooks barrel) ----------------
-
 // ---- UI widgets (LAZY for code-splitting) ----------------------------
-const KpiRow = lazy(() => import('./components/KpiRow.jsx'))
-const CompaniesMiniTable = lazy(
-  () => import('./components/CompaniesMiniTable.jsx')
-)
-const ComplianceRadar = lazy(() => import('./components/ComplianceRadar.jsx'))
-const ActivityFeed = lazy(() => import('./components/ActivityFeed.jsx'))
-const AlertsCard = lazy(() => import('./components/AlertsCard.jsx'))
-const QuickActions = lazy(() => import('./components/QuickActions.jsx'))
-const ReportsTiles = lazy(() => import('./components/ReportsTiles.jsx'))
-const BillingSummary = lazy(() => import('./components/BillingSummary.jsx'))
+const KpiRow            = lazy(() => import('./components/KpiRow.jsx'))
+const CompaniesMiniTable= lazy(() => import('./components/CompaniesMiniTable.jsx'))
+const ComplianceRadar   = lazy(() => import('./components/ComplianceRadar.jsx'))
+const ActivityFeed      = lazy(() => import('./components/ActivityFeed.jsx'))
+const AlertsCard        = lazy(() => import('./components/AlertsCard.jsx'))
+const QuickActions      = lazy(() => import('./components/QuickActions.jsx'))
+const ReportsTiles      = lazy(() => import('./components/ReportsTiles.jsx'))
+const BillingSummary    = lazy(() => import('./components/BillingSummary.jsx'))
+
+// Calendar widget (folder: components/calendar)
+const CalendarWidget    = lazy(() => import('./components/calendar/CalendarWidget.jsx'))
 
 function Fallback({ label = 'Loading…' }) {
   return (
@@ -97,18 +100,22 @@ export default function AdminDashboard() {
     refresh: refreshActivity,
   } = useRecentActivity({ schoolId, limit: 10 })
 
+  // Instructor options for the calendar’s editor (active + “Unassigned”)
+  const { options: instructorOptions = [], loading: instrLoading } =
+    useInstructorOptions({ schoolId, activeOnly: true, withUnassigned: true, max: 200 })
+
   const isLoading =
     guardLoading || kpiLoading || coLoading || alertLoading || actLoading
 
   // 3) Normalize KPI props for KpiRow
   const kpiProps = useMemo(
     () => ({
-      studentCount: kpiData?.studentCount ?? 0,
-      instructorCount: kpiData?.instructorCount ?? 0,
-      adminCount: kpiData?.adminCount ?? 0,
-      permitSoon: kpiData?.permitSoon ?? 0,
-      medSoon: kpiData?.medSoon ?? 0,
-      incomplete: kpiData?.incomplete ?? 0,
+      studentCount:   kpiData?.studentCount  ?? 0,
+      instructorCount:kpiData?.instructorCount ?? 0,
+      adminCount:     kpiData?.adminCount    ?? 0,
+      permitSoon:     kpiData?.permitSoon    ?? 0,
+      medSoon:        kpiData?.medSoon       ?? 0,
+      incomplete:     kpiData?.incomplete    ?? 0,
     }),
     [kpiData]
   )
@@ -117,18 +124,14 @@ export default function AdminDashboard() {
   const complianceCategories = useMemo(() => {
     const total = Math.max(0, Number(kpiData?.studentCount || 0))
     const profileOkPct =
-      total > 0
-        ? clamp(((total - (kpiData?.incomplete || 0)) / total) * 100)
-        : 0
-    const atRisk =
-      Number(kpiData?.permitSoon || 0) + Number(kpiData?.medSoon || 0)
+      total > 0 ? clamp(((total - (kpiData?.incomplete || 0)) / total) * 100) : 0
+    const atRisk = Number(kpiData?.permitSoon || 0) + Number(kpiData?.medSoon || 0)
     const riskPct = total > 0 ? clamp(((total - atRisk) / total) * 100) : 100
-
     return [
-      { key: 'profiles', label: 'Profiles OK', value: profileOkPct },
-      { key: 'permits', label: 'Permit Status', value: riskPct },
-      { key: 'training', label: 'Training Logs', value: 65 }, // stub
-      { key: 'reporting', label: 'TPR Reporting', value: 72 }, // stub
+      { key: 'profiles',   label: 'Profiles OK',   value: profileOkPct },
+      { key: 'permits',    label: 'Permit Status', value: riskPct },
+      { key: 'training',   label: 'Training Logs', value: 65 }, // stub
+      { key: 'reporting',  label: 'TPR Reporting', value: 72 }, // stub
     ]
   }, [kpiData])
 
@@ -146,18 +149,8 @@ export default function AdminDashboard() {
     <Shell title="Admin Dashboard">
       <div className={styles.wrapper}>
         {/* Optional global refresh */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            marginBottom: 8,
-          }}
-        >
-          <button
-            className="btn small outline"
-            onClick={refreshAll}
-            disabled={isLoading}
-          >
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          <button className="btn small outline" onClick={refreshAll} disabled={isLoading}>
             ↻ Refresh
           </button>
         </div>
@@ -185,20 +178,13 @@ export default function AdminDashboard() {
           <Suspense fallback={<Fallback label="Loading companies…" />}>
             <>
               <ErrorNotice message={coError} />
-              <CompaniesMiniTable
-                companies={companyRows}
-                loading={coLoading}
-                onView={() => {}}
-              />
+              <CompaniesMiniTable companies={companyRows} loading={coLoading} onView={() => {}} />
             </>
           </Suspense>
 
           {/* Compliance snapshot */}
           <Suspense fallback={<Fallback label="Loading compliance…" />}>
-            <ComplianceRadar
-              title="Compliance Snapshot"
-              metrics={complianceCategories}
-            />
+            <ComplianceRadar title="Compliance Snapshot" metrics={complianceCategories} />
           </Suspense>
 
           {/* Recent activity */}
@@ -208,9 +194,7 @@ export default function AdminDashboard() {
               <ActivityFeed
                 items={activityItems}
                 onItemClick={() => {}}
-                renderItem={item => (
-                  <div>{item?.description || 'No description'}</div>
-                )}
+                renderItem={item => <div>{item?.description || 'No description'}</div>}
               />
             </>
           </Suspense>
@@ -232,9 +216,9 @@ export default function AdminDashboard() {
           <Suspense fallback={<Fallback label="Loading actions…" />}>
             <QuickActions
               actions={[
-                { label: 'Add Company', to: '/admin/companies', icon: '➕' },
-                { label: 'View Reports', to: '/admin/reports', icon: '📄' },
-                { label: 'Open Billing', to: '/admin/billing', icon: '💳' },
+                { label: 'Add Company',   to: '/admin/companies', icon: '➕' },
+                { label: 'View Reports',  to: '/admin/reports',   icon: '📄' },
+                { label: 'Open Billing',  to: '/admin/billing',   icon: '💳' },
                 { label: 'Manage Settings', to: '/admin/settings', icon: '⚙️' },
               ]}
             />
@@ -244,28 +228,27 @@ export default function AdminDashboard() {
           <Suspense fallback={<Fallback label="Loading report tiles…" />}>
             <ReportsTiles
               reports={[
-                {
-                  title: 'Completion Report',
-                  description: '',
-                  to: '/admin/reports?view=completions',
-                },
-                {
-                  title: 'Permit Expiring',
-                  description: '',
-                  to: '/admin/reports?view=permits',
-                },
-                {
-                  title: 'Medical Expiring',
-                  description: '',
-                  to: '/admin/reports?view=med-cards',
-                },
-                {
-                  title: 'Instructor Load',
-                  description: '',
-                  to: '/admin/reports?view=instructors',
-                },
+                { title: 'Completion Report',  description: '', to: '/admin/reports?view=completions' },
+                { title: 'Permit Expiring',    description: '', to: '/admin/reports?view=permits' },
+                { title: 'Medical Expiring',   description: '', to: '/admin/reports?view=med-cards' },
+                { title: 'Instructor Load',    description: '', to: '/admin/reports?view=instructors' },
               ]}
             />
+          </Suspense>
+
+          {/* Scheduler – admin manages instructor events */}
+          <Suspense fallback={<Fallback label="Loading schedule…" />}>
+            <CalendarWidget
+              schoolId={schoolId}
+              mode="admin"
+              instructors={instructorOptions}
+              compact
+              onRequestExpand={() => {
+                // Navigate to a fuller calendar view if/when you add that route
+                try { window.location.assign('/admin/schedule') } catch {}
+              }}
+            />
+            {instrLoading && <p className="u-muted" style={{ marginTop: 4 }}>Loading instructors…</p>}
           </Suspense>
         </div>
 

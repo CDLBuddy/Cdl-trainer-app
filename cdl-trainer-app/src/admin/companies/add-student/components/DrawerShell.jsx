@@ -1,12 +1,12 @@
-// Path: src/admin/companies/add-student/DrawerShell.jsx
+// Path: src/admin/companies/add-student/components/DrawerShell.jsx
 import PropTypes from 'prop-types'
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import styles from '../AddStudentDrawer.module.css'
-import { trapFocus } from '../utils' // from the utils barrel
+import styles from './DrawerShell.module.css'
+import { trapFocus } from '../utils' // barrel export
 
-// Respect prefers-reduced-motion: shorten or disable transitions
+// Respect prefers-reduced-motion: shorten/disable transitions
 function getAnimMs() {
   if (typeof window === 'undefined' || !window.matchMedia) return 240
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 240
@@ -18,15 +18,17 @@ function getAnimMs() {
  * Props:
  *  - open: boolean
  *  - title: string | ReactNode
- *  - onClose?: () => void
+ *  - onClose?: (reason?: 'esc' | 'scrim' | 'button') => void
  *  - children: ReactNode
  *  - footer?: ReactNode
- *  - size?: 'sm' | 'md' | 'lg'     (default 'md') maps to CSS widths
+ *  - size?: 'sm' | 'md' | 'lg'     (default 'md')
  *  - className?: string
  *  - closeOnEsc?: boolean          (default true)
  *  - closeOnScrim?: boolean        (default true)
  *  - initialFocusRef?: React.RefObject<HTMLElement>
  *  - ariaDescribedBy?: string
+ *  - portalTarget?: HTMLElement    (default document.body)
+ *  - restoreFocus?: boolean        (default true)
  */
 export default function DrawerShell({
   open = false,
@@ -40,6 +42,8 @@ export default function DrawerShell({
   closeOnScrim = true,
   initialFocusRef,
   ariaDescribedBy,
+  portalTarget,
+  restoreFocus = true,
 }) {
   const ANIM_MS = useMemo(getAnimMs, [])
   const [render, setRender] = useState(Boolean(open))
@@ -75,10 +79,12 @@ export default function DrawerShell({
     // record the element that had focus
     lastActiveRef.current = document.activeElement
 
-    // focus target: provided ref or first focusable within
+    // focus target: provided ref → [autofocus] → first focusable within panel
+    const within = panelRef.current
     const toFocus =
       initialFocusRef?.current ||
-      panelRef.current?.querySelector(
+      within?.querySelector?.('[autofocus]') ||
+      within?.querySelector?.(
         'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'
       )
     toFocus?.focus?.()
@@ -86,7 +92,7 @@ export default function DrawerShell({
     const onKey = e => {
       if (e.key === 'Escape' && closeOnEsc) {
         e.stopPropagation()
-        onClose?.()
+        onClose?.('esc')
       } else if (e.key === 'Tab') {
         trapFocus(e, panelRef.current)
       }
@@ -94,17 +100,16 @@ export default function DrawerShell({
     document.addEventListener('keydown', onKey, true)
     return () => {
       document.removeEventListener('keydown', onKey, true)
-      // restore focus if the opener is still in the document
+      // restore focus if requested and the opener is still in the document
+      if (!restoreFocus) return
       const el = lastActiveRef.current
-      if (el && typeof document !== 'undefined') {
-        try {
-          if (document.contains(el)) el.focus()
-        } catch {
-          /* ignore */
-        }
+      try {
+        if (el && document.contains(el)) el.focus()
+      } catch {
+        /* ignore */
       }
     }
-  }, [open, onClose, closeOnEsc, initialFocusRef])
+  }, [open, onClose, closeOnEsc, initialFocusRef, restoreFocus])
 
   if (!render || typeof document === 'undefined') return null
 
@@ -112,15 +117,27 @@ export default function DrawerShell({
     size === 'sm'
       ? styles.panelSm
       : size === 'lg'
-        ? styles.panelLg
-        : styles.panelMd
+      ? styles.panelLg
+      : styles.panelMd
+
+  const target = portalTarget || document.body
+
+  // scrim click handler that only fires when clicking the scrim itself
+  const onScrimClick = e => {
+    if (!closeOnScrim) return
+    if (e.target === e.currentTarget) onClose?.('scrim')
+  }
 
   return createPortal(
-    <div className={styles.portalWrap} aria-hidden={!open}>
+    <div
+      className={styles.portalWrap}
+      aria-hidden={!open}
+      data-testid="drawer-portal"
+    >
       {/* Scrim (not focusable; click to close if enabled) */}
       <div
         role="presentation"
-        onClick={closeOnScrim ? onClose : undefined}
+        onClick={onScrimClick}
         className={styles.scrim}
         style={{ opacity: open ? 1 : 0, transitionDuration: `${ANIM_MS}ms` }}
       />
@@ -139,6 +156,7 @@ export default function DrawerShell({
           transform: `translateX(${open ? '0%' : '100%'})`,
           transitionDuration: `${ANIM_MS}ms`,
         }}
+        data-testid="drawer-panel"
       >
         <header className={styles.header}>
           <h3 id={titleId} className={styles.title}>
@@ -147,9 +165,9 @@ export default function DrawerShell({
           {/* Close button for mouse/touch users */}
           <button
             type="button"
-            className="btn icon outline"
+            className={styles.iconButton}
             aria-label="Close"
-            onClick={() => onClose?.()}
+            onClick={() => onClose?.('button')}
           >
             ✕
           </button>
@@ -160,7 +178,7 @@ export default function DrawerShell({
         {footer ? <footer className={styles.footerBar}>{footer}</footer> : null}
       </aside>
     </div>,
-    document.body
+    target
   )
 }
 
@@ -176,4 +194,6 @@ DrawerShell.propTypes = {
   closeOnScrim: PropTypes.bool,
   initialFocusRef: PropTypes.shape({ current: PropTypes.instanceOf(Element) }),
   ariaDescribedBy: PropTypes.string,
+  portalTarget: PropTypes.instanceOf(typeof Element === 'undefined' ? Object : Element),
+  restoreFocus: PropTypes.bool,
 }

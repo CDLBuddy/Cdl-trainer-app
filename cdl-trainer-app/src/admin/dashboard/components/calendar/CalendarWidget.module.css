@@ -1,0 +1,162 @@
+/* Path: src/admin/dashboard/components/calendar/CalendarWidget.module.css */
+/* ============================================================================
+   Calendar Widget (card + FullCalendar polish)
+   - Keeps original classes; adds useful extras (err, states, globals)
+   ========================================================================== */
+
+.card {
+  background: var(--card-bg, #0b0f14);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.title {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.err {
+  color: var(--error, #e53e3e);
+  font-size: .95rem;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid rgba(255,255,255,.18);
+  background: transparent;
+  color: inherit;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn:hover {
+  border-color: rgba(255,255,255,.28);
+  background: rgba(255,255,255,.04);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.body { padding: 8px; }
+.compact { padding: 4px; }
+
+/* ============================================================================
+   FullCalendar global tweaks (scoped safely via :global)
+   ========================================================================== */
+
+:global(.fc) {
+  --fc-border-color: rgba(255,255,255,.08);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(255,255,255,.03);
+  --fc-today-bg-color: color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 94%);
+  --fc-event-bg-color: color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 10%);
+  --fc-event-border-color: var(--fc-event-bg-color);
+  --fc-event-text-color: #fff;
+  --fc-now-indicator-color: var(--brand-light, #4e91ad);
+  color: var(--text, #e7eef5);
+  font-size: .95rem;
+}
+
+/* toolbar */
+:global(.fc .fc-toolbar) { gap: 6px; }
+:global(.fc .fc-toolbar-title) { font-size: 1rem; font-weight: 700; }
+:global(.fc .fc-button) {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.18);
+  color: inherit;
+}
+:global(.fc .fc-button:hover) {
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.28);
+}
+:global(.fc .fc-button-primary),
+:global(.fc .fc-button-primary:not(:disabled)) {
+  background: transparent;
+  border-color: rgba(255,255,255,.18);
+  color: inherit;
+  box-shadow: none;
+}
+
+/* grid cells */
+:global(.fc .fc-daygrid-day),
+:global(.fc .fc-timegrid-slot) {
+  background: transparent;
+}
+
+:global(.fc .fc-day-today) {
+  background: var(--fc-today-bg-color) !important;
+}
+
+/* events -- use our CSS var when provided via eventDidMount */
+:global(.fc .fc-event) {
+  background: var(--evt, var(--fc-event-bg-color));
+  border-color: var(--evt, var(--fc-event-border-color));
+  color: var(--fc-event-text-color);
+  border-radius: 8px;
+  padding: 2px 6px;
+}
+
+:global(.fc .fc-h-event .fc-event-main),
+:global(.fc .fc-v-event .fc-event-main) {
+  padding: 2px 2px;
+  font-weight: 600;
+}
+
+/* day max "+X more" link */
+:global(.fc .fc-daygrid-more-link) {
+  color: var(--brand-light, #4e91ad);
+  font-weight: 600;
+}
+
+/* selected slot mirror */
+:global(.fc .fc-highlight) {
+  background: color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 90%);
+}
+
+/* now indicator line */
+:global(.fc .fc-timegrid-now-indicator-line) {
+  border-color: var(--fc-now-indicator-color);
+}
+
+/* ============================================================================
+   Responsive & reduced motion
+   ========================================================================== */
+
+@media (max-width: 560px) {
+  .title { font-size: 1rem; }
+  :global(.fc .fc-toolbar) {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

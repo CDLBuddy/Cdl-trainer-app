@@ -1,44 +1,25 @@
 // src/lib/user-profile/index.js
 // ======================================================================
 // User Profile Library (barrel)
-// - Named exports for tree-shaking
-// - Optional default namespace for ergonomic imports
+// - Pure barrel: no direct references to possibly-missing named exports
+// - Re-exports everything from leaf modules (tree-shakable)
+// - Optional default namespace export for ergonomics
 // - Zero side effects
 // ======================================================================
 
-// Tree-shakable re-exports (preferred)
+// 1) Tree-shakable re-exports (preferred import style)
 export * from './firestore.js'
 export * from './helpers.js'
 export * from './lists.js'
 export * from './normalize.js'
 export * from './progress.js'
 
-// Namespace imports so we can safely expose compat names
+// 2) Safe default namespace (does NOT assume specific named exports exist)
 import * as firestore from './firestore.js'
 import * as helpers from './helpers.js'
 import * as lists from './lists.js'
 import * as normalize from './normalize.js'
 import * as progress from './progress.js'
 
-// ---- Back-compat named exports (no hard dependency on source files) ------
-// If a function doesn't exist in its module yet, these will be `undefined`,
-// which is fine and avoids Rollup “not exported by” errors.
-export const subscribeUserProfile    = firestore.subscribeUserProfile
-export const onUserProfileSnapshot   = firestore.onUserProfileSnapshot
-export const updateUserProfile       = firestore.updateUserProfile
-export const updateUserProfileFields = helpers.updateUserProfileFields
-export const getBlankUserProfile     = helpers.getBlankUserProfile
-
-/**
- * @typedef {object} UserProfileLib
- * @property {typeof import('./helpers.js')}   helpers
- * @property {typeof import('./normalize.js')} normalize
- * @property {typeof import('./progress.js')}  progress
- * @property {typeof import('./firestore.js')} firestore
- * @property {typeof import('./lists.js')}     lists
- */
-
-// Optional ergonomic default namespace
-/** @type {UserProfileLib} */
-const UserProfile = { helpers, normalize, progress, firestore, lists }
+const UserProfile = { firestore, helpers, lists, normalize, progress }
 export default UserProfile

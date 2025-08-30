@@ -1,28 +1,71 @@
-/* OverlayChips.module.css */
+/* Path: src/admin/companies/add-student/OverlayChips.module.css */
+/* Chip list -- theme-aware, wraps, HC & reduced-motion friendly */
 
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
+  gap: 8px;
   list-style: none;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border-1, #e5e7eb);
-  background: var(--surface-1, #fff);
-  font-size: 0.87rem;
-  line-height: 1.2;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+  padding: 0;
+  margin: 0;
 }
 
 .hint {
-  color: var(--text-2, #6b7280);
+  color: var(--text-dark, #9aa8b2);
   font-size: 0.9rem;
+}
+
+/* Single chip */
+.chip {
+  --chip-bg: color-mix(in oklab, var(--brand-light, #4e91ad), #ffffff 85%);
+  --chip-fg: var(--text, #1e293b);
+
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--chip-bg);
+  color: var(--chip-fg);
+  border: 1px solid color-mix(in oklab, var(--brand-light, #4e91ad), #000 10%);
+  box-shadow: 0 1px 0 rgba(0,0,0,.06);
+  user-select: none;
+}
+
+/* Text truncation inside chip */
+.chipText {
+  display: inline-block;
+  max-width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* Optional focus ring when chips are tabbable */
+.chip:focus {
+  outline: none;
+  box-shadow: var(--ring, 0 0 0 3px rgba(78,145,173,.25));
+}
+
+/* High-contrast / forced colors */
+@media (forced-colors: active) {
+  .chip {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid Highlight;
+  }
+}
+
+/* Fallbacks when color-mix/oklab not supported */
+@supports not (color: oklab(0% 0 0)) {
+  .chip {
+    background: rgba(78, 145, 173, 0.12);
+    border-color: rgba(78, 145, 173, 0.35);
+  }
+}
+
+/* Reduced motion users */
+@media (prefers-reduced-motion: reduce) {
+  .chip { transition: none !important; }
 }

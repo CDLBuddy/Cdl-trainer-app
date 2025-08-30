@@ -1,5 +1,6 @@
-// src/admin/companies/add-student/components/FormFields.jsx
-import React, { useId, useMemo } from 'react'
+// Path: src/admin/companies/add-student/components/FormFields.jsx
+import PropTypes from 'prop-types'
+import React, { useCallback, useId, useMemo } from 'react'
 
 import styles from './FormFields.module.css'
 
@@ -58,17 +59,35 @@ export default function FormFields({
   )
 
   // When selecting an instructor, store BOTH id and display name (student-facing)
-  const onSelectInstructor = id => {
-    const found = instructorOptions.find(o => o.value === id)
-    const display = found?.label || ''
-    set('assignedInstructorId', id || '')
-    set('assignedInstructor', id ? display : '')
-  }
+  const onSelectInstructor = useCallback(
+    id => {
+      const found = instructorOptions.find(o => o.value === id)
+      const display = found?.label || ''
+      set('assignedInstructorId', id || '')
+      set('assignedInstructor', id ? display : '')
+    },
+    [instructorOptions, set]
+  )
+
+  // Gentle validation: at least email OR phone
+  const contactMissing =
+    !(form?.email && String(form.email).trim()) &&
+    !(form?.phone && String(form.phone).trim())
+
+  // Trim helpers on blur to avoid accidental spaces
+  const trimSet = useCallback(
+    (key, v) => set(key, typeof v === 'string' ? v.trim() : v),
+    [set]
+  )
 
   return (
     <>
       {/* Contact (Email OR Phone) */}
-      <div className={styles.block} aria-describedby={contactHintId}>
+      <div
+        className={styles.block}
+        aria-describedby={contactHintId}
+        data-testid="field-contact"
+      >
         <span className={styles.label}>
           Contact <span className={styles.req}>*</span>
         </span>
@@ -85,7 +104,9 @@ export default function FormFields({
           placeholder="student@example.com"
           value={form.email || ''}
           onChange={e => set('email', e.target.value)}
+          onBlur={e => trimSet('email', e.target.value)}
           className={styles.input}
+          aria-invalid={contactMissing ? 'true' : 'false'}
         />
 
         <label htmlFor={phoneId} className={styles.subLabel}>
@@ -100,7 +121,9 @@ export default function FormFields({
           autoComplete="tel"
           value={form.phone || ''}
           onChange={e => set('phone', e.target.value)}
+          onBlur={e => trimSet('phone', e.target.value)}
           className={styles.input}
+          aria-invalid={contactMissing ? 'true' : 'false'}
         />
 
         <small id={contactHintId} className={styles.hint}>
@@ -109,7 +132,7 @@ export default function FormFields({
       </div>
 
       {/* Name */}
-      <label htmlFor={nameId} className={styles.block}>
+      <label htmlFor={nameId} className={styles.block} data-testid="field-name">
         <span className={styles.label}>Full Name</span>
         <input
           id={nameId}
@@ -119,12 +142,17 @@ export default function FormFields({
           placeholder="e.g., Alex Johnson"
           value={form.name || ''}
           onChange={e => set('name', e.target.value)}
+          onBlur={e => trimSet('name', e.target.value)}
           className={styles.input}
         />
       </label>
 
       {/* Course */}
-      <label htmlFor={courseId} className={styles.block}>
+      <label
+        htmlFor={courseId}
+        className={styles.block}
+        data-testid="field-course"
+      >
         <span className={styles.label}>Course</span>
         <input
           id={courseId}
@@ -132,6 +160,7 @@ export default function FormFields({
           placeholder="e.g., ELDT Class A – Standard"
           value={form.course || ''}
           onChange={e => set('course', e.target.value)}
+          onBlur={e => trimSet('course', e.target.value)}
           className={styles.input}
           aria-describedby={courseHintId}
         />
@@ -141,7 +170,11 @@ export default function FormFields({
       </label>
 
       {/* CDL Class (A/B/C only) */}
-      <label htmlFor={classId} className={styles.block}>
+      <label
+        htmlFor={classId}
+        className={styles.block}
+        data-testid="field-cdl-class"
+      >
         <span className={styles.label}>
           CDL Class <span className={styles.req}>*</span>
         </span>
@@ -165,7 +198,11 @@ export default function FormFields({
       </label>
 
       {/* Billing */}
-      <label htmlFor={billingId} className={styles.block}>
+      <label
+        htmlFor={billingId}
+        className={styles.block}
+        data-testid="field-billing"
+      >
         <span className={styles.label}>Billing Mode</span>
         <select
           id={billingId}
@@ -184,7 +221,11 @@ export default function FormFields({
       </label>
 
       {/* Assigned Instructor (dropdown) */}
-      <label htmlFor={instructorId} className={styles.block}>
+      <label
+        htmlFor={instructorId}
+        className={styles.block}
+        data-testid="field-instructor"
+      >
         <span className={styles.label}>Assigned Instructor</span>
         <select
           id={instructorId}
@@ -210,4 +251,20 @@ export default function FormFields({
       </label>
     </>
   )
+}
+
+FormFields.propTypes = {
+  form: PropTypes.object.isRequired,
+  set: PropTypes.func.isRequired,
+  firstFieldRef: PropTypes.shape({ current: PropTypes.instanceOf(Element) })
+    .isRequired,
+  instructors: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.string.isRequired,
+      label: PropTypes.string,
+      name: PropTypes.string,
+      email: PropTypes.string,
+    })
+  ),
+  instructorsLoading: PropTypes.bool,
 }

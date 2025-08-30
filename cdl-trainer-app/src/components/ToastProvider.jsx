@@ -1,4 +1,4 @@
-// src/components/ToastProvider.jsx
+// Path: src/components/ToastProvider.jsx
 import React, {
   useCallback,
   useEffect,
@@ -8,10 +8,19 @@ import React, {
 } from 'react'
 
 import { __DEV__ } from '@utils/env.js'
-
-import { __bindToastCompat } from './toast-compat.js'
-import { ToastContainer } from './Toast.jsx'
 import ToastContext from './ToastContext.js'
+import { ToastContainer } from './Toast.jsx'
+
+// Bridge for non-React callers (optional; guard at runtime)
+let bindCompat = null
+try {
+  // eslint-disable-next-line import/no-unresolved
+  // @ts-ignore: optional module
+  bindCompat = (await import('./toast-compat.js')).__bindToastCompat || null
+} catch {
+  /* compat is optional */
+}
+
 /**
  * @typedef {'info'|'success'|'error'|'warning'} ToastType
  * @typedef {'bottom-right'|'bottom-left'|'bottom'|'top-right'|'top-left'|'top'} ToastPosition
@@ -28,7 +37,14 @@ import ToastContext from './ToastContext.js'
  * @property {() => void=} onClose
  */
 
-// useToast hook is now in a separate file
+const VALID_POSITIONS = new Set([
+  'bottom-right',
+  'bottom-left',
+  'bottom',
+  'top-right',
+  'top-left',
+  'top',
+])
 
 export default function ToastProvider({
   children,
@@ -36,19 +52,16 @@ export default function ToastProvider({
   defaultDuration = 3000,
   maxPerPosition = 4,
 }) {
-  /** @type {[Array<ShowToastObject & { id:string, createdAt:number }>, Function]} */
+  /** @type {[Array<ShowToastObject & { id:string, createdAt:number }>, React.Dispatch<any>]} */
   const [toasts, setToasts] = useState([])
   const idSeed = useRef(0)
 
-  // ---------- utils -------------------------------------------------------
+  /* ------------------------------- utils --------------------------------- */
 
-  const validPos = p =>
-    p === 'bottom-right' ||
-    p === 'bottom-left' ||
-    p === 'bottom' ||
-    p === 'top-right' ||
-    p === 'top-left' ||
-    p === 'top'
+  const validPos = useCallback(
+    (p) => (VALID_POSITIONS.has(p) ? p : defaultPosition),
+    [defaultPosition]
+  )
 
   const genId = () => {
     idSeed.current += 1
@@ -59,23 +72,17 @@ export default function ToastProvider({
   /** @returns {ShowToastObject & { id:string, createdAt:number }} */
   const normalizeInput = useCallback(
     (messageOrObj, type, duration, opts) => {
-      // 1) Object signature
-      if (
-        messageOrObj &&
-        typeof messageOrObj === 'object' &&
-        'message' in messageOrObj
-      ) {
+      // Object signature
+      if (messageOrObj && typeof messageOrObj === 'object' && 'message' in messageOrObj) {
         const o = /** @type {ShowToastObject} */ (messageOrObj)
-        const dur = Number.isFinite(o.duration)
-          ? Number(o.duration)
-          : defaultDuration
-        const pos = validPos(o.position) ? o.position : defaultPosition
+        const dur =
+          Number.isFinite(o.duration) ? Number(o.duration) : defaultDuration
         return {
           id: o.id || genId(),
           message: o.message,
           type: o.type || 'info',
           duration: dur,
-          position: pos,
+          position: validPos(o.position || defaultPosition),
           action: o.action,
           dismissible: o.dismissible ?? true,
           showProgress: o.showProgress ?? true,
@@ -84,21 +91,19 @@ export default function ToastProvider({
         }
       }
 
-      // 2) message + (type|opts) overload
-      const merged =
-        typeof type === 'object' && type !== null ? type : opts || {}
+      // message + (type|opts) overload
+      const merged = typeof type === 'object' && type !== null ? type : opts || {}
       const dur = Number.isFinite(duration)
         ? Number(duration)
         : Number.isFinite(merged.duration)
           ? Number(merged.duration)
           : defaultDuration
-      const pos = validPos(merged.position) ? merged.position : defaultPosition
       return {
         id: genId(),
         message: String(messageOrObj ?? ''),
         type: (typeof type === 'string' ? type : merged.type) || 'info',
         duration: dur,
-        position: pos,
+        position: validPos(merged.position || defaultPosition),
         action: merged.action,
         dismissible: merged.dismissible ?? true,
         showProgress: merged.showProgress ?? true,
@@ -106,15 +111,15 @@ export default function ToastProvider({
         createdAt: Date.now(),
       }
     },
-    [defaultDuration, defaultPosition]
+    [defaultDuration, defaultPosition, validPos]
   )
 
   const enforceCaps = useCallback(
-    list => {
-      // Cap the number of visible toasts per position (keep most recent)
+    (list) => {
+      // Cap count per position; keep most recent within each stack
       const groups = new Map()
       for (const t of list) {
-        const pos = validPos(t.position) ? t.position : defaultPosition
+        const pos = validPos(t.position)
         if (!groups.has(pos)) groups.set(pos, [])
         groups.get(pos).push(t)
       }
@@ -122,43 +127,41 @@ export default function ToastProvider({
       for (const arr of groups.values()) {
         for (const t of arr.slice(-maxPerPosition)) keepIds.add(t.id)
       }
-      return list.filter(t => keepIds.has(t.id))
+      return list.filter((t) => keepIds.has(t.id))
     },
-    [defaultPosition, maxPerPosition]
+    [maxPerPosition, validPos]
   )
 
-  // ---------- core remove (fires onClose consistently) -------------------
+  /* --------------------------- remove helper ----------------------------- */
 
-  /** Remove a toast by id, optionally filtering by position. */
+  /** Remove a toast by id (fires onClose unless disabled) */
   const remove = useCallback((id, { fireOnClose = true } = {}) => {
     if (!id) return
-    setToasts(curr => {
-      const t = curr.find(x => x.id === id)
+    setToasts((curr) => {
+      const found = curr.find((x) => x.id === id)
       if (fireOnClose) {
         try {
-          t?.onClose?.()
+          found?.onClose?.()
         } catch {
           /* ignore */
         }
       }
-      return curr.filter(x => x.id !== id)
+      return curr.filter((x) => x.id !== id)
     })
   }, [])
 
-  // ---------- API: show / update / dismiss / clear -----------------------
+  /* ---------------------- show / update / dismiss / clear ---------------- */
 
   /** showToast: supports all call signatures and returns id */
   const showToast = useCallback(
     (messageOrObj, type, duration, opts) => {
       const toast = normalizeInput(messageOrObj, type, duration, opts)
-      setToasts(curr => {
-        // If caller supplied an id and it already exists, replace in place
-        const exists = curr.some(t => t.id === toast.id)
+      setToasts((curr) => {
+        const exists = curr.some((t) => t.id === toast.id)
         const next = exists
-          ? curr.map(t => (t.id === toast.id ? { ...t, ...toast } : t))
+          ? curr.map((t) => (t.id === toast.id ? { ...t, ...toast } : t))
           : [...curr, toast]
-        // Keep overall order stable by createdAt when trimming
-        next.sort((a, b) => a.createdAt - b.createdAt)
+        next.sort((a, b) => a.createdAt - b.createdAt) // stable order
         return enforceCaps(next)
       })
       return toast.id
@@ -166,27 +169,26 @@ export default function ToastProvider({
     [normalizeInput, enforceCaps]
   )
 
-  /** update: shallow-merge an existing toast by id (no-op if missing) */
+  /** Shallow-merge an existing toast by id (no-op if missing) */
   const update = useCallback((id, patch) => {
     if (!id || !patch) return
-    setToasts(curr => curr.map(t => (t.id === id ? { ...t, ...patch } : t)))
+    setToasts((curr) => curr.map((t) => (t.id === id ? { ...t, ...patch } : t)))
   }, [])
 
   /**
    * dismiss:
    * - with id ⇒ remove that toast (fires onClose)
-   * - without id ⇒ clear all toasts (fires onClose for each)
+   * - without id ⇒ clear all (fires onClose for each)
    */
   const dismiss = useCallback(
-    id => {
+    (id) => {
       if (!id) {
-        // clear all (with onClose)
-        setToasts(curr => {
+        setToasts((curr) => {
           for (const t of curr) {
             try {
               t.onClose?.()
             } catch {
-              /* ignore error */
+              /* ignore */
             }
           }
           return []
@@ -198,22 +200,22 @@ export default function ToastProvider({
     [remove]
   )
 
-  /** Clear by position or everything (fires onClose) */
+  /** Clear all or by position (fires onClose for removed items) */
   const clear = useCallback(
-    position => {
+    (position) => {
       if (!position) {
-        dismiss() // no id ⇒ clear all
+        dismiss()
         return
       }
-      setToasts(curr => {
+      setToasts((curr) => {
         const keep = []
+        const posNorm = validPos(position)
         for (const t of curr) {
-          const pos = validPos(t.position) ? t.position : defaultPosition
-          if (pos === position) {
+          if (validPos(t.position) === posNorm) {
             try {
               t.onClose?.()
             } catch {
-              /* ignore error */
+              /* ignore */
             }
           } else {
             keep.push(t)
@@ -222,10 +224,10 @@ export default function ToastProvider({
         return keep
       })
     },
-    [defaultPosition, dismiss]
+    [dismiss, validPos]
   )
 
-  // Convenience helpers
+  // Typed helpers
   const showSuccess = useCallback(
     (message, opts = {}) => showToast(message, 'success', opts.duration, opts),
     [showToast]
@@ -243,79 +245,73 @@ export default function ToastProvider({
     [showToast]
   )
 
-  // ---------- Legacy DOM bridge (non-React callers) ----------------------
+  /* ----------------------- Legacy DOM bridge (optional) ------------------ */
 
   useEffect(() => {
-    __bindToastCompat({
+    if (!bindCompat) return
+    bindCompat({
       showToast: (msg, params = {}) =>
         showToast(msg, params.type, params.duration, params),
       dismiss,
       clear,
       update,
     })
-    return () => __bindToastCompat(null)
+    return () => bindCompat && bindCompat(null)
   }, [showToast, dismiss, clear, update])
 
-  // ---------- Context value (callable + helpers) -------------------------
+  /* --------------------------- Context callable -------------------------- */
 
   const ctx = useMemo(() => {
-    const callable = (message, options = {}) =>
-      showToast({ message, ...options })
-    callable.show = showToast // legacy
-    callable.showToast = showToast // legacy alias
-    callable.update = update
+    const callable = (message, options = {}) => showToast({ message, ...options })
+    // Legacy shorthands
+    callable.show = showToast
+    callable.showToast = showToast
+    // Typed helpers
     callable.success = showSuccess
     callable.error = showError
     callable.info = showInfo
     callable.warn = showWarn
+    // Controls
+    callable.update = update
     callable.dismiss = dismiss
+    callable.hideToast = dismiss        // compat alias
     callable.clear = clear
+    callable.clearToasts = clear        // compat alias
 
     if (__DEV__) {
       try {
-        /* @ts-ignore */ window.toast = callable
+        // @ts-ignore
+        window.toast = callable
       } catch {
         /* SSR-safe */
       }
     }
     return callable
-  }, [
-    showToast,
-    update,
-    showSuccess,
-    showError,
-    showInfo,
-    showWarn,
-    dismiss,
-    clear,
-  ])
+  }, [showToast, showSuccess, showError, showInfo, showWarn, update, dismiss, clear])
 
-  // ---------- Group by position (render one container per stack) ----------
+  /* ----------------------- Group by position & render --------------------- */
 
   const byPosition = useMemo(() => {
     /** @type {Record<ToastPosition, any[]>} */
     const map = /** @type any */ ({})
     for (const t of toasts) {
-      const pos = validPos(t.position) ? t.position : defaultPosition
+      const pos = validPos(t.position)
       ;(map[pos] || (map[pos] = [])).push(t)
     }
     return map
-  }, [toasts, defaultPosition])
+  }, [toasts, validPos])
 
   return (
     <ToastContext.Provider value={ctx}>
       {children}
-
       {Object.entries(byPosition).map(([pos, list]) => (
         <ToastContainer
           key={pos}
           toasts={list}
           position={/** @type {ToastPosition} */ (pos)}
-          onClose={id => remove(id, { fireOnClose: true })}
+          onClose={(id) => remove(id, { fireOnClose: true })}
         />
       ))}
     </ToastContext.Provider>
   )
 }
-
-export { ToastContext }

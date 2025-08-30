@@ -13,6 +13,7 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
+  onSnapshot,
 } from 'firebase/firestore'
 
 import { db } from '@utils/firebase.js'
@@ -36,12 +37,12 @@ export const FIELD_WHITELIST = new Set([
   // assignments + org
   'assignedCompany',
   'assignedInstructor',
-  'assignedInstructorId', // ⬅ added
+  'assignedInstructorId',
   'companyId',
   'schoolId',
   // contact (optional for legacy profile)
   'email',
-  'phone', // ⬅ added
+  'phone',
   // permit
   'cdlPermit',
   'permitPhotoUrl',
@@ -131,7 +132,7 @@ export function sanitizeFields(fields = {}) {
       continue
     }
 
-    // phone: keep only digits/+ common punctuation (UI should format)
+    // phone: keep only trimmed string (UI handles formatting)
     if (k === 'phone' && typeof raw === 'string') {
       out[k] = raw.trim()
       continue
@@ -145,13 +146,40 @@ export function sanitizeFields(fields = {}) {
 
 /* ─────────────────────────────── Reads ─────────────────────────────── */
 
-/** Get a single user profile (one-shot). */
+/** Get a single user profile (one-shot) by email (normalized id). */
 export async function getUserProfile(email) {
   if (!isEmail(email)) return null
   const id = normalizeEmail(email)
   const ref = doc(db, 'users', id)
   const snap = await getDoc(ref)
   return snap.exists() ? snap.data() : null
+}
+
+/* ───────────────────────── Subscriptions (legacy API) ───────────────── */
+
+/**
+ * Subscribe to a user's profile document.
+ * Accepts an email string (preferred). Returns an unsubscribe fn.
+ */
+export function subscribeUserProfile(email, callback, onError) {
+  if (!isEmail(email)) return () => {}
+  const id = normalizeEmail(email)
+  const ref = doc(db, 'users', id)
+  return onSnapshot(ref, (snap) => callback?.(snap), onError)
+}
+
+/**
+ * Same as subscribeUserProfile but passes plain data (with id) to the callback.
+ */
+export function onUserProfileSnapshot(email, callback, onError) {
+  return subscribeUserProfile(
+    email,
+    (snap) => {
+      const data = snap.exists() ? { id: snap.id, ...snap.data() } : null
+      callback?.(data)
+    },
+    onError
+  )
 }
 
 /* ─────────────────────────────── Writes ────────────────────────────── */
@@ -218,7 +246,7 @@ export async function updateUserProfileFields(
   const merged = { ...current, ...clean, email: id }
   const next = updateProfileProgress(merged, updatedBy)
 
-  // Shallow equality check (ignore server timestamp churn)
+  // Shallow equality check (ignore server-timestamp churn)
   const c0 = { ...current }
   delete c0.profileUpdatedAt
   const n0 = { ...next }
@@ -238,4 +266,14 @@ export async function updateUserProfileFields(
     console.error('[user-profile/update] error:', error)
     return { success: false, error }
   }
+}
+
+/**
+ * Legacy-compatible whole-profile update entry point.
+ * Accepts an email and a partial/whole profile; normalizes and merges.
+ * (Alias to saveUserProfileToFirestore.)
+ */
+export async function updateUserProfile(email, data = {}, updatedBy = 'system') {
+  if (!isEmail(email)) throw new Error('updateUserProfile: invalid email')
+  return saveUserProfileToFirestore({ ...data, email }, updatedBy)
 }

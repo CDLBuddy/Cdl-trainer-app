@@ -1,4 +1,4 @@
-// src/components/Toast.jsx
+// Path: src/components/Toast.jsx
 import React, {
   memo,
   useCallback,
@@ -43,12 +43,10 @@ export const Toast = memo(function Toast({
   const [drag, setDrag] = useState(0)
   const [reduceMotion, setReduceMotion] = useState(false)
 
-  const startX = useRef(null)
+  const startX = useRef(/** @type {null|number} */ (null))
 
   // timers/raf + bookkeeping
-  const timerRef = useRef(
-    /** @type {ReturnType<typeof setTimeout> | null} */ (null)
-  )
+  const timerRef = useRef(/** @type {ReturnType<typeof setTimeout> | null} */ (null))
   const rafIdRef = useRef(/** @type {number | null} */ (null))
   const progressElRef = useRef(/** @type {HTMLDivElement | null} */ (null))
   const mountedAtRef = useRef(0)
@@ -86,7 +84,6 @@ export const Toast = memo(function Toast({
     setLeaving(true)
     clearTimer()
     stopRaf()
-    // Allow fade-out to play before unmount (skip if reduced motion)
     const idToClose = id
     const delay = reduceMotion ? 0 : 180
     const t = setTimeout(() => onClose?.(idToClose), delay)
@@ -94,9 +91,9 @@ export const Toast = memo(function Toast({
     return () => clearTimeout(t)
   }, [id, onClose, reduceMotion, clearTimer, stopRaf])
 
-  // Keyboard: ESC to dismiss
+  // Keyboard: ESC to dismiss (one handler per toast)
   useEffect(() => {
-    const onKey = e => {
+    const onKey = (e) => {
       if (e.key === 'Escape') beginClose()
     }
     if (typeof window !== 'undefined') {
@@ -118,7 +115,7 @@ export const Toast = memo(function Toast({
   }, [])
 
   const startTimers = useCallback(
-    ms => {
+    (ms) => {
       clearTimer()
       stopRaf()
       remainingRef.current = Math.max(0, ms)
@@ -151,7 +148,6 @@ export const Toast = memo(function Toast({
   // Hover pause/resume
   const onEnter = useCallback(() => {
     onHoverChange?.(true)
-    // Pause timers and keep remaining
     const elapsed = performance.now() - mountedAtRef.current
     remainingRef.current = Math.max(0, remainingRef.current - elapsed)
     clearTimer()
@@ -164,10 +160,10 @@ export const Toast = memo(function Toast({
   }, [onHoverChange, startTimers])
 
   // Swipe to dismiss (mobile)
-  const onTouchStart = useCallback(e => {
+  const onTouchStart = useCallback((e) => {
     startX.current = e.changedTouches[0].clientX
   }, [])
-  const onTouchMove = useCallback(e => {
+  const onTouchMove = useCallback((e) => {
     if (startX.current == null) return
     const dx = e.changedTouches[0].clientX - startX.current
     setDrag(dx)
@@ -240,26 +236,31 @@ export const Toast = memo(function Toast({
     type === 'success'
       ? '✅'
       : type === 'error'
-        ? '⚠️'
-        : type === 'warning'
-          ? '🚧'
-          : '💬'
+      ? '⚠️'
+      : type === 'warning'
+      ? '🚧'
+      : '💬'
 
   // Resolve or create the portal root (SSR-safe)
   const portalTarget = useMemo(() => {
     if (typeof document === 'undefined') return null
-    const existing = document.getElementById('toast-root')
-    if (existing) return existing
-    const el = document.createElement('div')
-    el.id = 'toast-root'
-    document.body.appendChild(el)
-    return el
+    let existing = document.getElementById('toast-root')
+    if (!existing) {
+      existing = document.createElement('div')
+      existing.id = 'toast-root'
+      document.body.appendChild(existing)
+    }
+    return existing
   }, [])
 
   if (!portalTarget) return null
 
   return createPortal(
-    <div style={containerStyle} aria-live={ariaLive}>
+    <div
+      style={containerStyle}
+      aria-live={ariaLive}
+      aria-atomic="true"
+    >
       <div
         className={`toast ${type}${leaving ? ' toast--hide' : ''}`}
         role={ariaRole}
@@ -282,9 +283,7 @@ export const Toast = memo(function Toast({
           alignItems: 'center',
           gap: 10,
           transform: `translateX(${drag}px) translateY(${stackTranslateY}px)`,
-          transition: reduceMotion
-            ? 'none'
-            : 'transform .15s ease, opacity .18s ease',
+          transition: reduceMotion ? 'none' : 'transform .15s ease, opacity .18s ease',
           opacity: leaving ? 0 : 1,
           userSelect: 'none',
         }}

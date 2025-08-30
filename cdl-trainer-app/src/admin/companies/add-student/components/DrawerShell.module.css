@@ -1,67 +1,90 @@
-/* DrawerShell.module.css */
-/* Accessible slide-over container with size presets */
+/* Path: src/admin/companies/add-student/components/DrawerShell.module.css */
+/* DrawerShell styles -- theme-aware, reduced-motion friendly */
 
 .portalWrap {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 99998;
 }
 
+/* backdrop */
 .scrim {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  background: color-mix(in oklab, #000 60%, transparent);
-  opacity: 0;
-  transition: opacity 240ms ease;
-  border: 0;
+  background: rgba(0, 0, 0, 0.5);
+  transition-property: opacity;
+  transition-timing-function: ease;
+  pointer-events: auto;
 }
 
+/* panel base */
 .panel {
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
-  background: var(--surface-1, #fff);
-  color: var(--text-1, #111);
-  border-left: 1px solid var(--border-1, #e5e7eb);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.18);
+
+  max-width: 100vw;
+  background: var(--card-bg, #0b0f14);
+  color: var(--text-light, #e0e0e0);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+
   display: grid;
   grid-template-rows: auto 1fr auto;
-  max-width: 92vw;
-  transform: translateX(100%);
-  transition: transform 240ms ease;
+
+  transition-property: transform;
+  transition-timing-function: ease;
 }
 
-.panelSm {
-  width: 380px;
-}
-.panelMd {
-  width: 460px;
-}
-.panelLg {
-  width: 720px;
-}
+/* width presets */
+.panelSm { width: 360px; }
+.panelMd { width: 520px; }
+.panelLg { width: 720px; }
 
+/* header / body / footer */
 .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--border-1, #e5e7eb);
+  border-bottom: 1px solid color-mix(in oklab, #ffffff, transparent 92%);
 }
 
 .title {
-  margin: 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
+  margin: 0;
+}
+
+.iconButton {
+  background: transparent;
+  color: inherit;
+  border: 1px solid color-mix(in oklab, currentColor, transparent 50%);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  font-size: 18px;
+  cursor: pointer;
 }
 
 .body {
+  padding: 16px;
   overflow: auto;
-  padding: 14px 16px;
-  display: grid;
-  gap: 12px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .footerBar {
-  padding: 12px 16px;
-  border-top: 1px solid var(--border-1, #e5e7eb);
-  background: var(--surface-2, #fafafa);
+  padding: 12px;
+  border-top: 1px solid color-mix(in oklab, #ffffff, transparent 92%);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .panel {
+    transition-duration: 1ms !important;
+  }
 }

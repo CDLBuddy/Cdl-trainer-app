@@ -1,4 +1,4 @@
-// src/student/profile/Profile.jsx
+// Path: src/student/profile/Profile.jsx
 // ============================================================================
 // Student Profile (Schema-driven)
 // - Dual readiness (Enrollment & BTW) using pure calculators
@@ -8,9 +8,9 @@
 // - Section status plumbing for headers
 // ============================================================================
 
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/useToast.js'
@@ -20,10 +20,13 @@ import {
   markStudentProfileComplete,
   markStudentVehicleUploaded,
 } from '@utils/ui-helpers.js'
-
 import { getWalkthroughLabel } from '@walkthrough-data'
 
-import { subscribeUserProfile, updateUserProfileFields } from '@user-profile'
+// 🔁 Use the barrel under src/lib/user-profile + the DATA-level subscriber
+import {
+  onUserProfileSnapshot,
+  updateUserProfileFields,
+} from '@/lib/user-profile'
 
 import styles from './Profile.module.css'
 import {
@@ -31,7 +34,6 @@ import {
   getEnrollmentReadiness,
   getSectionStatus,
 } from './schema/calculators.js'
-// Sections via barrel
 import {
   BasicInfoSection,
   CdlSection,
@@ -171,19 +173,18 @@ export default function Profile() {
       return
     }
 
-    unsubRef.current = subscribeUserProfile(email, data => {
+    // ✅ Use the data-level subscriber (gives plain object or null)
+    unsubRef.current = onUserProfileSnapshot(email, (incoming) => {
       if (!mountedRef.current) return
-      const incoming = data || {}
-      const role =
-        incoming.role || localStorage.getItem('userRole') || 'student'
+      const role = incoming?.role || localStorage.getItem('userRole') || 'student'
       if (role !== 'student') {
         showToast('Access denied: Student profile only.', 'error')
         navigate('/student/dashboard', { replace: true })
         return
       }
 
-      serverRef.current = incoming
-      setP(prev => ({ ...prev, ...incoming }))
+      serverRef.current = incoming || {}
+      setP((prev) => ({ ...prev, ...(incoming || {}) }))
       dirtyRef.current = false
       setLoading(false)
     })
@@ -193,7 +194,7 @@ export default function Profile() {
       try {
         unsubRef.current?.()
       } catch {
-        // intentionally ignored
+        // no-op
       }
     }
   }, [email, navigate, showToast])
@@ -201,12 +202,12 @@ export default function Profile() {
   /* ------------------------------- Mutators ------------------------------- */
   const setField = useCallback((key, val) => {
     dirtyRef.current = true
-    setP(prev => ({ ...prev, [key]: val }))
+    setP((prev) => ({ ...prev, [key]: val }))
   }, [])
 
   const toggleInArray = useCallback((key, val) => {
     dirtyRef.current = true
-    setP(prev => {
+    setP((prev) => {
       const set = new Set(prev[key] || [])
       set.has(val) ? set.delete(val) : set.add(val)
       return { ...prev, [key]: Array.from(set) }
@@ -292,7 +293,7 @@ export default function Profile() {
       ...Object.keys(prevObj || {}),
       ...Object.keys(nextObj || {}),
     ])
-    keys.forEach(k => {
+    keys.forEach((k) => {
       const pv = prevObj ? prevObj[k] : undefined
       const nv = nextObj ? nextObj[k] : undefined
       if (pv !== nv) diff[k] = nv
@@ -336,7 +337,7 @@ export default function Profile() {
 
   // Flush on tab close / route unload
   useEffect(() => {
-    const beforeUnload = e => {
+    const beforeUnload = (e) => {
       if (dirtyRef.current) {
         e.preventDefault()
         e.returnValue = ''
@@ -421,7 +422,7 @@ export default function Profile() {
 
       <form
         className={styles.form}
-        onSubmit={e => e.preventDefault()}
+        onSubmit={(e) => e.preventDefault()}
         autoComplete="off"
       >
         {/* Each section renders its own SectionHeader using status + verified */}

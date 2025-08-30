@@ -1,4 +1,4 @@
-// Path: /src/admin/index.js
+// /src/admin/index.js
 // ============================================================================
 // ADMIN BARREL (side-effect free, SSR-safe, tree-shakable)
 // - Centralizes exports for admin pages and submodules
@@ -8,18 +8,21 @@
 // ============================================================================
 
 // ---------- Pages / Views (compat) ------------------------------------------
-export { default as AdminProfile } from './AdminProfile.jsx'
-export { default as AdminBilling } from './billing/Billing.jsx'
+export { default as AdminProfile }        from './AdminProfile.jsx'
+export { default as AdminBilling }        from './billing/Billing.jsx'
 export { default as AdminCommunications } from './communications/AdminCommunications.jsx'
-export { default as AdminCompanies } from './companies/AdminCompanies.jsx'
-export { default as AdminDashboard } from './dashboard/AdminDashboard.jsx'
-export { default as AdminReports } from './reports/AdminReports.jsx'
+export { default as AdminCompanies }      from './companies/AdminCompanies.jsx'
+export { default as AdminDashboard }      from './dashboard/AdminDashboard.jsx'
+export { default as AdminReports }        from './reports/AdminReports.jsx'
+// NEW: full-screen schedule page
+export { default as AdminSchedule }       from './schedule/AdminSchedule.jsx'
 
 // ---------- Preferred submodule barrels ------------------------------------
 // These surface components, hooks, services, utils, and prefetch helpers.
 export * from './billing'
 export * from './communications'
 export * from './companies'
+export * from './dashboard'     // NEW: exposes dashboard hooks/services (e.g., calendar)
 export * from './reports'
 export * from './settings'
 export * from './utils'

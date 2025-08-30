@@ -6,6 +6,7 @@
 // - Dates: toISODate (local), todayISO, isISODate, isFutureDate
 // - Arrays/Strings: ensureArray, uniq
 // - Phones: compactPhone, formatPhoneUS
+// - Profiles: getBlankUserProfile (legacy-safe)
 // ======================================================================
 
 /* ───────────────────────────── Email ───────────────────────────── */
@@ -13,22 +14,18 @@
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /** Lowercase + trim. Safe for undefined/null. */
-export const normalizeEmail = e =>
-  String(e || '')
-    .trim()
-    .toLowerCase()
+export const normalizeEmail = (e) =>
+  String(e || '').trim().toLowerCase()
 
 /** Validate an email after normalization. */
-export const isEmail = e => EMAIL_RE.test(normalizeEmail(e))
+export const isEmail = (e) => EMAIL_RE.test(normalizeEmail(e))
 
 /* ───────────────────────────── Objects ─────────────────────────── */
 
 /** Return a shallow copy with all `undefined` values removed. */
 export function stripUndefined(obj = {}) {
   const out = {}
-  for (const [k, v] of Object.entries(obj)) {
-    if (v !== undefined) out[k] = v
-  }
+  for (const [k, v] of Object.entries(obj)) if (v !== undefined) out[k] = v
   return out
 }
 
@@ -60,12 +57,9 @@ export function getByPath(obj, path) {
 export const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 /** Zero-pad helper. */
-const pad2 = n => String(n).padStart(2, '0')
+const pad2 = (n) => String(n).padStart(2, '0')
 
-/**
- * Convert a value to local YYYY-MM-DD (no timezone surprises).
- * Accepts Date or anything the Date ctor accepts.
- */
+/** Convert a value to local YYYY-MM-DD (no timezone surprises). */
 export function toISODate(value) {
   const d = value instanceof Date ? value : new Date(value)
   if (Number.isNaN(+d)) return ''
@@ -124,10 +118,91 @@ export function compactPhone(input) {
 
 /**
  * Very light US formatter: 10 digits -> "(XXX) XXX-XXXX".
- * Returns null if the digits length != 10.
+ * Returns null if the digits length !== 10.
  */
 export function formatPhoneUS(digitsOnly) {
   const d = String(digitsOnly || '').replace(/\D+/g, '')
   if (d.length !== 10) return null
   return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
 }
+
+/* ───────────────────────────── Profiles ────────────────────────── */
+
+/**
+ * Blank/legacy-safe profile scaffold.
+ * Keep fields aligned with FIELD_WHITELIST in firestore.js.
+ */
+export function getBlankUserProfile(uid = '') {
+  return {
+    id: uid || undefined,
+    uid: uid || undefined,
+    role: 'student',
+    status: 'active',
+
+    // contact
+    name: '',
+    email: '',
+    phone: '',
+
+    // org / assignments
+    schoolId: '',
+    companyId: '',
+    assignedCompany: '',
+    assignedInstructor: '',
+    assignedInstructorId: '',
+
+    // CDL / overlays
+    cdlClass: '',
+    overlays: [],
+    endorsements: [],
+    restrictions: [],
+    experience: '',
+
+    // docs
+    cdlPermit: '',
+    permitPhotoUrl: '',
+    permitExpiry: '',
+    driverLicenseUrl: '',
+    licenseExpiry: '',
+    medicalCardUrl: '',
+    medCardExpiry: '',
+
+    // vehicle
+    vehicleQualified: false,
+    truckPlateUrl: '',
+    trailerPlateUrl: '',
+
+    // emergency
+    emergencyName: '',
+    emergencyPhone: '',
+    emergencyRelation: '',
+
+    // waiver
+    waiverSigned: false,
+    waiverSignature: '',
+    waiverSignatureDate: '',
+
+    // course / schedule
+    course: '',
+    schedulePref: '',
+    scheduleNotes: '',
+
+    // payment / billing
+    paymentStatus: '',
+    paymentProofUrl: '',
+    billing: { mode: '' },
+
+    // accessibility / notes
+    accommodation: '',
+    studentNotes: '',
+
+    // progress/meta
+    profileProgress: 0,
+    createdAt: null,
+    profileUpdatedAt: null,
+    lastUpdatedBy: '',
+  }
+}
+
+/** Legacy lowercase alias (some old call-sites used this). */
+export const getblankuserprofile = (...args) => getBlankUserProfile(...args)
