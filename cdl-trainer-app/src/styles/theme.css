@@ -57,20 +57,68 @@
   --z-dropdown: 1200;
   --z-modal: 1400;
   --z-toast: 1600;
+
+  /* -------- Shared tokens (with simple fallbacks) -------- */
+  /* Fallback first; color-mix overrides appear below */
+  --card-border: rgba(196, 219, 232, 0.45); /* ≈ accent darkened 45% */
+  --text-muted: #cfd6dc;
+
+  /* Surface ramp for subtle depth */
+  --surface-1: var(--card-bg);
+  --surface-2: rgba(255, 255, 255, 0.05);
+  --surface-3: rgba(255, 255, 255, 0.08);
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+
+  /* Fallback mix approximations used by older engines */
+  --_mix-accent-d45: rgba(196, 219, 232, 0.45);
+  --_mix-accent-d70: rgba(196, 219, 232, 0.30);
+  --_mix-brandL-d12: rgba(78, 145, 173, 0.88);
+  --_mix-brandL-d35: rgba(78, 145, 173, 0.65);
 }
+
+/* Prefer color-mix where supported (overrides the simple fallbacks above) */
+:root {
+  --card-border: color-mix(in oklab, var(--accent), #000 45%);
+  --text-muted: color-mix(in oklab, var(--text-light), #000 30%);
+
+  --surface-2: color-mix(in oklab, var(--card-bg), #000 6%);
+  --surface-3: color-mix(in oklab, var(--card-bg), #000 12%);
+}
+
 /* -------- Calendar (theming hooks) -------- */
 :root {
+  /* Toolbar & grid */
+  --calendar-toolbar-bg: var(--card-bg);
   --calendar-toolbar-bg: color-mix(in oklab, var(--card-bg), #000 8%);
+
+  --calendar-toolbar-border: var(--_mix-accent-d70);
   --calendar-toolbar-border: color-mix(in oklab, var(--accent), #000 70%);
+
+  --calendar-grid-border: var(--_mix-accent-d70);
   --calendar-grid-border: color-mix(in oklab, var(--accent), #000 78%);
+
   --calendar-page-bg: transparent;
+
+  /* Text & accents */
   --calendar-text: var(--text-light);
   --calendar-muted: var(--text-dark);
   --calendar-now: var(--brand-light);
+
+  /* Events */
   --calendar-event-ring: rgba(0,0,0,.25);
   --calendar-event-shadow: 0 6px 18px rgba(0,0,0,.25);
+
   /* Event badges fall back to brand if event.color not provided */
+  --calendar-event-bg: var(--_mix-brandL-d12);
   --calendar-event-bg: color-mix(in oklab, var(--brand-light), #000 12%);
+
+  --calendar-event-border: var(--_mix-brandL-d35);
   --calendar-event-border: color-mix(in oklab, var(--brand-light), #000 35%);
 }
 
