@@ -3,12 +3,14 @@
 // - Reads/updates via services/progressApi (handles studentId + email fallback)
 // - Still calls markStudentWalkthroughComplete(email) for your milestone
 import { useCallback, useMemo, useRef, useState } from 'react'
+
 import { useToast } from '@components/useToast.js'
+import { markStudentWalkthroughComplete } from '@utils/ui-helpers.js'
+
 import {
   readProgress,
   writeProgress,
 } from '../services' // barrel -> progressApi
-import { markStudentWalkthroughComplete } from '@utils/ui-helpers.js'
 
 const TYPES = ['fill', 'order', 'type', 'visual']
 

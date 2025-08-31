@@ -68,7 +68,12 @@ export default function CalendarWidget({
   }
 
   return (
-    <div className={styles.card} aria-busy={loading ? 'true' : 'false'}>
+    <div
+      className={styles.card}
+      aria-busy={loading ? 'true' : 'false'}
+      // Ensure the card itself can grow and allow the calendar to use 100% height
+      style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}
+    >
       <header className={styles.header}>
         <h3 className={styles.title}>
           {mode === 'admin' ? 'Instructor Schedule' : 'My Schedule'}
@@ -92,7 +97,11 @@ export default function CalendarWidget({
         </div>
       </header>
 
-      <div className={compact ? styles.compact : styles.body}>
+      <div
+        className={compact ? styles.compact : styles.body}
+        // Make this section the flex child that stretches and gives FC 100% height
+        style={{ flex: 1, minHeight: 0 }}
+      >
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView={compact ? 'dayGridMonth' : 'timeGridWeek'}
@@ -101,8 +110,13 @@ export default function CalendarWidget({
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay',
           }}
-          height="auto"
+          /** Key height controls to avoid clipping */
+          height="100%"
+          contentHeight="auto"
+          expandRows
           stickyHeaderDates
+          handleWindowResize
+          windowResizeDelay={150}
           dayMaxEvents
           nowIndicator
           selectable={mode === 'admin'}
@@ -177,8 +191,8 @@ export default function CalendarWidget({
         onClose={() => setEditor({ open: false, value: null })}
         onDelete={async (id) => {
           await remove(id)
-          setEditor({ open: false, value: null })
-        }}
+          setEditor({ open: false, value: null })}
+        }
         onSave={async (val) => {
           if (!val.title?.trim()) {
             toast.warn?.('Title is required.')

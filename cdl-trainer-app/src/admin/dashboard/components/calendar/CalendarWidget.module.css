@@ -1,16 +1,23 @@
 /* Path: src/admin/dashboard/components/calendar/CalendarWidget.module.css */
 /* ============================================================================
    Calendar Widget (card + FullCalendar polish)
-   - Keeps original classes; adds useful extras (err, states, globals)
+   - Keeps original classes; adds sizing fixes so FC can fill the card
    ========================================================================== */
 
+/* ----- Card wrapper ------------------------------------------------------- */
 .card {
   background: var(--card-bg, #0b0f14);
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 12px;
   overflow: hidden;
+
+  /* Critical for preventing calendar clipping inside grid/flex parents */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;            /* allow child to compute height:100% */
 }
 
+/* ----- Header ------------------------------------------------------------- */
 .header {
   display: flex;
   align-items: center;
@@ -50,22 +57,29 @@
   border-color: rgba(255,255,255,.28);
   background: rgba(255,255,255,.04);
 }
-.btn:active {
-  transform: translateY(1px);
-}
-.btn:disabled {
-  opacity: .6;
-  cursor: not-allowed;
-}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
 
-.body { padding: 8px; }
+/* ----- Body (calendar container) ----------------------------------------- */
+/* Make the body the flex item that stretches; give FC a measurable box */
+.body,
+.compact {
+  padding: 8px;
+  flex: 1;
+  min-height: 0;      /* key to avoid overflow clipping in nested layouts */
+  display: flex;      /* so .fc can use height:100% reliably */
+}
 .compact { padding: 4px; }
 
 /* ============================================================================
    FullCalendar global tweaks (scoped safely via :global)
    ========================================================================== */
 
+/* Ensure the FullCalendar root expands to the container height */
 :global(.fc) {
+  height: 100%;
+  width: 100%;
+
   --fc-border-color: rgba(255,255,255,.08);
   --fc-page-bg-color: transparent;
   --fc-neutral-bg-color: rgba(255,255,255,.03);

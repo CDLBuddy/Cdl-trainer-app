@@ -368,7 +368,7 @@ export async function updateELDTProgress(userIdOrEmail, fields, options = {}) {
     )
     return true
   } catch (e) {
-    // eslint-disable-next-line no-console
+     
     console.error('❌ Error updating eldtProgress:', e)
     showToast(`Failed to update progress: ${e?.message || e}`, 'error', 4000)
     return false

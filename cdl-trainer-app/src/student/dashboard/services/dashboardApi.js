@@ -21,7 +21,9 @@ import {
 import { db } from '@utils/firebase.js'
 
 // Reuse our centralized link helpers (already used by StudentDashboard)
-export { getResourcesForSchool, getSchedulerURL } from '../links.js'
+import { getResourcesForSchool, getSchedulerURL } from '../links.js'
+
+export { getResourcesForSchool, getSchedulerURL }
 
 /* ──────────────────────────────────────────────────────────────────
    Config & helpers

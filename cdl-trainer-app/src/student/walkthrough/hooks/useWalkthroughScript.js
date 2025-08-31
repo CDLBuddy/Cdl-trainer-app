@@ -9,9 +9,12 @@
 // ----------------------------------------------------------------------
 
 import { useEffect, useMemo, useState } from 'react'
+
 import { getWalkthroughLabel } from '@walkthrough-data'
+
 import resolveWalkthrough from '@/walkthrough-data/loaders/resolveWalkthrough.js'
 import { getUserProfile } from '@user-profile'
+
 import { getCurrentUserEmail } from '../utils/session.js'
 
 // tiny helpers (local, zero-coupling)

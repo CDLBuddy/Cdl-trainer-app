@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url'
 
 // ESM-safe __dirname
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
-const r = p => path.resolve(__dirname, p)
+const r = (p) => path.resolve(__dirname, p)
 
 // Optional bundle analyzer — run with VISUALIZE=1 (or VITE_VISUALIZE=1)
 async function maybeVisualizer(enabled) {
@@ -62,14 +62,24 @@ export default defineConfig(async ({ mode }) => {
         // ===== Base =====
         '@': r('src'),
 
-        // ===== Shared Communications =====
+        // ===== Shared / Global =====
+        '@assets': r('src/assets'),
+        '@components': r('src/components'),
         '@communications': r('src/communications'),
-
-        // ===== lib =====
+        '@data': r('src/data'),
         '@lib': r('src/lib'),
         '@lib/scheduling': r('src/lib/scheduling'),
+        '@navigation': r('src/navigation'),
+        '@pages': r('src/pages'),
+        '@session': r('src/session'),
+        '@setup': r('src/setup'),
+        '@shared': r('src/shared'),
+        '@styles': r('src/styles'),
+        '@types': r('src/types'),
+        '@/types': r('src/types'), // convenience/compat
+        '@utils': r('src/utils'),
 
-        // user-profile convenience
+        // lib/user-profile convenience (used across roles)
         '@user-profile': r('src/lib/user-profile'),
         '@user-profile/helpers': r('src/lib/user-profile/helpers.js'),
         '@user-profile/normalize': r('src/lib/user-profile/normalize.js'),
@@ -77,53 +87,51 @@ export default defineConfig(async ({ mode }) => {
         '@user-profile/firestore': r('src/lib/user-profile/firestore.js'),
         '@user-profile/lists': r('src/lib/user-profile/lists.js'),
 
-        // ===== Setup / overrides =====
-        '@setup': r('src/setup'),
-
-        // ===== Types / Canonical domain models =====
-        '@types': r('src/types'),
-        '@/types': r('src/types'),
-
-        // ===== Shared / Global =====
-        '@assets': r('src/assets'),
-        '@components': r('src/components'),
-        '@navigation': r('src/navigation'),
-        '@pages': r('src/pages'),
-        '@session': r('src/session'),
-        '@shared': r('src/shared'),
-        '@styles': r('src/styles'),
-        '@utils': r('src/utils'),
-
-        // ===== Data =====
-        '@data': r('src/data'),
-
-        // ===== Walkthrough system =====
+        // ===== Walkthrough system (global data) =====
         '@walkthrough-data': r('src/walkthrough-data'),
         '@walkthrough-defaults': r('src/walkthrough-data/defaults'),
         '@walkthrough-loaders': r('src/walkthrough-data/loaders'),
         '@walkthrough-utils': r('src/walkthrough-data/utils'),
         '@walkthrough-overlays': r('src/walkthrough-data/overlays'),
+        '@walkthrough-overlays-common': r('src/walkthrough-data/overlays/common'),
+        '@walkthrough-overlays-phases': r('src/walkthrough-data/overlays/phases'),
+        '@walkthrough-overlays-school': r('src/walkthrough-data/overlays/school'),
         '@walkthrough-restrictions': r('src/walkthrough-data/overlays/restrictions'),
-        '@walkthrough-restriction-automatic': r('src/walkthrough-data/overlays/restrictions/automatic.js'),
-        '@walkthrough-restriction-no-air': r('src/walkthrough-data/overlays/restrictions/no-air.js'),
-        '@walkthrough-restriction-no-fifth-wheel': r('src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'),
+        '@walkthrough-restriction-automatic':
+          r('src/walkthrough-data/overlays/restrictions/automatic.js'),
+        '@walkthrough-restriction-no-air':
+          r('src/walkthrough-data/overlays/restrictions/no-air.js'),
+        '@walkthrough-restriction-no-fifth-wheel':
+          r('src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'),
 
-        // ===== Role-specific =====
+        // ===== Role: Student =====
         '@student': r('src/student'),
         '@student-components': r('src/student/components'),
+        '@student-dashboard': r('src/student/dashboard'),
         '@student-profile': r('src/student/profile'),
-        '@student-profile-sections': r('src/student/profile/sections'),
         '@student-profile-ui': r('src/student/profile/ui'),
+        '@student-profile-sections': r('src/student/profile/sections'),
         '@student-walkthrough': r('src/student/walkthrough'),
 
+        // ===== Role: Instructor =====
         '@instructor': r('src/instructor'),
 
-        // Admin
+        // ===== Role: Admin =====
         '@admin': r('src/admin'),
+        '@admin/billing': r('src/admin/billing'),
+        '@admin/communications': r('src/admin/communications'),
+        '@admin/companies': r('src/admin/companies'),
         '@admin/dashboard': r('src/admin/dashboard'),
+        '@admin/reports': r('src/admin/reports'),
+        '@admin/reports-students': r('src/admin/reports/student-reports'),
+        '@admin/schedule': r('src/admin/schedule'),
+        '@admin/settings': r('src/admin/settings'),
+        '@admin/utils': r('src/admin/utils'),
         '@admin-walkthroughs': r('src/admin/walkthroughs'),
 
+        // ===== Role: Superadmin =====
         '@superadmin': r('src/superadmin'),
+        '@superadmin-walkthroughs': r('src/superadmin/walkthroughs'),
       },
       // Ensure one copy of React in the graph
       dedupe: ['react', 'react-dom'],
@@ -162,17 +170,17 @@ export default defineConfig(async ({ mode }) => {
         'firebase/auth',
         'firebase/firestore',
         'firebase/storage',
-      // FullCalendar (widget)
+        // FullCalendar (widget)
         '@fullcalendar/react',
         '@fullcalendar/daygrid',
         '@fullcalendar/timegrid',
         '@fullcalendar/interaction',
       ],
-      esbuildOptions: { target: 'es2020' },
+      esbuildOptions: { target: 'es2022' },
     },
 
     build: {
-      target: 'es2020',
+      target: 'es2022',
       sourcemap: !isProd,
       cssCodeSplit: true,
       cssMinify: true,

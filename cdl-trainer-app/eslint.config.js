@@ -15,7 +15,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import a11y from 'eslint-plugin-jsx-a11y'
 import importPlugin from 'eslint-plugin-import'
 
-// Use the meta package for flat-config TypeScript presets
+// TypeScript (flat config presets)
 import tseslint from 'typescript-eslint'
 import tsPlugin from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
@@ -25,27 +25,28 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 import { fileURLToPath } from 'node:url'
 
 // ----------------------------------------------------------------------------
-// Shared alias map (single source of truth for both JS and TS sections)
+// Shared alias map — keep in lockstep with vite.config.js
 // ----------------------------------------------------------------------------
 const ALIAS_MAP = [
-  // Root & core
+  // Base & global
   ['@', './src'],
+  ['@assets', './src/assets'],
+  ['@components', './src/components'],
+  ['@communications', './src/communications'],
+  ['@data', './src/data'],
+  ['@lib', './src/lib'],
+  ['@lib/scheduling', './src/lib/scheduling'],
+  ['@navigation', './src/navigation'],
+  ['@pages', './src/pages'],
+  ['@session', './src/session'],
+  ['@setup', './src/setup'],
+  ['@shared', './src/shared'],
+  ['@styles', './src/styles'],
   ['@types', './src/types'],
   ['@/types', './src/types'],
   ['@utils', './src/utils'],
-  ['@components', './src/components'],
-  ['@navigation', './src/navigation'],
-  ['@pages', './src/pages'],
-  ['@styles', './src/styles'],
-  ['@assets', './src/assets'],
-  ['@shared', './src/shared'],
-  ['@session', './src/session'],
-  ['@setup', './src/setup'],
-  ['@data', './src/data'],            // present in your tree
-  ['@communications', './src/communications'],
 
-  // lib / user-profile module + common direct subpaths
-  ['@lib', './src/lib'],
+  // lib/user-profile conveniences
   ['@user-profile', './src/lib/user-profile'],
   ['@user-profile/helpers', './src/lib/user-profile/helpers.js'],
   ['@user-profile/normalize', './src/lib/user-profile/normalize.js'],
@@ -53,30 +54,48 @@ const ALIAS_MAP = [
   ['@user-profile/firestore', './src/lib/user-profile/firestore.js'],
   ['@user-profile/lists', './src/lib/user-profile/lists.js'],
 
-  // Walkthrough data (authoritative folders exist)
+  // Walkthrough data (global)
   ['@walkthrough-data', './src/walkthrough-data'],
   ['@walkthrough-defaults', './src/walkthrough-data/defaults'],
   ['@walkthrough-loaders', './src/walkthrough-data/loaders'],
   ['@walkthrough-utils', './src/walkthrough-data/utils'],
   ['@walkthrough-overlays', './src/walkthrough-data/overlays'],
+  ['@walkthrough-overlays-common', './src/walkthrough-data/overlays/common'],
+  ['@walkthrough-overlays-phases', './src/walkthrough-data/overlays/phases'],
+  ['@walkthrough-overlays-school', './src/walkthrough-data/overlays/school'],
+  ['@walkthrough-restrictions', './src/walkthrough-data/overlays/restrictions'],
   ['@walkthrough-restriction-automatic', './src/walkthrough-data/overlays/restrictions/automatic.js'],
   ['@walkthrough-restriction-no-air', './src/walkthrough-data/overlays/restrictions/no-air.js'],
   ['@walkthrough-restriction-no-fifth-wheel', './src/walkthrough-data/overlays/restrictions/no-fifth-wheel.js'],
 
-  // Roles
+  // Student
   ['@student', './src/student'],
   ['@student-components', './src/student/components'],
+  ['@student-dashboard', './src/student/dashboard'],
   ['@student-profile', './src/student/profile'],
-  ['@student-profile-sections', './src/student/profile/sections'],
   ['@student-profile-ui', './src/student/profile/ui'],
+  ['@student-profile-sections', './src/student/profile/sections'],
   ['@student-walkthrough', './src/student/walkthrough'],
 
+  // Instructor
   ['@instructor', './src/instructor'],
 
+  // Admin (feature domains)
   ['@admin', './src/admin'],
+  ['@admin/billing', './src/admin/billing'],
+  ['@admin/communications', './src/admin/communications'],
+  ['@admin/companies', './src/admin/companies'],
+  ['@admin/dashboard', './src/admin/dashboard'],
+  ['@admin/reports', './src/admin/reports'],
+  ['@admin/reports-students', './src/admin/reports/student-reports'],
+  ['@admin/schedule', './src/admin/schedule'],
+  ['@admin/settings', './src/admin/settings'],
+  ['@admin/utils', './src/admin/utils'],
   ['@admin-walkthroughs', './src/admin/walkthroughs'],
 
+  // Superadmin
   ['@superadmin', './src/superadmin'],
+  ['@superadmin-walkthroughs', './src/superadmin/walkthroughs'],
 ]
 
 // ----------------------------------------------------------------------------
@@ -107,7 +126,7 @@ export default defineConfig([
     '.vite',
     '.vercel',
     'stats.html',
-    '**/*.d.ts', // ignore ambient TS declarations
+    '**/*.d.ts',
   ]),
 
   // Report useless /* eslint-disable */
@@ -148,7 +167,7 @@ export default defineConfig([
         },
       ],
 
-      // ✅ Transition to ToastContext instead of legacy helpers
+      // Migrate to ToastContext over legacy helpers
       'no-restricted-imports': [
         'warn',
         {
@@ -184,7 +203,7 @@ export default defineConfig([
       'import/no-unresolved': ['error', { commonjs: true, caseSensitive: true }],
       'import/no-duplicates': 'warn',
       'import/newline-after-import': 'warn',
-      'import/extensions': 'off', // allow explicit .jsx
+      'import/extensions': 'off',
       'import/order': [
         'warn',
         {
@@ -192,7 +211,7 @@ export default defineConfig([
           pathGroups: [
             { pattern: 'react', group: 'external', position: 'before' },
 
-            // Core & shared
+            // Core & shared (grouped)
             { pattern: '@{,**/*}', group: 'internal', position: 'before' },
             { pattern: '@setup{,/**}', group: 'internal', position: 'before' },
             { pattern: '@data{,/**}', group: 'internal', position: 'before' },
@@ -219,15 +238,19 @@ export default defineConfig([
             // Roles
             { pattern: '@student{,/**}', group: 'internal', position: 'before' },
             { pattern: '@student-components{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@student-dashboard{,/**}', group: 'internal', position: 'before' },
             { pattern: '@student-profile{,/**}', group: 'internal', position: 'before' },
             { pattern: '@student-profile-sections{,/**}', group: 'internal', position: 'before' },
             { pattern: '@student-profile-ui{,/**}', group: 'internal', position: 'before' },
             { pattern: '@student-walkthrough{,/**}', group: 'internal', position: 'before' },
 
             { pattern: '@instructor{,/**}', group: 'internal', position: 'before' },
-            { pattern: '@admin-walkthroughs{,/**}', group: 'internal', position: 'before' },
+
+            // Admin & Superadmin
             { pattern: '@admin{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@admin-walkthroughs{,/**}', group: 'internal', position: 'before' },
             { pattern: '@superadmin{,/**}', group: 'internal', position: 'before' },
+            { pattern: '@superadmin-walkthroughs{,/**}', group: 'internal', position: 'before' },
           ],
           pathGroupsExcludedImportTypes: ['react', 'builtin', 'external'],
           'newlines-between': 'always',
@@ -263,17 +286,19 @@ export default defineConfig([
   {
     files: ['**/*.{ts,tsx}'],
     ignores: ['vite.config.*', 'eslint.config.*', 'dev-utils/**'],
+
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
       parser: tsParser,
       parserOptions: {
         ecmaFeatures: { jsx: true },
-        // project: ['./tsconfig.json'], // enable for type-aware linting
+        // project: ['./tsconfig.json'], // enable for type-aware linting if desired
         // tsconfigRootDir: __dirname,
       },
       globals: { ...globals.browser, ...globals.node },
     },
+
     plugins: {
       '@typescript-eslint': tsPlugin,
       react,
@@ -281,11 +306,13 @@ export default defineConfig([
       'jsx-a11y': a11y,
       import: importPlugin,
     },
+
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommended, // light, not type-checked
       reactRefresh.configs.vite,
     ],
+
     rules: {
       // Defer unused vars to TS plugin; disable base rule for TS files
       'no-unused-vars': 'off',
@@ -299,7 +326,7 @@ export default defineConfig([
         },
       ],
 
-      // Same React + hooks guidance
+      // React
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       'react-hooks/exhaustive-deps': 'warn',
@@ -336,6 +363,7 @@ export default defineConfig([
       eqeqeq: ['warn', 'smart'],
       'prefer-const': 'warn',
     },
+
     settings: {
       react: { version: 'detect' },
       'import/resolver': {
@@ -346,15 +374,13 @@ export default defineConfig([
     },
   },
 
-  // Tests (Vitest/Jest) – optional but handy
+  // Tests
   {
     files: ['**/*.{test,spec}.{js,jsx,ts,tsx}'],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node, ...globals.jest },
     },
-    rules: {
-      'no-console': 'off',
-    },
+    rules: { 'no-console': 'off' },
   },
 
   // Router exports should be component-only (refresh hint)

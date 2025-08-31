@@ -99,7 +99,7 @@ export async function preloadTests() {
 // ---------- Full warm (everything student) -----------------------------
 export async function preloadAll() {
   if (SAVE_DATA) {
-    if (IS_DEV) console.info('[preload] Data Saver on → skipping preloadAll()')
+    if (IS_DEV) console.warn('[preload] Data Saver on → skipping preloadAll()')
     return
   }
   await Promise.allSettled(

@@ -27,10 +27,10 @@ import {
   TipsRow,
   UpdatesCard,
 } from './components'
-import styles from './StudentDashboard.module.css'
 import { useDashboardData } from './hooks/useDashboardData.js'
 // Centralized external resource helpers
 import { getResourcesForSchool, getSchedulerURL } from './links.js'
+import styles from './StudentDashboard.module.css'
 
 /* -------------------------------- helpers ------------------------------- */
 const clampPct = n => {

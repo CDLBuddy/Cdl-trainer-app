@@ -15,17 +15,16 @@ import { useNavigate } from 'react-router-dom'
 import Shell from '@components/Shell.jsx'
 import { useToast } from '@components/useToast.js'
 
+import { ScriptViewer, DrillTabs, ProgressBar } from './components'
 import {
   FillClozeDrill,
   OrderStepsDrill,
   TypePhraseDrill,
   VisualRecallDrill,
 } from './drills'
-import { ScriptViewer, DrillTabs, ProgressBar } from './components'
-import { autoTokensFrom } from './utils'
-import useWalkthroughScript from './hooks/useWalkthroughScript.js'
 import useDrillProgress from './hooks/useDrillProgress.js'
-
+import useWalkthroughScript from './hooks/useWalkthroughScript.js'
+import { autoTokensFrom } from './utils'
 import styles from './walkthrough.module.css'
 
 export default function Walkthrough() {

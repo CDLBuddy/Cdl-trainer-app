@@ -162,7 +162,7 @@ async function _fallbackCorePages(role) {
       await Promise.allSettled([
         _once(
           'student:dashboard',
-          () => import('@student/StudentDashboard.jsx')
+          () => import('@student/dashboard/StudentDashboard.jsx')
         ),
         _once('student:profile', () => import('@student/profile/Profile.jsx')),
         _once('student:checks', () => import('@student/Checklists.jsx')),

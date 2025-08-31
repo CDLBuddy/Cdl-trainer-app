@@ -8,6 +8,9 @@
 .wrapper {
   display: grid;
   gap: 12px;
+  /* allow children with height:100% to measure */
+  height: 100%;
+  min-height: 0;
   /* keep background/font inherited from app shell */
 }
 
@@ -16,6 +19,15 @@
   display: grid;
   grid-template-columns: 1fr 360px;
   gap: 12px;
+
+  /* critical for nested scroll areas (e.g., calendar) */
+  min-height: 0;
+  align-content: start;
+}
+/* ensure grid children can shrink/grow without clipping */
+.mainGrid > * {
+  min-width: 0;
+  min-height: 0;
 }
 @media (max-width: 1200px) {
   .mainGrid {
@@ -28,6 +40,8 @@
   display: grid;
   gap: 16px;
   grid-template-columns: repeat(12, 1fr);
+  /* let big widgets (calendar) expand vertically */
+  min-height: 0;
 }
 
 /* Suggested default spans (can be overridden per-widget wrapper) */
@@ -126,6 +140,11 @@
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
+
+  /* allow inner children (e.g., FullCalendar) to stretch to 100% */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 .card:hover,
 .card:focus-within {

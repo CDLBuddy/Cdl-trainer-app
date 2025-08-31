@@ -6,6 +6,7 @@
 // ======================================================================
 
 import { useContext, useEffect, useRef } from 'react'
+
 import ToastContext, { defaultToast } from './ToastContext.js'
 
 export function useToast() {
@@ -19,7 +20,7 @@ export function useToast() {
     let isDev = false
     try {
       // Prefer Vite flag when available
-      // eslint-disable-next-line no-undef
+       
       isDev = Boolean(typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV)
     } catch {
       // ignore
@@ -30,7 +31,7 @@ export function useToast() {
 
     if (isDev && api === defaultToast && !warned.current) {
       // Logs only on the client after mount
-      // eslint-disable-next-line no-console
+       
       console.warn('[useToast] No <ToastProvider> found; toast calls will be no-ops.')
       warned.current = true
     }

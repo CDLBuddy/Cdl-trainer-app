@@ -1,6 +1,7 @@
 //src/student/walkthrough/components/ScriptViewer.jsx
 import PropTypes from 'prop-types'
 import React, { useId, useMemo } from 'react'
+
 import styles from './ScriptViewer.module.css'
 
 /**
@@ -36,7 +37,7 @@ export default function ScriptViewer({ script }) {
         Sections with steps. Critical sections are marked pass or fail.
       </span>
 
-      {sections.map((sec, i) => {
+      {sections.map((sec, _) => {
         const titleId = `${sec.id}-title`
         return (
           <section

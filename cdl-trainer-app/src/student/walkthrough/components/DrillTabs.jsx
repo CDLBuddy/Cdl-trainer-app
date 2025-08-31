@@ -1,6 +1,7 @@
 // Path: src/student/walkthrough/components/DrillTabs.jsx
-import React, { useMemo, useRef } from 'react'
 import PropTypes from 'prop-types'
+import React, { useMemo, useRef } from 'react'
+
 import styles from './DrillTabs.module.css' // ← use the component’s CSS module
 
 const TYPES = /** @type {const} */ (['fill', 'order', 'type', 'visual'])
@@ -75,10 +76,11 @@ export default function DrillTabs({
   }
 
   return (
-    <nav
+    <div
       className={styles.drillTabs}
       aria-label="Drill navigation"
       role="tablist"
+      tabIndex={0}
       onKeyDown={onKeyDown}
     >
       {items.map((it, i) => {
@@ -107,7 +109,7 @@ export default function DrillTabs({
           </button>
         )
       })}
-    </nav>
+    </div>
   )
 }
 

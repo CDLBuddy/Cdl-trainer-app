@@ -1,6 +1,7 @@
 //src/student/walkthrough/components/ProgressBar.jsx
 import PropTypes from 'prop-types'
 import React, { useId, useMemo } from 'react'
+
 import styles from './ProgressBar.module.css'
 
 export default function ProgressBar({ value, max = 4, label = 'Drill progress' }) {

@@ -1,6 +1,7 @@
 // src/student/walkthrough/drills/VisualRecallDrill.jsx
 import PropTypes from 'prop-types'
 import React, { useId, useMemo, useState } from 'react'
+
 import styles from './VisualRecallDrill.module.css'
 
 /**

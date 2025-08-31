@@ -1,6 +1,7 @@
 // src/student/walkthrough/drills/OrderStepsDrill.jsx
 import PropTypes from 'prop-types'
-import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useId, useMemo, useState } from 'react'
+
 import styles from './OrderStepsDrill.module.css'
 
 /**
@@ -98,7 +99,6 @@ export default function OrderStepsDrill({
 
       <ul
         className={styles.list}
-        role="list"
         aria-labelledby={listLabelId}
         aria-describedby={statusId}
       >
