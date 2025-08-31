@@ -1,7 +1,9 @@
+// Path: src/admin/schedule/AdminSchedule.jsx
 // ======================================================================
 // Admin • Schedule (full screen)
 // - Uses the same CalendarWidget, non-compact
 // - Lets admins filter by instructor or view all
+// - Layout hardened so FullCalendar can fill available height
 // ======================================================================
 
 import React, { Suspense, useMemo, useState } from 'react'
@@ -26,20 +28,32 @@ export default function AdminSchedule() {
   const [instructorId, setInstructorId] = useState('')
 
   const selectedLabel = useMemo(
-    () => instructors.find(i => i.value === instructorId)?.label || '(All instructors)',
+    () =>
+      instructors.find((i) => i.value === instructorId)?.label ||
+      '(All instructors)',
     [instructorId, instructors]
   )
 
   return (
     <Shell title="Schedule">
-      <div style={{ display: 'grid', gap: 12 }}>
-        {/* Filters */}
+      {/* Outer container must allow children to grow: flex + minHeight:0 */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          minHeight: 0,
+          gap: 12,
+        }}
+      >
+        {/* Filters (non-flexing header) */}
         <div
           style={{
             display: 'flex',
             gap: 10,
             alignItems: 'center',
             justifyContent: 'space-between',
+            flexShrink: 0,
           }}
         >
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -49,7 +63,7 @@ export default function AdminSchedule() {
             <select
               id="instructor-filter"
               value={instructorId}
-              onChange={e => setInstructorId(e.target.value)}
+              onChange={(e) => setInstructorId(e.target.value)}
               disabled={loading}
               style={{
                 minWidth: 220,
@@ -61,7 +75,7 @@ export default function AdminSchedule() {
               }}
             >
               <option value="">(All)</option>
-              {instructors.map(i => (
+              {instructors.map((i) => (
                 <option key={i.value} value={i.value}>
                   {i.label}
                 </option>
@@ -73,22 +87,35 @@ export default function AdminSchedule() {
           </div>
         </div>
 
-        {/* Calendar */}
-        <Suspense
-          fallback={
-            <div style={{ minHeight: 360, display: 'grid', placeItems: 'center' }}>
-              Loading calendar…
+        {/* Calendar region: the element that must stretch */}
+        <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  display: 'grid',
+                  placeItems: 'center',
+                }}
+              >
+                Loading calendar…
+              </div>
+            }
+          >
+            {/* Wrapper ensures the lazy child gets a 100% height box */}
+            <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
+              <CalendarWidget
+                key={instructorId || 'all'} // reflow cleanly when filter changes
+                schoolId={schoolId}
+                mode="admin"
+                instructors={instructors}
+                instructorId={instructorId || undefined}
+                compact={false}
+              />
             </div>
-          }
-        >
-          <CalendarWidget
-            schoolId={schoolId}
-            mode="admin"
-            instructors={instructors}
-            instructorId={instructorId || undefined}
-            compact={false}
-          />
-        </Suspense>
+          </Suspense>
+        </div>
       </div>
     </Shell>
   )
