@@ -22,6 +22,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
 import SplashScreen from '@components/SplashScreen.jsx'
+import { getUserRole as getLocalRole } from '@utils/auth.js'
 import { __DEV__ } from '@utils/env.js'
 import { auth, db } from '@utils/firebase.js'
 import { preloadRoutesForRole } from '@utils/route-preload.js'
@@ -127,8 +128,10 @@ export function useUserRole(options = {}) {
         }
 
         // 2) Resolve live, then normalize
-        const rawRole = await resolveRoleFromSources(user, email, sources)
-        const role = normalizeRole(rawRole)
+  let rawRole = await resolveRoleFromSources(user, email, sources)
+  // Fallback: if sources fail, use locally cached role to avoid false denials
+  if (!rawRole) rawRole = getLocalRole?.() || null
+  const role = normalizeRole(rawRole)
 
         // Cache (cache null briefly to avoid hammering)
         safeSetCache(user.uid, email, role, role ? cacheTtlSec : 30)
