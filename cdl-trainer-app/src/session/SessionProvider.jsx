@@ -1,8 +1,7 @@
 // src/session/SessionProvider.jsx
 // Component-only file to satisfy react-refresh rule
 
-import { useMemo, useRef } from 'react'
-
+import { useEffect, useMemo, useRef } from 'react'
 import SessionContext, { DEFAULT_SESSION } from './SessionContext.js'
 
 /**
@@ -11,10 +10,11 @@ import SessionContext, { DEFAULT_SESSION } from './SessionContext.js'
  * Props:
  * - value?: SessionShape      // { loading, isLoggedIn, role, user }
  * - children: React.ReactNode
- * - exposeDebug?: boolean     // in dev, mirror the latest session on window.__lastSession
+ * - exposeDebug?: boolean     // in dev, mirror latest session on window.__lastSession
  */
 
-const __DEV__ = import.meta?.env?.MODE !== 'production'
+const __DEV__ = import.meta?.env?.DEV === true
+const IS_BROWSER = typeof window !== 'undefined'
 
 /** Shallow equality for the 4 known keys */
 function shallowEqualSession(a, b) {
@@ -52,42 +52,49 @@ export default function SessionProvider({
       lastRef.current = next
     }
     return lastRef.current
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Depend only on primitives so we don't recreate unnecessarily
   }, [next.loading, next.isLoggedIn, next.role, next.user])
 
-  // Dev-time safety: warn when no value passed or unexpected keys found
-  if (__DEV__) {
+  // Dev-time safety: warn when no value passed or unexpected keys found (warn once per mount)
+  const warnedOnceRef = useRef(false)
+  if (__DEV__ && !warnedOnceRef.current) {
+    warnedOnceRef.current = true
     if (value == null) {
+      // eslint-disable-next-line no-console
       console.warn('[SessionProvider] No value passed. Using DEFAULT_SESSION.')
     } else {
       const allowed = new Set(['loading', 'isLoggedIn', 'role', 'user'])
       for (const k of Object.keys(value)) {
         if (!allowed.has(k)) {
+          // eslint-disable-next-line no-console
           console.warn(
             `[SessionProvider] Unexpected key "${k}" in value. Allowed keys: loading, isLoggedIn, role, user.`
           )
         }
       }
       if (value.loading != null && typeof value.loading !== 'boolean') {
+        // eslint-disable-next-line no-console
         console.warn(
           '[SessionProvider] "loading" should be a boolean; received:',
           typeof value.loading
         )
       }
       if (value.isLoggedIn != null && typeof value.isLoggedIn !== 'boolean') {
+        // eslint-disable-next-line no-console
         console.warn(
           '[SessionProvider] "isLoggedIn" should be a boolean; received:',
           typeof value.isLoggedIn
         )
       }
     }
-
-    // Optional window debug mirror
-    if (exposeDebug && typeof window !== 'undefined') {
-      // Expose a read-only snapshot (helps when debugging outside React)
-      window.__lastSession = Object.freeze({ ...stableValue })
-    }
   }
+
+  // Optional window debug mirror (effect to avoid SSR side effects)
+  useEffect(() => {
+    if (!__DEV__ || !exposeDebug || !IS_BROWSER) return
+    // Expose a read-only snapshot (helps when debugging outside React)
+    window.__lastSession = Object.freeze({ ...stableValue })
+  }, [stableValue, exposeDebug])
 
   return (
     <SessionContext.Provider value={stableValue || DEFAULT_SESSION}>
@@ -95,3 +102,5 @@ export default function SessionProvider({
     </SessionContext.Provider>
   )
 }
+
+SessionProvider.displayName = 'SessionProvider'

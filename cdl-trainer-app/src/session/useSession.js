@@ -4,10 +4,11 @@
 // ======================================================================
 
 import { useContext, useDebugValue, useRef } from 'react'
-
 import SessionContext, { DEFAULT_SESSION } from './SessionContext.js'
 
-const __DEV__ = import.meta?.env?.MODE !== 'production'
+// Align with the rest of the app
+const __DEV__ = import.meta?.env?.DEV === true
+const IS_BROWSER = typeof window !== 'undefined'
 
 // ---- internal ----------------------------------------------------------
 
@@ -28,16 +29,19 @@ function normalizeRole(r) {
 export function useSession() {
   const ctx = useContext(SessionContext)
   if (__DEV__ && (ctx === DEFAULT_SESSION || ctx == null)) {
+    // eslint-disable-next-line no-console
     console.warn(
       '[useSession] Used outside <SessionProvider>. Returning default (logged out).'
     )
   }
   const value = ctx || DEFAULT_SESSION
+
   useDebugValue(
     value,
     s =>
       `Session{ loading:${!!s.loading}, isLoggedIn:${!!s.isLoggedIn}, role:${s.role ?? 'null'} }`
   )
+
   return value
 }
 
@@ -56,15 +60,24 @@ export function useSession() {
 export function useSessionSelector(selector, isEqual = Object.is) {
   const session = useSession()
   const prevRef = useRef()
+  const hasPrevRef = useRef(false)
 
   let selected
   try {
     selected = typeof selector === 'function' ? selector(session) : session
   } catch (e) {
     if (__DEV__) {
+      // eslint-disable-next-line no-console
       console.warn('[useSessionSelector] Selector threw:', e)
     }
     selected = undefined
+  }
+
+  // On the first run, always store the selection.
+  if (!hasPrevRef.current) {
+    prevRef.current = selected
+    hasPrevRef.current = true
+    return selected
   }
 
   if (isEqual(selected, prevRef.current)) return prevRef.current
@@ -109,7 +122,7 @@ export function useIsLoading() {
  * - useHasRole(role => role === 'admin' || role === 'superadmin')
  */
 export function useHasRole(required) {
-  const current = useRole()
+  const current = useRole() // already normalized
   if (!required) return true
   if (typeof required === 'function') return !!required(current)
   if (Array.isArray(required))
@@ -125,7 +138,7 @@ export function useHasAnyRole(roles = []) {
 // ---- Fallback accessors (outside React / early boot) -------------------
 
 export function getCurrentUserEmailFallback() {
-  const last = (typeof window !== 'undefined' && window.__lastSession) || {}
+  const last = (IS_BROWSER && window.__lastSession) || {}
   const ctx = safePeekContext()
   return (
     last?.user?.email ||
@@ -137,7 +150,7 @@ export function getCurrentUserEmailFallback() {
 }
 
 export function getCurrentRoleFallback() {
-  const last = (typeof window !== 'undefined' && window.__lastSession) || {}
+  const last = (IS_BROWSER && window.__lastSession) || {}
   const ctx = safePeekContext()
   return normalizeRole(
     last?.role ||
@@ -148,12 +161,37 @@ export function getCurrentRoleFallback() {
   )
 }
 
+/** Handy pair to match the above fallbacks */
+export function getCurrentSchoolIdFallback() {
+  const last = (IS_BROWSER && window.__lastSession) || {}
+  const ctx = safePeekContext()
+  // prefer explicit user.profile.schoolId if present
+  const ctxId =
+    ctx?.user?.profile?.schoolId ?? ctx?.user?.schoolId ?? null
+  const lastId =
+    last?.user?.profile?.schoolId ?? last?.user?.schoolId ?? null
+
+  return (
+    normalizeMaybeString(lastId) ||
+    normalizeMaybeString(ctxId) ||
+    (typeof localStorage !== 'undefined' &&
+      normalizeMaybeString(localStorage.getItem('schoolId'))) ||
+    null
+  )
+}
+
+function normalizeMaybeString(v) {
+  if (v == null) return null
+  const s = String(v).trim()
+  return s ? s : null
+}
+
 /**
- * Optional: expose the latest session on window for debugging.
+ * Expose the latest session on window for debugging.
  * Call once where you compute session (e.g., in main.jsx after memo).
  */
 export function syncSessionDebug(sessionValue) {
-  if (__DEV__ && typeof window !== 'undefined') {
+  if (__DEV__ && IS_BROWSER) {
     // Freeze a shallow copy so accidental mutations in the console don’t affect consumers
     window.__lastSession = Object.freeze({ ...sessionValue })
   }

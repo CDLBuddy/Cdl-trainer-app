@@ -1,19 +1,5 @@
 // src/main.jsx
-// ============================================================
-// App bootstrap (React + Vite + Data Router)
-// - Global styles
-// - School overrides (per-school links/scheduling)
-// - Branding pre-load (theme-color + live updates)
-// - Top-level providers (Toast, Session)
-// - Route preloading (public + role-aware, idle/network-aware)
-// - RouterProvider mount
-// - Compact top-level error boundary
-// ============================================================
-
-// 🔹 Must run before anything reads window.schoolWebsites / schoolScheduling
 import '@/setup/school-overrides.js'
-
-// Global styles
 import './styles/index.css'
 
 import React from 'react'
@@ -21,42 +7,49 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 
 import SplashScreen from '@components/SplashScreen.jsx'
-import ToastProvider from '@components/ToastProvider.jsx' // ← FIXED
+import ToastProvider from '@components/ToastProvider.jsx'
 import { useAuthStatus } from '@utils/auth.js'
 import { __DEV__ } from '@utils/env.js'
 import { warmRoutesOnSession } from '@utils/route-preload.js'
-import { getCurrentSchoolBranding } from '@utils/school-branding.js'
-
+import { getCurrentSchoolBranding, BRAND_EVENT } from '@utils/school-branding.js'
 import { SessionProvider, syncSessionDebug } from '@session'
-
-// Router
 import { router } from './router.jsx'
 
 /* ------------------------------------------------------------------ */
-/* Bootstrap (brand color hint)                                       */
+/* Branding meta binding (idempotent + HMR-safe)                       */
 /* ------------------------------------------------------------------ */
-void (async () => {
-  try {
-    const brand = await getCurrentSchoolBranding()
-    const meta = document.querySelector('meta[name="theme-color"]')
-    if (meta && brand?.primaryColor) {
-      meta.setAttribute('content', brand.primaryColor)
-    }
+function bindBrandingMetaOnce() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return
+  if (window.__BRAND_META_BOUND__) return
+  window.__BRAND_META_BOUND__ = true
 
-    const onBrandingUpdated = (e) => {
-      const b = e?.detail
-      if (meta && b?.primaryColor) meta.setAttribute('content', b.primaryColor)
-    }
-    window.addEventListener('branding:updated', onBrandingUpdated)
-    // No removal here since this is app bootstrap; listener should live for app lifetime
-  } catch (err) {
-    if (__DEV__) console.warn('[bootstrap] Branding fetch failed:', err)
+  const meta = document.querySelector('meta[name="theme-color"]')
+
+  // initial paint
+  getCurrentSchoolBranding()
+    .then(brand => {
+      if (meta && brand?.primaryColor) meta.setAttribute('content', brand.primaryColor)
+    })
+    .catch(err => { if (__DEV__) console.warn('[bootstrap] Branding fetch failed:', err) })
+
+  // live updates
+  const onBrandingUpdated = (e) => {
+    const b = e?.detail
+    if (meta && b?.primaryColor) meta.setAttribute('content', b.primaryColor)
   }
-})()
+  window.addEventListener(BRAND_EVENT, onBrandingUpdated)
+
+  // expose disposer for HMR
+  window.__UNBIND_BRAND_META__ = () => {
+    window.removeEventListener(BRAND_EVENT, onBrandingUpdated)
+    delete window.__BRAND_META_BOUND__
+    delete window.__UNBIND_BRAND_META__
+  }
+}
+bindBrandingMetaOnce()
 
 /* ------------------------------------------------------------------ */
-/* Session root: exposes auth to context + warms routes on change     */
-/* Also mirrors a couple of legacy globals used by older modules.     */
+/* Session root                                                        */
 /* ------------------------------------------------------------------ */
 export function SessionRoot({ children }) {
   const auth = useAuthStatus() // { loading, isLoggedIn, role, user }
@@ -73,16 +66,17 @@ export function SessionRoot({ children }) {
 
   if (__DEV__) syncSessionDebug(value)
 
-  // 🔥 Route warming only when login/role truly change (loop-safe)
+  // Warm routes only after we know loading is false and state changed
   const last = React.useRef({ isLoggedIn: null, role: null })
   React.useEffect(() => {
+    if (value.loading) return
     const next = { isLoggedIn: !!value.isLoggedIn, role: value.role || null }
     if (
       next.isLoggedIn !== last.current.isLoggedIn ||
       next.role !== last.current.role
     ) {
       warmRoutesOnSession({
-        loading: !!value.loading,
+        loading: false,
         isLoggedIn: next.isLoggedIn,
         role: next.role,
       })
@@ -90,25 +84,32 @@ export function SessionRoot({ children }) {
     }
   }, [value.isLoggedIn, value.role, value.loading])
 
-  // 🧭 Mirror schoolId/email for legacy helpers that read from window/localStorage
+  // Bridge legacy globals (and clear them on logout)
   React.useEffect(() => {
     const u = value.user || {}
     const schoolId = (u.profile?.schoolId ?? u.schoolId ?? '').trim()
     const email = (u.email ?? u.profile?.email ?? '').trim()
 
-    if (schoolId) {
-      try {
+    try {
+      if (schoolId) {
         localStorage.setItem('schoolId', schoolId)
-      } catch {
-        /* ignore */
+        // @ts-ignore legacy bridge
+        window.schoolId = schoolId
+      } else {
+        localStorage.removeItem('schoolId')
+        // @ts-ignore
+        delete window.schoolId
       }
-      // keep a window property too (older code checks window.schoolId first)
-      // @ts-ignore - augmenting window for legacy code
-      window.schoolId = schoolId
-    }
-    if (email) {
-      // @ts-ignore - augmenting window for legacy code
-      window.currentUserEmail = email
+
+      if (email) {
+        // @ts-ignore
+        window.currentUserEmail = email
+      } else {
+        // @ts-ignore
+        delete window.currentUserEmail
+      }
+    } catch {
+      /* ignore storage errors */
     }
   }, [value.user])
 
@@ -116,39 +117,19 @@ export function SessionRoot({ children }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Optional: tiny top-level error boundary                            */
+/* Error boundary (unchanged)                                         */
 /* ------------------------------------------------------------------ */
 export class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = { err: null }
-  }
-  static getDerivedStateFromError(err) {
-    return { err }
-  }
-  componentDidCatch(error, info) {
-    console.error('[App] Uncaught error:', error, info)
-  }
+  constructor(props) { super(props); this.state = { err: null } }
+  static getDerivedStateFromError(err) { return { err } }
+  componentDidCatch(error, info) { console.error('[App] Uncaught error:', error, info) }
   render() {
     if (this.state.err) {
       return (
-        <div
-          className="error-overlay"
-          role="alert"
-          aria-live="assertive"
-          style={{ textAlign: 'center', padding: '6rem 1rem' }}
-        >
+        <div className="error-overlay" role="alert" aria-live="assertive" style={{ textAlign: 'center', padding: '6rem 1rem' }}>
           <h2>Something went wrong.</h2>
-          <p style={{ color: '#b22', maxWidth: 720, margin: '0 auto' }}>
-            {String(this.state.err)}
-          </p>
-          <button
-            className="btn"
-            onClick={() => window.location.reload()}
-            style={{ marginTop: 20 }}
-          >
-            Reload App
-          </button>
+          <p style={{ color: '#b22', maxWidth: 720, margin: '0 auto' }}>{String(this.state.err)}</p>
+          <button className="btn" onClick={() => window.location.reload()} style={{ marginTop: 20 }}>Reload App</button>
         </div>
       )
     }
@@ -157,7 +138,7 @@ export class ErrorBoundary extends React.Component {
 }
 
 /* ------------------------------------------------------------------ */
-/* Mount                                                              */
+/* Mount                                                               */
 /* ------------------------------------------------------------------ */
 const container = document.getElementById('root')
 if (!container) {
@@ -173,10 +154,7 @@ root.render(
         <ErrorBoundary>
           <RouterProvider
             router={router}
-            // Shown while route elements lazily load before AppLayout Suspense kicks in
-            fallbackElement={
-              <SplashScreen message="Loading CDL Trainer…" showTip={false} />
-            }
+            fallbackElement={<SplashScreen message="Loading CDL Trainer…" showTip={false} />}
           />
         </ErrorBoundary>
       </SessionRoot>
@@ -185,10 +163,11 @@ root.render(
 )
 
 /* ------------------------------------------------------------------ */
-/* Vite HMR hygiene                                                   */
+/* Vite HMR hygiene                                                    */
 /* ------------------------------------------------------------------ */
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
+    try { window.__UNBIND_BRAND_META__?.() } catch {}
     root.unmount()
   })
 }
