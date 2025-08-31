@@ -1,4 +1,12 @@
 // src/utils/school-switching.js
+// ======================================================================
+// School Switching Utilities
+// - No direct toasts (pass an optional notify callback)
+// - SSR-safe guards for window/localStorage
+// - Branding event uses shared BRAND_EVENT; also emits "school:switched"
+// - Applies primary color to CSS vars when a school object is supplied
+// ======================================================================
+
 import {
   collection,
   doc,
@@ -11,8 +19,62 @@ import {
 } from 'firebase/firestore'
 
 import { auth, db } from './firebase.js'
-import { showToast } from './ui-helpers.js'
+import { BRAND_EVENT } from './school-branding.js'
 
+// Non-visual event fired after a successful switch
+export const SCHOOL_SWITCHED_EVENT = 'school:switched'
+
+// ----------------------------------------------------------------------
+// SSR-safe runtime helpers
+// ----------------------------------------------------------------------
+const IS_BROWSER =
+  typeof window !== 'undefined' && typeof document !== 'undefined'
+
+function getLS(key, fallback = null) {
+  if (!IS_BROWSER) return fallback
+  try {
+    return window.localStorage.getItem(key) ?? fallback
+  } catch {
+    return fallback
+  }
+}
+
+function setLS(key, value) {
+  if (!IS_BROWSER) return
+  try {
+    window.localStorage.setItem(key, value)
+  } catch {
+    /* no-op */
+  }
+}
+
+function setCSSVar(name, value) {
+  if (!IS_BROWSER) return
+  try {
+    document.documentElement.style.setProperty(name, value)
+  } catch {
+    /* no-op */
+  }
+}
+
+function setMetaThemeColor(color) {
+  if (!IS_BROWSER || !color) return
+  try {
+    let meta = document.querySelector('meta[name="theme-color"]')
+    if (!meta) {
+      meta = document.createElement('meta')
+      meta.setAttribute('name', 'theme-color')
+      document.head.appendChild(meta)
+    }
+    meta.setAttribute('content', color)
+  } catch {
+    /* no-op */
+  }
+}
+
+// ----------------------------------------------------------------------
+// Routes
+// ----------------------------------------------------------------------
 export function getDashboardRoute(role) {
   switch (role) {
     case 'superadmin':
@@ -27,37 +89,67 @@ export function getDashboardRoute(role) {
   }
 }
 
+// ----------------------------------------------------------------------
+// Current user/school getters (safe)
+// ----------------------------------------------------------------------
 export function getCurrentUserEmail() {
-  return (
-    auth.currentUser?.email ||
-    window.currentUserEmail ||
-    localStorage.getItem('currentUserEmail') ||
-    null
-  )
-}
-export function getCurrentUserRole(fallback = 'student') {
-  return localStorage.getItem('userRole') || window.currentUserRole || fallback
-}
-export function getCurrentSchoolId() {
-  return localStorage.getItem('schoolId') || ''
+  if (auth?.currentUser?.email) return auth.currentUser.email
+  if (IS_BROWSER && window.currentUserEmail) return window.currentUserEmail
+  return getLS('currentUserEmail', null)
 }
 
-// ---------- NEW: Branding preload (logo only for now) ----------
+export function getCurrentUserRole(fallback = 'student') {
+  if (IS_BROWSER && window.currentUserRole) return window.currentUserRole
+  return getLS('userRole', fallback)
+}
+
+export function getCurrentSchoolId() {
+  return getLS('schoolId', '')
+}
+
+// ----------------------------------------------------------------------
+// Branding preload & broadcast
+// Applies basic branding pieces and primary color CSS vars immediately.
+// Prefer the full branding module for richer behavior when available.
+// ----------------------------------------------------------------------
 export function applyBrandingForSchool(school) {
+  if (!school) return
   try {
     const logoUrl = school?.logoUrl || ''
     const schoolName = school?.schoolName || school?.name || ''
-    localStorage.setItem('branding.logoUrl', logoUrl)
-    localStorage.setItem('branding.schoolName', schoolName)
-    // broadcast so your layout/topbar can update immediately
-    window.dispatchEvent(
-      new CustomEvent('branding:updated', { detail: { logoUrl, schoolName } })
-    )
+    const primaryColor = school?.primaryColor || ''
+
+    // lightweight cache
+    setLS('branding.logoUrl', logoUrl)
+    setLS('branding.schoolName', schoolName)
+    if (primaryColor) setLS('branding.primaryColor', primaryColor)
+
+    // apply CSS vars to align with theme tokens
+    if (primaryColor) {
+      setCSSVar('--brand-primary', primaryColor)
+      setCSSVar('--brand-light', primaryColor)
+      setCSSVar('--accent', primaryColor)
+      setMetaThemeColor(primaryColor)
+    }
+
+    // broadcast using shared constant
+    if (IS_BROWSER) {
+      window.dispatchEvent(
+        new CustomEvent(BRAND_EVENT, {
+          detail: { logoUrl, schoolName, primaryColor },
+        })
+      )
+    }
   } catch {
     /* no-op */
   }
 }
 
+// ----------------------------------------------------------------------
+// Data helpers
+// NOTE: This returns all schools (including disabled). If you need a
+// filtered list, use your fetchSchoolsFromFirestore() helper instead.
+// ----------------------------------------------------------------------
 export async function listAllSchools() {
   const snap = await getDocs(collection(db, 'schools'))
   return snap.docs.map(d => ({ id: d.id, ...d.data() }))
@@ -94,21 +186,26 @@ export function computeAllowedSchools(userRole, userSchoolIds, allSchools) {
   return allSchools.filter(s => set.has(s.id))
 }
 
-/**
- * Switch the active school: saves ID locally, stamps lastSchool server-side,
- * and (optionally) pre-applies branding if you pass the school object.
- */
+// ----------------------------------------------------------------------
+// Switch school (decoupled toasts; emits events)
+// Options:
+//   - persistServer: boolean (default true)
+//   - schoolObj: optional school object to immediately apply branding
+//   - notify: optional function (msg: string, opts?: { variant?: 'error'|'info'|'success' })
+// ----------------------------------------------------------------------
 export async function switchSchool(
   schoolId,
-  { persistServer = true, schoolObj = null } = {}
+  { persistServer = true, schoolObj = null, notify } = {}
 ) {
   if (!schoolId) {
-    showToast('Invalid school.', 2000, 'error')
+    // No direct toast here (ESLint rule); let caller decide
+    notify?.('Invalid school.', { variant: 'error' })
     return { ok: false }
   }
-  localStorage.setItem('schoolId', schoolId)
 
-  // If the caller passed the school object, apply branding now
+  setLS('schoolId', schoolId)
+
+  // If provided, apply branding immediately
   if (schoolObj) applyBrandingForSchool(schoolObj)
 
   const email = getCurrentUserEmail()
@@ -120,7 +217,20 @@ export async function switchSchool(
         { merge: true }
       )
     } catch {
-      /* non-fatal */
+      // non-fatal
+    }
+  }
+
+  // Notify the app shell / dashboards to refresh school-scoped data
+  if (IS_BROWSER) {
+    try {
+      window.dispatchEvent(
+        new CustomEvent(SCHOOL_SWITCHED_EVENT, {
+          detail: { schoolId, at: Date.now() },
+        })
+      )
+    } catch {
+      /* no-op */
     }
   }
 

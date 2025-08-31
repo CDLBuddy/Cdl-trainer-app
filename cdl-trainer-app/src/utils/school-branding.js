@@ -5,10 +5,10 @@
 // - Integrates with Firestore + localStorage cache
 // - Broadcasts updates via DOM CustomEvent ("branding:updated")
 // - SSR-safe (guards window/document/localStorage)
+// - Syncs CSS vars used across the app theme (brand + accent)
 // ======================================================================
 
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore'
-
 import { db } from './firebase.js'
 
 /** Event name emitted when branding is updated. */
@@ -38,7 +38,7 @@ const DEMO_SCHOOLS = [
     contactEmail: 'support@cdltrainerapp.com',
     website: 'https://cdltrainerapp.com',
     subHeadline: 'Your all-in-one CDL prep coach. Scroll down to get started!',
-    primaryColor: '#4e91ad',
+    primaryColor: '#4e91ad', // matches theme brand-light
   },
   {
     id: 'browning-mountain',
@@ -80,13 +80,40 @@ function setCSSVar(name, value) {
   }
 }
 
+/** Best-effort CSS color validation/coercion (accepts hex/named/rgb/hsl) */
+function coerceColor(input, fallback = '') {
+  const v = String(input || '').trim()
+  if (!v) return fallback
+  if (!IS_BROWSER || typeof CSS === 'undefined' || !CSS.supports) {
+    // SSR or very old engine: trust the value
+    return v
+  }
+  return CSS.supports('color', v) ? v : fallback
+}
+
+/** Set <meta name="theme-color"> for nicer mobile UI chrome */
+function setMetaThemeColor(color) {
+  if (!IS_BROWSER) return
+  try {
+    let meta = document.querySelector('meta[name="theme-color"]')
+    if (!meta) {
+      meta = document.createElement('meta')
+      meta.setAttribute('name', 'theme-color')
+      document.head.appendChild(meta)
+    }
+    meta.setAttribute('content', color)
+  } catch {
+    // ignore
+  }
+}
+
 function normalizeBrand(raw = {}, id = '') {
   const b = { ...(raw || {}) }
   return {
     id: id || b.id || '',
     schoolName: String(b.schoolName || b.name || '').trim(),
     logoUrl: String(b.logoUrl || '').trim(),
-    primaryColor: String(b.primaryColor || '').trim(),
+    primaryColor: coerceColor(b.primaryColor, ''), // ensure valid CSS color
     contactEmail: String(b.contactEmail || '').trim(),
     subHeadline: String(b.subHeadline || '').trim(),
     website: String(b.website || '').trim(),
@@ -96,10 +123,21 @@ function normalizeBrand(raw = {}, id = '') {
 /** Apply to CSS vars + write a light cache + broadcast event. */
 function applyBrand(brand) {
   if (!brand) return
-  if (brand.primaryColor) {
-    setCSSVar('--brand-primary', brand.primaryColor)
-    setLS(LS_KEYS.BRAND_COLOR, brand.primaryColor)
+  const color = coerceColor(brand.primaryColor, '')
+
+  if (color) {
+    // Sync all theme hooks that the app uses:
+    // - --brand-primary is your general intent
+    // - --brand-light is referenced by focus rings & calendar tokens
+    // - --accent is used for borders/links/etc. (comment this out if you prefer a fixed accent)
+    setCSSVar('--brand-primary', color)
+    setCSSVar('--brand-light', color)
+    setCSSVar('--accent', color)
+
+    setLS(LS_KEYS.BRAND_COLOR, color)
+    setMetaThemeColor(color)
   }
+
   if (brand.logoUrl) setLS(LS_KEYS.BRAND_LOGO, brand.logoUrl)
   if (brand.schoolName) setLS(LS_KEYS.BRAND_NAME, brand.schoolName)
   if (IS_BROWSER) setLS(LS_KEYS.BRAND_AT, String(Date.now()))
@@ -112,7 +150,7 @@ function applyBrand(brand) {
           detail: {
             logoUrl: brand.logoUrl || '',
             schoolName: brand.schoolName || '',
-            primaryColor: brand.primaryColor || '',
+            primaryColor: color || '',
           },
         })
       )

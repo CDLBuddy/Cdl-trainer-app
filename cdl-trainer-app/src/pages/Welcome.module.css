@@ -1,0 +1,183 @@
+/* Path: src/pages/Welcome.module.css
+   Welcome screen (page-scoped)
+   - Uses :global() so you don't have to change classNames in JSX
+   - Leans on theme tokens from src/styles/theme.css
+   - Adds tasteful motion with reduced-motion fallbacks
+*/
+
+/* ---------- Layout shell ---------- */
+:global(.welcome-screen) {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  position: relative;
+  padding: clamp(16px, 3vw, 28px);
+  background: var(--app-bg);
+  color: var(--text-light);
+  overflow: clip;
+}
+
+/* ---------- Decorative bokeh background ---------- */
+:global(.bokeh-layer) {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(30px) saturate(130%);
+  opacity: 0.35;
+}
+:global(.bokeh-dot) {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+  will-change: transform, opacity;
+}
+
+/* Gentle float for dots */
+@keyframes welcome-floatY {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-14px); }
+  100% { transform: translateY(0); }
+}
+:global(.parallax-float) {
+  animation: welcome-floatY 9s ease-in-out infinite;
+}
+
+/* ---------- Main content card ---------- */
+:global(.welcome-content) {
+  position: relative;
+  z-index: 1;
+  width: min(880px, 92vw);
+  margin-inline: auto;
+  padding: clamp(18px, 3vw, 28px);
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 54%);
+  box-shadow: var(--shadow-3), inset 0 1px 0 #ffffff10;
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  text-align: center;
+}
+
+/* Subtle entrance */
+@keyframes welcome-fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+:global(.fade-in) {
+  animation: welcome-fadeIn .45s ease-out both;
+}
+
+/* Soft halo on mount (kept minimal) */
+@keyframes welcome-shimmerGlow {
+  0%   { box-shadow: var(--shadow-3), inset 0 1px 0 #ffffff10; }
+  60%  { box-shadow: 0 0 0 8px color-mix(in oklab, var(--accent), #000 85%), var(--shadow-3); }
+  100% { box-shadow: var(--shadow-3), inset 0 1px 0 #ffffff10; }
+}
+:global(.shimmer-glow) {
+  animation: welcome-shimmerGlow 1.2s ease-out 1;
+}
+
+/* ---------- Branding bits ---------- */
+:global(.welcome-logo) {
+  display: block;
+  width: auto;
+  height: auto;
+  aspect-ratio: auto;
+  filter: drop-shadow(0 6px 20px #0006);
+}
+
+/* Headline with blinking caret */
+:global(.typewriter) {
+  font-weight: 900;
+  letter-spacing: .02em;
+  margin: 0 0 .35em;
+}
+@keyframes welcome-caretBlink { 50% { opacity: 0; } }
+:global(.typewriter .cursor) {
+  margin-left: .15em;
+  display: inline-block;
+  width: .06em;
+  background: currentColor;
+  animation: welcome-caretBlink 1s steps(1, end) infinite;
+}
+
+/* ---------- Feature tiles ---------- */
+:global(.features) {
+  margin-top: 30px;
+}
+:global(.features-list) {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 900px) {
+  :global(.features-list) { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 580px) {
+  :global(.features-list) { grid-template-columns: 1fr; }
+}
+:global(.feat) {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in oklab, var(--accent), #000 55%);
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--card-bg), #000 8%);
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+:global(.feat:hover),
+:global(.feat:focus-within) {
+  transform: translateY(-1px);
+  border-color: color-mix(in oklab, var(--accent), #fff 20%);
+  box-shadow: 0 10px 24px #0005;
+}
+:global(.feat i) {
+  font-style: normal;
+  font-size: 1.15rem;
+  filter: drop-shadow(0 2px 6px #0006);
+}
+
+/* ---------- Buttons: page accent pulse (optional) ---------- */
+@keyframes welcome-pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand-primary, var(--brand-light)), transparent 60%); }
+  70%  { box-shadow: 0 0 0 14px color-mix(in oklab, var(--brand-primary, var(--brand-light)), transparent 100%); }
+  100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand-primary, var(--brand-light)), transparent 100%); }
+}
+:global(.pulse) {
+  animation: welcome-pulse 2s ease-out infinite;
+}
+
+/* ---------- Footer ---------- */
+:global(.welcome-footer small) {
+  opacity: .85;
+}
+:global(.welcome-footer a) {
+  color: var(--accent);
+  text-decoration: none;
+}
+:global(.welcome-footer a:hover) {
+  text-decoration: underline;
+}
+
+/* ---------- Motion & accessibility ---------- */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+}
+
+/* ---------- High contrast / forced colors ---------- */
+@media (forced-colors: active) {
+  :global(.welcome-content) {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: ButtonText !important;
+    box-shadow: none !important;
+  }
+  :global(.bokeh-layer),
+  :global(.bokeh-dot) { display: none !important; }
+}
