@@ -10,7 +10,7 @@
 import PropTypes from 'prop-types'
 import React, { memo } from 'react'
 
-import './CompanyHeader.module.css'
+import cls from './CompanyHeader.module.css'
 /**
  * @typedef {{ schoolName?: string, logoUrl?: string, primaryColor?: string }} Brand
  */
@@ -54,28 +54,12 @@ function CompanyHeader({ brand }) {
   const logoUrl = brand?.logoUrl?.trim() || ''
 
   return (
-    <header
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '1.1em',
-        gap: 12,
-      }}
-    >
+    <header className={cls.header}>
       {/* Name */}
       <span
         aria-label="School name"
         title={name}
-        style={{
-          fontSize: '1.25em',
-          fontWeight: 600,
-          color,
-          maxWidth: 560,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}
+        className={cls.name}
       >
         {name}
       </span>
@@ -90,14 +74,7 @@ function CompanyHeader({ brand }) {
           onError={e => {
             e.currentTarget.style.display = 'none'
           }}
-          style={{
-            maxWidth: 100,
-            maxHeight: 48,
-            height: 'auto',
-            verticalAlign: 'middle',
-            marginBottom: 3,
-            objectFit: 'contain',
-          }}
+          className={cls.logo}
         />
       ) : (
         <FallbackAvatar name={name} color={color} />

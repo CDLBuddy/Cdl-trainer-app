@@ -209,6 +209,13 @@ export const ADMIN_TOP_NAV = Object.freeze(
       preloadKey: 'companies',
     },
     {
+      to: '/admin/communications',
+      label: 'Communications',
+      icon: '✉️',
+      prefetchRole: 'admin',
+      preloadKey: 'communications',
+    },
+    {
       to: '/admin/billing',
       label: 'Billing',
       icon: '💳',
@@ -242,8 +249,6 @@ export const ADMIN_TOP_NAV = Object.freeze(
 export const ADMIN_DEEP_LINKS = Object.freeze(
   /** @type {string[]} */ ([
     '/admin/companies/:companyId',
-    // Communications route is available but intentionally hidden from top nav
-    '/admin/communications',
   ])
 )
 

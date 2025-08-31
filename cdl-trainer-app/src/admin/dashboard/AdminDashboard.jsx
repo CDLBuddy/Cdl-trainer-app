@@ -236,20 +236,23 @@ export default function AdminDashboard() {
           </Suspense>
 
           {/* Scheduler – admin manages instructor events */}
-          <Suspense fallback={<Fallback label="Loading schedule…" />}>
-            <CalendarWidget
-              schoolId={schoolId}
-              mode="admin"
-              instructorId={null}
-              instructors={instructorOptions}
-              compact
-              onRequestExpand={() => {
-                // Navigate to a fuller calendar view if/when you add that route
-                try { window.location.assign('/admin/schedule') } catch { /* ignore navigation errors */ }
-              }}
-            />
-            {instrLoading && <p className="u-muted" style={{ marginTop: 4 }}>Loading instructors…</p>}
-          </Suspense>
+          {/* Force full-width span so the calendar gets the horizontal space it needs */}
+          <div style={{ gridColumn: '1 / -1', minWidth: 0 }}>
+            <Suspense fallback={<Fallback label="Loading schedule…" />}>
+              <CalendarWidget
+                schoolId={schoolId}
+                mode="admin"
+                instructorId={null}
+                instructors={instructorOptions}
+                compact
+                onRequestExpand={() => {
+                  // Navigate to a fuller calendar view if/when you add that route
+                  try { window.location.assign('/admin/schedule') } catch { /* ignore navigation errors */ }
+                }}
+              />
+              {instrLoading && <p className="u-muted" style={{ marginTop: 4 }}>Loading instructors…</p>}
+            </Suspense>
+          </div>
         </div>
 
         {/* Small global hint so the page doesn’t feel frozen */}

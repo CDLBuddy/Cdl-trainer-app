@@ -10,7 +10,7 @@
 import PropTypes from 'prop-types'
 import React, { memo, useCallback, useId } from 'react'
 
-import './CompanyFilters.module.css'
+import cls from './CompanyFilters.module.css'
 
 const noop = () => {}
 
@@ -63,19 +63,10 @@ function CompanyFilters({
     <div
       role="toolbar"
       aria-label="Companies actions"
-      className={className}
-      style={{
-        display: 'flex',
-        gap: 12,
-        marginBottom: '1em',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-      }}
+      className={`${cls.toolbar} ${className}`}
     >
       {/* Search */}
-      <div
-        style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
-      >
+      <div className={cls.searchWrap}>
         <label htmlFor={`${uid}-search`} style={visuallyHidden}>
           Search companies
         </label>
@@ -86,15 +77,7 @@ function CompanyFilters({
           onChange={e => setSearch(e.target.value)}
           placeholder="Search companies…"
           aria-label="Search companies"
-          style={{
-            flex: 1,
-            minWidth: 200,
-            maxWidth: 320,
-            padding: '6px 30px 6px 11px',
-            borderRadius: 8,
-            border: '1px solid #dcdde2',
-            outlineOffset: 2,
-          }}
+          className={cls.searchInput}
         />
         {!!search && (
           <button
@@ -102,7 +85,7 @@ function CompanyFilters({
             onClick={onClearSearch}
             title="Clear search"
             aria-label="Clear search"
-            style={clearXStyle}
+            className={cls.clearBtn}
           >
             ×
           </button>
@@ -146,13 +129,12 @@ function CompanyFilters({
         ref={importInputRef}
         type="file"
         accept=".csv,text/csv"
-        style={{ display: 'none' }}
+        className={cls.hiddenInput}
         onChange={handleImportChange}
       />
       <label
-        className="btn outline"
+  className={`btn outline ${cls.importLabel}`}
         htmlFor={`${uid}-import`}
-        style={{ marginBottom: 0, cursor: 'pointer' }}
         title="Import companies from CSV"
       >
         Import CSV
@@ -160,16 +142,12 @@ function CompanyFilters({
 
       {/* Bulk actions */}
       <button
-        className="btn outline"
+        className={`btn outline ${canBulkDelete ? cls.danger : ''}`}
         type="button"
         disabled={!canBulkDelete}
         aria-disabled={!canBulkDelete}
         onClick={onBulkDelete}
         title={canBulkDelete ? 'Delete selected rows' : 'Select rows to enable'}
-        style={{
-          color: canBulkDelete ? '#b91c1c' : undefined,
-          borderColor: canBulkDelete ? '#b91c1c' : undefined,
-        }}
       >
         Delete Selected
       </button>
@@ -200,21 +178,7 @@ const visuallyHidden = {
   border: 0,
 }
 
-const clearXStyle = {
-  position: 'absolute',
-  right: 6,
-  top: '50%',
-  transform: 'translateY(-50%)',
-  width: 22,
-  height: 22,
-  lineHeight: '20px',
-  textAlign: 'center',
-  borderRadius: 6,
-  border: '1px solid #e5e7eb',
-  background: '#fff',
-  cursor: 'pointer',
-  color: '#6b7280',
-}
+// clearXStyle replaced with CSS module class .clearBtn
 
 CompanyFilters.propTypes = {
   search: PropTypes.string,

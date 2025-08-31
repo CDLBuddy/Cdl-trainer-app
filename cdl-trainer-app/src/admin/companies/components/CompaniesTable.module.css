@@ -5,46 +5,20 @@
    - Dark-mode aware via prefers-color-scheme (and optional [data-theme="dark"])
    ============================================================================ */
 
-/* Design tokens (light) */
+/* Design tokens aligned to global theme */
 :root {
-  --tbl-bg: #ffffff;
-  --tbl-border: #e5e7eb; /* gray-200 */
-  --tbl-head-bg: #fafafa;
-  --tbl-head-fg: #111827; /* gray-900 */
-  --tbl-row: #ffffff;
-  --tbl-row-alt: #fbfbfb;
-  --tbl-hover: #f5f7ff;
-  --tbl-focus: #6366f1; /* indigo-500 */
-  --tbl-shadow:
-    0 1px 0 rgba(17, 24, 39, 0.04), 0 8px 24px rgba(17, 24, 39, 0.06);
-  --tbl-radius: 12px;
+  --tbl-bg: var(--card-bg);
+  --tbl-border: color-mix(in oklab, var(--accent), #000 45%);
+  --tbl-head-bg: color-mix(in oklab, var(--card-bg), #000 6%);
+  --tbl-head-fg: var(--text-light);
+  --tbl-row: transparent;
+  --tbl-row-alt: color-mix(in oklab, var(--card-bg), #000 4%);
+  --tbl-hover: color-mix(in oklab, var(--brand-light), transparent 92%);
+  --tbl-focus: var(--brand-light);
+  --tbl-shadow: var(--shadow-1);
+  --tbl-radius: var(--radius-md, 12px);
   --tbl-pad-y: 10px;
   --tbl-pad-x: 12px;
-}
-
-/* Design tokens (dark) */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --tbl-bg: #0f172a; /* slate-900 */
-    --tbl-border: #243042; /* slate-800 */
-    --tbl-head-bg: #111a2e; /* slightly lighter than bg */
-    --tbl-head-fg: #e5e7eb; /* gray-200 */
-    --tbl-row: #0f172a;
-    --tbl-row-alt: #0e1526;
-    --tbl-hover: #13203a;
-    --tbl-shadow: 0 1px 0 rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.35);
-  }
-}
-/* Optional explicit theme hook */
-:where([data-theme='dark']) {
-  --tbl-bg: #0f172a;
-  --tbl-border: #243042;
-  --tbl-head-bg: #111a2e;
-  --tbl-head-fg: #e5e7eb;
-  --tbl-row: #0f172a;
-  --tbl-row-alt: #0e1526;
-  --tbl-hover: #13203a;
-  --tbl-shadow: 0 1px 0 rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 /* Wrapper: card-like container with horizontal scroll if needed */
@@ -55,6 +29,14 @@
   box-shadow: var(--tbl-shadow);
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* If parent also applies the global dashboard-card class, avoid double chrome */
+:global(.dashboard-card).tableWrap {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: inherit;
 }
 
 /* Optional nicer scrollbar */

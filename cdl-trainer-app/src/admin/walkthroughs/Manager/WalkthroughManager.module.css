@@ -4,3 +4,23 @@
   margin: 0 auto;
   padding: 16px;
 }
+
+.wrapper {
+  display: grid;
+  gap: 12px;
+  min-height: 0;
+}
+
+.loading {
+  color: var(--text-dark);
+  padding: 12px;
+}
+
+.missing {
+  background: var(--card-bg);
+  color: var(--text-light);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 45%);
+  border-radius: var(--radius-md, 10px);
+  padding: 12px 14px;
+  margin-top: 12px;
+}

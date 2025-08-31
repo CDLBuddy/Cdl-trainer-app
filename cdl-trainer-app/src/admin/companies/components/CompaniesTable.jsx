@@ -10,7 +10,7 @@
 import PropTypes from 'prop-types'
 import React, { memo, useEffect, useMemo, useRef } from 'react'
 
-import './CompaniesTable.module.css'
+import tbl from './CompaniesTable.module.css'
 import CompanyRow from './CompanyRow.jsx'
 
 /**
@@ -57,16 +57,12 @@ function CompaniesTable({
 
   return (
     <div
-      style={{ overflowX: 'auto' }}
-      className={className}
+      className={`${tbl.tableWrap} ${className}`}
       role="region"
       aria-label="Companies table region"
       data-testid="companies-table-region"
     >
-      <table
-        className="companies-table"
-        style={{ width: '100%', minWidth: 760 }}
-      >
+      <table className={`${tbl.table} companies-table`}>
         <caption
           style={{
             position: 'absolute',
@@ -82,7 +78,7 @@ function CompaniesTable({
 
         <thead>
           <tr>
-            <th scope="col" style={{ width: 40 }}>
+            <th scope="col">
               <input
                 ref={headerCbRef}
                 aria-label="Select all companies"
@@ -96,7 +92,7 @@ function CompaniesTable({
             <th scope="col">Address</th>
             <th scope="col">Status</th>
             <th scope="col">Created / By</th>
-            <th scope="col" style={{ width: 260 }}>
+            <th scope="col" className={tbl.actionsCell}>
               Actions
             </th>
           </tr>
@@ -105,14 +101,7 @@ function CompaniesTable({
         <tbody>
           {!hasRows ? (
             <tr>
-              <td
-                colSpan={colSpan}
-                style={{
-                  textAlign: 'center',
-                  color: '#6b7280',
-                  padding: '12px 8px',
-                }}
-              >
+              <td colSpan={colSpan} style={{ textAlign: 'center', padding: '12px 8px' }}>
                 No companies found for this school.
               </td>
             </tr>

@@ -12,6 +12,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 
 import useToast from '@components/useToast.js'
+import { getUserRole as _getUserRole } from '@utils/auth.js'
 
 import styles from './AdminReports.module.css'
 // Lightweight atoms/molecules (static)
@@ -218,8 +219,9 @@ export default function AdminReports({ currentSchoolId, currentRole }) {
     }
   }, [])
 
-  // 6) Auth gate
-  if (currentRole !== 'admin') {
+  // 6) Auth gate (allow admin and superadmin; fallback to app role if prop missing)
+  const effectiveRole = (currentRole || _getUserRole?.() || '').toLowerCase()
+  if (effectiveRole !== 'admin' && effectiveRole !== 'superadmin') {
     return (
       <div
         className="dashboard-card"

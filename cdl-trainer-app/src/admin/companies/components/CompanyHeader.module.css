@@ -5,10 +5,7 @@
    - Dark-mode friendly; graceful truncation on long names
    ============================================================================ */
 
-:root {
-  --brand: #6c5ce7; /* fallback if style var not passed */
-  --hdr-gap: 12px;
-}
+:root { --hdr-gap: 12px; }
 
 .header {
   display: flex;
@@ -23,7 +20,7 @@
 .name {
   font-size: 1.25em;
   font-weight: 600;
-  color: var(--brand);
+  color: var(--text-light);
   max-width: min(560px, 70vw);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -45,11 +42,4 @@
   align-items: flex-end;
 }
 
-@media (prefers-color-scheme: dark) {
-  .name {
-    /* keep readable in dark mode while preserving brand tone */
-    text-shadow:
-      0 0 0 transparent,
-      0 1px 0 rgba(0, 0, 0, 0.25);
-  }
-}
+/* rely on global theme for contrast; keep minimal shadow off */

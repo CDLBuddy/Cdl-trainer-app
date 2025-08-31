@@ -8,20 +8,18 @@
    ============================================================================ */
 
 .page {
-  /* Prefer app/global tokens if present */
-  --brand: var(--brand-primary, #6c5ce7);
-  --bg: var(--surface, #0f1220);
-  --card: var(--surface-2, #121629);
-  --card-contrast: var(--surface-3, #171b34);
-  --text: var(--text, #e6e6f0);
-  --muted: var(--muted, #9aa3b2);
-  --border: color-mix(in oklab, var(--text) 14%, #000 86%);
+  /* Prefer shared theme tokens; provide light fallbacks */
+  --brand: var(--brand-primary, var(--brand, #4e91ad));
+  --text: var(--text-light, #fff);
+  --muted: var(--text-muted, #9aa3b2);
+  --card: var(--card-bg, rgba(255, 255, 255, 0.06));
+  --card-contrast: var(--card-bg-dark, rgba(10, 15, 20, 0.6));
+  --border: color-mix(in oklab, var(--accent, #c4dbe8), #000 45%);
 
   /* layout */
   margin: 0 auto;
   padding: 24px;
   width: min(1200px, 100%);
-  /* let the page breathe a bit more than the default 960px */
 }
 
 .headerRow {
@@ -51,72 +49,37 @@
 }
 
 /* Primary action (matches dashboard "card" vibe) */
-.addBtn {
-  --btn-bg: var(--brand);
-  --btn-fg: white;
-  appearance: none;
-  border: 0;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-weight: 600;
-  line-height: 1;
-  background: linear-gradient(
-    180deg,
-    color-mix(in oklab, var(--btn-bg) 88%, #fff 12%),
-    var(--btn-bg)
-  );
-  color: var(--btn-fg);
-  box-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.22),
-    inset 0 0 0 1px color-mix(in oklab, #000 70%, var(--btn-bg) 30%);
-  transition:
-    transform 0.08s ease-out,
-    box-shadow 0.18s ease,
-    filter 0.18s ease;
-}
-.addBtn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.03);
-}
-.addBtn:active {
-  transform: translateY(0);
-  filter: brightness(0.98);
-}
-.addBtn[aria-disabled='true'],
-.addBtn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  box-shadow: none;
-}
+/* Now relies on global .btn/.btn-primary; keep only spacing or unique tweaks */
+.addBtn { line-height: 1; }
 
 /* Alert banner (error/warn info) */
 .errorBanner {
-  border: 1px solid color-mix(in oklab, #ff8b8b 70%, #000 30%);
-  background: color-mix(in oklab, #ffdede 40%, #000 60%);
-  color: #ffe3e3;
+  border: 1px solid color-mix(in oklab, var(--error, #e53e3e), #000 30%);
+  background: color-mix(in oklab, var(--error, #e53e3e), transparent 88%);
+  color: var(--text-light, #fff);
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-md, 10px);
   margin: 0 0 12px 0;
 }
 
 /* Toolbar host (CompanyFilters sits inside) */
 .toolbarWrap {
-  /* keep the card rhythm consistent with dashboard widgets */
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 10px;
+  /* visual handled by CompanyFilters.module.css; keep spacing only */
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
   margin: 8px 0 14px 0;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+  box-shadow: none;
 }
 
 /* Table region host (CompaniesTable mounts inside) */
 .tableRegion {
-  border-radius: 16px;
+  border-radius: var(--radius-md, 10px);
   overflow: clip;
   background: var(--card);
   border: 1px solid var(--border);
-  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.28);
+  box-shadow: var(--shadow-1, 0 6px 20px rgba(0, 0, 0, 0.2));
 }
 
 /* Give any inner table a "mini-table" vibe without touching its component CSS.

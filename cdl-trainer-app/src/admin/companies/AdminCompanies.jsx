@@ -146,29 +146,28 @@ function AdminCompanies() {
     <div
       className={`screen-wrapper fade-in admin-companies-page ${styles.page}`}
       // expose brand to children via CSS var (CompaniesTable/Filters can use var(--brand))
-      style={{ '--brand': brandPrimary }}
+      style={{ '--brand-primary': brandPrimary }}
     >
       <CompanyHeader brand={brand} />
 
-      <div className={styles.topBar}>
-        <h2 className={styles.titleRow}>
+   <div className={styles.headerRow}>
+        <h2 className={styles.title}>
           <span>🏢 Manage Companies</span>
-          <small className={styles.eyebrow}>
+          <span className={styles.countMuted}>
             {loading
               ? 'Loading…'
               : `${totalCount} result${totalCount === 1 ? '' : 's'}`}
             {selectedCount ? ` • ${selectedCount} selected` : ''}
-          </small>
+          </span>
         </h2>
 
         {/* Primary action: open drawer */}
         <button
-          className="btn"
+          className={`btn btn-primary ${styles.addBtn}`}
           onClick={openAddCompany}
           onMouseEnter={() =>
             import('./add-company/AddCompanyDrawer.jsx').catch(() => {})
           }
-          style={{ background: brandPrimary, border: 'none' }}
           aria-haspopup="dialog"
           aria-expanded={drawerOpen ? 'true' : 'false'}
         >
@@ -189,39 +188,33 @@ function AdminCompanies() {
       ) : null}
 
       {/* Toolbar */}
-      <CompanyFilters
-        search={search}
-        setSearch={setSearch}
-        onExportCSV={exportCSV}
-        onExportPDF={exportPDF}
-        onDownloadTemplate={downloadTemplate}
-        importInputRef={importRef}
-        onImportCSV={() =>
-          showToast(
-            'Bulk import is not yet implemented in this demo.',
-            3000,
-            'info'
-          )
-        }
-        canBulkDelete={selectedCount > 0}
-        onBulkDelete={bulkDelete}
-        canBulkExport={selectedCount > 0}
-        onBulkExport={bulkExportSelected}
-      />
+      <div className={styles.toolbarWrap}>
+        <CompanyFilters
+          search={search}
+          setSearch={setSearch}
+          onExportCSV={exportCSV}
+          onExportPDF={exportPDF}
+          onDownloadTemplate={downloadTemplate}
+          importInputRef={importRef}
+          onImportCSV={() =>
+            showToast(
+              'Bulk import is not yet implemented in this demo.',
+              3000,
+              'info'
+            )
+          }
+          canBulkDelete={selectedCount > 0}
+          onBulkDelete={bulkDelete}
+          canBulkExport={selectedCount > 0}
+          onBulkExport={bulkExportSelected}
+        />
+      </div>
 
       {/* Table / Loading state */}
-      <div
-        role="region"
-        aria-label="Companies table region"
-        aria-busy={loading}
-      >
+      <div role="region" aria-label="Companies table region" aria-busy={loading}>
         {loading ? (
-          <div className={styles.loadingRow} aria-live="polite">
-            <span
-              className="spinner"
-              aria-hidden="true"
-              style={{ marginRight: 8 }}
-            />
+          <div className="dashboard-card" aria-live="polite" style={{ padding: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="spinner" aria-hidden="true" />
             Loading companies…
           </div>
         ) : (
@@ -235,23 +228,22 @@ function AdminCompanies() {
             onRemoveRow={removeOne}
             onOpenDetail={openDetail}
             showToast={showToast}
+            className="dashboard-card"
           />
         )}
       </div>
 
-      <div className={styles.hint}>
+      <div className={styles.footerNote}>
         Bulk import supports columns: <b>name</b>, <b>contact</b>,{' '}
         <b>address</b>, <b>status</b> (first row is a header).
       </div>
 
-      <div className={styles.backBtnWrap}>
-        <button
-          className="btn outline wide"
-          onClick={() => navigate('/admin-dashboard')}
-        >
-          ⬅ Back to Dashboard
-        </button>
-      </div>
+      <button
+        className={`btn outline wide ${styles.backBtn}`}
+        onClick={() => navigate('/admin-dashboard')}
+      >
+        ⬅ Back to Dashboard
+      </button>
 
       {/* Drawer mount (lazy + isolated) */}
       <Suspense fallback={null}>

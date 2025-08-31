@@ -8,6 +8,8 @@
 
 import React, { Suspense } from 'react'
 
+import Shell from '@components/Shell.jsx'
+
 // Feature barrels (keep imports tidy)
 // List is light enough to import eagerly (often first screen)
 import { WalkthroughList } from '../List'
@@ -48,7 +50,8 @@ export default function WalkthroughManager() {
   } = useWalkthroughManager()
 
   return (
-    <div className={cls.container}>
+    <Shell title="Walkthrough Manager">
+      <div className={`${cls.container} ${cls.wrapper}`}>
       <ManagerToolbar
         view={view}
         onBack={toList}
@@ -69,9 +72,9 @@ export default function WalkthroughManager() {
         />
       )}
 
-      <Suspense
+    <Suspense
         fallback={
-          <div className={cls.loading} role="status" aria-live="polite">
+      <div className="dashboard-card" role="status" aria-live="polite">
             Loading…
           </div>
         }
@@ -104,13 +107,14 @@ export default function WalkthroughManager() {
       </Suspense>
 
       {(view === 'editor' || view === 'preview') && !active && (
-        <div className={cls.missing} role="alert" aria-live="assertive">
+        <div className="dashboard-card" role="alert" aria-live="assertive">
           Missing selection.{' '}
           <button type="button" onClick={toList}>
             Return to list
           </button>
         </div>
       )}
-    </div>
+      </div>
+    </Shell>
   )
 }

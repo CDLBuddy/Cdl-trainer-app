@@ -6,20 +6,14 @@
    ============================================================================ */
 
 :root {
-  --brand: #6c5ce7;
-  --field-bg: #fff;
-  --field-bdr: #dcdde2;
-  --field-mute: #9aa1ad;
-  --danger: #b91c1c;
+  --brand: var(--brand-primary, var(--brand-light));
+  --field-bg: var(--card-bg);
+  --field-bdr: color-mix(in oklab, var(--accent), #000 45%);
+  --field-mute: var(--text-dark);
+  --danger: var(--error);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --field-bg: #0f1115;
-    --field-bdr: #2a2f3a;
-    --field-mute: #9aa1ad;
-  }
-}
+/* global theme handles dark mode; no local override required */
 
 /* Row container ----------------------------------------------------------- */
 .row {
@@ -27,9 +21,7 @@
     background-color 0.15s ease,
     opacity 0.15s ease;
 }
-.row:hover {
-  background: color-mix(in srgb, var(--brand) 6%, transparent);
-}
+.row:hover { background: color-mix(in oklab, var(--brand) 6%, transparent); }
 .row[aria-busy='true'] {
   opacity: 0.7;
   pointer-events: none;
@@ -49,7 +41,7 @@
   border-radius: 8px;
   border: 1px solid var(--field-bdr);
   background: var(--field-bg);
-  color: inherit;
+  color: var(--text-light);
   outline: none;
   transition:
     border-color 0.15s ease,
@@ -59,8 +51,8 @@
   color: var(--field-mute);
 }
 .input:focus {
-  border-color: var(--brand);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 25%, transparent);
+  border-color: color-mix(in oklab, var(--brand), #fff 12%);
+  box-shadow: var(--ring);
 }
 
 /* Status select ----------------------------------------------------------- */
@@ -71,8 +63,8 @@
   background: var(--field-bg);
 }
 .status:focus {
-  border-color: var(--brand);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 25%, transparent);
+  border-color: color-mix(in oklab, var(--brand), #fff 12%);
+  box-shadow: var(--ring);
 }
 
 /* Created/by column ------------------------------------------------------- */

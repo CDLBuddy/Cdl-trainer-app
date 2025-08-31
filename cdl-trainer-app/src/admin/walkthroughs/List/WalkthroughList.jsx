@@ -15,6 +15,7 @@ export default function WalkthroughList({
   onDuplicate,
   onExport,
   onDelete,
+  headerActions = null,
 }) {
   const {
     q,
@@ -49,28 +50,42 @@ export default function WalkthroughList({
         classes={classes}
       />
 
-      <div role="table" aria-label="Walkthroughs table" className={cls.table}>
-        <ListHeader sortKey={sortKey} sortDir={sortDir} setSort={setSort} />
+      <div className="dashboard-card">
+        <div className={cls.cardHeader}>
+          <h3 className={cls.cardTitle}>
+            Walkthroughs
+            {Array.isArray(filtered) && (
+              <span className={cls.countMuted}>
+                {' '}
+                • {filtered.length}
+              </span>
+            )}
+          </h3>
+          <div className={cls.cardActions}>{headerActions}</div>
+        </div>
+        <div role="table" aria-label="Walkthroughs table" className={cls.table}>
+          <ListHeader sortKey={sortKey} sortDir={sortDir} setSort={setSort} />
 
-        {loading ? (
-          <div className={cls.loading}>Loading…</div>
-        ) : filtered.length === 0 ? (
-          <div className={cls.empty}>No walkthroughs match your filters.</div>
-        ) : (
-          filtered.map(it => (
-            <ListRow
-              key={it.id}
-              item={it}
-              onRowKey={onRowKey}
-              onPreview={onPreview}
-              onEdit={onEdit}
-              onSubmit={onSubmit}
-              onDuplicate={onDuplicate}
-              onExport={onExport}
-              onDelete={onDelete}
-            />
-          ))
-        )}
+          {loading ? (
+            <div className={cls.loading}>Loading…</div>
+          ) : filtered.length === 0 ? (
+            <div className={cls.empty}>No walkthroughs match your filters.</div>
+          ) : (
+            filtered.map(it => (
+              <ListRow
+                key={it.id}
+                item={it}
+                onRowKey={onRowKey}
+                onPreview={onPreview}
+                onEdit={onEdit}
+                onSubmit={onSubmit}
+                onDuplicate={onDuplicate}
+                onExport={onExport}
+                onDelete={onDelete}
+              />
+            ))
+          )}
+        </div>
       </div>
     </div>
   )

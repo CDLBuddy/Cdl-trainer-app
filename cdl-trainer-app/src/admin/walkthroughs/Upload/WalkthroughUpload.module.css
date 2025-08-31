@@ -12,11 +12,12 @@
 
 /* Cards & layout */
 .card {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border: 1px solid color-mix(in oklab, var(--accent), #000 45%);
+  border-radius: var(--radius-md, 10px);
   padding: 16px;
-  background: #fff;
+  background: var(--card-bg);
   margin-bottom: 12px;
+  box-shadow: var(--shadow-1);
 }
 .toolbar {
   display: flex;
@@ -30,23 +31,21 @@
 .flex {
   flex: 1;
 }
-.subtle {
-  color: #6b7280;
-}
+.subtle { color: var(--text-dark); }
 
 /* Buttons */
 .btn {
   padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  background: #fff;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 35%);
+  background: var(--card-bg);
+  color: var(--text-light);
   cursor: pointer;
 }
 .btnPrimary {
-  composes: btn;
-  background: #111827;
+  border-color: color-mix(in oklab, var(--brand-light), #000 35%);
+  background: var(--brand-light);
   color: #fff;
-  border-color: #111827;
 }
 
 /* Tabs */
@@ -55,12 +54,10 @@
   gap: 8px;
   margin: 12px 0;
 }
-.tab {
-  composes: btn;
-}
+.tab { padding: 8px 12px; border-radius: var(--radius-sm, 8px); border: 1px solid color-mix(in oklab, var(--accent), #000 35%); background: var(--card-bg); color: var(--text-light); cursor: pointer; }
 .tabActive {
-  background: #eef2ff;
-  border-color: #c7d2fe;
+  background: color-mix(in oklab, var(--brand-light), #000 85%);
+  border-color: color-mix(in oklab, var(--brand-light), #000 35%);
 }
 
 /* Meta fields */
@@ -73,29 +70,27 @@
   display: grid;
   gap: 4px;
 }
-.metaLabel {
-  font-size: 12px;
-  color: #6b7280;
-}
+.metaLabel { font-size: 12px; color: var(--text-dark); }
 .input {
   width: 100%;
   padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 35%);
+  background: var(--card-bg);
+  color: var(--text-light);
 }
 
 /* Textareas & helpers */
 .bigInput {
   width: 100%;
   padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid color-mix(in oklab, var(--accent), #000 35%);
+  background: var(--card-bg);
+  color: var(--text-light);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
-.help {
-  margin: 0 0 8px 0;
-  color: #374151;
-}
+.help { margin: 0 0 8px 0; color: var(--text-dark); }
 .fileRow {
   display: flex;
   gap: 8px;
@@ -104,8 +99,8 @@
 
 /* Errors */
 .errorCard {
-  border-color: #fecaca;
-  background: #fff7ed;
+  border-color: color-mix(in oklab, var(--error), #000 35%);
+  background: color-mix(in oklab, var(--error), transparent 88%);
 }
 .errorList {
   margin: 6px 0 0 18px;
@@ -122,5 +117,5 @@
   gap: 6px;
   align-items: baseline;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-dark);
 }

@@ -32,15 +32,11 @@
 .card :global(thead th) {
   position: sticky;
   top: 0;
-  background: var(--card-header-bg, #fafafa);
+  background: color-mix(in oklab, var(--card-bg), #000 6%);
   z-index: 1;
 }
 
-@media (prefers-color-scheme: dark) {
-  .card :global(thead th) {
-    background: var(--card-header-bg-dark, rgba(255, 255, 255, 0.04));
-  }
-}
+/* global theme covers dark mode */
 
 /* Subtle top/bottom table chrome within the card */
 .card :global(thead th),
@@ -49,12 +45,7 @@
 }
 
 .card :global(tbody tr + tr td) {
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-@media (prefers-color-scheme: dark) {
-  .card :global(tbody tr + tr td) {
-    border-top-color: rgba(255, 255, 255, 0.08);
-  }
+  border-top: 1px solid color-mix(in oklab, var(--accent), #000 78%);
 }
 
 /* ----- Loading row ------------------------------------------------------ */
@@ -63,7 +54,7 @@
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  color: #6b7280; /* gray-500 */
+  color: var(--text-dark);
   font-size: 0.95rem;
 }
 

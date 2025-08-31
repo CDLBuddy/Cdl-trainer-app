@@ -19,9 +19,9 @@ import React, {
   useState,
 } from 'react'
 
-import './CompanyRow.module.css'
+import cls from './CompanyRow.module.css'
 
-const inputStyle = { width: '97%', padding: '2px 7px' }
+// styles moved to CSS module
 const NAME_RE = /^[\w\s\-'.&]+$/
 
 function fmtDate(val) {
@@ -42,9 +42,8 @@ function fmtDate(val) {
 function StatusSelect({ defaultValue }) {
   return (
     <select
-      className="company-status-input"
+  className={`company-status-input ${cls.status}`}
       defaultValue={defaultValue}
-      style={{ borderRadius: 7, padding: '2px 6px' }}
       aria-label="Company status"
     >
       <option value="active">Active</option>
@@ -170,9 +169,9 @@ function CompanyRow({
   }, [onSaveClick])
 
   return (
-    <tr ref={rowRef} aria-busy={busy}>
+    <tr ref={rowRef} aria-busy={busy} className={cls.row} aria-selected={isSelected ? 'true' : undefined}>
       {/* Select */}
-      <td>
+      <td className={cls.check}>
         <input
           aria-label={`Select ${c?.name || 'company'}`}
           type="checkbox"
@@ -184,10 +183,9 @@ function CompanyRow({
       {/* Name */}
       <td>
         <input
-          className="company-name-input"
+          className={`company-name-input ${cls.input}`}
           defaultValue={companyName}
           maxLength={60}
-          style={inputStyle}
           aria-label="Company name"
           placeholder="Acme Logistics"
         />
@@ -196,10 +194,9 @@ function CompanyRow({
       {/* Contact */}
       <td>
         <input
-          className="company-contact-input"
+          className={`company-contact-input ${cls.input}`}
           defaultValue={companyContact}
           maxLength={60}
-          style={inputStyle}
           aria-label="Company contact"
           placeholder="ap@acme.com"
         />
@@ -208,10 +205,9 @@ function CompanyRow({
       {/* Address */}
       <td>
         <input
-          className="company-address-input"
+          className={`company-address-input ${cls.input}`}
           defaultValue={companyAddress}
           maxLength={100}
-          style={inputStyle}
           aria-label="Company address"
           placeholder="123 Industrial Way, Phoenix AZ"
         />
@@ -224,16 +220,14 @@ function CompanyRow({
 
       {/* Created / By */}
       <td>
-        <span style={{ fontSize: '.93em' }}>{fmtDate(c?.createdAt)}</span>
+        <span className={cls.created}>{fmtDate(c?.createdAt)}</span>
         <br />
-        <span style={{ fontSize: '.87em', color: '#999' }}>
-          {c?.createdBy || ''}
-        </span>
+        <span className={cls.by}>{c?.createdBy || ''}</span>
       </td>
 
       {/* Actions */}
       <td>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div className={cls.actions}>
           <button
             className="btn outline"
             onClick={onSaveClick}
@@ -243,10 +237,9 @@ function CompanyRow({
             {busy ? 'Saving…' : 'Save'}
           </button>
           <button
-            className="btn outline"
+            className={`btn outline ${cls.danger}`}
             onClick={onRemoveClick}
             disabled={busy}
-            style={{ color: '#b22', borderColor: '#b22' }}
             title="Remove company"
           >
             Remove
