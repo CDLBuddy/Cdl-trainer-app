@@ -62,6 +62,7 @@ export default function StudentFlashcards() {
   const flashcardRef = useRef(null)
 
   // state
+  
   const [loading, setLoading] = useState(true)
   const [flashcards, setFlashcards] = useState([...defaultFlashcards])
   const [current, setCurrent] = useState(0)
